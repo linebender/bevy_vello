@@ -6,10 +6,9 @@ use bevy::{
     render::{
         mesh::{Indices, MeshVertexBufferLayout},
         render_resource::{
-            AsBindGroup, Extent3d, PrimitiveTopology, RenderPipelineDescriptor,
-            ShaderRef, SpecializedMeshPipelineError, TextureDescriptor,
-            TextureDimension, TextureFormat, TextureUsages, VertexBufferLayout,
-            VertexFormat, VertexStepMode,
+            AsBindGroup, Extent3d, PrimitiveTopology, RenderPipelineDescriptor, ShaderRef,
+            SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat,
+            TextureUsages, VertexBufferLayout, VertexFormat, VertexStepMode,
         },
     },
     sprite::{Material2d, Material2dKey, Mesh2dHandle},
@@ -148,8 +147,7 @@ pub fn setup_ss_rendertarget(
 
         meshes.add(rendertarget_quad)
     });
-    let texture_image =
-        setup_image(&mut commands, &mut images, &window.resolution);
+    let texture_image = setup_image(&mut commands, &mut images, &window.resolution);
     let render_target = SSRenderTarget(texture_image.clone());
     let mesh = Mesh2dHandle(mesh_handle.clone());
     let material = custom_materials.add(SSTargetMaterial {
@@ -174,11 +172,11 @@ pub struct SSTargetMaterial {
 
 impl Material2d for SSTargetMaterial {
     fn vertex_shader() -> ShaderRef {
-        "shaders/vello_ss_rendertarget.wgsl".into()
+        super::SSRT_SHADER_HANDLE.typed().into()
     }
 
     fn fragment_shader() -> ShaderRef {
-        "shaders/vello_ss_rendertarget.wgsl".into()
+        super::SSRT_SHADER_HANDLE.typed().into()
     }
 
     fn specialize(
@@ -192,10 +190,8 @@ impl Material2d for SSTargetMaterial {
             VertexFormat::Float32x2,
         ];
 
-        let vertex_layout = VertexBufferLayout::from_vertex_formats(
-            VertexStepMode::Vertex,
-            formats,
-        );
+        let vertex_layout =
+            VertexBufferLayout::from_vertex_formats(VertexStepMode::Vertex, formats);
 
         descriptor.vertex.buffers = vec![vertex_layout];
 
