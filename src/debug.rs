@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::*;
 
-use crate::VelloVector;
+use crate::{bevy_gizmos::prelude::*, VelloVector};
 
 pub struct DebugVisualizationsPlugin;
 
@@ -20,14 +20,10 @@ pub enum DebugVisualizations {
 }
 
 fn draw_viewbox(
-    query: Query<(
-        &Handle<VelloVector>,
-        &GlobalTransform,
-        &DebugVisualizations,
-    )>,
+    query: Query<(&Handle<VelloVector>, &GlobalTransform, &DebugVisualizations)>,
     query_proj: Query<&OrthographicProjection>,
     vectors: Res<Assets<VelloVector>>,
-    mut lines: ResMut<DebugLines>,
+    mut gizmos: Gizmos,
 ) {
     let cam_proj = query_proj.single();
     for (vector, transform, _) in query
@@ -35,10 +31,7 @@ fn draw_viewbox(
         .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
-            let duration = 0.0;
-
-            let [(ax, ay), (bx, by), (cx, cy), (dx, dy)] =
-                vector.bb_in_world(transform);
+            let [(ax, ay), (bx, by), (cx, cy), (dx, dy)] = vector.bb_in_world(transform);
 
             let points: [([f32; 2], [f32; 2]); 4] = [
                 ([ax, ay], [bx, by]),
@@ -51,29 +44,19 @@ fn draw_viewbox(
                 let from: Vec3 = Vec2::from(p_from).extend(0.0);
                 let to: Vec3 = Vec2::from(p_to).extend(0.0);
 
-                lines.line(from, to, duration);
+                gizmos.line(from, to, Color::WHITE);
             }
 
             let origin = Vec2::new((cx + dx) / 2.0, (cy + dy) / 2.0);
             let from = origin + 8.0 * Vec2::splat(1.0) * cam_proj.scale;
             let to = origin + 8.0 * Vec2::splat(-1.0) * cam_proj.scale;
 
-            lines.line_colored(
-                from.extend(0.0),
-                to.extend(0.0),
-                duration,
-                Color::RED,
-            );
+            gizmos.line(from.extend(0.0), to.extend(0.0), Color::RED);
 
             let from = origin + 8.0 * Vec2::new(1.0, -1.0) * cam_proj.scale;
             let to = origin + 8.0 * Vec2::new(-1.0, 1.0) * cam_proj.scale;
 
-            lines.line_colored(
-                from.extend(0.0),
-                to.extend(0.0),
-                duration,
-                Color::RED,
-            );
+            gizmos.line(from.extend(0.0), to.extend(0.0), Color::RED);
         }
     }
 }

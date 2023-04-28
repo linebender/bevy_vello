@@ -7,6 +7,7 @@ mod debug;
 mod lyon_utils;
 mod render;
 mod rendertarget;
+mod bevy_gizmos;
 
 pub use asset::VelloVector;
 pub use debug::DebugVisualizations;
