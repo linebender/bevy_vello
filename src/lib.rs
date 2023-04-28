@@ -3,11 +3,11 @@ use bevy::{asset::load_internal_asset, prelude::*, reflect::TypeUuid, sprite::Ma
 use debug::DebugVisualizationsPlugin;
 use render::VelloRenderPlugin;
 mod asset;
+mod bevy_gizmos;
 mod debug;
 mod lyon_utils;
 mod render;
 mod rendertarget;
-mod bevy_gizmos;
 
 pub use asset::VelloVector;
 pub use debug::DebugVisualizations;
@@ -26,6 +26,7 @@ impl Plugin for BevyVelloPlugin {
             Shader::from_wgsl
         );
         app.add_plugin(VelloRenderPlugin);
+        app.add_plugin(bevy_gizmos::GizmoPlugin);
         app.add_asset::<VelloVector>()
             .init_asset_loader::<VelloVectorLoader>();
         app.add_plugin(Material2dPlugin::<rendertarget::SSTargetMaterial>::default());
