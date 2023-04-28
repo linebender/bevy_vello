@@ -41,22 +41,22 @@ fn draw_viewbox(
             ];
 
             for (p_from, p_to) in points {
-                let from: Vec3 = Vec2::from(p_from).extend(0.0);
-                let to: Vec3 = Vec2::from(p_to).extend(0.0);
+                let from = Vec2::from(p_from);
+                let to = Vec2::from(p_to);
 
-                gizmos.line(from, to, Color::WHITE);
+                gizmos.line_2d(from, to, Color::WHITE);
             }
 
             let origin = Vec2::new((cx + dx) / 2.0, (cy + dy) / 2.0);
             let from = origin + 8.0 * Vec2::splat(1.0) * cam_proj.scale;
             let to = origin + 8.0 * Vec2::splat(-1.0) * cam_proj.scale;
 
-            gizmos.line(from.extend(0.0), to.extend(0.0), Color::RED);
+            gizmos.line_2d(from, to, Color::RED);
 
             let from = origin + 8.0 * Vec2::new(1.0, -1.0) * cam_proj.scale;
             let to = origin + 8.0 * Vec2::new(-1.0, 1.0) * cam_proj.scale;
 
-            gizmos.line(from.extend(0.0), to.extend(0.0), Color::RED);
+            gizmos.line_2d(from, to, Color::RED);
         }
     }
 }
