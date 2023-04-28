@@ -22,11 +22,8 @@ use bevy::asset::{load_internal_asset, Assets, Handle, HandleUntyped};
 use bevy::ecs::{
     change_detection::DetectChanges,
     component::Component,
-    entity::Entity,
-    query::Without,
     reflect::ReflectComponent,
-    schedule::IntoSystemConfigs,
-    system::{Commands, Query, Res, ResMut, Resource},
+    system::{Commands, Res, ResMut, Resource},
     world::{FromWorld, World},
 };
 use bevy::math::Mat4;
@@ -37,12 +34,10 @@ use bevy::reflect::{
 use bevy::render::{
     color::Color,
     mesh::Mesh,
-    primitives::Aabb,
     render_phase::AddRenderCommand,
     render_resource::{PrimitiveTopology, Shader, SpecializedMeshPipelines},
     Extract, ExtractSchedule, RenderApp, RenderSet,
 };
-use bevy::transform::components::{GlobalTransform, Transform};
 
 use bevy::sprite::{Mesh2dHandle, Mesh2dUniform};
 
@@ -50,7 +45,7 @@ pub mod gizmos;
 
 mod pipeline_2d;
 
-use gizmos::{GizmoStorage, Gizmos};
+use gizmos::GizmoStorage;
 
 /// The `bevy_gizmos` prelude.
 pub mod prelude {
@@ -144,19 +139,6 @@ pub struct AabbGizmo {
     pub color: Option<Color>,
 }
 
-fn color_from_entity(entity: Entity) -> Color {
-    let hue = entity.to_bits() as f32 * 100_000. % 360.;
-    Color::hsl(hue, 1., 0.5)
-}
-
-fn aabb_transform(aabb: Aabb, transform: GlobalTransform) -> GlobalTransform {
-    transform
-        * GlobalTransform::from(
-            Transform::from_translation(aabb.center.into())
-                .with_scale((aabb.half_extents * 2.).into()),
-        )
-}
-
 #[derive(Resource)]
 struct MeshHandles {
     list: Option<Handle<Mesh>>,
@@ -247,17 +229,6 @@ fn extract_gizmo_data(
             .map(move |handle| {
                 (
                     GizmoMesh,
-                    #[cfg(feature = "bevy_pbr")]
-                    (
-                        handle.clone_weak(),
-                        MeshUniform {
-                            flags: 0,
-                            transform,
-                            previous_transform: transform,
-                            inverse_transpose_model,
-                        },
-                    ),
-                    #[cfg(feature = "bevy_sprite")]
                     (
                         Mesh2dHandle(handle),
                         Mesh2dUniform {

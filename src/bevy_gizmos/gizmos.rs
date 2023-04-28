@@ -1,5 +1,4 @@
 //! A module for the [`Gizmos`](crate::gizmos::Gizmos) [`SystemParam`](bevy_ecs::system::SystemParam).
-
 use std::{f32::consts::TAU, iter};
 
 use bevy::ecs::{
@@ -60,6 +59,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn line(&mut self, start: Vec3, end: Vec3, color: Color) {
         self.extend_list_positions([start, end]);
         self.add_list_color(color, 2);
@@ -78,6 +78,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn line_gradient(&mut self, start: Vec3, end: Vec3, start_color: Color, end_color: Color) {
         self.extend_list_positions([start, end]);
         self.extend_list_colors([start_color, end_color]);
@@ -96,6 +97,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn ray(&mut self, start: Vec3, vector: Vec3, color: Color) {
         self.line(start, start + vector, color);
     }
@@ -113,6 +115,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn ray_gradient(
         &mut self,
         start: Vec3,
@@ -136,6 +139,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn linestrip(&mut self, positions: impl IntoIterator<Item = Vec3>, color: Color) {
         self.extend_strip_positions(positions.into_iter());
         let len = self.buffer.strip_positions.len();
@@ -162,6 +166,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn linestrip_gradient(&mut self, points: impl IntoIterator<Item = (Vec3, Color)>) {
         let points = points.into_iter();
 
@@ -203,6 +208,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn circle(
         &mut self,
         position: Vec3,
@@ -239,6 +245,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn sphere(
         &mut self,
         position: Vec3,
@@ -269,6 +276,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn rect(&mut self, position: Vec3, rotation: Quat, size: Vec2, color: Color) {
         let [tl, tr, br, bl] = rect_inner(size).map(|vec2| position + rotation * vec2.extend(0.));
         self.linestrip([tl, tr, br, bl, tl], color);
@@ -287,6 +295,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn line_2d(&mut self, start: Vec2, end: Vec2, color: Color) {
         self.line(start.extend(0.), end.extend(0.), color);
     }
@@ -304,6 +313,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn line_gradient_2d(
         &mut self,
         start: Vec2,
@@ -327,6 +337,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn linestrip_2d(&mut self, positions: impl IntoIterator<Item = Vec2>, color: Color) {
         self.linestrip(positions.into_iter().map(|vec2| vec2.extend(0.)), color);
     }
@@ -348,6 +359,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn linestrip_gradient_2d(&mut self, positions: impl IntoIterator<Item = (Vec2, Color)>) {
         self.linestrip_gradient(
             positions
@@ -369,6 +381,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn ray_2d(&mut self, start: Vec2, vector: Vec2, color: Color) {
         self.line_2d(start, start + vector, color);
     }
@@ -386,6 +399,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn ray_gradient_2d(
         &mut self,
         start: Vec2,
@@ -415,6 +429,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn circle_2d(
         &mut self,
         position: Vec2,
@@ -456,6 +471,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn arc_2d(
         &mut self,
         position: Vec2,
@@ -488,6 +504,7 @@ impl<'s> Gizmos<'s> {
     /// # bevy_ecs::system::assert_is_system(system);
     /// ```
     #[inline]
+    #[allow(unused)]
     pub fn rect_2d(&mut self, position: Vec2, rotation: f32, size: Vec2, color: Color) {
         let rotation = Mat2::from_angle(rotation);
         let [tl, tr, br, bl] = rect_inner(size).map(|vec2| position + rotation * vec2);
@@ -495,6 +512,7 @@ impl<'s> Gizmos<'s> {
     }
 
     #[inline]
+    #[allow(unused)]
     fn extend_list_positions(&mut self, positions: impl IntoIterator<Item = Vec3>) {
         self.buffer
             .list_positions
@@ -502,6 +520,7 @@ impl<'s> Gizmos<'s> {
     }
 
     #[inline]
+    #[allow(unused)]
     fn extend_list_colors(&mut self, colors: impl IntoIterator<Item = Color>) {
         self.buffer
             .list_colors
@@ -509,6 +528,7 @@ impl<'s> Gizmos<'s> {
     }
 
     #[inline]
+    #[allow(unused)]
     fn add_list_color(&mut self, color: Color, count: usize) {
         self.buffer
             .list_colors
@@ -516,6 +536,7 @@ impl<'s> Gizmos<'s> {
     }
 
     #[inline]
+    #[allow(unused)]
     fn extend_strip_positions(&mut self, positions: impl IntoIterator<Item = Vec3>) {
         self.buffer.strip_positions.extend(
             positions
@@ -563,14 +584,6 @@ pub struct SphereBuilder<'a, 's> {
     circle_segments: usize,
 }
 
-impl SphereBuilder<'_, '_> {
-    /// Set the number of line-segements per circle for this sphere.
-    pub fn circle_segments(mut self, segments: usize) -> Self {
-        self.circle_segments = segments;
-        self
-    }
-}
-
 impl Drop for SphereBuilder<'_, '_> {
     fn drop(&mut self) {
         for axis in Vec3::AXES {
@@ -590,14 +603,6 @@ pub struct Circle2dBuilder<'a, 's> {
     segments: usize,
 }
 
-impl Circle2dBuilder<'_, '_> {
-    /// Set the number of line-segements for this circle.
-    pub fn segments(mut self, segments: usize) -> Self {
-        self.segments = segments;
-        self
-    }
-}
-
 impl Drop for Circle2dBuilder<'_, '_> {
     fn drop(&mut self) {
         let positions = circle_inner(self.radius, self.segments).map(|vec2| (vec2 + self.position));
@@ -614,14 +619,6 @@ pub struct Arc2dBuilder<'a, 's> {
     radius: f32,
     color: Color,
     segments: Option<usize>,
-}
-
-impl Arc2dBuilder<'_, '_> {
-    /// Set the number of line-segements for this arc.
-    pub fn segments(mut self, segments: usize) -> Self {
-        self.segments = Some(segments);
-        self
-    }
 }
 
 impl Drop for Arc2dBuilder<'_, '_> {
