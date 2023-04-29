@@ -1,14 +1,12 @@
 use bevy::prelude::*;
-use bevy_prototype_debug_lines::*;
 
-use crate::{bevy_gizmos::prelude::*, VelloVector};
+use crate::VelloVector;
 
 pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(draw_viewbox)
-            .add_plugin(DebugLinesPlugin::default());
+        app.add_system(draw_viewbox);
     }
 }
 

@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{asset::load_internal_asset, prelude::*};
 use bevy_vello::{BevyVelloPlugin, VelloVector, VelloVectorBundle};
 
 fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {

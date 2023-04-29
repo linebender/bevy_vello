@@ -9,10 +9,7 @@ use bevy::{
         RenderApp, RenderSet,
     },
 };
-use vello::{
-    kurbo::Affine, peniko, RenderParams, Renderer, RendererOptions, Scene,
-    SceneBuilder,
-};
+use vello::{kurbo::Affine, peniko, RenderParams, Renderer, RendererOptions, Scene, SceneBuilder};
 
 use crate::{
     asset::{RenderInstanceData, Vector, VelloVector},
@@ -21,22 +18,6 @@ use crate::{
 
 #[derive(Resource)]
 struct VelloRenderer(Renderer);
-
-impl FromWorld for VelloRenderer {
-    fn from_world(world: &mut World) -> Self {
-        let device = world.get_resource::<RenderDevice>().unwrap();
-        VelloRenderer(
-            Renderer::new(
-                device.wgpu_device(),
-                &RendererOptions {
-                    surface_format: None,
-                },
-            )
-            .expect("no gpu device"),
-        )
-    }
-}
-
 pub struct VelloRenderPlugin;
 
 #[derive(Resource)]
@@ -45,18 +26,36 @@ pub struct VelatoRenderer(pub velato::Renderer);
 impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
         let Ok(render_app) = app.get_sub_app_mut(RenderApp) else { return };
-        render_app.init_resource::<VelloRenderer>();
         render_app.insert_resource(VelatoRenderer(velato::Renderer::new()));
 
         render_app.add_system(prepare_affines.in_set(RenderSet::Prepare));
         render_app.add_system(render_scene.in_set(RenderSet::Render));
 
-        app.add_plugin(
-            ExtractComponentPlugin::<ExtractedRenderVector>::default(),
-        )
-        .add_plugin(ExtractComponentPlugin::<SSRenderTarget>::default())
-        .add_plugin(RenderAssetPlugin::<VelloVector>::default())
-        .add_system(tag_vectors_for_render);
+        app.add_plugin(ExtractComponentPlugin::<ExtractedRenderVector>::default())
+            .add_plugin(ExtractComponentPlugin::<SSRenderTarget>::default())
+            .add_plugin(RenderAssetPlugin::<VelloVector>::default())
+            .add_system(await_renderer)
+            .add_system(tag_vectors_for_render);
+    }
+}
+
+fn await_renderer(
+    mut commands: Commands,
+    renderer: Option<ResMut<VelloRenderer>>,
+    device: Option<Res<RenderDevice>>,
+) {
+    if renderer.is_none() {
+        if let Some(device) = device {
+            commands.insert_resource(VelloRenderer(
+                Renderer::new(
+                    device.wgpu_device(),
+                    &RendererOptions {
+                        surface_format: None,
+                    },
+                )
+                .expect("no gpu device"),
+            ))
+        }
     }
 }
 
@@ -94,8 +93,7 @@ fn prepare_affines(
 
         let view_proj_matrix = projection_mat * view_mat.inverse();
 
-        let raw_transform =
-            ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+        let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 
@@ -120,7 +118,7 @@ fn prepare_affines(
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
 fn render_scene(
-    mut renderer: ResMut<VelloRenderer>,
+    renderer: Option<ResMut<VelloRenderer>>,
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<&ExtractedRenderVector>,
     render_assets: Res<RenderAssets<VelloVector>>,
@@ -130,9 +128,13 @@ fn render_scene(
     mut velato_renderer: ResMut<VelatoRenderer>,
     time: Res<Time>,
 ) {
-    if let Ok(SSRenderTarget(render_target_image)) =
-        ss_render_target.get_single()
-    {
+    let mut renderer = if let Some(renderer) = renderer {
+        renderer
+    } else {
+        return;
+    };
+
+    if let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
         let mut scene = Scene::default();
         let mut builder = SceneBuilder::for_scene(&mut scene);
@@ -269,10 +271,7 @@ impl ExtractComponent for ExtractedRenderVector {
     type Out = Self;
 
     fn extract_component(
-        (vello_vector_handle, layer, transform): bevy::ecs::query::QueryItem<
-            '_,
-            Self::Query,
-        >,
+        (vello_vector_handle, layer, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
     ) -> Option<Self> {
         Some(Self {
             vector: vello_vector_handle.clone(),
