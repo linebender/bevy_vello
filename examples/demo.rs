@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_vello::{BevyVelloPlugin, VelloVector, VelloVectorBundle};
+use bevy_vello::{BevyVelloPlugin, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle};
 
 fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
@@ -7,6 +7,16 @@ fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         layer: bevy_vello::Layer::Background,
         svg: asset_server.load("../assets/squid.json"),
         debug_visualizations: bevy_vello::DebugVisualizations::Visible,
+        ..default()
+    });
+
+    commands.spawn(VelloTextBundle {
+        font: asset_server.load("../assets/roboto/Roboto-Regular.vttf"),
+        layer: bevy_vello::Layer::Foreground,
+        text: VelloText {
+            content: "hello".to_string(),
+            size: 32.0,
+        },
         ..default()
     });
 }

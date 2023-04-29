@@ -9,14 +9,12 @@ use bevy::{
         RenderApp, RenderSet,
     },
 };
-use vello::{
-    kurbo::Affine, peniko, RenderParams, Renderer, RendererOptions, Scene,
-    SceneBuilder,
-};
+use vello::{kurbo::Affine, RenderParams, Renderer, RendererOptions, Scene, SceneBuilder};
 
 use crate::{
-    asset::{RenderInstanceData, Vector, VelloVector},
-    Layer,
+    font::VelloFont,
+    vector::{RenderInstanceData, Vector, VelloVector},
+    Layer, VelloText,
 };
 
 #[derive(Resource)]
@@ -48,22 +46,23 @@ impl Plugin for VelloRenderPlugin {
         render_app.init_resource::<VelloRenderer>();
         render_app.insert_resource(VelatoRenderer(velato::Renderer::new()));
 
-        render_app.add_system(prepare_affines.in_set(RenderSet::Prepare));
+        render_app.add_system(prepare_vector_affines.in_set(RenderSet::Prepare));
+        render_app.add_system(prepare_text_affines.in_set(RenderSet::Prepare));
         render_app.add_system(render_scene.in_set(RenderSet::Render));
 
-        app.add_plugin(
-            ExtractComponentPlugin::<ExtractedRenderVector>::default(),
-        )
-        .add_plugin(ExtractComponentPlugin::<SSRenderTarget>::default())
-        .add_plugin(RenderAssetPlugin::<VelloVector>::default())
-        .add_system(tag_vectors_for_render);
+        app.add_plugin(ExtractComponentPlugin::<ExtractedRenderVector>::default())
+            .add_plugin(ExtractComponentPlugin::<ExtractedRenderText>::default())
+            .add_plugin(ExtractComponentPlugin::<SSRenderTarget>::default())
+            .add_plugin(RenderAssetPlugin::<VelloVector>::default())
+            .add_plugin(RenderAssetPlugin::<VelloFont>::default())
+            .add_system(tag_vectors_for_render);
     }
 }
 
-fn prepare_affines(
+fn prepare_vector_affines(
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
     mut render_vectors: Query<&mut ExtractedRenderVector>,
-    render_assets: Res<RenderAssets<VelloVector>>,
+    render_vector_assets: Res<RenderAssets<VelloVector>>,
 ) {
     let (camera, view) = camera.single();
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
@@ -78,7 +77,7 @@ fn prepare_affines(
         .transpose();
 
         let world_transform = render_vector.transform;
-        let local_matrix = match render_assets.get(&render_vector.vector) {
+        let local_matrix = match render_vector_assets.get(&render_vector.vector) {
             Some(render_instance_data) => render_instance_data.local_matrix,
             None => Mat4::default(),
         };
@@ -94,8 +93,58 @@ fn prepare_affines(
 
         let view_proj_matrix = projection_mat * view_mat.inverse();
 
-        let raw_transform =
-            ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+        let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+
+        let transform: [f32; 16] = raw_transform.to_cols_array();
+
+        // | a c e |
+        // | b d f |
+        // | 0 0 1 |
+        let transform: [f64; 6] = [
+            transform[0] as f64,  // a
+            -transform[1] as f64, // b
+            -transform[4] as f64, // c
+            transform[5] as f64,  // d
+            transform[12] as f64, // e
+            transform[13] as f64, // f
+        ];
+
+        let affine = Affine::new(transform);
+        render_vector.affine = affine;
+    }
+}
+
+fn prepare_text_affines(
+    camera: Query<(&ExtractedCamera, &ExtractedView)>,
+    mut render_texts: Query<&mut ExtractedRenderText>,
+) {
+    let (camera, view) = camera.single();
+    let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
+    let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
+    for mut render_vector in render_texts.iter_mut() {
+        let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
+            [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
+            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
+        .transpose();
+
+        let world_transform = render_vector.transform;
+
+        let mut model_matrix = world_transform.compute_matrix();
+        model_matrix.w_axis.y *= -1.0;
+
+        let (projection_mat, view_mat) = {
+            let mut view_mat = view.transform.compute_matrix();
+            view_mat.w_axis.y *= -1.0;
+
+            (view.projection, view_mat)
+        };
+
+        let view_proj_matrix = projection_mat * view_mat.inverse();
+
+        let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 
@@ -123,27 +172,27 @@ fn render_scene(
     mut renderer: ResMut<VelloRenderer>,
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<&ExtractedRenderVector>,
-    render_assets: Res<RenderAssets<VelloVector>>,
+    query_render_texts: Query<&ExtractedRenderText>,
+    vector_render_assets: Res<RenderAssets<VelloVector>>,
+    mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
     mut velato_renderer: ResMut<VelatoRenderer>,
     time: Res<Time>,
 ) {
-    if let Ok(SSRenderTarget(render_target_image)) =
-        ss_render_target.get_single()
-    {
+    if let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
         let mut scene = Scene::default();
         let mut builder = SceneBuilder::for_scene(&mut scene);
 
         // Background items: z ordered
-        let mut items: Vec<ExtractedRenderVector> = render_vectors
+        let mut render_vectors: Vec<ExtractedRenderVector> = render_vectors
             .iter()
             .filter(|v| v.layer == Layer::Background)
             .cloned()
             .collect();
-        items.sort_by(|a, b| {
+        render_vectors.sort_by(|a, b| {
             let a = a.transform.translation().z;
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
@@ -160,7 +209,7 @@ fn render_scene(
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
         });
-        items.append(&mut shadow_items);
+        render_vectors.append(&mut shadow_items);
 
         // Middle items: y ordered
         let mut middle_items: Vec<ExtractedRenderVector> = render_vectors
@@ -173,7 +222,7 @@ fn render_scene(
             let b = b.transform.translation().y;
             b.partial_cmp(&a).unwrap_or(std::cmp::Ordering::Equal)
         });
-        items.append(&mut middle_items);
+        render_vectors.append(&mut middle_items);
 
         // Foreground items: z ordered
         let mut fg_items: Vec<ExtractedRenderVector> = render_vectors
@@ -186,12 +235,12 @@ fn render_scene(
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
         });
-        items.append(&mut fg_items);
+        render_vectors.append(&mut fg_items);
 
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
-        for ExtractedRenderVector { vector, affine, .. } in items.iter() {
-            match render_assets.get(vector) {
+        for ExtractedRenderVector { vector, affine, .. } in render_vectors.iter() {
+            match vector_render_assets.get(vector) {
                 Some(RenderInstanceData {
                     data: Vector::Static(fragment),
                     ..
@@ -214,7 +263,41 @@ fn render_scene(
             }
         }
 
-        if !items.is_empty() {
+        let mut render_texts: Vec<ExtractedRenderText> = query_render_texts
+            .iter()
+            .filter(|v| v.layer == Layer::Background)
+            .cloned()
+            .collect();
+
+        render_texts.sort_by(|a, b| {
+            let a = a.transform.translation().z;
+            let b = b.transform.translation().z;
+            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        // Foreground items: z ordered
+        let mut fg_items: Vec<ExtractedRenderText> = query_render_texts
+            .iter()
+            .filter(|v| v.layer != Layer::Background)
+            .cloned()
+            .collect();
+        fg_items.sort_by(|a, b| {
+            let a = a.transform.translation().z;
+            let b = b.transform.translation().z;
+            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
+        });
+        render_texts.append(&mut fg_items);
+
+        for ExtractedRenderText {
+            font, text, affine, ..
+        } in render_texts.iter()
+        {
+            if let Some(font) = font_render_assets.get_mut(&font) {
+                font.add(&mut builder, None, text.size, None, *affine, &text.content);
+            }
+        }
+
+        if !render_vectors.is_empty() {
             renderer
                 .0
                 .render_to_texture(
@@ -223,7 +306,7 @@ fn render_scene(
                     &scene,
                     &gpu_image.texture_view,
                     &RenderParams {
-                        base_color: peniko::Color::BLACK.with_alpha_factor(0.0),
+                        base_color: vello::peniko::Color::BLACK.with_alpha_factor(0.0),
                         width: gpu_image.size.x as u32,
                         height: gpu_image.size.y as u32,
                     },
@@ -269,13 +352,43 @@ impl ExtractComponent for ExtractedRenderVector {
     type Out = Self;
 
     fn extract_component(
-        (vello_vector_handle, layer, transform): bevy::ecs::query::QueryItem<
-            '_,
-            Self::Query,
-        >,
+        (vello_vector_handle, layer, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
     ) -> Option<Self> {
         Some(Self {
             vector: vello_vector_handle.clone(),
+            transform: *transform,
+            affine: Affine::default(),
+            layer: *layer,
+        })
+    }
+}
+
+#[derive(Component, Clone)]
+struct ExtractedRenderText {
+    font: Handle<VelloFont>,
+    text: VelloText,
+    transform: GlobalTransform,
+    affine: Affine,
+    layer: Layer,
+}
+
+impl ExtractComponent for ExtractedRenderText {
+    type Query = (
+        &'static Handle<VelloFont>,
+        &'static VelloText,
+        &'static Layer,
+        &'static GlobalTransform,
+    );
+
+    type Filter = ();
+    type Out = Self;
+
+    fn extract_component(
+        (vello_font_handle, text, layer, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
+    ) -> Option<Self> {
+        Some(Self {
+            font: vello_font_handle.clone(),
+            text: text.clone(),
             transform: *transform,
             affine: Affine::default(),
             layer: *layer,
