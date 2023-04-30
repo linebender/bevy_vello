@@ -75,7 +75,6 @@ pub struct VelloText {
 pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
-    pub layer: Layer,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible

@@ -263,34 +263,9 @@ fn render_scene(
             }
         }
 
-        let mut render_texts: Vec<ExtractedRenderText> = query_render_texts
-            .iter()
-            .filter(|v| v.layer == Layer::Background)
-            .cloned()
-            .collect();
-
-        render_texts.sort_by(|a, b| {
-            let a = a.transform.translation().z;
-            let b = b.transform.translation().z;
-            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
-        });
-
-        // Foreground items: z ordered
-        let mut fg_items: Vec<ExtractedRenderText> = query_render_texts
-            .iter()
-            .filter(|v| v.layer != Layer::Background)
-            .cloned()
-            .collect();
-        fg_items.sort_by(|a, b| {
-            let a = a.transform.translation().z;
-            let b = b.transform.translation().z;
-            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
-        });
-        render_texts.append(&mut fg_items);
-
         for ExtractedRenderText {
             font, text, affine, ..
-        } in render_texts.iter()
+        } in query_render_texts.iter()
         {
             if let Some(font) = font_render_assets.get_mut(&font) {
                 font.add(&mut builder, None, text.size, None, *affine, &text.content);
@@ -369,14 +344,12 @@ struct ExtractedRenderText {
     text: VelloText,
     transform: GlobalTransform,
     affine: Affine,
-    layer: Layer,
 }
 
 impl ExtractComponent for ExtractedRenderText {
     type Query = (
         &'static Handle<VelloFont>,
         &'static VelloText,
-        &'static Layer,
         &'static GlobalTransform,
     );
 
@@ -384,14 +357,13 @@ impl ExtractComponent for ExtractedRenderText {
     type Out = Self;
 
     fn extract_component(
-        (vello_font_handle, text, layer, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
+        (vello_font_handle, text, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
     ) -> Option<Self> {
         Some(Self {
             font: vello_font_handle.clone(),
             text: text.clone(),
             transform: *transform,
             affine: Affine::default(),
-            layer: *layer,
         })
     }
 }
