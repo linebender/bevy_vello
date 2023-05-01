@@ -121,7 +121,7 @@ fn prepare_text_affines(
     let (camera, view) = camera.single();
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
     let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-    for mut render_vector in render_texts.iter_mut() {
+    for mut render_text in render_texts.iter_mut() {
         let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
             [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
             [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
@@ -130,7 +130,7 @@ fn prepare_text_affines(
         ])
         .transpose();
 
-        let world_transform = render_vector.transform;
+        let world_transform = render_text.transform;
 
         let mut model_matrix = world_transform.compute_matrix();
         model_matrix.w_axis.y *= -1.0;
@@ -143,8 +143,9 @@ fn prepare_text_affines(
         };
 
         let view_proj_matrix = projection_mat * view_mat.inverse();
+        let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
 
-        let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+        let raw_transform = vello_matrix * model_matrix;
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 
@@ -161,7 +162,8 @@ fn prepare_text_affines(
         ];
 
         let affine = Affine::new(transform);
-        render_vector.affine = affine;
+        render_text.affine = affine;
+        render_text.vello_matrix = vello_matrix;
     }
 }
 
@@ -268,7 +270,7 @@ fn render_scene(
         } in query_render_texts.iter()
         {
             if let Some(font) = font_render_assets.get_mut(&font) {
-                font.add(&mut builder, None, text.size, None, *affine, &text.content);
+                font.render_centered(&mut builder, text.size, *affine, &text.content);
             }
         }
 
@@ -344,6 +346,7 @@ struct ExtractedRenderText {
     text: VelloText,
     transform: GlobalTransform,
     affine: Affine,
+    vello_matrix: Mat4,
 }
 
 impl ExtractComponent for ExtractedRenderText {
@@ -364,6 +367,7 @@ impl ExtractComponent for ExtractedRenderText {
             text: text.clone(),
             transform: *transform,
             affine: Affine::default(),
+            vello_matrix: Mat4::default(),
         })
     }
 }

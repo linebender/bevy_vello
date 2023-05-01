@@ -23,15 +23,14 @@ use bevy::{
     utils::BoxedFuture,
 };
 use vello::{
-    encoding::Glyph,
     glyph::{
         pinot,
         pinot::{FontRef, TableProvider},
         GlyphContext,
     },
     kurbo::Affine,
-    peniko::{self, Blob, Brush, BrushRef, Font, StyleRef},
-    SceneBuilder,
+    peniko::{self, Blob, Brush, Font},
+    SceneBuilder, SceneFragment,
 };
 
 // This is very much a hack to get things working.
@@ -87,74 +86,35 @@ impl VelloFont {
         }
     }
 
-    pub fn add_run<'a>(
+    pub fn render_centered(
         &mut self,
         builder: &mut SceneBuilder,
         size: f32,
-        brush: impl Into<BrushRef<'a>>,
         transform: Affine,
-        glyph_transform: Option<Affine>,
-        style: impl Into<StyleRef<'a>>,
         text: &str,
     ) {
-        let font = FontRef {
-            data: FONT_DATA,
-            offset: 0,
-        };
-        let brush = brush.into();
-        let style = style.into();
-        if let Some(cmap) = font.cmap() {
-            if let Some(hmtx) = font.hmtx() {
-                let upem = font.head().map(|head| head.units_per_em()).unwrap_or(1000) as f64;
-                let scale = size as f64 / upem;
-                let hmetrics = hmtx.hmetrics();
-                let default_advance = hmetrics
-                    .get(hmetrics.len().saturating_sub(1))
-                    .map(|h| h.advance_width)
-                    .unwrap_or(0);
-                let mut pen_x = 0f64;
-                builder
-                    .draw_glyphs(&self.font)
-                    .font_size(size)
-                    .transform(transform)
-                    .glyph_transform(glyph_transform)
-                    .brush(brush)
-                    .draw(
-                        style,
-                        text.chars().map(|ch| {
-                            let gid = cmap.map(ch as u32).unwrap_or(0);
-                            let advance = hmetrics
-                                .get(gid as usize)
-                                .map(|h| h.advance_width)
-                                .unwrap_or(default_advance)
-                                as f64
-                                * scale;
-                            let x = pen_x as f32;
-                            pen_x += advance;
-                            Glyph {
-                                id: gid as u32,
-                                x,
-                                y: 0.0,
-                            }
-                        }),
-                    )
-            }
+        let (glyphs, text_width) = self.add(size, None, transform, text);
+        for (glyph, xform) in glyphs {
+            let xform = xform * Affine::translate((-text_width / 2.0, 0.0));
+            builder.append(&glyph, Some(xform));
         }
     }
 
-    pub fn add(
+    fn add(
         &mut self,
-        builder: &mut SceneBuilder,
-        font: Option<&FontRef>,
         size: f32,
         brush: Option<&Brush>,
         transform: Affine,
         text: &str,
-    ) {
-        let font = font.unwrap_or(&FontRef {
-            data: FONT_DATA,
+    ) -> (Vec<(SceneFragment, Affine)>, f64) {
+        let font = &FontRef {
+            data: self.font.data.data(),
             offset: 0,
-        });
+        };
+
+        let mut items = vec![];
+        let mut pen_x = 0f64;
+
         if let Some(cmap) = font.cmap() {
             if let Some(hmtx) = font.hmtx() {
                 let upem = font.head().map(|head| head.units_per_em()).unwrap_or(1000) as f64;
@@ -166,7 +126,6 @@ impl VelloFont {
                     .get(hmetrics.len().saturating_sub(1))
                     .map(|h| h.advance_width)
                     .unwrap_or(0);
-                let mut pen_x = 0f64;
                 for ch in text.chars() {
                     let gid = cmap.map(ch as u32).unwrap_or(0);
                     let advance = hmetrics
@@ -178,12 +137,15 @@ impl VelloFont {
                         let xform = transform
                             * Affine::translate((pen_x, 0.0))
                             * Affine::scale_non_uniform(1.0, -1.0);
-                        builder.append(&glyph, Some(xform));
+                        // builder.append(&glyph, Some(xform));
+                        items.push((glyph, xform));
                     }
                     pen_x += advance;
                 }
             }
         }
+
+        (items, pen_x)
     }
 }
 

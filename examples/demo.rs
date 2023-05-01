@@ -11,10 +11,10 @@ fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     });
 
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("../assets/roboto/Roboto-Regular.vttf"),
+        font: asset_server.load("../assets/Rubik-Medium.vttf"),
         text: VelloText {
-            content: "hello".to_string(),
-            size: 32.0,
+            content: "squid".to_string(),
+            size: 320.0,
         },
         ..default()
     });
