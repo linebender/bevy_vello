@@ -189,12 +189,12 @@ fn render_scene(
         let mut builder = SceneBuilder::for_scene(&mut scene);
 
         // Background items: z ordered
-        let mut render_vectors: Vec<ExtractedRenderVector> = render_vectors
+        let mut vector_render_queue: Vec<ExtractedRenderVector> = render_vectors
             .iter()
             .filter(|v| v.layer == Layer::Background)
             .cloned()
             .collect();
-        render_vectors.sort_by(|a, b| {
+        vector_render_queue.sort_by(|a, b| {
             let a = a.transform.translation().z;
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
@@ -211,7 +211,7 @@ fn render_scene(
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
         });
-        render_vectors.append(&mut shadow_items);
+        vector_render_queue.append(&mut shadow_items);
 
         // Middle items: y ordered
         let mut middle_items: Vec<ExtractedRenderVector> = render_vectors
@@ -224,7 +224,7 @@ fn render_scene(
             let b = b.transform.translation().y;
             b.partial_cmp(&a).unwrap_or(std::cmp::Ordering::Equal)
         });
-        render_vectors.append(&mut middle_items);
+        vector_render_queue.append(&mut middle_items);
 
         // Foreground items: z ordered
         let mut fg_items: Vec<ExtractedRenderVector> = render_vectors
@@ -237,11 +237,11 @@ fn render_scene(
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
         });
-        render_vectors.append(&mut fg_items);
+        vector_render_queue.append(&mut fg_items);
 
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
-        for ExtractedRenderVector { vector, affine, .. } in render_vectors.iter() {
+        for ExtractedRenderVector { vector, affine, .. } in vector_render_queue.iter() {
             match vector_render_assets.get(vector) {
                 Some(RenderInstanceData {
                     data: Vector::Static(fragment),
@@ -274,7 +274,7 @@ fn render_scene(
             }
         }
 
-        if !render_vectors.is_empty() {
+        if !vector_render_queue.is_empty() || query_render_texts.iter().len() > 0 {
             renderer
                 .0
                 .render_to_texture(
