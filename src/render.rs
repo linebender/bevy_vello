@@ -274,7 +274,7 @@ fn render_scene(
             }
         }
 
-        if !vector_render_queue.is_empty() || query_render_texts.iter().len() > 0 {
+        if !vector_render_queue.is_empty() {
             renderer
                 .0
                 .render_to_texture(
