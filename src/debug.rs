@@ -6,7 +6,7 @@ pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(draw_viewbox);
+        app.add_systems(Update, draw_viewbox);
     }
 }
 

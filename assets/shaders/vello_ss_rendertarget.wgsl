@@ -57,5 +57,5 @@ fn fragment(
     let uvs = coords_to_viewport_uv(position.xy, view.viewport);
     let color = textureSample(texture, texture_sampler, uvs);
     let color_converted = linear_from_srgba(color);
-    return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+    return color_converted;
 }

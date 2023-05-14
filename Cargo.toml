@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy.git", rev = "3d752105644a18fb1dd1220d6f15e0a7eb49f04a", default-features = false, features = ["animation","bevy_asset","bevy_audio","bevy_gilrs","bevy_scene","bevy_winit","bevy_core_pipeline","bevy_pbr","bevy_gltf","bevy_render","bevy_sprite","bevy_text","bevy_ui","png","hdr","ktx2","zstd","vorbis","x11","filesystem_watcher","bevy_gizmos","android_shared_stdcxx","tonemapping_luts","default_font"] }
-vello = { git = "https://github.com/linebender/vello", rev = "299b47ea064ec3132e294acd9cf243eea7d9ee51" }
-vello_svg = { git = "https://github.com/linebender/vello", rev = "299b47ea064ec3132e294acd9cf243eea7d9ee51" }
-velato = { git = "https://github.com/vectorgameexperts/velato", rev = "1ca75b131aaed514451f3caef2f67f698ae46b65" }
+vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
+vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
+velato = { git = "https://github.com/vectorgameexperts/velato", rev = "7e0cf033576bbba99e5927c52926f7d45548b35e" }
 lyon_geom = "1.0"
 lyon_tessellation = "1.0"
 lyon_path = "1.0"

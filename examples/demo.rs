@@ -1,5 +1,5 @@
-use bevy::{asset::load_internal_asset, prelude::*};
-use bevy_vello::{BevyVelloPlugin, VelloVector, VelloVectorBundle};
+use bevy::{input::keyboard::KeyboardInput, prelude::*};
+use bevy_vello::{BevyVelloPlugin, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle};
 
 fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
@@ -9,6 +9,20 @@ fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         debug_visualizations: bevy_vello::DebugVisualizations::Visible,
         ..default()
     });
+
+    commands.spawn(VelloTextBundle {
+        font: asset_server.load("../assets/Rubik-Medium.vttf"),
+        text: VelloText {
+            content: "squid".to_string(),
+            size: 320.0,
+        },
+        ..default()
+    });
+
+    commands.spawn(SpriteBundle {
+        texture: asset_server.load("branding/icon.png"),
+        ..default()
+    });
 }
 
 fn camera_to_asset_center(
@@ -16,6 +30,7 @@ fn camera_to_asset_center(
     mut query_cam: Query<&mut Transform, (With<Camera>, Without<Handle<VelloVector>>)>,
     vectors: Res<Assets<VelloVector>>,
     mut q: Query<&mut OrthographicProjection, With<Camera>>,
+    keyboard_input: Res<Input<KeyCode>>,
 ) {
     let mut projection = q.single_mut();
 
@@ -26,7 +41,9 @@ fn camera_to_asset_center(
     let (&(mut target_transform), vector) = query.single();
     if let Some(vector) = vectors.get(vector) {
         target_transform.translation.y += vector.height * target_transform.scale.y / 2.0;
-        camera_transform.translation = target_transform.translation;
+        camera_transform.translation.x = target_transform.translation.x;
+        camera_transform.translation.y = target_transform.translation.y;
+        // NOTE: you should not set the camera z or the vello canvas will get clipped out of view
     }
 }
 
@@ -42,7 +59,7 @@ fn main() {
         .add_plugin(BevyVelloPlugin)
         // Systems that create Egui widgets should be run during the `CoreSet::Update` set,
         // or after the `EguiSet::BeginFrame` system (which belongs to the `CoreSet::PreUpdate` set).
-        .add_system(camera_to_asset_center)
-        .add_startup_system(setup_vello)
+        .add_systems(Update, camera_to_asset_center)
+        .add_systems(Startup, setup_vello)
         .run();
 }

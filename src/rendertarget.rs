@@ -11,14 +11,11 @@ use bevy::{
             TextureUsages, VertexBufferLayout, VertexFormat, VertexStepMode,
         },
     },
-    sprite::{Material2d, Material2dKey, Mesh2dHandle},
+    sprite::{Material2d, Material2dKey, MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
 
 use crate::render::SSRenderTarget;
-
-#[derive(Component)]
-struct MainCamera;
 
 pub fn setup_image(
     _commands: &mut Commands,
@@ -105,17 +102,6 @@ pub fn resize_rendertargets(
     }
 }
 
-#[derive(Bundle, Default)]
-pub struct SSRenderTargetBundle {
-    pub render_target: SSRenderTarget,
-    pub mesh: Mesh2dHandle,
-    pub material: Handle<SSTargetMaterial>,
-    pub transform: Transform,
-    pub global_transform: GlobalTransform,
-    pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
-}
-
 pub fn setup_ss_rendertarget(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -154,12 +140,13 @@ pub fn setup_ss_rendertarget(
         texture: texture_image,
     });
 
-    commands.spawn(SSRenderTargetBundle {
-        render_target,
-        mesh,
-        material,
-        ..Default::default()
-    });
+    commands
+        .spawn(MaterialMesh2dBundle {
+            mesh,
+            material,
+            ..Default::default()
+        })
+        .insert(render_target);
 }
 
 #[derive(AsBindGroup, TypeUuid, Clone)]
@@ -172,11 +159,11 @@ pub struct SSTargetMaterial {
 
 impl Material2d for SSTargetMaterial {
     fn vertex_shader() -> ShaderRef {
-        super::SSRT_SHADER_HANDLE.typed().into()
+        "shaders/vello_ss_rendertarget.wgsl".into()
     }
 
     fn fragment_shader() -> ShaderRef {
-        super::SSRT_SHADER_HANDLE.typed().into()
+        "shaders/vello_ss_rendertarget.wgsl".into()
     }
 
     fn specialize(
