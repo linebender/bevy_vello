@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { version = "0.10" }
-vello = { git = "https://github.com/linebender/vello", rev = "17096ad878dcdfdc954239d5da782732303b1349" }
-vello_svg = { git = "https://github.com/linebender/vello", rev = "17096ad878dcdfdc954239d5da782732303b1349" }
-velato = { git = "https://github.com/linebender/velato", rev = "7325fc0c2cf862c4d87010c55ba8149c860ded14" }
+vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
+vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
+velato = { git = "https://github.com/vectorgameexperts/velato", rev = "7e0cf033576bbba99e5927c52926f7d45548b35e" }
 lyon_geom = "1.0"
 lyon_tessellation = "1.0"
 lyon_path = "1.0"

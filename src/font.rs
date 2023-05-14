@@ -23,11 +23,9 @@ use bevy::{
     utils::BoxedFuture,
 };
 use vello::{
-    glyph::{
-        pinot,
-        pinot::{FontRef, TableProvider},
-        GlyphContext,
-    },
+    fello::meta::MetadataProvider,
+    fello::raw::{FontData, FontRef, TableProvider},
+    glyph::{Glyph, GlyphContext},
     kurbo::Affine,
     peniko::{self, Blob, Brush, Font},
     SceneBuilder, SceneFragment,
@@ -107,48 +105,41 @@ impl VelloFont {
         transform: Affine,
         text: &str,
     ) -> (Vec<(SceneFragment, Affine)>, f64) {
-        let font = &FontRef {
-            data: self.font.data.data(),
-            offset: 0,
-        };
+        let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
 
         let mut items = vec![];
         let mut pen_x = 0f64;
+        let mut pen_y = 0f64;
 
-        if let Some(cmap) = font.cmap() {
-            if let Some(hmtx) = font.hmtx() {
-                let upem = font.head().map(|head| head.units_per_em()).unwrap_or(1000) as f64;
-                let scale = size as f64 / upem;
-                let vars: [(pinot::types::Tag, f32); 0] = [];
-                let mut provider = self.gcx.new_provider(font, None, size, false, vars);
-                let hmetrics = hmtx.hmetrics();
-                let default_advance = hmetrics
-                    .get(hmetrics.len().saturating_sub(1))
-                    .map(|h| h.advance_width)
-                    .unwrap_or(0);
-                for ch in text.chars() {
-                    let gid = cmap.map(ch as u32).unwrap_or(0);
-                    let advance = hmetrics
-                        .get(gid as usize)
-                        .map(|h| h.advance_width)
-                        .unwrap_or(default_advance) as f64
-                        * scale;
-                    if let Some(glyph) = provider.get(gid, brush) {
-                        let xform = transform
-                            * Affine::translate((pen_x, 0.0))
-                            * Affine::scale_non_uniform(1.0, -1.0);
-                        // builder.append(&glyph, Some(xform));
-                        items.push((glyph, xform));
-                    }
-                    pen_x += advance;
-                }
+        let fello_size = vello::fello::Size::new(size);
+        let charmap = font.charmap();
+        let metrics = font.metrics(fello_size, Default::default());
+        let line_height = metrics.ascent - metrics.descent + metrics.leading;
+        let glyph_metrics = font.glyph_metrics(fello_size, Default::default());
+        let vars: [(&str, f32); 0] = [];
+        let mut provider = self.gcx.new_provider(&font, None, size, false, vars);
+
+        for ch in text.chars() {
+            if ch == '\n' {
+                pen_y += line_height as f64;
+                pen_x = 0.0;
+                continue;
             }
-        }
+            let gid = charmap.map(ch).unwrap_or_default();
+            let advance = glyph_metrics.advance_width(gid).unwrap_or_default() as f64;
 
+            if let Some(glyph) = provider.get(gid.to_u16(), brush) {
+                let xform = transform
+                    * Affine::translate((pen_x, 0.0))
+                    * Affine::scale_non_uniform(1.0, -1.0);
+                // builder.append(&glyph, Some(xform));
+                items.push((glyph, xform));
+            }
+            pen_x += advance;
+        }
         (items, pen_x)
     }
 }
-
 #[derive(Default)]
 pub struct VelloFontLoader;
 
