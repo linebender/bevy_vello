@@ -31,23 +31,14 @@ fn draw_viewbox(
         .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
-            let [(ax, ay), (bx, by), (cx, cy), (dx, dy)] = vector.bb_in_world(transform);
+            let [min, x_axis, max, y_axis] = vector.bb_in_world(transform);
 
-            let points: [([f32; 2], [f32; 2]); 4] = [
-                ([ax, ay], [bx, by]),
-                ([bx, by], [cx, cy]),
-                ([cx, cy], [dx, dy]),
-                ([dx, dy], [ax, ay]),
-            ];
+            gizmos.line_2d(min, x_axis, Color::WHITE);
+            gizmos.line_2d(min, y_axis, Color::WHITE);
+            gizmos.line_2d(x_axis, max, Color::WHITE);
+            gizmos.line_2d(y_axis, max, Color::WHITE);
 
-            for (p_from, p_to) in points {
-                let from = Vec2::from(p_from);
-                let to = Vec2::from(p_to);
-
-                gizmos.line_2d(from, to, Color::WHITE);
-            }
-
-            let origin = Vec2::new((cx + dx) / 2.0, (cy + dy) / 2.0);
+            let origin = Vec2::new((y_axis.x + max.x) / 2.0, (y_axis.y + max.y) / 2.0);
             let from = origin + 8.0 * Vec2::splat(1.0) * cam_proj.scale;
             let to = origin + 8.0 * Vec2::splat(-1.0) * cam_proj.scale;
 
