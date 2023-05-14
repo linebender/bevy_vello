@@ -24,8 +24,8 @@ use bevy::{
 };
 use vello::{
     fello::meta::MetadataProvider,
-    fello::raw::{FontData, FontRef, TableProvider},
-    glyph::{Glyph, GlyphContext},
+    fello::raw::FontRef,
+    glyph::GlyphContext,
     kurbo::Affine,
     peniko::{self, Blob, Brush, Font},
     SceneBuilder, SceneFragment,
@@ -91,7 +91,7 @@ impl VelloFont {
         transform: Affine,
         text: &str,
     ) {
-        let (glyphs, text_width) = self.add(size, None, transform, text);
+        let (glyphs, text_width, _text_height) = self.add(size, None, transform, text);
         for (glyph, xform) in glyphs {
             let xform = xform * Affine::translate((-text_width / 2.0, 0.0));
             builder.append(&glyph, Some(xform));
@@ -104,7 +104,7 @@ impl VelloFont {
         brush: Option<&Brush>,
         transform: Affine,
         text: &str,
-    ) -> (Vec<(SceneFragment, Affine)>, f64) {
+    ) -> (Vec<(SceneFragment, Affine)>, f64, f64) {
         let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
 
         let mut items = vec![];
@@ -137,7 +137,7 @@ impl VelloFont {
             }
             pen_x += advance;
         }
-        (items, pen_x)
+        (items, pen_x, pen_y)
     }
 }
 #[derive(Default)]

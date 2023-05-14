@@ -22,12 +22,12 @@ const SSRT_SHADER_HANDLE: HandleUntyped =
 
 impl Plugin for BevyVelloPlugin {
     fn build(&self, app: &mut App) {
-        // load_internal_asset!(
-        //     app,
-        //     SSRT_SHADER_HANDLE,
-        //     "shaders/vello_ss_rendertarget.wgsl",
-        //     Shader::from_wgsl
-        // );
+        load_internal_asset!(
+            app,
+            SSRT_SHADER_HANDLE,
+            "../assets/shaders/vello_ss_rendertarget.wgsl",
+            Shader::from_wgsl
+        );
         app.add_plugin(VelloRenderPlugin);
         app.add_asset::<VelloVector>()
             .init_asset_loader::<VelloVectorLoader>();

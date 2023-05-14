@@ -1,4 +1,4 @@
-use bevy::{input::keyboard::KeyboardInput, prelude::*};
+use bevy::prelude::*;
 use bevy_vello::{BevyVelloPlugin, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle};
 
 fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
@@ -30,7 +30,6 @@ fn camera_to_asset_center(
     mut query_cam: Query<&mut Transform, (With<Camera>, Without<Handle<VelloVector>>)>,
     vectors: Res<Assets<VelloVector>>,
     mut q: Query<&mut OrthographicProjection, With<Camera>>,
-    keyboard_input: Res<Input<KeyCode>>,
 ) {
     let mut projection = q.single_mut();
 
