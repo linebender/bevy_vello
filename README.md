@@ -16,7 +16,8 @@ A bevy plugin which provides rendering support for [vello](https://github.com/li
 
 ## Experimental WebGPU support
 - **Build demo**
--*NOTE*: Might need this environment variable set to build this as a dependency `RUSTFLAGS=--cfg=web_sys_unstable_apis`
+-*NOTE*: Must set this environment variable to build
+  - `RUSTFLAGS=--cfg=web_sys_unstable_apis`
 - Dependencies
   - `cargo install basic-http-server`
 ```bash

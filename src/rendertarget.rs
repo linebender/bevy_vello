@@ -15,7 +15,7 @@ use bevy::{
     window::{WindowResized, WindowResolution},
 };
 
-use crate::render::SSRenderTarget;
+use crate::{render::SSRenderTarget, SSRT_SHADER_HANDLE};
 
 pub fn setup_image(
     _commands: &mut Commands,
@@ -159,11 +159,11 @@ pub struct SSTargetMaterial {
 
 impl Material2d for SSTargetMaterial {
     fn vertex_shader() -> ShaderRef {
-        "shaders/vello_ss_rendertarget.wgsl".into()
+        SSRT_SHADER_HANDLE.typed().into()
     }
 
     fn fragment_shader() -> ShaderRef {
-        "shaders/vello_ss_rendertarget.wgsl".into()
+        SSRT_SHADER_HANDLE.typed().into()
     }
 
     fn specialize(
