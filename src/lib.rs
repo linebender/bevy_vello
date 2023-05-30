@@ -42,7 +42,7 @@ impl Plugin for BevyVelloPlugin {
     }
 }
 
-#[derive(PartialEq, Component, Default, Copy, Clone, Debug)]
+#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
 pub enum Layer {
     Background,
     Shadow,
