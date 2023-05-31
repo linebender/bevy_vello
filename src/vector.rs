@@ -1,7 +1,7 @@
 use crate::lyon_utils::{self, usvg_draw, Convert};
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    math::{Vec3A, Vec3Swizzles, Vec4Swizzles},
+    math::{Vec3A, Vec4Swizzles},
     prelude::*,
     reflect::TypeUuid,
     render::render_asset::RenderAsset,
