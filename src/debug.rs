@@ -12,7 +12,7 @@ impl Plugin for DebugVisualizationsPlugin {
     }
 }
 
-#[derive(Component, Default, PartialEq, Reflect, FromReflect)]
+#[derive(Clone, Copy, Component, Default, PartialEq, Reflect, FromReflect)]
 #[reflect(Component)]
 pub enum DebugVisualizations {
     #[default]
