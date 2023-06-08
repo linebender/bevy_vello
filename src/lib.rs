@@ -12,7 +12,6 @@ mod vector;
 
 pub use debug::DebugVisualizations;
 pub use vector::VelloVector;
-pub use bevy_gizmos::gizmos;
 
 use crate::font::VelloFontLoader;
 
