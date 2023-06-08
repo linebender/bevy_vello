@@ -30,6 +30,10 @@ impl Plugin for VelloRenderPlugin {
         render_app.insert_resource(VelatoRenderer(velato::Renderer::new()));
 
         render_app.add_systems(Render, prepare_vector_affines.in_set(RenderSet::Prepare));
+        render_app.add_systems(
+            Render,
+            prepare_vector_composition_edits.in_set(RenderSet::Prepare),
+        );
         render_app.add_systems(Render, prepare_text_affines.in_set(RenderSet::Prepare));
         render_app.add_systems(Render, render_scene.in_set(RenderSet::Render));
 
@@ -61,6 +65,62 @@ impl Plugin for VelloRenderPlugin {
             )
             .unwrap(),
         ));
+    }
+}
+
+fn prepare_vector_composition_edits(
+    mut render_vectors: Query<&mut ExtractedRenderVector>,
+    mut render_vector_assets: ResMut<RenderAssets<VelloVector>>,
+) {
+    for render_vector in render_vectors.iter_mut() {
+        if let Some(vector) = render_vector_assets.get_mut(&render_vector.vector) {
+            match &mut vector.data {
+                Vector::Animated(composition) => {
+                    for (layer_index, layer) in composition.layers.iter_mut().enumerate() {
+                        match &mut layer.content {
+                            velato::model::Content::Shape(shape) => {
+                                for mut shape in shape.iter_mut() {
+                                    match &mut shape {
+                                        velato::model::Shape::Group(shapes, _) => {
+                                            for shape in shapes.iter_mut() {
+                                                match shape {
+                                                    velato::model::Shape::Draw(draw) => {
+                                                        match &mut draw.brush {
+                                                            velato::model::Brush::Fixed(brush) => {
+                                                                match brush {
+                                                                    vello::peniko::Brush::Solid(
+                                                                        solid,
+                                                                    ) => {
+                                                                        println!(
+                                                                                "layer '{}': color {:?}",
+                                                                                layer.name, (solid.r, solid.g, solid.b, solid.a)
+                                                                            );
+
+                                                                        if *solid == vello::peniko::Color::rgba8(255, 97, 94, 255) {
+                                                                         *solid = vello::peniko::Color::AQUAMARINE;
+                                                                        }
+                                                                    }
+                                                                    _ => {}
+                                                                }
+                                                            }
+                                                            velato::model::Brush::Animated(_) => {}
+                                                        }
+                                                    }
+                                                    _ => {}
+                                                }
+                                            }
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                Vector::Static(_) => {}
+            }
+        }
     }
 }
 
