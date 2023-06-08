@@ -1,4 +1,4 @@
-use std::ops::{Range, RangeBounds, RangeInclusive};
+use std::ops::RangeInclusive;
 
 use bevy::{
     asset::load_internal_asset, prelude::*, reflect::TypeUuid, sprite::Material2dPlugin,
