@@ -1,7 +1,7 @@
 use crate::lyon_utils::{self, usvg_draw, Convert};
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    math::{Vec3A, Vec3Swizzles, Vec4Swizzles},
+    math::{Vec3A, Vec4Swizzles},
     prelude::*,
     reflect::TypeUuid,
     render::render_asset::RenderAsset,
@@ -36,23 +36,21 @@ pub struct VelloVector {
 
 impl VelloVector {
     /// Returns the 4 corner points of this vector's bounding box in world space
-    pub fn bb_in_world(&self, transform: &GlobalTransform) -> [(f32, f32); 4] {
+    pub fn bb_in_world(&self, transform: &GlobalTransform) -> [Vec2; 4] {
         let min = Vec3A::ZERO;
+        let x_axis = Vec3A::new(self.width, 0.0, 0.0);
+
         let max = Vec3A::new(self.width, -self.height, 0.0);
+        let y_axis = Vec3A::new(0.0, -self.height, 0.0);
 
         let world_transform = transform.compute_matrix();
         let local_transform = self.local_transform.compute_matrix().inverse();
-        let min = (world_transform * local_transform * min.extend(1.0)).xyz();
-        let max = (world_transform * local_transform * max.extend(1.0)).xyz();
+        let min = (world_transform * local_transform * min.extend(1.0)).xy();
+        let x_axis = (world_transform * local_transform * x_axis.extend(1.0)).xy();
+        let max = (world_transform * local_transform * max.extend(1.0)).xy();
+        let y_axis = (world_transform * local_transform * y_axis.extend(1.0)).xy();
 
-        let (min_x, min_y) = min.xy().into();
-        let (max_x, max_y) = max.xy().into();
-        [
-            (min_x, min_y),
-            (max_x, min_y),
-            (max_x, max_y),
-            (min_x, max_y),
-        ]
+        [min, x_axis, max, y_axis]
     }
 }
 

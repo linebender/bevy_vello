@@ -12,6 +12,7 @@ mod vector;
 
 pub use debug::DebugVisualizations;
 pub use vector::VelloVector;
+pub use bevy_gizmos::gizmos;
 
 use crate::font::VelloFontLoader;
 
@@ -40,7 +41,8 @@ impl Plugin for BevyVelloPlugin {
     }
 }
 
-#[derive(PartialEq, Component, Default, Copy, Clone, Debug)]
+#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect, FromReflect)]
+#[reflect(Component)]
 pub enum Layer {
     Background,
     Shadow,
