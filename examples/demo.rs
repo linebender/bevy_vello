@@ -1,14 +1,33 @@
 use bevy::prelude::*;
-use bevy_vello::{BevyVelloPlugin, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle};
+use bevy_vello::{
+    BevyVelloPlugin, ColorPaletteSwap, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle,
+};
+
+const BODY_BASE: Color = Color::rgba(129. / 255., 94. / 255., 255. / 255., 255. / 255.);
+const BODY_DARK: Color = Color::rgba(73. / 255., 20. / 255., 165. / 255., 255. / 255.);
+const TENTACLES_HIGHLIGHT: Color = Color::rgba(178. / 255., 168. / 255., 255. / 255., 255. / 255.);
+const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 255. / 255., 255. / 255.);
 
 fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
-    commands.spawn(VelloVectorBundle {
-        layer: bevy_vello::Layer::Background,
-        svg: asset_server.load("../assets/squid.json"),
-        debug_visualizations: bevy_vello::DebugVisualizations::Visible,
-        ..default()
-    });
+    commands
+        .spawn(VelloVectorBundle {
+            layer: bevy_vello::Layer::Background,
+            svg: asset_server.load("../assets/squid.json"),
+            debug_visualizations: bevy_vello::DebugVisualizations::Visible,
+            ..default()
+        })
+        .insert(
+            ColorPaletteSwap::empty()
+                .add("Arm", 1..=1, TENTACLES_HIGHLIGHT)
+                .add("Arm", 0..=0, BODY_BASE)
+                .add("Legs", 0..=0, BODY_BASE)
+                .add("Legs", 1..=1, TENTACLES_HIGHLIGHT)
+                .add("head", 4..=4, BODY_BASE)
+                .add("head", 1..=3, BODY_DARK)
+                .add("head", 5..=5, BODY_DARK)
+                .add("suckers", 0..=16, SUCKERS),
+        );
 
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
