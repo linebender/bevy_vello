@@ -14,7 +14,7 @@ use vello::{kurbo::Affine, RenderParams, Renderer, RendererOptions, Scene, Scene
 use crate::{
     font::VelloFont,
     vector::{RenderInstanceData, Vector, VelloVector},
-    Layer, VelloText,
+    ColorPaletteSwap, Layer, VelloText,
 };
 
 #[derive(Resource)]
@@ -47,6 +47,7 @@ impl Plugin for VelloRenderPlugin {
         render_app.insert_resource(VelatoRenderer(velato::Renderer::new()));
 
         render_app.add_system(prepare_vector_affines.in_set(RenderSet::Prepare));
+        render_app.add_system(prepare_vector_composition_edits.in_set(RenderSet::Prepare));
         render_app.add_system(prepare_text_affines.in_set(RenderSet::Prepare));
         render_app.add_system(render_scene.in_set(RenderSet::Render));
 
@@ -56,6 +57,64 @@ impl Plugin for VelloRenderPlugin {
             .add_plugin(RenderAssetPlugin::<VelloVector>::default())
             .add_plugin(RenderAssetPlugin::<VelloFont>::default())
             .add_system(tag_vectors_for_render);
+    }
+}
+
+fn prepare_vector_composition_edits(
+    mut render_vectors: Query<&mut ExtractedRenderVector>,
+    mut render_vector_assets: ResMut<RenderAssets<VelloVector>>,
+) {
+    // Big-O: O(n), where n = shapes;
+    // Nesting: "vectors * layers * shape groups * shapes"
+    'vectors: for render_vector in render_vectors.iter_mut() {
+        let Some(vector) = render_vector_assets.get_mut(&render_vector.vector) else {
+            continue 'vectors;
+        };
+        let Vector::Animated(ref mut composition) = vector.data else {
+            continue 'vectors;
+        };
+        'layers: for (_layer_index, layer) in composition.layers.iter_mut().enumerate() {
+            let velato::model::Content::Shape(ref mut shapes) = layer.content else {
+                continue 'layers;
+            };
+            'shapegroups: for (shape_index, shape) in shapes.iter_mut().enumerate() {
+                let velato::model::Shape::Group(ref mut shapes, _transform) = shape else {
+                    continue 'shapegroups;
+                };
+                'shapes: for shape in shapes.iter_mut() {
+                    let velato::model::Shape::Draw(ref mut draw) = shape else {
+                        continue 'shapes;
+                    };
+                    let velato::model::Brush::Fixed(ref mut brush) = draw.brush else {
+                        continue 'shapes;
+                    };
+                    let vello::peniko::Brush::Solid(ref mut solid) = brush else {
+                        continue 'shapes;
+                    };
+                    // println!(
+                    //     "layer '{}', shape {}: color {:?}",
+                    //     layer.name,
+                    //     shape_index,
+                    //     (solid.r, solid.g, solid.b, solid.a)
+                    // );
+
+                    if let Some(ColorPaletteSwap { colors }) = &render_vector.color_pallette_swap {
+                        for ((layer_name, shape_indices), color) in colors.iter() {
+                            if layer.name.contains(layer_name)
+                                && shape_indices.contains(&shape_index)
+                            {
+                                *solid = vello::peniko::Color::rgba(
+                                    color.r().into(),
+                                    color.g().into(),
+                                    color.b().into(),
+                                    color.a().into(),
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -316,6 +375,7 @@ struct ExtractedRenderVector {
     transform: GlobalTransform,
     affine: Affine,
     layer: Layer,
+    color_pallette_swap: Option<ColorPaletteSwap>,
 }
 
 impl ExtractComponent for ExtractedRenderVector {
@@ -323,19 +383,24 @@ impl ExtractComponent for ExtractedRenderVector {
         &'static Handle<VelloVector>,
         &'static Layer,
         &'static GlobalTransform,
+        Option<&'static ColorPaletteSwap>,
     );
 
     type Filter = &'static RenderReadyTag;
     type Out = Self;
 
     fn extract_component(
-        (vello_vector_handle, layer, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
+        (vello_vector_handle, layer, transform, color_pallette_swap): bevy::ecs::query::QueryItem<
+            '_,
+            Self::Query,
+        >,
     ) -> Option<Self> {
         Some(Self {
             vector: vello_vector_handle.clone(),
             transform: *transform,
             affine: Affine::default(),
             layer: *layer,
+            color_pallette_swap: color_pallette_swap.cloned(),
         })
     }
 }
