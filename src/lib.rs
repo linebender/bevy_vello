@@ -11,6 +11,7 @@ use vector::VelloVectorLoader;
 mod debug;
 mod font;
 mod lyon_utils;
+mod metadata;
 mod render;
 mod rendertarget;
 mod vector;

@@ -1,4 +1,7 @@
-use crate::lyon_utils::{self, usvg_draw, Convert};
+use crate::{
+    lyon_utils::{self, usvg_draw, Convert},
+    metadata::Metadata,
+};
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
     math::{Vec3A, Vec4Swizzles},
@@ -51,6 +54,16 @@ impl VelloVector {
         let y_axis = (world_transform * local_transform * y_axis.extend(1.0)).xy();
 
         [min, x_axis, max, y_axis]
+    }
+
+    pub fn metadata(&self) -> Option<Metadata> {
+        if let Vector::Animated(composition) = &self.data {
+            Some(Metadata {
+                composition: composition.clone(),
+            })
+        } else {
+            None
+        }
     }
 }
 
