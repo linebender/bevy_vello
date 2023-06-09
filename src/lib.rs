@@ -91,6 +91,14 @@ impl ColorPaletteSwap {
             colors: self.colors,
         }
     }
+
+    /// Swap a color for the selected layer and shape combination. `layer_filter` will select any layer which
+    /// contains the provided string. Select shapes within the layer with `shape_numbers`. Editing colors with
+    /// an existing (layer,shape) key will override the previous entry's color
+    pub fn edit(&mut self, layer_filter: &str, shape_numbers: RangeInclusive<usize>, color: Color) {
+        self.colors
+            .insert((layer_filter.to_string(), shape_numbers), color);
+    }
 }
 
 #[derive(Bundle, Default)]
