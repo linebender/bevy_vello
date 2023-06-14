@@ -1,4 +1,4 @@
-use std::ops::{Range, RangeBounds, RangeInclusive};
+use std::ops::RangeInclusive;
 
 use assets::VelloVectorLoader;
 use bevy::{
@@ -7,14 +7,14 @@ use bevy::{
 };
 use debug::DebugVisualizationsPlugin;
 use font::VelloFont;
-use render::VelloRenderPlugin;
+use renderer::VelloRenderPlugin;
 mod assets;
 mod bevy_gizmos;
 mod debug;
 mod font;
 mod lyon_utils;
 mod metadata;
-mod render;
+mod renderer;
 mod rendertarget;
 
 pub use assets::VelloVector;

@@ -1,15 +1,11 @@
 use crate::{
     assets::vector::Vector,
     lyon_utils::{self, usvg_draw, Convert},
-    metadata::Metadata,
     VelloVector,
 };
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    math::{Vec3A, Vec4Swizzles},
     prelude::*,
-    reflect::TypeUuid,
-    render::render_asset::RenderAsset,
     utils::BoxedFuture,
 };
 use lyon_tessellation::{FillTessellator, StrokeTessellator};
@@ -65,7 +61,7 @@ impl AssetLoader for VelloVectorLoader {
 
                     let vello_vector = VelloVector {
                         data: Vector::Static(Arc::new(scene_frag)),
-                        local_transform: compute_transform(width, height),
+                        local_transform: compute_local_transform(width, height),
                         width,
                         height,
                         tessellation_mesh: Some(tessellation_mesh),
@@ -90,7 +86,7 @@ impl AssetLoader for VelloVectorLoader {
 
                         let vello_vector = VelloVector {
                             data: Vector::Animated(composition),
-                            local_transform: compute_transform(width, height),
+                            local_transform: compute_local_transform(width, height),
                             width,
                             height,
                             tessellation_mesh: None,
@@ -121,7 +117,7 @@ impl AssetLoader for VelloVectorLoader {
     }
 }
 
-fn compute_transform(width: f32, height: f32) -> Transform {
+fn compute_local_transform(width: f32, height: f32) -> Transform {
     let mut transform = Transform::default();
     transform.translation.x = width / 2.0;
     transform.translation.y = -height;

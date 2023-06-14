@@ -1,19 +1,11 @@
-use crate::{
-    lyon_utils::{self, usvg_draw, Convert},
-    metadata::Metadata,
-};
+use crate::metadata::Metadata;
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
     math::{Vec3A, Vec4Swizzles},
     prelude::*,
     reflect::TypeUuid,
-    render::render_asset::RenderAsset,
-    utils::BoxedFuture,
 };
-use lyon_tessellation::{FillTessellator, StrokeTessellator};
-use std::{sync::Arc, time::Instant};
-use vello::{SceneBuilder, SceneFragment};
-use vello_svg::usvg;
+use std::sync::Arc;
+use vello::SceneFragment;
 
 #[derive(Clone)]
 pub enum Vector {

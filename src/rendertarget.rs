@@ -15,7 +15,7 @@ use bevy::{
     window::{WindowResized, WindowResolution},
 };
 
-use crate::render::SSRenderTarget;
+use crate::renderer::SSRenderTarget;
 
 #[derive(Component)]
 struct MainCamera;
