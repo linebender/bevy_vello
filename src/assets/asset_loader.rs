@@ -1,124 +1,17 @@
 use crate::{
+    assets::vector::Vector,
     lyon_utils::{self, usvg_draw, Convert},
-    metadata::Metadata,
+    VelloVector,
 };
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    math::{Vec3A, Vec4Swizzles},
     prelude::*,
-    reflect::TypeUuid,
-    render::render_asset::RenderAsset,
     utils::BoxedFuture,
 };
 use lyon_tessellation::{FillTessellator, StrokeTessellator};
 use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
 use vello_svg::usvg;
-
-#[derive(Clone)]
-pub enum Vector {
-    Static(Arc<SceneFragment>),
-    Animated(velato::Composition),
-}
-
-#[derive(Clone)]
-pub struct VectorAssetData {
-    vector: Vector,
-    local_transform: Transform,
-}
-
-#[derive(TypeUuid)]
-#[uuid = "39cadc56-aa9c-4543-3640-a018b74b5053"]
-pub struct VelloVector {
-    pub data: Vector,
-    pub local_transform: Transform,
-    pub width: f32,
-    pub height: f32,
-    pub tessellation_mesh: Option<Mesh>,
-}
-
-impl VelloVector {
-    /// Returns the 4 corner points of this vector's bounding box in world space
-    pub fn bb_in_world(&self, transform: &GlobalTransform) -> [Vec2; 4] {
-        let min = Vec3A::ZERO;
-        let x_axis = Vec3A::new(self.width, 0.0, 0.0);
-
-        let max = Vec3A::new(self.width, -self.height, 0.0);
-        let y_axis = Vec3A::new(0.0, -self.height, 0.0);
-
-        let world_transform = transform.compute_matrix();
-        let local_transform = self.local_transform.compute_matrix().inverse();
-        let min = (world_transform * local_transform * min.extend(1.0)).xy();
-        let x_axis = (world_transform * local_transform * x_axis.extend(1.0)).xy();
-        let max = (world_transform * local_transform * max.extend(1.0)).xy();
-        let y_axis = (world_transform * local_transform * y_axis.extend(1.0)).xy();
-
-        [min, x_axis, max, y_axis]
-    }
-
-    pub fn metadata(&self) -> Option<Metadata> {
-        if let Vector::Animated(composition) = &self.data {
-            Some(Metadata {
-                composition: composition.clone(),
-            })
-        } else {
-            None
-        }
-    }
-}
-
-impl RenderAsset for VelloVector {
-    type ExtractedAsset = VectorAssetData;
-
-    type PreparedAsset = RenderInstanceData;
-
-    type Param = ();
-
-    fn extract_asset(&self) -> Self::ExtractedAsset {
-        VectorAssetData {
-            vector: self.data.clone(),
-            local_transform: self.local_transform,
-        }
-    }
-
-    fn prepare_asset(
-        data: Self::ExtractedAsset,
-        _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
-    ) -> Result<
-        Self::PreparedAsset,
-        bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
-    > {
-        Ok(data.into())
-    }
-}
-
-#[derive(TypeUuid, Clone)]
-#[uuid = "39cadc56-aa9c-4543-3640-a018b74b5054"]
-pub struct RenderInstanceData {
-    pub local_matrix: Mat4,
-    pub data: Vector,
-}
-
-impl From<VectorAssetData> for RenderInstanceData {
-    fn from(value: VectorAssetData) -> Self {
-        let local_matrix = value.local_transform.compute_matrix().inverse();
-        let vector_data = value.vector;
-
-        RenderInstanceData {
-            data: vector_data,
-            local_matrix,
-        }
-    }
-}
-
-impl Default for RenderInstanceData {
-    fn default() -> Self {
-        Self {
-            data: Vector::Static(Arc::new(SceneFragment::default())),
-            local_matrix: Mat4::default(),
-        }
-    }
-}
 
 #[derive(Default)]
 pub struct VelloVectorLoader;
@@ -166,7 +59,7 @@ impl AssetLoader for VelloVectorLoader {
 
                     let vello_vector = VelloVector {
                         data: Vector::Static(Arc::new(scene_frag)),
-                        local_transform: compute_transform(width, height),
+                        local_transform: compute_local_transform(width, height),
                         width,
                         height,
                         tessellation_mesh: Some(tessellation_mesh),
@@ -186,7 +79,7 @@ impl AssetLoader for VelloVectorLoader {
 
                         let vello_vector = VelloVector {
                             data: Vector::Animated(composition),
-                            local_transform: compute_transform(width, height),
+                            local_transform: compute_local_transform(width, height),
                             width,
                             height,
                             tessellation_mesh: None,
@@ -216,7 +109,7 @@ impl AssetLoader for VelloVectorLoader {
     }
 }
 
-fn compute_transform(width: f32, height: f32) -> Transform {
+fn compute_local_transform(width: f32, height: f32) -> Transform {
     let mut transform = Transform::default();
     transform.translation.x = width / 2.0;
     transform.translation.y = -height;

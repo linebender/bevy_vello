@@ -1,23 +1,23 @@
 use std::ops::RangeInclusive;
 
+use assets::VelloVectorLoader;
 use bevy::{
     asset::load_internal_asset, prelude::*, reflect::TypeUuid, sprite::Material2dPlugin,
     utils::HashMap,
 };
 use debug::DebugVisualizationsPlugin;
 use font::VelloFont;
-use render::VelloRenderPlugin;
-use vector::VelloVectorLoader;
+use renderer::VelloRenderPlugin;
+mod assets;
 mod debug;
 mod font;
 mod lyon_utils;
 mod metadata;
-mod render;
+mod renderer;
 mod rendertarget;
-mod vector;
 
+pub use assets::VelloVector;
 pub use debug::DebugVisualizations;
-pub use vector::VelloVector;
 
 use crate::font::VelloFontLoader;
 

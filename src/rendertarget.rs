@@ -15,7 +15,10 @@ use bevy::{
     window::{WindowResized, WindowResolution},
 };
 
-use crate::{render::SSRenderTarget, SSRT_SHADER_HANDLE};
+use crate::{renderer::SSRenderTarget, SSRT_SHADER_HANDLE};
+
+#[derive(Component)]
+struct MainCamera;
 
 pub fn setup_image(
     _commands: &mut Commands,
