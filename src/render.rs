@@ -1,19 +1,24 @@
+use std::sync::Arc;
+
 use bevy::{
     prelude::*,
+    reflect::TypeUuid,
     render::{
         camera::ExtractedCamera,
         extract_component::{ExtractComponent, ExtractComponentPlugin},
-        render_asset::{RenderAssetPlugin, RenderAssets},
+        render_asset::{RenderAsset, RenderAssetPlugin, RenderAssets},
         renderer::{RenderDevice, RenderQueue},
         view::ExtractedView,
         RenderApp, RenderSet,
     },
 };
-use vello::{kurbo::Affine, RenderParams, Renderer, RendererOptions, Scene, SceneBuilder};
+use vello::{
+    kurbo::Affine, RenderParams, Renderer, RendererOptions, Scene, SceneBuilder, SceneFragment,
+};
 
 use crate::{
+    assets::vector::{Vector, VelloVector},
     font::VelloFont,
-    vector::{RenderInstanceData, Vector, VelloVector},
     ColorPaletteSwap, Layer, VelloText,
 };
 
@@ -448,6 +453,65 @@ fn tag_vectors_for_render(
     for (entity, handle) in vectors.iter() {
         if vector_assets.get(handle).is_some() {
             commands.entity(entity).insert(RenderReadyTag);
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct VectorAssetData {
+    vector: Vector,
+    local_transform: Transform,
+}
+
+impl RenderAsset for VelloVector {
+    type ExtractedAsset = VectorAssetData;
+
+    type PreparedAsset = RenderInstanceData;
+
+    type Param = ();
+
+    fn extract_asset(&self) -> Self::ExtractedAsset {
+        VectorAssetData {
+            vector: self.data.clone(),
+            local_transform: self.local_transform,
+        }
+    }
+
+    fn prepare_asset(
+        data: Self::ExtractedAsset,
+        _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
+    ) -> Result<
+        Self::PreparedAsset,
+        bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
+    > {
+        Ok(data.into())
+    }
+}
+
+#[derive(TypeUuid, Clone)]
+#[uuid = "39cadc56-aa9c-4543-3640-a018b74b5054"]
+pub struct RenderInstanceData {
+    pub local_matrix: Mat4,
+    pub data: Vector,
+}
+
+impl From<VectorAssetData> for RenderInstanceData {
+    fn from(value: VectorAssetData) -> Self {
+        let local_matrix = value.local_transform.compute_matrix().inverse();
+        let vector_data = value.vector;
+
+        RenderInstanceData {
+            data: vector_data,
+            local_matrix,
+        }
+    }
+}
+
+impl Default for RenderInstanceData {
+    fn default() -> Self {
+        Self {
+            data: Vector::Static(Arc::new(SceneFragment::default())),
+            local_matrix: Mat4::default(),
         }
     }
 }

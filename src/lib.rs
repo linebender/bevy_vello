@@ -1,5 +1,6 @@
 use std::ops::{Range, RangeBounds, RangeInclusive};
 
+use assets::VelloVectorLoader;
 use bevy::{
     asset::load_internal_asset, prelude::*, reflect::TypeUuid, sprite::Material2dPlugin,
     utils::HashMap,
@@ -7,7 +8,7 @@ use bevy::{
 use debug::DebugVisualizationsPlugin;
 use font::VelloFont;
 use render::VelloRenderPlugin;
-use vector::VelloVectorLoader;
+mod assets;
 mod bevy_gizmos;
 mod debug;
 mod font;
@@ -15,10 +16,9 @@ mod lyon_utils;
 mod metadata;
 mod render;
 mod rendertarget;
-mod vector;
 
+pub use assets::VelloVector;
 pub use debug::DebugVisualizations;
-pub use vector::VelloVector;
 
 use crate::font::VelloFontLoader;
 
