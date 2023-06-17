@@ -173,6 +173,5 @@ pub fn prepare_text_affines(
 
         let affine = Affine::new(transform);
         render_text.affine = affine;
-        render_text.vello_matrix = vello_matrix;
     }
 }

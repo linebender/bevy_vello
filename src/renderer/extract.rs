@@ -60,7 +60,6 @@ pub struct ExtractedRenderText {
     pub text: VelloText,
     pub transform: GlobalTransform,
     pub affine: Affine,
-    pub vello_matrix: Mat4,
 }
 
 impl ExtractComponent for ExtractedRenderText {
@@ -81,7 +80,6 @@ impl ExtractComponent for ExtractedRenderText {
             text: text.clone(),
             transform: *transform,
             affine: Affine::default(),
-            vello_matrix: Mat4::default(),
         })
     }
 }
