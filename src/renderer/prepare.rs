@@ -6,7 +6,7 @@ use vello::kurbo::Affine;
 
 use crate::{
     assets::vector::{Vector, VelloVector},
-    ColorPaletteSwap,
+    ColorPaletteSwap, Layer,
 };
 
 use super::extract::{ExtractedRenderText, ExtractedRenderVector};
@@ -103,7 +103,14 @@ pub fn prepare_vector_affines(
 
         let view_proj_matrix = projection_mat * view_mat.inverse();
 
-        let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+        let raw_transform = match render_vector.layer {
+            Layer::UI => {
+                let mut model_matrix = world_transform.compute_matrix();
+                model_matrix.w_axis.y *= -1.0;
+                model_matrix
+            }
+            _ => ndc_to_pixels_matrix * view_proj_matrix * model_matrix,
+        };
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 

@@ -24,6 +24,7 @@ pub use assets::{
 pub use debug::DebugVisualizations;
 
 use crate::font::VelloFontLoader;
+pub use bevy_gizmos::gizmos;
 
 pub struct BevyVelloPlugin;
 
@@ -59,6 +60,7 @@ pub enum Layer {
     #[default]
     Middle,
     Foreground,
+    UI,
 }
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect, FromReflect)]
