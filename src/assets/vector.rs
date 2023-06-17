@@ -17,7 +17,8 @@ pub enum Vector {
 #[uuid = "39cadc56-aa9c-4543-3640-a018b74b5053"]
 pub struct VelloVector {
     pub data: Vector,
-    pub local_transform: Transform,
+    pub local_transform_bottom_center: Transform,
+    pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
     pub tessellation_mesh: Option<Mesh>,
@@ -33,7 +34,10 @@ impl VelloVector {
         let y_axis = Vec3A::new(0.0, -self.height, 0.0);
 
         let world_transform = transform.compute_matrix();
-        let local_transform = self.local_transform.compute_matrix().inverse();
+        let local_transform = self
+            .local_transform_bottom_center
+            .compute_matrix()
+            .inverse();
         let min = (world_transform * local_transform * min.extend(1.0)).xy();
         let x_axis = (world_transform * local_transform * x_axis.extend(1.0)).xy();
         let max = (world_transform * local_transform * max.extend(1.0)).xy();
@@ -42,6 +46,8 @@ impl VelloVector {
         [min, x_axis, max, y_axis]
     }
 
+    /// Gets the lottie metadata (if vector is a lottie), an object used for inspecting
+    /// this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
         if let Vector::Animated(composition) = &self.data {
             Some(Metadata {

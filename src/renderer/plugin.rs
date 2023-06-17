@@ -6,7 +6,10 @@ use bevy::{
     },
 };
 
-use super::{extract, prepare, render, VelatoRenderer, VelloRenderer};
+use super::{
+    extract::{self, ExtractedPixelScale},
+    prepare, render, VelatoRenderer, VelloRenderer,
+};
 use crate::{VelloFont, VelloVector};
 
 pub struct VelloRenderPlugin;
@@ -16,11 +19,17 @@ impl Plugin for VelloRenderPlugin {
         let Ok(render_app) = app.get_sub_app_mut(RenderApp) else { return };
         render_app.init_resource::<VelloRenderer>();
         render_app.insert_resource(VelatoRenderer(velato::Renderer::new()));
+        render_app.insert_resource(ExtractedPixelScale(1.0));
 
         render_app.add_system(prepare::prepare_vector_affines.in_set(RenderSet::Prepare));
         render_app.add_system(prepare::prepare_vector_composition_edits.in_set(RenderSet::Prepare));
         render_app.add_system(prepare::prepare_text_affines.in_set(RenderSet::Prepare));
         render_app.add_system(render::render_scene.in_set(RenderSet::Render));
+        render_app.add_system(
+            extract::extract_pixel_scale
+                .in_set(RenderSet::ExtractCommands)
+                .in_schedule(ExtractSchedule),
+        );
 
         app.add_plugin(ExtractComponentPlugin::<extract::ExtractedRenderVector>::default())
             .add_plugin(ExtractComponentPlugin::<extract::ExtractedRenderText>::default())

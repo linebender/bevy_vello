@@ -9,7 +9,7 @@ use crate::{
     ColorPaletteSwap, Layer,
 };
 
-use super::extract::{ExtractedRenderText, ExtractedRenderVector};
+use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
 
 pub fn prepare_vector_composition_edits(
     mut render_vectors: Query<&mut ExtractedRenderVector>,
@@ -73,6 +73,7 @@ pub fn prepare_vector_affines(
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
     mut render_vectors: Query<&mut ExtractedRenderVector>,
     render_vector_assets: Res<RenderAssets<VelloVector>>,
+    pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let (camera, view) = camera.single();
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
@@ -87,29 +88,38 @@ pub fn prepare_vector_affines(
         .transpose();
 
         let world_transform = render_vector.transform;
-        let local_matrix = match render_vector_assets.get(&render_vector.vector) {
-            Some(render_instance_data) => render_instance_data.local_matrix,
-            None => Mat4::default(),
-        };
-        let mut model_matrix = world_transform.compute_matrix() * local_matrix;
-        model_matrix.w_axis.y *= -1.0;
+        let (local_bottom_center_matrix, local_center_matrix) =
+            match render_vector_assets.get(&render_vector.vector) {
+                Some(render_instance_data) => (
+                    render_instance_data.local_bottom_center_matrix,
+                    render_instance_data.local_center_matrix,
+                ),
+                None => (Mat4::default(), Mat4::default()),
+            };
 
-        let (projection_mat, view_mat) = {
-            let mut view_mat = view.transform.compute_matrix();
-            view_mat.w_axis.y *= -1.0;
-
-            (view.projection, view_mat)
-        };
-
-        let view_proj_matrix = projection_mat * view_mat.inverse();
-
+        // The vello scene transform is world-space for all normal vectors and screen-space for UI vectors
         let raw_transform = match render_vector.layer {
             Layer::UI => {
-                let mut model_matrix = world_transform.compute_matrix();
-                model_matrix.w_axis.y *= -1.0;
-                model_matrix
+                let model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+
+                model_matrix * local_center_matrix
             }
-            _ => ndc_to_pixels_matrix * view_proj_matrix * model_matrix,
+            _ => {
+                let mut model_matrix =
+                    world_transform.compute_matrix() * local_bottom_center_matrix;
+                model_matrix.w_axis.y *= -1.0;
+
+                let (projection_mat, view_mat) = {
+                    let mut view_mat = view.transform.compute_matrix();
+                    view_mat.w_axis.y *= -1.0;
+
+                    (view.projection, view_mat)
+                };
+
+                let view_proj_matrix = projection_mat * view_mat.inverse();
+
+                ndc_to_pixels_matrix * view_proj_matrix * model_matrix
+            }
         };
 
         let transform: [f32; 16] = raw_transform.to_cols_array();

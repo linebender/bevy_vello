@@ -1,4 +1,8 @@
-use bevy::{prelude::*, render::extract_component::ExtractComponent};
+use bevy::{
+    prelude::*,
+    render::{extract_component::ExtractComponent, Extract},
+    window::PrimaryWindow,
+};
 use vello::kurbo::Affine;
 
 use crate::{font::VelloFont, ColorPaletteSwap, Layer, VelloText, VelloVector};
@@ -33,6 +37,7 @@ impl ExtractComponent for ExtractedRenderVector {
         &'static Layer,
         &'static GlobalTransform,
         Option<&'static ColorPaletteSwap>,
+        // TODO: optional Node for UI
     );
 
     type Filter = &'static RenderReadyTag;
@@ -99,4 +104,19 @@ impl ExtractComponent for SSRenderTarget {
     ) -> Option<Self> {
         Some(Self(ss_render_target.0.clone()))
     }
+}
+
+#[derive(Resource)]
+pub struct ExtractedPixelScale(pub f32);
+
+pub fn extract_pixel_scale(
+    mut pixel_scale: ResMut<ExtractedPixelScale>,
+    windows: Extract<Query<&Window, With<PrimaryWindow>>>,
+) {
+    let scale_factor = windows
+        .get_single()
+        .map(|window| window.resolution.scale_factor() as f32)
+        .unwrap_or(1.0);
+
+    pixel_scale.0 = scale_factor;
 }
