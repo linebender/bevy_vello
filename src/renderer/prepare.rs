@@ -88,20 +88,29 @@ pub fn prepare_vector_affines(
         .transpose();
 
         let world_transform = render_vector.transform;
-        let (local_bottom_center_matrix, local_center_matrix) =
+        let (local_bottom_center_matrix, local_center_matrix, vector_size) =
             match render_vector_assets.get(&render_vector.vector) {
                 Some(render_instance_data) => (
                     render_instance_data.local_bottom_center_matrix,
                     render_instance_data.local_center_matrix,
+                    render_instance_data.size,
                 ),
-                None => (Mat4::default(), Mat4::default()),
+                None => continue,
             };
 
         // The vello scene transform is world-space for all normal vectors and screen-space for UI vectors
         let raw_transform = match render_vector.layer {
             Layer::UI => {
-                let model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
 
+                // Make the UI vector instance sized to fill the entire UI Node box if it's bundled with a Node
+                if let Some(node) = &render_vector.ui_node {
+                    let fill_scale = node.size() / vector_size;
+                    model_matrix.x_axis.x *= fill_scale.x;
+                    model_matrix.y_axis.y *= fill_scale.y;
+                }
+
+                // model_matrix.x_axis.x
                 model_matrix * local_center_matrix
             }
             _ => {

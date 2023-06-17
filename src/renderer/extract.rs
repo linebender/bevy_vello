@@ -29,6 +29,7 @@ pub struct ExtractedRenderVector {
     pub affine: Affine,
     pub layer: Layer,
     pub color_pallette_swap: Option<ColorPaletteSwap>,
+    pub ui_node: Option<Node>,
 }
 
 impl ExtractComponent for ExtractedRenderVector {
@@ -37,14 +38,14 @@ impl ExtractComponent for ExtractedRenderVector {
         &'static Layer,
         &'static GlobalTransform,
         Option<&'static ColorPaletteSwap>,
-        // TODO: optional Node for UI
+        Option<&'static Node>,
     );
 
     type Filter = &'static RenderReadyTag;
     type Out = Self;
 
     fn extract_component(
-        (vello_vector_handle, layer, transform, color_pallette_swap): bevy::ecs::query::QueryItem<
+        (vello_vector_handle, layer, transform, color_pallette_swap, ui_node): bevy::ecs::query::QueryItem<
             '_,
             Self::Query,
         >,
@@ -55,6 +56,7 @@ impl ExtractComponent for ExtractedRenderVector {
             affine: Affine::default(),
             layer: *layer,
             color_pallette_swap: color_pallette_swap.cloned(),
+            ui_node: ui_node.cloned(),
         })
     }
 }
