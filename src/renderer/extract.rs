@@ -67,6 +67,7 @@ pub struct ExtractedRenderText {
     pub text: VelloText,
     pub transform: GlobalTransform,
     pub affine: Affine,
+    pub layer: Layer,
 }
 
 impl ExtractComponent for ExtractedRenderText {
@@ -74,19 +75,21 @@ impl ExtractComponent for ExtractedRenderText {
         &'static Handle<VelloFont>,
         &'static VelloText,
         &'static GlobalTransform,
+        &'static Layer,
     );
 
     type Filter = ();
     type Out = Self;
 
     fn extract_component(
-        (vello_font_handle, text, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
+        (vello_font_handle, text, transform, layer): bevy::ecs::query::QueryItem<'_, Self::Query>,
     ) -> Option<Self> {
         Some(Self {
             font: vello_font_handle.clone(),
             text: text.clone(),
             transform: *transform,
             affine: Affine::default(),
+            layer: *layer,
         })
     }
 }

@@ -153,6 +153,7 @@ pub fn prepare_vector_affines(
 pub fn prepare_text_affines(
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
     mut render_texts: Query<&mut ExtractedRenderText>,
+    pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let (camera, view) = camera.single();
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
@@ -181,7 +182,10 @@ pub fn prepare_text_affines(
         let view_proj_matrix = projection_mat * view_mat.inverse();
         let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
 
-        let raw_transform = vello_matrix * model_matrix;
+        let raw_transform = match render_text.layer {
+            Layer::UI => world_transform.compute_matrix().mul_scalar(pixel_scale.0),
+            _ => vello_matrix * model_matrix,
+        };
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 
