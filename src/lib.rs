@@ -23,7 +23,6 @@ pub use assets::{
 pub use debug::DebugVisualizations;
 
 use crate::font::VelloFontLoader;
-pub use bevy_gizmos::gizmos;
 
 pub struct BevyVelloPlugin;
 
