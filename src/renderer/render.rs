@@ -22,22 +22,26 @@ use super::{
 };
 
 #[derive(Clone)]
-pub struct VectorAssetData {
+pub struct ExtractedVectorAssetData {
     vector: Vector,
-    local_transform: Transform,
+    local_transform_bottom_center: Transform,
+    local_transform_center: Transform,
+    size: Vec2,
 }
 
 impl RenderAsset for VelloVector {
-    type ExtractedAsset = VectorAssetData;
+    type ExtractedAsset = ExtractedVectorAssetData;
 
-    type PreparedAsset = RenderInstanceData;
+    type PreparedAsset = PreparedVectorAssetData;
 
     type Param = ();
 
     fn extract_asset(&self) -> Self::ExtractedAsset {
-        VectorAssetData {
+        ExtractedVectorAssetData {
             vector: self.data.clone(),
-            local_transform: self.local_transform,
+            local_transform_bottom_center: self.local_transform_bottom_center,
+            local_transform_center: self.local_transform_center,
+            size: Vec2::new(self.width, self.height),
         }
     }
 
@@ -54,28 +58,39 @@ impl RenderAsset for VelloVector {
 
 #[derive(TypeUuid, Clone)]
 #[uuid = "39cadc56-aa9c-4543-3640-a018b74b5054"]
-pub struct RenderInstanceData {
-    pub local_matrix: Mat4,
+pub struct PreparedVectorAssetData {
+    pub local_bottom_center_matrix: Mat4,
+    pub local_center_matrix: Mat4,
     pub data: Vector,
+    pub size: Vec2,
 }
 
-impl From<VectorAssetData> for RenderInstanceData {
-    fn from(value: VectorAssetData) -> Self {
-        let local_matrix = value.local_transform.compute_matrix().inverse();
+impl From<ExtractedVectorAssetData> for PreparedVectorAssetData {
+    fn from(value: ExtractedVectorAssetData) -> Self {
+        let local_bottom_center_matrix = value
+            .local_transform_bottom_center
+            .compute_matrix()
+            .inverse();
+        let local_center_matrix = value.local_transform_center.compute_matrix().inverse();
         let vector_data = value.vector;
+        let size = value.size;
 
-        RenderInstanceData {
+        PreparedVectorAssetData {
             data: vector_data,
-            local_matrix,
+            local_bottom_center_matrix,
+            local_center_matrix,
+            size,
         }
     }
 }
 
-impl Default for RenderInstanceData {
+impl Default for PreparedVectorAssetData {
     fn default() -> Self {
         Self {
             data: Vector::Static(Arc::new(SceneFragment::default())),
-            local_matrix: Mat4::default(),
+            local_bottom_center_matrix: Mat4::default(),
+            local_center_matrix: Mat4::default(),
+            size: Vec2::default(),
         }
     }
 }
@@ -158,17 +173,30 @@ pub fn render_scene(
         });
         vector_render_queue.append(&mut fg_items);
 
+        // Foreground items:
+        let mut ui_items: Vec<ExtractedRenderVector> = render_vectors
+            .iter()
+            .filter(|v| v.layer == Layer::UI)
+            .cloned()
+            .collect();
+        ui_items.sort_by(|a, b| {
+            let a = a.transform.translation().z;
+            let b = b.transform.translation().z;
+            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
+        });
+        vector_render_queue.append(&mut ui_items);
+
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
         for ExtractedRenderVector { vector, affine, .. } in vector_render_queue.iter() {
             match vector_render_assets.get(vector) {
-                Some(RenderInstanceData {
+                Some(PreparedVectorAssetData {
                     data: Vector::Static(fragment),
                     ..
                 }) => {
                     builder.append(fragment, Some(*affine));
                 }
-                Some(RenderInstanceData {
+                Some(PreparedVectorAssetData {
                     data: Vector::Animated(composition),
                     ..
                 }) => {

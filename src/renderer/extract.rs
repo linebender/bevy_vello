@@ -1,4 +1,8 @@
-use bevy::{prelude::*, render::extract_component::ExtractComponent};
+use bevy::{
+    prelude::*,
+    render::{extract_component::ExtractComponent, Extract},
+    window::PrimaryWindow,
+};
 use vello::kurbo::Affine;
 
 use crate::{font::VelloFont, ColorPaletteSwap, Layer, VelloText, VelloVector};
@@ -25,6 +29,7 @@ pub struct ExtractedRenderVector {
     pub affine: Affine,
     pub layer: Layer,
     pub color_pallette_swap: Option<ColorPaletteSwap>,
+    pub ui_node: Option<Node>,
 }
 
 impl ExtractComponent for ExtractedRenderVector {
@@ -33,13 +38,14 @@ impl ExtractComponent for ExtractedRenderVector {
         &'static Layer,
         &'static GlobalTransform,
         Option<&'static ColorPaletteSwap>,
+        Option<&'static Node>,
     );
 
     type Filter = &'static RenderReadyTag;
     type Out = Self;
 
     fn extract_component(
-        (vello_vector_handle, layer, transform, color_pallette_swap): bevy::ecs::query::QueryItem<
+        (vello_vector_handle, layer, transform, color_pallette_swap, ui_node): bevy::ecs::query::QueryItem<
             '_,
             Self::Query,
         >,
@@ -50,6 +56,7 @@ impl ExtractComponent for ExtractedRenderVector {
             affine: Affine::default(),
             layer: *layer,
             color_pallette_swap: color_pallette_swap.cloned(),
+            ui_node: ui_node.cloned(),
         })
     }
 }
@@ -60,7 +67,7 @@ pub struct ExtractedRenderText {
     pub text: VelloText,
     pub transform: GlobalTransform,
     pub affine: Affine,
-    pub vello_matrix: Mat4,
+    pub layer: Layer,
 }
 
 impl ExtractComponent for ExtractedRenderText {
@@ -68,20 +75,21 @@ impl ExtractComponent for ExtractedRenderText {
         &'static Handle<VelloFont>,
         &'static VelloText,
         &'static GlobalTransform,
+        &'static Layer,
     );
 
     type Filter = ();
     type Out = Self;
 
     fn extract_component(
-        (vello_font_handle, text, transform): bevy::ecs::query::QueryItem<'_, Self::Query>,
+        (vello_font_handle, text, transform, layer): bevy::ecs::query::QueryItem<'_, Self::Query>,
     ) -> Option<Self> {
         Some(Self {
             font: vello_font_handle.clone(),
             text: text.clone(),
             transform: *transform,
             affine: Affine::default(),
-            vello_matrix: Mat4::default(),
+            layer: *layer,
         })
     }
 }
@@ -101,4 +109,19 @@ impl ExtractComponent for SSRenderTarget {
     ) -> Option<Self> {
         Some(Self(ss_render_target.0.clone()))
     }
+}
+
+#[derive(Resource)]
+pub struct ExtractedPixelScale(pub f32);
+
+pub fn extract_pixel_scale(
+    mut pixel_scale: ResMut<ExtractedPixelScale>,
+    windows: Extract<Query<&Window, With<PrimaryWindow>>>,
+) {
+    let scale_factor = windows
+        .get_single()
+        .map(|window| window.resolution.scale_factor() as f32)
+        .unwrap_or(1.0);
+
+    pixel_scale.0 = scale_factor;
 }

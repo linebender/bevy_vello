@@ -23,6 +23,7 @@ pub use assets::{
 pub use debug::DebugVisualizations;
 
 use crate::font::VelloFontLoader;
+pub use bevy_gizmos::gizmos;
 
 pub struct BevyVelloPlugin;
 
@@ -57,6 +58,7 @@ pub enum Layer {
     #[default]
     Middle,
     Foreground,
+    UI,
 }
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect, FromReflect)]
@@ -123,10 +125,11 @@ pub struct VelloText {
     pub size: f32,
 }
 
-#[derive(Bundle, Default)]
+#[derive(Bundle)]
 pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
+    pub layer: Layer,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible
@@ -135,4 +138,19 @@ pub struct VelloTextBundle {
     //and /// should be extracted for rendering
     pub computed_visibility: ComputedVisibility,
     pub debug_visualizations: DebugVisualizations,
+}
+
+impl Default for VelloTextBundle {
+    fn default() -> Self {
+        Self {
+            font: Default::default(),
+            text: Default::default(),
+            layer: Layer::Foreground,
+            transform: Default::default(),
+            global_transform: Default::default(),
+            visibility: Default::default(),
+            computed_visibility: Default::default(),
+            debug_visualizations: Default::default(),
+        }
+    }
 }

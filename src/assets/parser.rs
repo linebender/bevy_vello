@@ -36,7 +36,8 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Err
 
     let vello_vector = VelloVector {
         data: Vector::Static(Arc::new(scene_frag)),
-        local_transform: compute_local_transform(width, height),
+        local_transform_bottom_center: compute_local_transform(width, height),
+        local_transform_center: compute_local_transform_center(width, height),
         width,
         height,
         tessellation_mesh: Some(tessellation_mesh),
@@ -65,7 +66,8 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::
 
     let vello_vector = VelloVector {
         data: Vector::Animated(composition),
-        local_transform: compute_local_transform(width, height),
+        local_transform_bottom_center: compute_local_transform(width, height),
+        local_transform_center: compute_local_transform_center(width, height),
         width,
         height,
         tessellation_mesh: None,
@@ -86,6 +88,14 @@ fn compute_local_transform(width: f32, height: f32) -> Transform {
     let mut transform = Transform::default();
     transform.translation.x = width / 2.0;
     transform.translation.y = -height;
+
+    transform
+}
+
+fn compute_local_transform_center(width: f32, height: f32) -> Transform {
+    let mut transform = Transform::default();
+    transform.translation.x = width / 2.0;
+    transform.translation.y = height / 2.0;
 
     transform
 }
