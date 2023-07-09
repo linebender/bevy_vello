@@ -3,10 +3,10 @@ use bevy_vello::{
     BevyVelloPlugin, ColorPaletteSwap, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle,
 };
 
-const BODY_BASE: Color = Color::rgba(129. / 255., 94. / 255., 255. / 255., 255. / 255.);
-const BODY_DARK: Color = Color::rgba(73. / 255., 20. / 255., 165. / 255., 255. / 255.);
-const TENTACLES_HIGHLIGHT: Color = Color::rgba(178. / 255., 168. / 255., 255. / 255., 255. / 255.);
-const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 255. / 255., 255. / 255.);
+const BODY_BASE: Color = Color::rgba(129. / 255., 94. / 255., 1.0, 1.0);
+const BODY_DARK: Color = Color::rgba(73. / 255., 20. / 255., 165. / 255., 1.0);
+const TENTACLES_HIGHLIGHT: Color = Color::rgba(178. / 255., 168. / 255., 1.0, 1.0);
+const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 1.0, 1.0);
 
 fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
@@ -40,10 +40,12 @@ fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 }
 
 fn camera_to_asset_center(
-    query: Query<(&Transform, &Handle<VelloVector>)>,
+    mut query: Query<(&Transform, &mut Handle<VelloVector>)>,
     mut query_cam: Query<&mut Transform, (With<Camera>, Without<Handle<VelloVector>>)>,
-    vectors: Res<Assets<VelloVector>>,
+    mut vectors: ResMut<Assets<VelloVector>>,
     mut q: Query<&mut OrthographicProjection, With<Camera>>,
+    mut dnd_evr: EventReader<FileDragAndDrop>,
+    asset_server: ResMut<AssetServer>,
 ) {
     let mut projection = q.single_mut();
 
@@ -51,10 +53,18 @@ fn camera_to_asset_center(
     projection.scale = 2.0;
 
     let mut camera_transform = query_cam.single_mut();
-    let (&(mut target_transform), vector) = query.single();
-    if let Some(vector) = vectors.get(vector) {
+    let (&(mut target_transform), mut vector) = query.single_mut();
+    if let Some(vector) = vectors.get(&vector) {
         target_transform.translation.y += vector.height * target_transform.scale.y / 2.0;
         camera_transform.translation = target_transform.translation;
+    }
+
+    //this impliments a drag and drop system
+    for ev in dnd_evr.iter() {
+        if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {
+            let new_handle = asset_server.load(path_buf.to_str().unwrap());
+            *vector = new_handle;
+        }
     }
 }
 
