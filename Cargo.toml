@@ -8,7 +8,7 @@ edition = "2021"
 bevy = { version = "0.10" }
 vello = { git = "https://github.com/linebender/vello", rev = "17096ad878dcdfdc954239d5da782732303b1349" }
 vello_svg = { git = "https://github.com/linebender/vello", rev = "17096ad878dcdfdc954239d5da782732303b1349" }
-velato = { git = "https://github.com/linebender/velato", rev = "7325fc0c2cf862c4d87010c55ba8149c860ded14" }
+velato = { git = "https://github.com/vectorgameexperts/velato", branch = "bodymovin-fixes" }
 lyon_geom = "1.0"
 lyon_tessellation = "1.0"
 lyon_path = "1.0"
