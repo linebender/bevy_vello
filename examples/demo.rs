@@ -49,7 +49,7 @@ fn setup_vello(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 fn camera_to_asset_center(
     mut query: Query<(&Transform, &mut Handle<VelloVector>)>,
     mut query_cam: Query<&mut Transform, (With<Camera>, Without<Handle<VelloVector>>)>,
-    mut vectors: ResMut<Assets<VelloVector>>,
+    vectors: ResMut<Assets<VelloVector>>,
     mut q: Query<&mut OrthographicProjection, With<Camera>>,
     mut dnd_evr: EventReader<FileDragAndDrop>,
     asset_server: ResMut<AssetServer>,

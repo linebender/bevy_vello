@@ -63,7 +63,7 @@ impl RenderAsset for VelloFont {
         Self::PreparedAsset,
         bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
     > {
-        Ok(data.into())
+        Ok(data)
     }
 }
 
