@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use bevy::{
     asset::{AssetLoader, LoadContext, LoadedAsset},
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     render::render_asset::RenderAsset,
     utils::BoxedFuture,
 };
@@ -35,7 +35,7 @@ use vello::{
 // On Windows, can set this to "c:\\Windows\\Fonts\\seguiemj.ttf" to get color emoji
 pub const FONT_DATA: &[u8] = include_bytes!("../assets/roboto/Roboto-Regular.vttf");
 
-#[derive(TypeUuid)]
+#[derive(TypeUuid, TypePath)]
 #[uuid = "3a95cdc6-a9ac-4453-6043-abb748050513"]
 pub struct VelloFont {
     gcx: GlyphContext,

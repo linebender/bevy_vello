@@ -36,15 +36,17 @@ impl Plugin for VelloRenderPlugin {
         render_app.add_systems(Render, render::render_scene.in_set(RenderSet::Render));
         render_app.add_systems(
             ExtractSchedule,
-            extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands)
+            extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
         );
 
-        app.add_plugin(ExtractComponentPlugin::<extract::ExtractedRenderVector>::default())
-            .add_plugin(ExtractComponentPlugin::<extract::ExtractedRenderText>::default())
-            .add_plugin(ExtractComponentPlugin::<extract::SSRenderTarget>::default())
-            .add_plugin(RenderAssetPlugin::<VelloVector>::default())
-            .add_plugin(RenderAssetPlugin::<VelloFont>::default())
-            .add_systems(Update, extract::tag_vectors_for_render);
+        app.add_plugins((
+            ExtractComponentPlugin::<extract::ExtractedRenderVector>::default(),
+            ExtractComponentPlugin::<extract::ExtractedRenderText>::default(),
+            ExtractComponentPlugin::<extract::SSRenderTarget>::default(),
+            RenderAssetPlugin::<VelloVector>::default(),
+            RenderAssetPlugin::<VelloFont>::default(),
+        ))
+        .add_systems(Update, extract::tag_vectors_for_render);
     }
 
     fn finish(&self, app: &mut App) {

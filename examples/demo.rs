@@ -1,4 +1,6 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_vello::{
     BevyVelloPlugin, ColorPaletteSwap, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle,
 };
@@ -81,10 +83,10 @@ fn main() {
         .add_plugins(DefaultPlugins.set(AssetPlugin {
             // This tells the AssetServer to watch for changes to assets.
             // It enables our scenes to automatically reload in game when we modify their files.
-            watch_for_changes: true,
+            watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
             ..default()
         }))
-        .add_plugin(BevyVelloPlugin)
+        .add_plugins(BevyVelloPlugin)
         // Systems that create Egui widgets should be run during the `CoreSet::Update` set,
         // or after the `EguiSet::BeginFrame` system (which belongs to the `CoreSet::PreUpdate` set).
         .add_systems(Update, camera_to_asset_center)

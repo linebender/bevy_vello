@@ -2,7 +2,7 @@
 
 use bevy::{
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     render::{
         mesh::{Indices, MeshVertexBufferLayout},
         render_resource::{
@@ -152,7 +152,7 @@ pub fn setup_ss_rendertarget(
         .insert(render_target);
 }
 
-#[derive(AsBindGroup, TypeUuid, Clone)]
+#[derive(AsBindGroup, TypeUuid, TypePath, Clone)]
 #[uuid = "b62bb455-a72c-4b56-87bb-81e0554e234f"]
 pub struct SSTargetMaterial {
     #[texture(0)]

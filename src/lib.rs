@@ -37,19 +37,21 @@ impl Plugin for BevyVelloPlugin {
             "../assets/shaders/vello_ss_rendertarget.wgsl",
             Shader::from_wgsl
         );
-        app.add_plugin(VelloRenderPlugin);
+        app.add_plugins(VelloRenderPlugin);
         app.add_asset::<VelloVector>()
             .init_asset_loader::<VelloVectorLoader>();
         app.add_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>();
-        app.add_plugin(Material2dPlugin::<rendertarget::SSTargetMaterial>::default());
-        app.add_plugin(DebugVisualizationsPlugin);
+        app.add_plugins((
+            Material2dPlugin::<rendertarget::SSTargetMaterial>::default(),
+            DebugVisualizationsPlugin,
+        ));
         app.add_systems(Startup, rendertarget::setup_ss_rendertarget)
             .add_systems(Update, rendertarget::resize_rendertargets);
     }
 }
 
-#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect, FromReflect)]
+#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
 pub enum Layer {
     Background,
@@ -60,7 +62,7 @@ pub enum Layer {
     UI,
 }
 
-#[derive(PartialEq, Component, Default, Clone, Debug, Reflect, FromReflect)]
+#[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
 /// Add this component to a `VelloVectorBundle` entity to enable runtime color editing.
 /// This interface allows swapping colors in a lottie composition by selecting the desired layer

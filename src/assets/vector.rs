@@ -2,7 +2,7 @@ use crate::metadata::Metadata;
 use bevy::{
     math::{Vec3A, Vec4Swizzles},
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
 };
 use std::sync::Arc;
 use vello::SceneFragment;
@@ -13,7 +13,7 @@ pub enum Vector {
     Animated(velato::Composition),
 }
 
-#[derive(TypeUuid)]
+#[derive(TypeUuid, TypePath)]
 #[uuid = "39cadc56-aa9c-4543-3640-a018b74b5053"]
 pub struct VelloVector {
     pub data: Vector,
