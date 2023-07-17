@@ -141,10 +141,10 @@ pub fn render_scene(
         });
         vector_render_queue.append(&mut shadow_items);
 
-        // Middle items: y ordered
+        // Ground items: y ordered
         let mut middle_items: Vec<ExtractedRenderVector> = render_vectors
             .iter()
-            .filter(|v| v.layer == Layer::Middle)
+            .filter(|v| v.layer == Layer::Ground)
             .cloned()
             .collect();
         middle_items.sort_by(|a, b| {
@@ -167,7 +167,7 @@ pub fn render_scene(
         });
         vector_render_queue.append(&mut fg_items);
 
-        // Foreground items:
+        // UI items
         let mut ui_items: Vec<ExtractedRenderVector> = render_vectors
             .iter()
             .filter(|v| v.layer == Layer::UI)
