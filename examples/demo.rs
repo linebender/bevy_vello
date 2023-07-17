@@ -8,6 +8,19 @@ const BODY_DARK: Color = Color::rgba(73. / 255., 20. / 255., 165. / 255., 1.0);
 const TENTACLES_HIGHLIGHT: Color = Color::rgba(178. / 255., 168. / 255., 1.0, 1.0);
 const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 1.0, 1.0);
 
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins.set(AssetPlugin {
+            watch_for_changes: true,
+            ..default()
+        }))
+        .add_plugin(BevyVelloPlugin)
+        .add_startup_system(setup_vector_graphics)
+        .add_system(camera_system)
+        .add_system(drag_and_drop)
+        .run();
+}
+
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
     commands
@@ -76,18 +89,4 @@ fn drag_and_drop(
             *vector = new_handle;
         }
     }
-}
-
-////////////////////////////////////////////////////
-fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            watch_for_changes: true,
-            ..default()
-        }))
-        .add_plugin(BevyVelloPlugin)
-        .add_startup_system(setup_vector_graphics)
-        .add_system(camera_system)
-        .add_system(drag_and_drop)
-        .run();
 }
