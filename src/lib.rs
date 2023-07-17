@@ -57,7 +57,7 @@ pub enum Layer {
     Background,
     Shadow,
     #[default]
-    Middle,
+    Ground,
     Foreground,
     UI,
 }
