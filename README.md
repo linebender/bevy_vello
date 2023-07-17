@@ -14,7 +14,7 @@ Supports both **wasm/webgpu** and **native**.
 Why vello?
 - Fonts render with infinite resolution (no pixelation), even
 when dynamically scaling
-- Rendering SVGs and [Lottie](https://lottiefiles.com/what-is-lottie) animations with infinite resolution, no tessellation necessary
+- Render SVGs and [Lottie](https://lottiefiles.com/what-is-lottie) animations with infinite resolution, no tessellation necessary
 - Performant graphics--rendering in compute shaders
 
 ## Features
