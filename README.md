@@ -5,7 +5,7 @@
 [![docs.rs](https://img.shields.io/docsrs/bevy-async-task)](https://docs.rs/bevy-async-task)
 [![Discord](https://img.shields.io/discord/691052431525675048.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zrjnQzdjCB)
 
-A bevy plugin which provides rendering support for [vello](https://github.com/linebender/vello.git).
+A bevy plugin which provides rendering support for Lottie animations and SVGs via [vello](https://github.com/linebender/vello.git).
 
 ![Alt text](image.png)
 
