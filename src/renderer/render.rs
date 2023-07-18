@@ -210,7 +210,7 @@ pub fn render_scene(
             font, text, affine, ..
         } in query_render_texts.iter()
         {
-            if let Some(font) = font_render_assets.get_mut(&font) {
+            if let Some(font) = font_render_assets.get_mut(font) {
                 font.render_centered(&mut builder, text.size, *affine, &text.content);
             }
         }
