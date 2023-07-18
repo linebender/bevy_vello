@@ -1,10 +1,5 @@
-use crate::{
-    assets::vector::Vector,
-    lyon_utils::{self, usvg_draw, Convert},
-    VelloVector,
-};
+use crate::{assets::vector::Vector, VelloVector};
 use bevy::prelude::*;
-use lyon_tessellation::{FillTessellator, StrokeTessellator};
 use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
 use vello_svg::usvg;
@@ -21,16 +16,6 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Err
     let mut builder = SceneBuilder::for_fragment(&mut scene_frag);
     vello_svg::render_tree(&mut builder, &usvg);
 
-    // Load SVG XML String with the USVG parser
-    let lyon_svg = usvg_draw::Svg::from_tree(&usvg);
-    let tessellation_mesh_buffer = lyon_utils::generate_buffer(
-        &lyon_svg,
-        &mut FillTessellator::new(),
-        &mut StrokeTessellator::new(),
-    );
-
-    let tessellation_mesh: Mesh = tessellation_mesh_buffer.convert();
-
     let width = usvg.size.width() as f32;
     let height = usvg.size.height() as f32;
 
@@ -40,7 +25,6 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Err
         local_transform_center: compute_local_transform_center(width, height),
         width,
         height,
-        tessellation_mesh: Some(tessellation_mesh),
     };
 
     Ok(vello_vector)
@@ -70,7 +54,6 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::
         local_transform_center: compute_local_transform_center(width, height),
         width,
         height,
-        tessellation_mesh: None,
     };
 
     Ok(vello_vector)

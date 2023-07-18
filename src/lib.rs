@@ -12,7 +12,6 @@ mod assets;
 mod bevy_gizmos;
 mod debug;
 mod font;
-mod lyon_utils;
 mod metadata;
 mod renderer;
 mod rendertarget;
