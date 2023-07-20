@@ -26,7 +26,6 @@ pub fn tag_vectors_for_render(
 pub struct ExtractedRenderVector {
     pub vector: Handle<VelloVector>,
     pub transform: GlobalTransform,
-    pub affine: Affine,
     pub layer: Layer,
     pub color_pallette_swap: Option<ColorPaletteSwap>,
     pub ui_node: Option<Node>,
@@ -53,7 +52,6 @@ impl ExtractComponent for ExtractedRenderVector {
         Some(Self {
             vector: vello_vector_handle.clone(),
             transform: *transform,
-            affine: Affine::default(),
             layer: *layer,
             color_pallette_swap: color_pallette_swap.cloned(),
             ui_node: ui_node.cloned(),
