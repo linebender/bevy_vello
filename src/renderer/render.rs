@@ -103,7 +103,7 @@ pub fn render_scene(
     mut renderer: ResMut<VelloRenderer>,
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
-    query_render_texts: Query<&ExtractedRenderText>,
+    query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
     vector_render_assets: Res<RenderAssets<VelloVector>>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
@@ -204,12 +204,11 @@ pub fn render_scene(
             }
         }
 
-        for ExtractedRenderText {
-            font, text, affine, ..
-        } in query_render_texts.iter()
+        for (&PreparedAffine(affine), ExtractedRenderText { font, text, .. }) in
+            query_render_texts.iter()
         {
             if let Some(font) = font_render_assets.get_mut(font) {
-                font.render_centered(&mut builder, text.size, *affine, &text.content);
+                font.render_centered(&mut builder, text.size, affine, &text.content);
             }
         }
 
