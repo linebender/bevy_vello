@@ -39,4 +39,4 @@ bevy = { version = "0.11.0", default-features = false, features = [
 ] }
 vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
-velato = { git = "https://github.com/vectorgameexperts/velato", branch = "webgpu" }
+velato = { git = "https://github.com/vectorgameexperts/velato", rev = "c51afbfe175bfad74ccafe7ba2b2b146eaf1df22" }
