@@ -1,5 +1,9 @@
 [package]
 name = "bevy-vello"
+authors = [
+  "Sebastian Hamel <sebjfk@gmail.com>",
+  "Spencer C. Imbleau <spencer@imbleau.com>",
+]
 version = "0.2.0"
 edition = "2021"
 
