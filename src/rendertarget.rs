@@ -10,6 +10,7 @@ use bevy::{
             SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat,
             TextureUsages, VertexBufferLayout, VertexFormat, VertexStepMode,
         },
+        view::NoFrustumCulling,
     },
     sprite::{Material2d, Material2dKey, MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
@@ -149,6 +150,7 @@ pub fn setup_ss_rendertarget(
             material,
             ..Default::default()
         })
+        .insert(NoFrustumCulling)
         .insert(render_target);
 }
 
