@@ -39,7 +39,7 @@ jobs:
       run: cargo check --all
 
   test:
-    needs: [check, schema]
+    needs: [check]
     runs-on: ubuntu-latest
     steps:
     - name: Setup | Checkout
