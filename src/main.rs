@@ -1,4 +1,6 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_vello::{
     BevyVelloPlugin, ColorPaletteSwap, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle,
 };
@@ -11,13 +13,12 @@ const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 1.0, 1.0);
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(AssetPlugin {
-            watch_for_changes: true,
+            watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
             ..default()
         }))
-        .add_plugin(BevyVelloPlugin)
-        .add_startup_system(setup_vector_graphics)
-        .add_system(camera_system)
-        .add_system(drag_and_drop)
+        .add_plugins(BevyVelloPlugin)
+        .add_systems(Startup, setup_vector_graphics)
+        .add_systems(Update, (camera_system, drag_and_drop))
         .run();
 }
 
@@ -50,6 +51,11 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             content: "squid".to_string(),
             size: 320.0,
         },
+        ..default()
+    });
+
+    commands.spawn(SpriteBundle {
+        texture: asset_server.load("branding/icon.png"),
         ..default()
     });
 }

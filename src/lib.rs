@@ -9,7 +9,6 @@ use debug::DebugVisualizationsPlugin;
 use font::VelloFont;
 use renderer::VelloRenderPlugin;
 mod assets;
-mod bevy_gizmos;
 mod debug;
 mod font;
 mod metadata;
@@ -23,7 +22,6 @@ pub use assets::{
 pub use debug::DebugVisualizations;
 
 use crate::font::VelloFontLoader;
-pub use bevy_gizmos::gizmos;
 
 pub struct BevyVelloPlugin;
 
@@ -35,23 +33,24 @@ impl Plugin for BevyVelloPlugin {
         load_internal_asset!(
             app,
             SSRT_SHADER_HANDLE,
-            "shaders/vello_ss_rendertarget.wgsl",
+            "../assets/shaders/vello_ss_rendertarget.wgsl",
             Shader::from_wgsl
         );
-        app.add_plugin(VelloRenderPlugin);
-        app.add_plugin(bevy_gizmos::GizmoPlugin);
+        app.add_plugins(VelloRenderPlugin);
         app.add_asset::<VelloVector>()
             .init_asset_loader::<VelloVectorLoader>();
         app.add_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>();
-        app.add_plugin(Material2dPlugin::<rendertarget::SSTargetMaterial>::default());
-        app.add_plugin(DebugVisualizationsPlugin);
-        app.add_startup_system(rendertarget::setup_ss_rendertarget)
-            .add_system(rendertarget::resize_rendertargets);
+        app.add_plugins((
+            Material2dPlugin::<rendertarget::SSTargetMaterial>::default(),
+            DebugVisualizationsPlugin,
+        ));
+        app.add_systems(Startup, rendertarget::setup_ss_rendertarget)
+            .add_systems(Update, rendertarget::resize_rendertargets);
     }
 }
 
-#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect, FromReflect)]
+#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
 pub enum Layer {
     Background,
@@ -62,7 +61,7 @@ pub enum Layer {
     UI,
 }
 
-#[derive(PartialEq, Component, Default, Clone, Debug, Reflect, FromReflect)]
+#[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
 /// Add this component to a `VelloVectorBundle` entity to enable runtime color editing.
 /// This interface allows swapping colors in a lottie composition by selecting the desired layer

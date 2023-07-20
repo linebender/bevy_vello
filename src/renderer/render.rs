@@ -100,7 +100,7 @@ impl Default for PreparedVectorAssetData {
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
 pub fn render_scene(
-    mut renderer: ResMut<VelloRenderer>,
+    renderer: Option<ResMut<VelloRenderer>>,
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
@@ -112,6 +112,12 @@ pub fn render_scene(
     mut velato_renderer: ResMut<VelatoRenderer>,
     time: Res<Time>,
 ) {
+    let mut renderer = if let Some(renderer) = renderer {
+        renderer
+    } else {
+        return;
+    };
+
     if let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
         let mut scene = Scene::default();

@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 
-use crate::{bevy_gizmos::prelude::*, VelloVector};
+use crate::VelloVector;
 
 pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(draw_viewbox);
+        app.add_systems(Update, draw_viewbox);
     }
 }
 
-#[derive(Clone, Copy, Component, Default, PartialEq, Reflect, FromReflect)]
+#[derive(Clone, Copy, Component, Default, PartialEq, Reflect)]
 #[reflect(Component)]
 pub enum DebugVisualizations {
     #[default]

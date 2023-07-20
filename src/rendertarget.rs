@@ -2,7 +2,7 @@
 
 use bevy::{
     prelude::*,
-    reflect::TypeUuid,
+    reflect::{TypePath, TypeUuid},
     render::{
         mesh::{Indices, MeshVertexBufferLayout},
         render_resource::{
@@ -10,12 +10,13 @@ use bevy::{
             SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat,
             TextureUsages, VertexBufferLayout, VertexFormat, VertexStepMode,
         },
+        view::NoFrustumCulling,
     },
-    sprite::{Material2d, Material2dKey, Mesh2dHandle},
+    sprite::{Material2d, Material2dKey, MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
 
-use crate::renderer::SSRenderTarget;
+use crate::{renderer::SSRenderTarget, SSRT_SHADER_HANDLE};
 
 #[derive(Component)]
 struct MainCamera;
@@ -105,17 +106,6 @@ pub fn resize_rendertargets(
     }
 }
 
-#[derive(Bundle, Default)]
-pub struct SSRenderTargetBundle {
-    pub render_target: SSRenderTarget,
-    pub mesh: Mesh2dHandle,
-    pub material: Handle<SSTargetMaterial>,
-    pub transform: Transform,
-    pub global_transform: GlobalTransform,
-    pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
-}
-
 pub fn setup_ss_rendertarget(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -154,15 +144,17 @@ pub fn setup_ss_rendertarget(
         texture: texture_image,
     });
 
-    commands.spawn(SSRenderTargetBundle {
-        render_target,
-        mesh,
-        material,
-        ..Default::default()
-    });
+    commands
+        .spawn(MaterialMesh2dBundle {
+            mesh,
+            material,
+            ..Default::default()
+        })
+        .insert(NoFrustumCulling)
+        .insert(render_target);
 }
 
-#[derive(AsBindGroup, TypeUuid, Clone)]
+#[derive(AsBindGroup, TypeUuid, TypePath, Clone)]
 #[uuid = "b62bb455-a72c-4b56-87bb-81e0554e234f"]
 pub struct SSTargetMaterial {
     #[texture(0)]
@@ -172,11 +164,11 @@ pub struct SSTargetMaterial {
 
 impl Material2d for SSTargetMaterial {
     fn vertex_shader() -> ShaderRef {
-        super::SSRT_SHADER_HANDLE.typed().into()
+        SSRT_SHADER_HANDLE.typed().into()
     }
 
     fn fragment_shader() -> ShaderRef {
-        super::SSRT_SHADER_HANDLE.typed().into()
+        SSRT_SHADER_HANDLE.typed().into()
     }
 
     fn specialize(
