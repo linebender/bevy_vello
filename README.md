@@ -29,8 +29,19 @@ when dynamically scaling
   - NOTE: to avoid conflict with bevy's built-in font loader, rename fonts used by bevy_vello to something else (example: `*.vtff`). This can probably be an improvement in the future
 - Option to debug draw gizmos for the objects local origin (red X) and canvas size (white box)
 
-## Getting Started
-We recommend checking out the [demo](https://github.com/vectorgameexperts/bevy_vello/blob/main/examples/demo.rs) in `examples/`
+## Run Demo
+
+- Native
+
+  ```bash
+  cargo run
+  ```
+
+- WASM (requires `cargo install trunk`)
+
+  ```bash
+  trunk serve
+  ```
 
 ## Bevy version support
 
@@ -44,8 +55,9 @@ We recommend checking out the [demo](https://github.com/vectorgameexperts/bevy_v
 ### Libraries Used
 
 `bevy_vello` is only possible because of these awesome libraries
-* [vello](https://github.com/linebender/vello): Rendering backend for drawing vector curves, paths, shapes, effects, etc.
-* [velato](https://github.com/linebender/velato): integration and parsing library for Lottie files (vector graphic animations).
+
+- [vello](https://github.com/linebender/vello): Rendering backend for drawing vector curves, paths, shapes, effects, etc.
+- [velato](https://github.com/linebender/velato): integration and parsing library for Lottie files (vector graphic animations).
 
 ### Assets Used
 
