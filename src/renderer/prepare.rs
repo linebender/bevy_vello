@@ -69,16 +69,20 @@ pub fn prepare_vector_composition_edits(
     }
 }
 
+#[derive(Component, Copy, Clone)]
+pub struct PreparedAffine(pub Affine);
+
 pub fn prepare_vector_affines(
+    mut commands: Commands,
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
-    mut render_vectors: Query<&mut ExtractedRenderVector>,
+    mut render_vectors: Query<(Entity, &ExtractedRenderVector)>,
     render_vector_assets: Res<RenderAssets<VelloVector>>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let (camera, view) = camera.single();
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
     let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-    for mut render_vector in render_vectors.iter_mut() {
+    for (entity, render_vector) in render_vectors.iter_mut() {
         let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
             [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
             [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
@@ -110,7 +114,6 @@ pub fn prepare_vector_affines(
                     model_matrix.y_axis.y *= fill_scale.y;
                 }
 
-                // model_matrix.x_axis.x
                 model_matrix * local_center_matrix
             }
             _ => {
@@ -145,20 +148,22 @@ pub fn prepare_vector_affines(
             transform[13] as f64, // f
         ];
 
-        let affine = Affine::new(transform);
-        render_vector.affine = affine;
+        commands
+            .entity(entity)
+            .insert(PreparedAffine(Affine::new(transform)));
     }
 }
 
 pub fn prepare_text_affines(
+    mut commands: Commands,
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
-    mut render_texts: Query<&mut ExtractedRenderText>,
+    render_texts: Query<(Entity, &ExtractedRenderText)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let (camera, view) = camera.single();
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
     let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-    for mut render_text in render_texts.iter_mut() {
+    for (entity, render_text) in render_texts.iter() {
         let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
             [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
             [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
@@ -201,7 +206,8 @@ pub fn prepare_text_affines(
             transform[13] as f64, // f
         ];
 
-        let affine = Affine::new(transform);
-        render_text.affine = affine;
+        commands
+            .entity(entity)
+            .insert(PreparedAffine(Affine::new(transform)));
     }
 }

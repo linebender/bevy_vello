@@ -21,7 +21,6 @@ pub struct VelloVector {
     pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
-    pub tessellation_mesh: Option<Mesh>,
 }
 
 impl VelloVector {

@@ -3,7 +3,6 @@ use bevy::{
     render::{extract_component::ExtractComponent, Extract},
     window::PrimaryWindow,
 };
-use vello::kurbo::Affine;
 
 use crate::{font::VelloFont, ColorPaletteSwap, Layer, VelloText, VelloVector};
 
@@ -26,7 +25,6 @@ pub fn tag_vectors_for_render(
 pub struct ExtractedRenderVector {
     pub vector: Handle<VelloVector>,
     pub transform: GlobalTransform,
-    pub affine: Affine,
     pub layer: Layer,
     pub color_pallette_swap: Option<ColorPaletteSwap>,
     pub ui_node: Option<Node>,
@@ -53,7 +51,6 @@ impl ExtractComponent for ExtractedRenderVector {
         Some(Self {
             vector: vello_vector_handle.clone(),
             transform: *transform,
-            affine: Affine::default(),
             layer: *layer,
             color_pallette_swap: color_pallette_swap.cloned(),
             ui_node: ui_node.cloned(),
@@ -66,7 +63,6 @@ pub struct ExtractedRenderText {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
     pub transform: GlobalTransform,
-    pub affine: Affine,
     pub layer: Layer,
 }
 
@@ -88,7 +84,6 @@ impl ExtractComponent for ExtractedRenderText {
             font: vello_font_handle.clone(),
             text: text.clone(),
             transform: *transform,
-            affine: Affine::default(),
             layer: *layer,
         })
     }

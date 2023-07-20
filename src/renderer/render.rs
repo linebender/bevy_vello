@@ -18,6 +18,7 @@ use crate::{
 
 use super::{
     extract::{ExtractedRenderText, ExtractedRenderVector},
+    prepare::PreparedAffine,
     SSRenderTarget, VelatoRenderer, VelloRenderer,
 };
 
@@ -101,8 +102,8 @@ impl Default for PreparedVectorAssetData {
 pub fn render_scene(
     renderer: Option<ResMut<VelloRenderer>>,
     ss_render_target: Query<&SSRenderTarget>,
-    render_vectors: Query<&ExtractedRenderVector>,
-    query_render_texts: Query<&ExtractedRenderText>,
+    render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
+    query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
     vector_render_assets: Res<RenderAssets<VelloVector>>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
@@ -123,24 +124,22 @@ pub fn render_scene(
         let mut builder = SceneBuilder::for_scene(&mut scene);
 
         // Background items: z ordered
-        let mut vector_render_queue: Vec<ExtractedRenderVector> = render_vectors
+        let mut vector_render_queue: Vec<(_, _)> = render_vectors
             .iter()
-            .filter(|v| v.layer == Layer::Background)
-            .cloned()
+            .filter(|(_, v)| v.layer == Layer::Background)
             .collect();
-        vector_render_queue.sort_by(|a, b| {
+        vector_render_queue.sort_by(|(_, a), (_, b)| {
             let a = a.transform.translation().z;
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
         });
 
         // Shadow items: z ordered
-        let mut shadow_items: Vec<ExtractedRenderVector> = render_vectors
+        let mut shadow_items: Vec<(_, _)> = render_vectors
             .iter()
-            .filter(|v| v.layer == Layer::Shadow)
-            .cloned()
+            .filter(|(_, v)| v.layer == Layer::Shadow)
             .collect();
-        shadow_items.sort_by(|a, b| {
+        shadow_items.sort_by(|(_, a), (_, b)| {
             let a = a.transform.translation().z;
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
@@ -148,12 +147,11 @@ pub fn render_scene(
         vector_render_queue.append(&mut shadow_items);
 
         // Ground items: y ordered
-        let mut middle_items: Vec<ExtractedRenderVector> = render_vectors
+        let mut middle_items: Vec<(_, _)> = render_vectors
             .iter()
-            .filter(|v| v.layer == Layer::Ground)
-            .cloned()
+            .filter(|(_, v)| v.layer == Layer::Ground)
             .collect();
-        middle_items.sort_by(|a, b| {
+        middle_items.sort_by(|(_, a), (_, b)| {
             let a = a.transform.translation().y;
             let b = b.transform.translation().y;
             b.partial_cmp(&a).unwrap_or(std::cmp::Ordering::Equal)
@@ -161,12 +159,11 @@ pub fn render_scene(
         vector_render_queue.append(&mut middle_items);
 
         // Foreground items: z ordered
-        let mut fg_items: Vec<ExtractedRenderVector> = render_vectors
+        let mut fg_items: Vec<(_, _)> = render_vectors
             .iter()
-            .filter(|v| v.layer == Layer::Foreground)
-            .cloned()
+            .filter(|(_, v)| v.layer == Layer::Foreground)
             .collect();
-        fg_items.sort_by(|a, b| {
+        fg_items.sort_by(|(_, a), (_, b)| {
             let a = a.transform.translation().z;
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
@@ -174,12 +171,11 @@ pub fn render_scene(
         vector_render_queue.append(&mut fg_items);
 
         // UI items
-        let mut ui_items: Vec<ExtractedRenderVector> = render_vectors
+        let mut ui_items: Vec<(_, _)> = render_vectors
             .iter()
-            .filter(|v| v.layer == Layer::UI)
-            .cloned()
+            .filter(|(_, v)| v.layer == Layer::UI)
             .collect();
-        ui_items.sort_by(|a, b| {
+        ui_items.sort_by(|(_, a), (_, b)| {
             let a = a.transform.translation().z;
             let b = b.transform.translation().z;
             a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
@@ -188,7 +184,9 @@ pub fn render_scene(
 
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
-        for ExtractedRenderVector { vector, affine, .. } in vector_render_queue.iter() {
+        for (PreparedAffine(affine), ExtractedRenderVector { vector, .. }) in
+            vector_render_queue.iter()
+        {
             match vector_render_assets.get(vector) {
                 Some(PreparedVectorAssetData {
                     data: Vector::Static(fragment),
@@ -212,12 +210,11 @@ pub fn render_scene(
             }
         }
 
-        for ExtractedRenderText {
-            font, text, affine, ..
-        } in query_render_texts.iter()
+        for (&PreparedAffine(affine), ExtractedRenderText { font, text, .. }) in
+            query_render_texts.iter()
         {
             if let Some(font) = font_render_assets.get_mut(font) {
-                font.render_centered(&mut builder, text.size, *affine, &text.content);
+                font.render_centered(&mut builder, text.size, affine, &text.content);
             }
         }
 

@@ -9,10 +9,4 @@ bevy = { version = "0.11.0", default-features = false, features = ["animation","
 vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 velato = { git = "https://github.com/vectorgameexperts/velato", branch = "webgpu" }
-lyon_geom = "1.0"
-lyon_tessellation = "1.0"
-lyon_path = "1.0"
-svgtypes = "0.9"
-copyless = "0.1"
-roxmltree = "0.13"
-bevy_prototype_debug_lines = "0.10"
+

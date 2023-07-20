@@ -11,7 +11,6 @@ use renderer::VelloRenderPlugin;
 mod assets;
 mod debug;
 mod font;
-mod lyon_utils;
 mod metadata;
 mod renderer;
 mod rendertarget;
