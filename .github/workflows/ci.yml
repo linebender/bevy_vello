@@ -15,7 +15,7 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        components: clippy,fmt
+        components: clippy,rustfmt
 
     - name: Build | Clippy
       uses: actions-rs/cargo@v1
@@ -35,11 +35,10 @@ jobs:
     - name: Setup | Ubuntu dependencies
       run: sudo apt install libasound2-dev libudev-dev pkg-config
 
-    - name: Setup | Toolchain (clippy)
+    - name: Setup | Toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        components: clippy,rustfmt
 
     - name: Build | Check
       run: cargo check --all
@@ -54,11 +53,10 @@ jobs:
     - name: Setup | Ubuntu dependencies
       run: sudo apt install libasound2-dev libudev-dev pkg-config
 
-    - name: Setup | Toolchain (clippy)
+    - name: Setup | Toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        components: clippy,fmt
 
     - name: Build | Test
       run: cargo test --all
