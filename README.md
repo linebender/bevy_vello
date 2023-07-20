@@ -12,12 +12,13 @@ A bevy plugin which provides rendering support for Lottie animations and SVGs vi
 Supports both **wasm/webgpu** and **native**.
 
 Why vello?
-- Fonts render with infinite resolution (no pixelation), even
-when dynamically scaling
+
+- Fonts render with infinite resolution (no pixelation), even when dynamically scaling
 - Render SVGs and [Lottie](https://lottiefiles.com/what-is-lottie) animations with infinite resolution, no tessellation necessary
 - Performant graphics--rendering in compute shaders
 
 ## Features
+
 - Spawnable vector graphics on separate layers
   |Layer|Render order|
   |---|---|
