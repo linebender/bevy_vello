@@ -33,7 +33,7 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        components: clippy,fmt
+        components: clippy,rustfmt
 
     - name: Build | Check
       run: cargo check --all
