@@ -16,10 +16,9 @@ fn main() {
             watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
             ..default()
         }))
-        .add_plugin(BevyVelloPlugin)
-        .add_startup_system(setup_vector_graphics)
-        .add_system(camera_system)
-        .add_system(drag_and_drop)
+        .add_plugins(BevyVelloPlugin)
+        .add_systems(Startup, setup_vector_graphics)
+        .add_systems(Update, (camera_system, drag_and_drop))
         .run();
 }
 
@@ -78,9 +77,7 @@ fn camera_system(
     let (&(mut target_transform), vector) = query.single_mut();
     if let Some(vector) = vectors.get(&vector) {
         target_transform.translation.y += vector.height * target_transform.scale.y / 2.0;
-        camera_transform.translation.x = target_transform.translation.x;
-        camera_transform.translation.y = target_transform.translation.y;
-        // NOTE: you should not set the camera z or the vello canvas will get clipped out of view
+        camera_transform.translation = target_transform.translation;
     }
 }
 
