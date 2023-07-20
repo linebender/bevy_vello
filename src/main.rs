@@ -53,11 +53,6 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         },
         ..default()
     });
-
-    commands.spawn(SpriteBundle {
-        texture: asset_server.load("branding/icon.png"),
-        ..default()
-    });
 }
 
 /// Transform the camera to the center of the vector graphic apply zooming
