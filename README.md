@@ -37,7 +37,7 @@ We recommend checking out the [demo](https://github.com/vectorgameexperts/bevy_v
 |bevy|bevy_vello|
 |---|---|
 |0.10|0.1|
-|0.11|Coming Soon|
+|0.11|0.2|
 
 ## Attributions
 
