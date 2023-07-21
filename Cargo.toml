@@ -16,30 +16,15 @@ lto = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { version = "0.11.0", default-features = false, features = [
-  "animation",
   "bevy_asset",
-  "bevy_audio",
-  "bevy_gilrs",
-  "bevy_scene",
   "bevy_winit",
   "bevy_core_pipeline",
-  "bevy_pbr",
-  "bevy_gltf",
   "bevy_render",
   "bevy_sprite",
-  "bevy_text",
   "bevy_ui",
-  "png",
-  "hdr",
-  "ktx2",
-  "zstd",
-  "vorbis",
   "x11",
   "filesystem_watcher",
   "bevy_gizmos",
-  "android_shared_stdcxx",
-  "tonemapping_luts",
-  "default_font",
 ] }
 vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
