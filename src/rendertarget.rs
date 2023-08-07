@@ -148,6 +148,7 @@ pub fn setup_ss_rendertarget(
         .spawn(MaterialMesh2dBundle {
             mesh,
             material,
+            transform: Transform::from_translation(0.001 * Vec3::NEG_Z), // Make sure the vello canvas renders behind Gizmos
             ..Default::default()
         })
         .insert(NoFrustumCulling)
