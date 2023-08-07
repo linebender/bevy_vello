@@ -45,6 +45,24 @@ impl VelloVector {
         [min, x_axis, max, y_axis]
     }
 
+    pub fn bb_in_world_ui(&self, transform: &GlobalTransform) -> [Vec2; 4] {
+        let min = Vec3A::ZERO;
+        let x_axis = Vec3A::new(self.width, 0.0, 0.0);
+
+        let max = Vec3A::new(self.width, -self.height, 0.0);
+        let y_axis = Vec3A::new(0.0, -self.height, 0.0);
+
+        let world_transform = transform.compute_matrix();
+        let mut local_transform = self.local_transform_center.compute_matrix().inverse();
+        local_transform.y_axis *= -1.0;
+        let min = (world_transform * local_transform * min.extend(1.0)).xy();
+        let x_axis = (world_transform * local_transform * x_axis.extend(1.0)).xy();
+        let max = (world_transform * local_transform * max.extend(1.0)).xy();
+        let y_axis = (world_transform * local_transform * y_axis.extend(1.0)).xy();
+
+        [min, x_axis, max, y_axis]
+    }
+
     /// Gets the lottie metadata (if vector is a lottie), an object used for inspecting
     /// this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
