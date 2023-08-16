@@ -11,17 +11,18 @@ use crate::{
 
 use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
 
-pub fn prepare_vector_composition_edits(
-    mut render_vectors: Query<&mut ExtractedRenderVector>,
-    mut render_vector_assets: ResMut<RenderAssets<VelloVector>>,
-) {
+pub fn prepare_vector_composition_edits(mut render_vectors: Query<&mut ExtractedRenderVector>) {
     // Big-O: O(n), where n = shapes;
     // Nesting: "vectors * layers * shape groups * shapes"
-    'vectors: for render_vector in render_vectors.iter_mut() {
-        let Some(vector) = render_vector_assets.get_mut(&render_vector.vector) else {
+    'vectors: for mut render_vector in render_vectors.iter_mut() {
+        // Get vector and color swap or there's no use continuing...
+
+        let Some(ColorPaletteSwap { colors }) = render_vector.color_pallette_swap.clone() else {
             continue 'vectors;
         };
-        let Vector::Animated(ref mut composition) = vector.data else {
+
+        // Perform recolors!
+        let Vector::Animated(ref mut composition) = render_vector.render_data.data else {
             continue 'vectors;
         };
         'layers: for (_layer_index, layer) in composition.layers.iter_mut().enumerate() {
@@ -49,18 +50,14 @@ pub fn prepare_vector_composition_edits(
                     //     (solid.r, solid.g, solid.b, solid.a)
                     // );
 
-                    if let Some(ColorPaletteSwap { colors }) = &render_vector.color_pallette_swap {
-                        for ((layer_name, shape_indices), color) in colors.iter() {
-                            if layer.name.contains(layer_name)
-                                && shape_indices.contains(&shape_index)
-                            {
-                                *solid = vello::peniko::Color::rgba(
-                                    color.r().into(),
-                                    color.g().into(),
-                                    color.b().into(),
-                                    color.a().into(),
-                                );
-                            }
+                    for ((layer_name, shape_indices), color) in colors.iter() {
+                        if layer.name.contains(layer_name) && shape_indices.contains(&shape_index) {
+                            *solid = vello::peniko::Color::rgba(
+                                color.r().into(),
+                                color.g().into(),
+                                color.b().into(),
+                                color.a().into(),
+                            );
                         }
                     }
                 }
@@ -93,7 +90,7 @@ pub fn prepare_vector_affines(
 
         let world_transform = render_vector.transform;
         let (local_bottom_center_matrix, local_center_matrix, vector_size) =
-            match render_vector_assets.get(&render_vector.vector) {
+            match render_vector_assets.get(&render_vector.vector_handle) {
                 Some(render_instance_data) => (
                     render_instance_data.local_bottom_center_matrix,
                     render_instance_data.local_center_matrix,

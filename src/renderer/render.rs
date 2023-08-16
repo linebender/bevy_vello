@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use bevy::{
     prelude::*,
     reflect::TypeUuid,
@@ -8,7 +6,7 @@ use bevy::{
         renderer::{RenderDevice, RenderQueue},
     },
 };
-use vello::{RenderParams, Scene, SceneBuilder, SceneFragment};
+use vello::{RenderParams, Scene, SceneBuilder};
 
 use crate::{
     assets::vector::{Vector, VelloVector},
@@ -24,7 +22,6 @@ use super::{
 
 #[derive(Clone)]
 pub struct ExtractedVectorAssetData {
-    vector: Vector,
     local_transform_bottom_center: Transform,
     local_transform_center: Transform,
     size: Vec2,
@@ -39,7 +36,6 @@ impl RenderAsset for VelloVector {
 
     fn extract_asset(&self) -> Self::ExtractedAsset {
         ExtractedVectorAssetData {
-            vector: self.data.clone(),
             local_transform_bottom_center: self.local_transform_bottom_center,
             local_transform_center: self.local_transform_center,
             size: Vec2::new(self.width, self.height),
@@ -62,7 +58,6 @@ impl RenderAsset for VelloVector {
 pub struct PreparedVectorAssetData {
     pub local_bottom_center_matrix: Mat4,
     pub local_center_matrix: Mat4,
-    pub data: Vector,
     pub size: Vec2,
 }
 
@@ -73,25 +68,12 @@ impl From<ExtractedVectorAssetData> for PreparedVectorAssetData {
             .compute_matrix()
             .inverse();
         let local_center_matrix = value.local_transform_center.compute_matrix().inverse();
-        let vector_data = value.vector;
         let size = value.size;
 
         PreparedVectorAssetData {
-            data: vector_data,
             local_bottom_center_matrix,
             local_center_matrix,
             size,
-        }
-    }
-}
-
-impl Default for PreparedVectorAssetData {
-    fn default() -> Self {
-        Self {
-            data: Vector::Static(Arc::new(SceneFragment::default())),
-            local_bottom_center_matrix: Mat4::default(),
-            local_center_matrix: Mat4::default(),
-            size: Vec2::default(),
         }
     }
 }
@@ -104,7 +86,6 @@ pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
-    vector_render_assets: Res<RenderAssets<VelloVector>>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
@@ -184,20 +165,19 @@ pub fn render_scene(
 
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
-        for (PreparedAffine(affine), ExtractedRenderVector { vector, .. }) in
-            vector_render_queue.iter()
+        for (
+            PreparedAffine(affine),
+            ExtractedRenderVector {
+                render_data: vector_data,
+                ..
+            },
+        ) in vector_render_queue.iter()
         {
-            match vector_render_assets.get(vector) {
-                Some(PreparedVectorAssetData {
-                    data: Vector::Static(fragment),
-                    ..
-                }) => {
+            match &vector_data.data {
+                Vector::Static(fragment) => {
                     builder.append(fragment, Some(*affine));
                 }
-                Some(PreparedVectorAssetData {
-                    data: Vector::Animated(composition),
-                    ..
-                }) => {
+                Vector::Animated(composition) => {
                     velato_renderer.0.render(
                         composition,
                         time.elapsed_seconds(),
@@ -206,7 +186,6 @@ pub fn render_scene(
                         &mut builder,
                     );
                 }
-                None => {}
             }
         }
 

@@ -13,7 +13,7 @@ pub enum Vector {
     Animated(velato::Composition),
 }
 
-#[derive(TypeUuid, TypePath)]
+#[derive(TypeUuid, TypePath, Clone)]
 #[uuid = "39cadc56-aa9c-4543-3640-a018b74b5053"]
 pub struct VelloVector {
     pub data: Vector,

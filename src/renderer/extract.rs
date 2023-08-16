@@ -23,38 +23,40 @@ pub fn tag_vectors_for_render(
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
-    pub vector: Handle<VelloVector>,
+    pub vector_handle: Handle<VelloVector>,
+    pub render_data: VelloVector,
     pub transform: GlobalTransform,
     pub layer: Layer,
     pub color_pallette_swap: Option<ColorPaletteSwap>,
     pub ui_node: Option<Node>,
 }
 
-impl ExtractComponent for ExtractedRenderVector {
-    type Query = (
-        &'static Handle<VelloVector>,
-        &'static Layer,
-        &'static GlobalTransform,
-        Option<&'static ColorPaletteSwap>,
-        Option<&'static Node>,
-    );
-
-    type Filter = &'static RenderReadyTag;
-    type Out = Self;
-
-    fn extract_component(
-        (vello_vector_handle, layer, transform, color_pallette_swap, ui_node): bevy::ecs::query::QueryItem<
-            '_,
-            Self::Query,
-        >,
-    ) -> Option<Self> {
-        Some(Self {
-            vector: vello_vector_handle.clone(),
-            transform: *transform,
-            layer: *layer,
-            color_pallette_swap: color_pallette_swap.cloned(),
-            ui_node: ui_node.cloned(),
-        })
+pub fn vector_instances(
+    mut commands: Commands,
+    query_vectors: Extract<
+        Query<(
+            &Handle<VelloVector>,
+            &Layer,
+            &GlobalTransform,
+            Option<&ColorPaletteSwap>,
+            Option<&Node>,
+        )>,
+    >,
+    assets: Extract<Res<Assets<VelloVector>>>,
+) {
+    for (vello_vector_handle, layer, transform, color_pallette_swap, ui_node) in
+        query_vectors.iter()
+    {
+        if let Some(asset_data) = assets.get(vello_vector_handle) {
+            commands.spawn(ExtractedRenderVector {
+                vector_handle: vello_vector_handle.clone(),
+                render_data: asset_data.to_owned(),
+                transform: *transform,
+                layer: *layer,
+                color_pallette_swap: color_pallette_swap.cloned(),
+                ui_node: ui_node.cloned(),
+            });
+        }
     }
 }
 
