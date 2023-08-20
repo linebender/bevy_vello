@@ -43,12 +43,6 @@ pub fn prepare_vector_composition_edits(mut render_vectors: Query<&mut Extracted
                     let vello::peniko::Brush::Solid(ref mut solid) = brush else {
                         continue 'shapes;
                     };
-                    // println!(
-                    //     "layer '{}', shape {}: color {:?}",
-                    //     layer.name,
-                    //     shape_index,
-                    //     (solid.r, solid.g, solid.b, solid.a)
-                    // );
 
                     for ((layer_name, shape_indices), color) in colors.iter() {
                         if layer.name.contains(layer_name) && shape_indices.contains(&shape_index) {
