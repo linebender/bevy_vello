@@ -63,13 +63,13 @@ fn camera_system(
     mut q: Query<&mut OrthographicProjection, With<Camera>>,
     time: Res<Time>,
 ) {
-    let mut projection = q.single_mut();
+    let Ok(mut projection) = q.get_single_mut() else { return };
+    let Ok(mut camera_transform) = query_cam.get_single_mut() else { return };
+    let Ok((&(mut target_transform), vector)) = query.get_single_mut() else { return };
 
     // Zoom in & out to demonstrate scalability and show the vector graphic's viewbox/anchor point
     projection.scale = 2.0 * time.elapsed_seconds().cos();
 
-    let mut camera_transform = query_cam.single_mut();
-    let (&(mut target_transform), vector) = query.single_mut();
     if let Some(vector) = vectors.get(&vector) {
         target_transform.translation.y += vector.height * target_transform.scale.y / 2.0;
         camera_transform.translation = target_transform.translation;
@@ -82,7 +82,7 @@ fn drag_and_drop(
     asset_server: ResMut<AssetServer>,
     mut dnd_evr: EventReader<FileDragAndDrop>,
 ) {
-    let (_, mut vector) = query.single_mut();
+    let Ok((_, mut vector)) = query.get_single_mut() else { return };
 
     for ev in dnd_evr.iter() {
         if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {

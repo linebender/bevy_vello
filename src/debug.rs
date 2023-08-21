@@ -28,9 +28,9 @@ fn draw_viewbox(
     query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
     mut gizmos: Gizmos,
 ) {
-    const RED_X_SIZE: f32 = 8.0;
+    let Ok((camera, view, projection)) = query_cam.get_single() else { return };
 
-    let (camera, view, projection) = query_cam.single();
+    const RED_X_SIZE: f32 = 8.0;
 
     // Show world-space vectors
     for (vector, transform, _) in query_world

@@ -70,7 +70,7 @@ pub fn prepare_vector_affines(
     render_vector_assets: Res<RenderAssets<VelloVector>>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
-    let (camera, view) = camera.single();
+    let Ok((camera, view)) = camera.get_single() else { return };
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
     let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
     for (entity, render_vector) in render_vectors.iter_mut() {
@@ -151,7 +151,7 @@ pub fn prepare_text_affines(
     render_texts: Query<(Entity, &ExtractedRenderText)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
-    let (camera, view) = camera.single();
+    let Ok((camera, view)) = camera.get_single() else { return };
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
     let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
     for (entity, render_text) in render_texts.iter() {
