@@ -42,7 +42,7 @@ pub fn load_svg_from_str(svg_str: &str) -> Result<VelloVector, bevy::asset::Erro
 /// contents buffer represented as a str into a `VelloVector`
 pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Error> {
     // Load Lottie JSON bytes with the Velato (bodymovin) parser
-    let composition = velato::Composition::from_bytes(bytes)
+    let composition = vellottie::Composition::from_bytes(bytes)
         .map_err(|err| bevy::asset::Error::msg(format!("Unable to parse lottie JSON: {err:?}")))?;
 
     let width = composition.width as f32;

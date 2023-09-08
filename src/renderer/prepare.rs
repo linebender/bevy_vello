@@ -26,18 +26,18 @@ pub fn prepare_vector_composition_edits(mut render_vectors: Query<&mut Extracted
             continue 'vectors;
         };
         'layers: for (_layer_index, layer) in composition.layers.iter_mut().enumerate() {
-            let velato::model::Content::Shape(ref mut shapes) = layer.content else {
+            let vellottie::runtime::model::Content::Shape(ref mut shapes) = layer.content else {
                 continue 'layers;
             };
             'shapegroups: for (shape_index, shape) in shapes.iter_mut().enumerate() {
-                let velato::model::Shape::Group(ref mut shapes, _transform) = shape else {
+                let vellottie::runtime::model::Shape::Group(ref mut shapes, _transform) = shape else {
                     continue 'shapegroups;
                 };
                 'shapes: for shape in shapes.iter_mut() {
-                    let velato::model::Shape::Draw(ref mut draw) = shape else {
+                    let vellottie::runtime::model::Shape::Draw(ref mut draw) = shape else {
                         continue 'shapes;
                     };
-                    let velato::model::Brush::Fixed(ref mut brush) = draw.brush else {
+                    let vellottie::runtime::model::Brush::Fixed(ref mut brush) = draw.brush else {
                         continue 'shapes;
                     };
                     let vello::peniko::Brush::Solid(ref mut solid) = brush else {

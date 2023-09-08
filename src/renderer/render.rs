@@ -17,7 +17,7 @@ use crate::{
 use super::{
     extract::{ExtractedRenderText, ExtractedRenderVector},
     prepare::PreparedAffine,
-    SSRenderTarget, VelatoRenderer, VelloRenderer,
+    LottieRenderer, SSRenderTarget, VelloRenderer,
 };
 
 #[derive(Clone)]
@@ -90,7 +90,7 @@ pub fn render_scene(
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
-    mut velato_renderer: ResMut<VelatoRenderer>,
+    mut velato_renderer: ResMut<LottieRenderer>,
     time: Res<Time>,
 ) {
     let mut renderer = if let Some(renderer) = renderer {

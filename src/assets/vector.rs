@@ -10,7 +10,7 @@ use vello::SceneFragment;
 #[derive(Clone)]
 pub enum Vector {
     Static(Arc<SceneFragment>),
-    Animated(velato::Composition),
+    Animated(vellottie::Composition),
 }
 
 #[derive(TypeUuid, TypePath, Clone)]

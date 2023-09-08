@@ -9,7 +9,7 @@ use vello::{Renderer, RendererOptions};
 
 use super::{
     extract::{self, ExtractedPixelScale},
-    prepare, render, VelatoRenderer, VelloRenderer,
+    prepare, render, LottieRenderer, VelloRenderer,
 };
 use crate::{VelloFont, VelloVector};
 
@@ -18,7 +18,7 @@ pub struct VelloRenderPlugin;
 impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
         let Ok(render_app) = app.get_sub_app_mut(RenderApp) else { return };
-        render_app.insert_resource(VelatoRenderer(velato::Renderer::new()));
+        render_app.insert_resource(LottieRenderer(vellottie::Renderer::new()));
         render_app.insert_resource(ExtractedPixelScale(1.0));
 
         render_app.add_systems(

@@ -28,4 +28,4 @@ impl FromWorld for VelloRenderer {
 }
 
 #[derive(Resource)]
-pub struct VelatoRenderer(pub velato::Renderer);
+pub struct LottieRenderer(pub vellottie::Renderer);

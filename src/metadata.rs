@@ -1,4 +1,4 @@
-use velato::Composition;
+use vellottie::Composition;
 
 pub struct Metadata {
     pub(crate) composition: Composition,
@@ -16,7 +16,7 @@ impl Metadata {
     pub fn get_layer_shapes(&self, layer: &str) -> Option<usize> {
         match self.composition.layers.iter().find(|l| l.name.eq(&layer)) {
             Some(layer) => {
-                let velato::model::Content::Shape(ref shapes) = layer.content else {
+                let vellottie::runtime::model::Content::Shape(ref shapes) = layer.content else {
                     return None;
                 };
                 Some(shapes.iter().len())
