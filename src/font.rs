@@ -31,10 +31,6 @@ use vello::{
     SceneBuilder, SceneFragment,
 };
 
-// This is very much a hack to get things working.
-// On Windows, can set this to "c:\\Windows\\Fonts\\seguiemj.ttf" to get color emoji
-pub const FONT_DATA: &[u8] = include_bytes!("../assets/roboto/Roboto-Regular.vttf");
-
 #[derive(TypeUuid, TypePath)]
 #[uuid = "3a95cdc6-a9ac-4453-6043-abb748050513"]
 pub struct VelloFont {
@@ -64,15 +60,6 @@ impl RenderAsset for VelloFont {
         bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
     > {
         Ok(data)
-    }
-}
-
-impl Default for VelloFont {
-    fn default() -> Self {
-        Self {
-            gcx: GlyphContext::new(),
-            font: Font::new(Blob::new(Arc::new(FONT_DATA)), 0),
-        }
     }
 }
 
