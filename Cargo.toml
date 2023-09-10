@@ -1,12 +1,20 @@
 [package]
 name = "bevy-vello"
+description = "Render Lottie and SVG assets in Bevy with Vello"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/vectorgameexperts/bevy_vello"
 authors = [
   "Sebastian Hamel <sebjfk@gmail.com>",
   "Spencer C. Imbleau <spencer@imbleau.com>",
 ]
-version = "0.2.0"
+keywords = ["gamedev", "graphics"]
+version = "1.0.0"
 edition = "2021"
 
+[lib]
+
+# TODO: Separate the web demo into a new project
+# These settings are to get the WASM blob smaller.
 [profile.release]
 panic = 'abort'
 codegen-units = 1
