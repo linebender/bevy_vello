@@ -1,9 +1,8 @@
-use std::time::Duration;
-
 use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_vello::{
     BevyVelloPlugin, ColorPaletteSwap, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle,
 };
+use std::time::Duration;
 
 const BODY_BASE: Color = Color::rgba(129. / 255., 94. / 255., 1.0, 1.0);
 const BODY_DARK: Color = Color::rgba(73. / 255., 20. / 255., 165. / 255., 1.0);
@@ -63,9 +62,15 @@ fn camera_system(
     mut q: Query<&mut OrthographicProjection, With<Camera>>,
     time: Res<Time>,
 ) {
-    let Ok(mut projection) = q.get_single_mut() else { return };
-    let Ok(mut camera_transform) = query_cam.get_single_mut() else { return };
-    let Ok((&(mut target_transform), vector)) = query.get_single_mut() else { return };
+    let Ok(mut projection) = q.get_single_mut() else {
+        return;
+    };
+    let Ok(mut camera_transform) = query_cam.get_single_mut() else {
+        return;
+    };
+    let Ok((&(mut target_transform), vector)) = query.get_single_mut() else {
+        return;
+    };
 
     // Zoom in & out to demonstrate scalability and show the vector graphic's viewbox/anchor point
     projection.scale = 2.0 * time.elapsed_seconds().cos();
@@ -82,7 +87,9 @@ fn drag_and_drop(
     asset_server: ResMut<AssetServer>,
     mut dnd_evr: EventReader<FileDragAndDrop>,
 ) {
-    let Ok((_, mut vector)) = query.get_single_mut() else { return };
+    let Ok((_, mut vector)) = query.get_single_mut() else {
+        return;
+    };
 
     for ev in dnd_evr.iter() {
         if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {

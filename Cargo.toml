@@ -1,29 +1,15 @@
-[package]
-name = "bevy-vello"
-description = "Render Lottie and SVG assets in Bevy with Vello"
+[workspace]
+resolver = "2"
+members = ["demo"]
+
+[workspace.package]
+edition = "2021"
+version = "0.0.1"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy_vello"
-authors = [
-  "Sebastian Hamel <sebjfk@gmail.com>",
-  "Spencer C. Imbleau <spencer@imbleau.com>",
-]
-keywords = ["gamedev", "graphics"]
-version = "1.0.0"
-edition = "2021"
 
-[lib]
-
-# TODO: Separate the web demo into a new project
-# These settings are to get the WASM blob smaller.
-[profile.release]
-panic = 'abort'
-codegen-units = 1
-opt-level = 'z'
-lto = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[dependencies]
-bevy = { version = "0.11.0", default-features = false, features = [
+[workspace.dependencies]
+bevy = { version = "0.11", default-features = false, features = [
   "bevy_asset",
   "bevy_winit",
   "bevy_core_pipeline",
@@ -34,6 +20,30 @@ bevy = { version = "0.11.0", default-features = false, features = [
   "filesystem_watcher",
   "bevy_gizmos",
 ] }
+
+[package]
+name = "bevy-vello"
+description = "Render Lottie and SVG assets in Bevy with Vello"
+authors = [
+  "Sebastian Hamel <sebjfk@gmail.com>",
+  "Spencer C. Imbleau <spencer@imbleau.com>",
+]
+keywords = ["gamedev", "graphics"]
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+[lib]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 vellottie = { git = "https://github.com/vectorgameexperts/vellottie", rev = "e9535173cf826055d62cadf7133b474e25abe5ea" }
+
+# These settings are to get the WASM blob smaller for the demo.
+[profile.release.package."demo"]
+codegen-units = 1
+opt-level = 'z'

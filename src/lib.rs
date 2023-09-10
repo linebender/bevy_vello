@@ -1,4 +1,6 @@
-use std::ops::RangeInclusive;
+#![allow(clippy::type_complexity)]
+// #![deny(missing_docs)] - to add before 1.0
+//! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 use assets::VelloVectorLoader;
 use bevy::{
@@ -8,6 +10,7 @@ use bevy::{
 use debug::DebugVisualizationsPlugin;
 use font::VelloFont;
 use renderer::VelloRenderPlugin;
+use std::ops::RangeInclusive;
 mod assets;
 mod debug;
 mod font;
@@ -33,7 +36,7 @@ impl Plugin for BevyVelloPlugin {
         load_internal_asset!(
             app,
             SSRT_SHADER_HANDLE,
-            "../assets/shaders/vello_ss_rendertarget.wgsl",
+            "../shaders/vello_ss_rendertarget.wgsl",
             Shader::from_wgsl
         );
         app.add_plugins(VelloRenderPlugin);
