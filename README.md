@@ -5,9 +5,16 @@
 [![docs.rs](https://img.shields.io/docsrs/bevy_vello)](https://docs.rs/bevy_vello)
 [![Discord](https://img.shields.io/discord/913957940560531456.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zrjnQzdjCB)
 
-A bevy plugin which provides rendering support for [lottie](https://lottiefiles.com/what-is-lottie) animations and SVGs on [Bevy](https://bevyengine.org/) using [Vello](https://github.com/linebender/vello.git) and [Velato](https://github.com/linebender/velato). Supports **wasm** and **native**. Untested on Android/iOS.
+A bevy plugin which provides rendering support for [lottie](https://lottiefiles.com/what-is-lottie) animations and SVGs on [Bevy](https://bevyengine.org/) using [Vello](https://github.com/linebender/vello.git) and [Velato](https://github.com/linebender/velato). Supports **wasm** and **native**. Untested on Android/iOS (help needed).
 
 ![Alt text](image.png)
+
+## Bevy version support
+
+|bevy|bevy-vello|
+|---|---|
+|0.11|1.0, main|
+|0.10|0.1|
 
 ## Features
 
@@ -26,22 +33,16 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
 
 - Native
 
-  ```bash
-  cargo run
+  ```shell
+  cargo run -p demo
   ```
 
 - WASM (requires `cargo install trunk`)
 
-  ```bash
+  ```shell
+  cd demo
   trunk serve
   ```
-
-## Bevy version support
-
-|bevy|bevy_vello|
-|---|---|
-|0.10|0.1|
-|0.11|0.2|
 
 ## Attributions
 
