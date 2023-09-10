@@ -61,7 +61,9 @@ pub fn resize_rendertargets(
     mut target_materials: ResMut<Assets<SSTargetMaterial>>,
     windows: Query<&Window>,
 ) {
-    let Ok(window) = windows.get_single() else { return };
+    let Ok(window) = windows.get_single() else {
+        return;
+    };
     if window_resize_events.iter().last().is_some() {
         let size = Extent3d {
             width: window.resolution.physical_width(),
@@ -115,7 +117,9 @@ pub fn setup_ss_rendertarget(
     // query_vectors: Query<Entity, Added<Handle<VelloVector>>>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
 ) {
-    let Ok(window) = windows.get_single() else { return };
+    let Ok(window) = windows.get_single() else {
+        return;
+    };
 
     let mesh_handle = render_target_mesh_handle.get_or_insert_with(|| {
         let mut rendertarget_quad = Mesh::new(PrimitiveTopology::TriangleList);

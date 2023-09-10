@@ -17,7 +17,9 @@ pub struct VelloRenderPlugin;
 
 impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
-        let Ok(render_app) = app.get_sub_app_mut(RenderApp) else { return };
+        let Ok(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
         render_app.insert_resource(LottieRenderer(vellottie::Renderer::new()));
         render_app.insert_resource(ExtractedPixelScale(1.0));
 

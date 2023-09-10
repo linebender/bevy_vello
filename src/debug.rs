@@ -28,7 +28,9 @@ fn draw_viewbox(
     query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
     mut gizmos: Gizmos,
 ) {
-    let Ok((camera, view, projection)) = query_cam.get_single() else { return };
+    let Ok((camera, view, projection)) = query_cam.get_single() else {
+        return;
+    };
 
     const RED_X_SIZE: f32 = 8.0;
 
@@ -69,8 +71,10 @@ fn draw_viewbox(
                 .iter()
                 .map(|&v| camera.viewport_to_world_2d(view, v))
                 .collect::<Vec<Option<Vec2>>>()
-                .as_slice() else
-            { continue; };
+                .as_slice()
+            else {
+                continue;
+            };
 
             gizmos.line_2d(min, x_axis, Color::WHITE);
             gizmos.line_2d(min, y_axis, Color::WHITE);
