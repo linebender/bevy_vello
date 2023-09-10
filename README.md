@@ -14,7 +14,7 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
 |bevy|bevy-vello|
 |---|---|
 |0.11|1.0, main|
-|0.10|0.1|
+|<= 0.10|Unsupported|
 
 ## Features
 
