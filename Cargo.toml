@@ -41,7 +41,7 @@ repository.workspace = true
 bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
-vellottie = { git = "https://github.com/vectorgameexperts/vellottie", rev = "e9535173cf826055d62cadf7133b474e25abe5ea" }
+vellottie = { git = "https://github.com/vectorgameexperts/vellottie", rev = "5678703" }
 
 # These settings are to get the WASM blob smaller for the demo.
 [profile.release.package."demo"]
