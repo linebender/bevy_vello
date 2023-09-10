@@ -26,7 +26,7 @@ jobs:
     - name: Trunk build
       run: |
         cd demo
-        trunk build --release --public-url /bevy_vello/
+        trunk build --release --public-url /bevy-vello/
         mv favicon.ico ./dist/favicon.ico
 
     # Deploy, GitHub Pages
