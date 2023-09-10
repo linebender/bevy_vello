@@ -1,11 +1,12 @@
-name: release
-
+name: Release
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
-  release:
+  release-web:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -15,7 +16,6 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         target: wasm32-unknown-unknown
-        toolchain: stable
 
     - uses: jetli/trunk-action@v0.4.0
       with:
@@ -34,3 +34,16 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./dist
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup | Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup | Toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cargo | Publish
+      run: |
+        cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}

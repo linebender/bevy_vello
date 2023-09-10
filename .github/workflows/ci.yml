@@ -14,8 +14,10 @@ jobs:
     - name: Setup | Toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
         components: clippy,rustfmt
+
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.6.2
 
     - name: Build | Clippy
       uses: actions-rs/cargo@v1
@@ -35,13 +37,19 @@ jobs:
     - name: Setup | Ubuntu dependencies
       run: sudo apt install libasound2-dev libudev-dev pkg-config
 
-    - name: Setup | Toolchain
+    - name: Setup | Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
+        targets: wasm32-unknown-unknown
 
-    - name: Build | Check
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.6.2
+
+    - name: Build | Check (native)
       run: cargo check --all
+
+    - name: Build | Check (wasm)
+      run: cargo check --target wasm32-unknown-unknown
 
   test:
     needs: [check]
@@ -53,10 +61,19 @@ jobs:
     - name: Setup | Ubuntu dependencies
       run: sudo apt install libasound2-dev libudev-dev pkg-config
 
-    - name: Setup | Toolchain
+    - name: Setup | Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
+        targets: wasm32-unknown-unknown
 
-    - name: Build | Test
+    - name: Setup | wasm-pack
+      uses: jetli/wasm-pack-action@v0.4.0
+
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.6.2
+
+    - name: Build | Test (native)
       run: cargo test --all
+
+    - name: Build | Test (wasm)
+      run: wasm-pack test --node
