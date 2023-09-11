@@ -8,6 +8,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - Nothing yet!
 
-## 1.0
+## 0.2
 
-- Initialize release.
+### changed
+
+- Updated to bevy 0.11
+
+## 0.1
+
+- Initialize release (bevy 0.10)
