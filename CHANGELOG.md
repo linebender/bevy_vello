@@ -6,7 +6,10 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
-- Nothing yet!
+### changed
+
+- switched to `vellottie` for rendering lotties
+- switched to `vello-svg` for rendering svgs
 
 ## 0.2
 

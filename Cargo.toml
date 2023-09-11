@@ -40,8 +40,8 @@ repository.workspace = true
 [dependencies]
 bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
-vello_svg = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
-vellottie = { git = "https://github.com/vectorgameexperts/vellottie", rev = "5678703" }
+vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.0.1" }
+vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.0.1" }
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

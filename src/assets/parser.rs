@@ -2,7 +2,7 @@ use crate::{assets::vector::Vector, VelloVector};
 use bevy::prelude::*;
 use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
-use vello_svg::usvg;
+use vello_svg::usvg::{self, TreeParsing};
 
 /// Deserialize the SVG source XML string from the file
 /// contents buffer represented as raw bytes into a `VelloVector`
