@@ -14,7 +14,7 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Err
     // Process the loaded SVG into Vello-compatible data
     let mut scene_frag = SceneFragment::new();
     let mut builder = SceneBuilder::for_fragment(&mut scene_frag);
-    vello_svg::render_tree(&mut builder, &usvg);
+    vello_svg::render_tree(&mut builder, &usvg, None);
 
     let width = usvg.size.width() as f32;
     let height = usvg.size.height() as f32;
