@@ -44,7 +44,7 @@ impl AssetLoader for VelloVectorLoader {
                         size = format!("{:?}", (vello_vector.width, vello_vector.height)),
                         "finished parsing json asset"
                     );
-                    load_context.set_default_asset(LoadedAsset::new(vello_vector))
+                    load_context.set_default_asset(LoadedAsset::new(vello_vector));
                 }
                 _ => {}
             }
