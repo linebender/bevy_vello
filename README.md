@@ -1,6 +1,6 @@
 # Bevy Vello
 
-![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
+![MIT OR Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)
 [![crates.io](https://img.shields.io/crates/v/bevy-vello.svg)](https://crates.io/crates/bevy-vello)
 [![docs.rs](https://img.shields.io/docsrs/bevy-vello)](https://docs.rs/bevy-vello)
 [![Discord](https://img.shields.io/discord/913957940560531456.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zrjnQzdjCB)
