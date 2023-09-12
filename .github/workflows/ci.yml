@@ -20,10 +20,7 @@ jobs:
       uses: Swatinem/rust-cache@v2.6.2
 
     - name: Build | Clippy
-      uses: actions-rs/cargo@v1
-      with:
-        command: clippy
-        args: -- -D warnings
+      run: cargo clippy -- -D warnings
 
     - name: Build | Rustfmt
       run: cargo fmt --all -- --check
