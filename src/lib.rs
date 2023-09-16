@@ -50,7 +50,13 @@ impl Plugin for BevyVelloPlugin {
             DebugVisualizationsPlugin,
         ));
         app.add_systems(Startup, rendertarget::setup_ss_rendertarget)
-            .add_systems(Update, rendertarget::resize_rendertargets);
+            .add_systems(
+                Update,
+                (
+                    rendertarget::resize_rendertargets,
+                    rendertarget::clear_when_empty,
+                ),
+            );
     }
 }
 

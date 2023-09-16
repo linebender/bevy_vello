@@ -16,7 +16,7 @@ use bevy::{
     window::{WindowResized, WindowResolution},
 };
 
-use crate::{renderer::SSRenderTarget, SSRT_SHADER_HANDLE};
+use crate::{renderer::SSRenderTarget, Layer, SSRT_SHADER_HANDLE};
 
 #[derive(Component)]
 struct MainCamera;
@@ -193,5 +193,19 @@ impl Material2d for VelloCanvasMaterial {
         descriptor.vertex.buffers = vec![vertex_layout];
 
         Ok(())
+    }
+}
+
+/// Hide the RenderTarget canvas if there is nothing to render
+pub fn clear_when_empty(
+    mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
+    render_items: Query<(&mut Layer, &ComputedVisibility)>,
+) {
+    if let Ok(mut visibility) = query_render_target.get_single_mut() {
+        if render_items.is_empty() {
+            *visibility = Visibility::Hidden;
+        } else {
+            *visibility = Visibility::Inherited;
+        }
     }
 }

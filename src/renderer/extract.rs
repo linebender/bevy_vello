@@ -6,21 +6,6 @@ use bevy::{
 
 use crate::{font::VelloFont, ColorPaletteSwap, Layer, VelloText, VelloVector};
 
-#[derive(Component)]
-pub struct RenderReadyTag;
-
-pub fn tag_vectors_for_render(
-    mut commands: Commands,
-    vector_assets: ResMut<Assets<VelloVector>>,
-    vectors: Query<(Entity, &Handle<VelloVector>), Without<RenderReadyTag>>,
-) {
-    for (entity, handle) in vectors.iter() {
-        if vector_assets.get(handle).is_some() {
-            commands.entity(entity).insert(RenderReadyTag);
-        }
-    }
-}
-
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
     pub vector_handle: Handle<VelloVector>,
@@ -40,22 +25,25 @@ pub fn vector_instances(
             &GlobalTransform,
             Option<&ColorPaletteSwap>,
             Option<&Node>,
+            &ComputedVisibility,
         )>,
     >,
     assets: Extract<Res<Assets<VelloVector>>>,
 ) {
-    for (vello_vector_handle, layer, transform, color_pallette_swap, ui_node) in
+    for (vello_vector_handle, layer, transform, color_pallette_swap, ui_node, visibility) in
         query_vectors.iter()
     {
         if let Some(asset_data) = assets.get(vello_vector_handle) {
-            commands.spawn(ExtractedRenderVector {
-                vector_handle: vello_vector_handle.clone(),
-                render_data: asset_data.to_owned(),
-                transform: *transform,
-                layer: *layer,
-                color_pallette_swap: color_pallette_swap.cloned(),
-                ui_node: ui_node.cloned(),
-            });
+            if visibility.is_visible() {
+                commands.spawn(ExtractedRenderVector {
+                    vector_handle: vello_vector_handle.clone(),
+                    render_data: asset_data.to_owned(),
+                    transform: *transform,
+                    layer: *layer,
+                    color_pallette_swap: color_pallette_swap.cloned(),
+                    ui_node: ui_node.cloned(),
+                });
+            }
         }
     }
 }

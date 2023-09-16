@@ -49,8 +49,7 @@ impl Plugin for VelloRenderPlugin {
             ExtractComponentPlugin::<extract::SSRenderTarget>::default(),
             RenderAssetPlugin::<VelloVector>::default(),
             RenderAssetPlugin::<VelloFont>::default(),
-        ))
-        .add_systems(Update, extract::tag_vectors_for_render);
+        ));
     }
 
     fn finish(&self, app: &mut App) {
