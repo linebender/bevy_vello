@@ -117,7 +117,7 @@ impl ColorPaletteSwap {
 
 #[derive(Bundle, Default)]
 pub struct VelloVectorBundle {
-    pub svg: Handle<VelloVector>,
+    pub vector: Handle<VelloVector>,
     pub layer: Layer,
     pub transform: Transform,
     pub global_transform: GlobalTransform,

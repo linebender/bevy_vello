@@ -27,7 +27,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         .spawn(VelloVectorBundle {
             layer: bevy_vello::Layer::Background,
             // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
-            svg: asset_server.load("../assets/squid.json"),
+            vector: asset_server.load("../assets/squid.json"),
             debug_visualizations: bevy_vello::DebugVisualizations::Visible,
             ..default()
         })
