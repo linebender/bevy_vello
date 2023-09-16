@@ -56,9 +56,9 @@ pub fn setup_image(
 
 pub fn resize_rendertargets(
     mut window_resize_events: EventReader<WindowResized>,
-    mut query: Query<(&mut SSRenderTarget, &Handle<SSTargetMaterial>)>,
+    mut query: Query<(&mut SSRenderTarget, &Handle<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
-    mut target_materials: ResMut<Assets<SSTargetMaterial>>,
+    mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
 ) {
     let Ok(window) = windows.get_single() else {
@@ -112,7 +112,7 @@ pub fn setup_ss_rendertarget(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut images: ResMut<Assets<Image>>,
-    mut custom_materials: ResMut<Assets<SSTargetMaterial>>,
+    mut custom_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
     // query_vectors: Query<Entity, Added<Handle<VelloVector>>>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
@@ -144,7 +144,7 @@ pub fn setup_ss_rendertarget(
     let texture_image = setup_image(&mut commands, &mut images, &window.resolution);
     let render_target = SSRenderTarget(texture_image.clone());
     let mesh = Mesh2dHandle(mesh_handle.clone());
-    let material = custom_materials.add(SSTargetMaterial {
+    let material = custom_materials.add(VelloCanvasMaterial {
         texture: texture_image,
     });
 
@@ -161,13 +161,13 @@ pub fn setup_ss_rendertarget(
 
 #[derive(AsBindGroup, TypeUuid, TypePath, Clone)]
 #[uuid = "b62bb455-a72c-4b56-87bb-81e0554e234f"]
-pub struct SSTargetMaterial {
+pub struct VelloCanvasMaterial {
     #[texture(0)]
     #[sampler(1)]
     pub texture: Handle<Image>,
 }
 
-impl Material2d for SSTargetMaterial {
+impl Material2d for VelloCanvasMaterial {
     fn vertex_shader() -> ShaderRef {
         SSRT_SHADER_HANDLE.typed().into()
     }

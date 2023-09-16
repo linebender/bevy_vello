@@ -23,6 +23,7 @@ pub use assets::{
     VelloVector,
 };
 pub use debug::DebugVisualizations;
+pub use rendertarget::VelloCanvasMaterial;
 
 use crate::font::VelloFontLoader;
 
@@ -45,7 +46,7 @@ impl Plugin for BevyVelloPlugin {
         app.add_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>();
         app.add_plugins((
-            Material2dPlugin::<rendertarget::SSTargetMaterial>::default(),
+            Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(),
             DebugVisualizationsPlugin,
         ));
         app.add_systems(Startup, rendertarget::setup_ss_rendertarget)
