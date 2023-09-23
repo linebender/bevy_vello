@@ -4,7 +4,7 @@ use bevy::{
     window::PrimaryWindow,
 };
 
-use crate::{font::VelloFont, ColorPaletteSwap, Layer, VelloText, VelloVector};
+use crate::{font::VelloFont, ColorPaletteSwap, Layer, Origin, VelloText, VelloVector};
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
@@ -12,6 +12,7 @@ pub struct ExtractedRenderVector {
     pub render_data: VelloVector,
     pub transform: GlobalTransform,
     pub layer: Layer,
+    pub origin: Origin,
     pub color_pallette_swap: Option<ColorPaletteSwap>,
     pub ui_node: Option<Node>,
 }
@@ -22,6 +23,7 @@ pub fn vector_instances(
         Query<(
             &Handle<VelloVector>,
             &Layer,
+            Option<&Origin>,
             &GlobalTransform,
             Option<&ColorPaletteSwap>,
             Option<&Node>,
@@ -30,7 +32,7 @@ pub fn vector_instances(
     >,
     assets: Extract<Res<Assets<VelloVector>>>,
 ) {
-    for (vello_vector_handle, layer, transform, color_pallette_swap, ui_node, visibility) in
+    for (vello_vector_handle, layer, origin, transform, color_pallette_swap, ui_node, visibility) in
         query_vectors.iter()
     {
         if let Some(asset_data) = assets.get(vello_vector_handle) {
@@ -40,6 +42,7 @@ pub fn vector_instances(
                     render_data: asset_data.to_owned(),
                     transform: *transform,
                     layer: *layer,
+                    origin: origin.copied().unwrap_or_default(),
                     color_pallette_swap: color_pallette_swap.cloned(),
                     ui_node: ui_node.cloned(),
                 });

@@ -1,6 +1,7 @@
 use bevy::{asset::ChangeWatcher, prelude::*};
 use bevy_vello::{
-    BevyVelloPlugin, ColorPaletteSwap, VelloText, VelloTextBundle, VelloVector, VelloVectorBundle,
+    BevyVelloPlugin, ColorPaletteSwap, Origin, VelloText, VelloTextBundle, VelloVector,
+    VelloVectorBundle,
 };
 use std::time::Duration;
 
@@ -26,6 +27,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     commands
         .spawn(VelloVectorBundle {
             layer: bevy_vello::Layer::Background,
+            origin: bevy_vello::Origin::Center,
             // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
             vector: asset_server.load("../assets/squid.json"),
             debug_visualizations: bevy_vello::DebugVisualizations::Visible,
@@ -47,8 +49,8 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
         text: VelloText {
-            content: "squid".to_string(),
-            size: 320.0,
+            content: "hello vello".to_string(),
+            size: 100.0,
         },
         ..default()
     });
@@ -56,7 +58,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
 
 /// Transform the camera to the center of the vector graphic apply zooming
 fn camera_system(
-    mut query: Query<(&Transform, &mut Handle<VelloVector>)>,
+    mut query: Query<(&GlobalTransform, &mut Handle<VelloVector>, &Origin)>,
     mut query_cam: Query<&mut Transform, (With<Camera>, Without<Handle<VelloVector>>)>,
     vectors: ResMut<Assets<VelloVector>>,
     mut q: Query<&mut OrthographicProjection, With<Camera>>,
@@ -68,16 +70,18 @@ fn camera_system(
     let Ok(mut camera_transform) = query_cam.get_single_mut() else {
         return;
     };
-    let Ok((&(mut target_transform), vector)) = query.get_single_mut() else {
+    let Ok((target_transform, vector, origin)) = query.get_single_mut() else {
         return;
     };
 
     // Zoom in & out to demonstrate scalability and show the vector graphic's viewbox/anchor point
-    projection.scale = 2.0 * time.elapsed_seconds().cos();
+    projection.scale = 2.0 * time.elapsed_seconds().sin().clamp(0.2, 0.8);
 
+    // Set the camera position to the center point of the vector
     if let Some(vector) = vectors.get(&vector) {
-        target_transform.translation.y += vector.height * target_transform.scale.y / 2.0;
-        camera_transform.translation = target_transform.translation;
+        camera_transform.translation = vector
+            .center_in_world(target_transform, origin)
+            .extend(camera_transform.translation.z);
     }
 }
 

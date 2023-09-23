@@ -1,6 +1,6 @@
-use crate::metadata::Metadata;
+use crate::{metadata::Metadata, Origin};
 use bevy::{
-    math::{Vec3A, Vec4Swizzles},
+    math::{Vec3A, Vec3Swizzles, Vec4Swizzles},
     prelude::*,
     reflect::{TypePath, TypeUuid},
 };
@@ -24,8 +24,23 @@ pub struct VelloVector {
 }
 
 impl VelloVector {
+    pub fn center_in_world(&self, transform: &GlobalTransform, origin: &Origin) -> Vec2 {
+        let world_transform = transform.compute_matrix();
+        let local_transform = match origin {
+            Origin::BottomCenter => self
+                .local_transform_bottom_center
+                .compute_matrix()
+                .inverse(),
+            Origin::Center => return transform.translation().xy(),
+        };
+
+        let local_center_point = Vec3A::new(self.width / 2.0, -self.height / 2.0, 0.0);
+
+        (world_transform * local_transform * local_center_point.extend(1.0)).xy()
+    }
+
     /// Returns the 4 corner points of this vector's bounding box in world space
-    pub fn bb_in_world(&self, transform: &GlobalTransform) -> [Vec2; 4] {
+    pub fn bb_in_world(&self, transform: &GlobalTransform, origin: &Origin) -> [Vec2; 4] {
         let min = Vec3A::ZERO;
         let x_axis = Vec3A::new(self.width, 0.0, 0.0);
 
@@ -33,10 +48,14 @@ impl VelloVector {
         let y_axis = Vec3A::new(0.0, -self.height, 0.0);
 
         let world_transform = transform.compute_matrix();
-        let local_transform = self
-            .local_transform_bottom_center
-            .compute_matrix()
-            .inverse();
+        let local_transform = match origin {
+            Origin::BottomCenter => self
+                .local_transform_bottom_center
+                .compute_matrix()
+                .inverse(),
+            Origin::Center => self.local_transform_center.compute_matrix().inverse(),
+        };
+
         let min = (world_transform * local_transform * min.extend(1.0)).xy();
         let x_axis = (world_transform * local_transform * x_axis.extend(1.0)).xy();
         let max = (world_transform * local_transform * max.extend(1.0)).xy();
@@ -53,8 +72,8 @@ impl VelloVector {
         let y_axis = Vec3A::new(0.0, -self.height, 0.0);
 
         let world_transform = transform.compute_matrix();
-        let mut local_transform = self.local_transform_center.compute_matrix().inverse();
-        local_transform.y_axis *= -1.0;
+        let local_transform = self.local_transform_center.compute_matrix().inverse();
+
         let min = (world_transform * local_transform * min.extend(1.0)).xy();
         let x_axis = (world_transform * local_transform * x_axis.extend(1.0)).xy();
         let max = (world_transform * local_transform * max.extend(1.0)).xy();

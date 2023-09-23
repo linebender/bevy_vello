@@ -78,7 +78,7 @@ fn compute_local_transform(width: f32, height: f32) -> Transform {
 fn compute_local_transform_center(width: f32, height: f32) -> Transform {
     let mut transform = Transform::default();
     transform.translation.x = width / 2.0;
-    transform.translation.y = height / 2.0;
+    transform.translation.y = -height / 2.0;
 
     transform
 }

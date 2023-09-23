@@ -1,6 +1,6 @@
-use bevy::prelude::*;
+use bevy::{math::Vec3Swizzles, prelude::*};
 
-use crate::VelloVector;
+use crate::{Origin, VelloVector};
 
 pub struct DebugVisualizationsPlugin;
 
@@ -20,7 +20,12 @@ pub enum DebugVisualizations {
 
 fn draw_viewbox(
     query_world: Query<
-        (&Handle<VelloVector>, &GlobalTransform, &DebugVisualizations),
+        (
+            &Handle<VelloVector>,
+            &GlobalTransform,
+            Option<&Origin>,
+            &DebugVisualizations,
+        ),
         Without<Node>,
     >,
     query_ui: Query<(&Handle<VelloVector>, &GlobalTransform, &DebugVisualizations), With<Node>>,
@@ -35,19 +40,20 @@ fn draw_viewbox(
     const RED_X_SIZE: f32 = 8.0;
 
     // Show world-space vectors
-    for (vector, transform, _) in query_world
+    for (vector, transform, origin, _) in query_world
         .iter()
-        .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
-            let [min, x_axis, max, y_axis] = vector.bb_in_world(transform);
+            let [min, x_axis, max, y_axis] =
+                vector.bb_in_world(transform, origin.unwrap_or(&Origin::default()));
 
             gizmos.line_2d(min, x_axis, Color::WHITE);
             gizmos.line_2d(min, y_axis, Color::WHITE);
             gizmos.line_2d(x_axis, max, Color::WHITE);
             gizmos.line_2d(y_axis, max, Color::WHITE);
 
-            let red_x_origin = Vec2::new((y_axis.x + max.x) / 2.0, (y_axis.y + max.y) / 2.0);
+            let red_x_origin = transform.translation().xy();
             let from = red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
             let to = red_x_origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 
@@ -81,7 +87,7 @@ fn draw_viewbox(
             gizmos.line_2d(x_axis, max, Color::WHITE);
             gizmos.line_2d(y_axis, max, Color::WHITE);
 
-            let red_x_origin = Vec2::new(y_axis.x, x_axis.y);
+            let red_x_origin = Vec2::new((y_axis.x + max.x) / 2.0, (y_axis.y + min.y) / 2.0);
             let from = red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
             let to = red_x_origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 

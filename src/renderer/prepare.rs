@@ -108,11 +108,17 @@ pub fn prepare_vector_affines(
                     model_matrix.y_axis.y *= fill_scale.y;
                 }
 
+                let mut local_center_matrix = local_center_matrix;
+                local_center_matrix.w_axis.y *= -1.0;
                 model_matrix * local_center_matrix
             }
             _ => {
-                let mut model_matrix =
-                    world_transform.compute_matrix() * local_bottom_center_matrix;
+                let local_matrix = match render_vector.origin {
+                    crate::Origin::BottomCenter => local_bottom_center_matrix,
+                    crate::Origin::Center => local_center_matrix,
+                };
+
+                let mut model_matrix = world_transform.compute_matrix() * local_matrix;
                 model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {

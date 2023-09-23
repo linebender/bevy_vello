@@ -71,6 +71,14 @@ pub enum Layer {
     UI,
 }
 
+#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
+#[reflect(Component)]
+pub enum Origin {
+    #[default]
+    BottomCenter,
+    Center,
+}
+
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
 /// Add this component to a `VelloVectorBundle` entity to enable runtime color editing.
@@ -118,7 +126,10 @@ impl ColorPaletteSwap {
 #[derive(Bundle, Default)]
 pub struct VelloVectorBundle {
     pub vector: Handle<VelloVector>,
+    /// Configures the draw order within the vello canvas
     pub layer: Layer,
+    /// This object's transform local origin. Enable debug visualizations to visualize (red X)
+    pub origin: Origin,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible
