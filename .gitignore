@@ -25,3 +25,9 @@ dist/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Some people have Apple
+.DS_Store
+
+# Generated on wasm-pack failure
+**/unsupported.js
