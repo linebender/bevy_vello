@@ -4,7 +4,7 @@ members = ["demo"]
 
 [workspace.package]
 edition = "2021"
-version = "0.3.4"
+version = "0.3.5"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
@@ -42,6 +42,7 @@ bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "b0303ccf98df15a8b196272720d364a56f7304ba" }
 vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.0.1" }
 vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.0.1" }
+flate2 = "1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
