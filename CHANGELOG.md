@@ -5,11 +5,12 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
 ## Unreleased
-  
+
 ### added
 
 - added `Origin` to `VelloVectorBundle` to give the user the option to change the vector's transform origin
-  
+- support for `.svg.gz` (gzipped svg) and `.json.gz` (gzipped lottie)
+
 ### changed
 
 - switched to `vellottie` for rendering lotties
