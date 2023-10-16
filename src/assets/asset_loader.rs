@@ -29,7 +29,7 @@ impl AssetLoader for VelloVectorLoader {
             if gzipped {
                 debug!("decompressing {}...", path.display());
                 // Decompress
-                let decrompressed_bytes = compression::decompress_gzip(&bytes);
+                let decrompressed_bytes = compression::decompress_gzip(&bytes)?;
                 let path_without_gz = path.with_extension("");
                 bytes = decrompressed_bytes.into_bytes();
                 // Remove .gz extension
