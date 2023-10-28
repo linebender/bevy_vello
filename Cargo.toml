@@ -30,8 +30,8 @@ repository.workspace = true
 [dependencies]
 bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "b5e3ae586846c8b9c7ad9b4830d8035a807eb15f" }
-vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.0.2" }
-vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.0.2" }
+vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", branch = "bevy-0.12-dev" }
+vellottie = { git = "https://github.com/vectorgameexperts/vellottie", branch = "bevy-0.12-dev" }
 flate2 = "1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
