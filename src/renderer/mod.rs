@@ -9,7 +9,6 @@ pub use plugin::VelloRenderPlugin;
 use bevy::{prelude::*, render::renderer::RenderDevice};
 use vello::{Renderer, RendererOptions};
 
-#[derive(Resource)]
 pub struct VelloRenderer(Renderer);
 
 impl FromWorld for VelloRenderer {
@@ -20,6 +19,8 @@ impl FromWorld for VelloRenderer {
                 device.wgpu_device(),
                 &RendererOptions {
                     surface_format: None,
+                    timestamp_period: 0.0,
+                    use_cpu: false,
                 },
             )
             .expect("no gpu device"),

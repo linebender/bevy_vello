@@ -27,16 +27,25 @@ pub fn vector_instances(
             &GlobalTransform,
             Option<&ColorPaletteSwap>,
             Option<&Node>,
-            &ComputedVisibility,
+            &ViewVisibility,
+            &InheritedVisibility,
         )>,
     >,
     assets: Extract<Res<Assets<VelloVector>>>,
 ) {
-    for (vello_vector_handle, layer, origin, transform, color_pallette_swap, ui_node, visibility) in
-        query_vectors.iter()
+    for (
+        vello_vector_handle,
+        layer,
+        origin,
+        transform,
+        color_pallette_swap,
+        ui_node,
+        view_visibility,
+        inherited_visibility,
+    ) in query_vectors.iter()
     {
         if let Some(asset_data) = assets.get(vello_vector_handle) {
-            if visibility.is_visible() {
+            if view_visibility.get() && inherited_visibility.get() {
                 commands.spawn(ExtractedRenderVector {
                     vector_handle: vello_vector_handle.clone(),
                     render_data: asset_data.to_owned(),

@@ -63,11 +63,13 @@ impl Plugin for VelloRenderPlugin {
             .get_resource::<RenderDevice>()
             .expect("bevy_vello: unable to get render device");
 
-        render_app.insert_resource(VelloRenderer(
+        render_app.insert_non_send_resource(VelloRenderer(
             Renderer::new(
                 device.wgpu_device(),
                 &RendererOptions {
                     surface_format: None,
+                    timestamp_period: 0.0,
+                    use_cpu: false,
                 },
             )
             .unwrap(),

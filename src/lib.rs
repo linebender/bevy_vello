@@ -30,8 +30,7 @@ pub use font::VelloFontLoader;
 
 pub struct BevyVelloPlugin;
 
-const SSRT_SHADER_HANDLE: HandleUntyped =
-    HandleUntyped::weak_from_u64(Shader::TYPE_UUID, 2314894693238056781);
+const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
 
 impl Plugin for BevyVelloPlugin {
     fn build(&self, app: &mut App) {
@@ -42,9 +41,9 @@ impl Plugin for BevyVelloPlugin {
             Shader::from_wgsl
         );
         app.add_plugins(VelloRenderPlugin);
-        app.add_asset::<VelloVector>()
+        app.init_asset::<VelloVector>()
             .init_asset_loader::<VelloVectorLoader>();
-        app.add_asset::<VelloFont>()
+        app.init_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>();
         app.add_plugins((
             Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(),
@@ -124,7 +123,7 @@ impl ColorPaletteSwap {
     }
 }
 
-#[derive(Bundle, Default)]
+#[derive(Bundle)]
 pub struct VelloVectorBundle {
     pub vector: Handle<VelloVector>,
     /// Configures the draw order within the vello canvas
@@ -133,12 +132,29 @@ pub struct VelloVectorBundle {
     pub origin: Origin,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
+    pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible
-    pub visibility: Visibility,
     /// Algorithmically-computed indication of whether an entity is visible
     //and /// should be extracted for rendering
-    pub computed_visibility: ComputedVisibility,
-    pub debug_visualizations: DebugVisualizations,
+    pub visibility: Visibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
+}
+
+impl Default for VelloVectorBundle {
+    fn default() -> Self {
+        Self {
+            vector: Default::default(),
+            layer: Default::default(),
+            origin: Default::default(),
+            transform: Default::default(),
+            global_transform: Default::default(),
+            debug_visualizations: DebugVisualizations::Visible,
+            visibility: Visibility::Inherited,
+            inherited_visibility: InheritedVisibility::default(),
+            view_visibility: ViewVisibility::default(),
+        }
+    }
 }
 
 #[derive(Component, Default, Clone)]
@@ -155,11 +171,11 @@ pub struct VelloTextBundle {
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible
-    pub visibility: Visibility,
     /// Algorithmically-computed indication of whether an entity is visible
     //and /// should be extracted for rendering
-    pub computed_visibility: ComputedVisibility,
-    pub debug_visualizations: DebugVisualizations,
+    pub visibility: Visibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
 }
 
 impl Default for VelloTextBundle {
@@ -170,9 +186,9 @@ impl Default for VelloTextBundle {
             layer: Layer::Foreground,
             transform: Default::default(),
             global_transform: Default::default(),
-            visibility: Default::default(),
-            computed_visibility: Default::default(),
-            debug_visualizations: Default::default(),
+            visibility: Visibility::Inherited,
+            inherited_visibility: InheritedVisibility::default(),
+            view_visibility: ViewVisibility::default(),
         }
     }
 }

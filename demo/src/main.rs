@@ -1,9 +1,8 @@
-use bevy::{asset::ChangeWatcher, prelude::*};
+use bevy::prelude::*;
 use bevy_vello::{
     BevyVelloPlugin, ColorPaletteSwap, Origin, VelloText, VelloTextBundle, VelloVector,
     VelloVectorBundle,
 };
-use std::time::Duration;
 
 const BODY_BASE: Color = Color::rgba(129. / 255., 94. / 255., 1.0, 1.0);
 const BODY_DARK: Color = Color::rgba(73. / 255., 20. / 255., 165. / 255., 1.0);
@@ -12,10 +11,7 @@ const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 1.0, 1.0);
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            watch_for_changes: ChangeWatcher::with_delay(Duration::from_millis(200)),
-            ..default()
-        }))
+        .add_plugins(DefaultPlugins.set(AssetPlugin { ..default() }))
         .add_plugins(BevyVelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, (camera_system, drag_and_drop))
@@ -78,7 +74,7 @@ fn camera_system(
     projection.scale = 2.0 * time.elapsed_seconds().sin().clamp(0.2, 0.8);
 
     // Set the camera position to the center point of the vector
-    if let Some(vector) = vectors.get(&vector) {
+    if let Some(vector) = vectors.get(vector.as_ref()) {
         camera_transform.translation = vector
             .center_in_world(target_transform, origin)
             .extend(camera_transform.translation.z);
@@ -88,17 +84,18 @@ fn camera_system(
 /// Drag and drop any SVG or Lottie JSON asset into the window and change the displayed asset
 fn drag_and_drop(
     mut query: Query<(&Transform, &mut Handle<VelloVector>)>,
-    asset_server: ResMut<AssetServer>,
-    mut dnd_evr: EventReader<FileDragAndDrop>,
+    _asset_server: ResMut<AssetServer>,
+    mut _dnd_evr: EventReader<FileDragAndDrop>,
 ) {
-    let Ok((_, mut vector)) = query.get_single_mut() else {
+    let Ok((_, mut _vector)) = query.get_single_mut() else {
         return;
     };
 
-    for ev in dnd_evr.iter() {
-        if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {
-            let new_handle = asset_server.load(path_buf.to_str().unwrap());
-            *vector = new_handle;
-        }
-    }
+    // todo: this broke after migration to bevy 0.12
+    // for ev in dnd_evr.iter() {
+    //     if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {
+    //         let new_handle = asset_server.load(path_buf.to_str().unwrap());
+    //         *vector = new_handle;
+    //     }
+    // }
 }

@@ -2,7 +2,7 @@ use crate::{metadata::Metadata, Origin};
 use bevy::{
     math::{Vec3A, Vec3Swizzles, Vec4Swizzles},
     prelude::*,
-    reflect::{TypePath, TypeUuid},
+    reflect::TypePath,
 };
 use std::sync::Arc;
 use vello::SceneFragment;
@@ -13,8 +13,7 @@ pub enum Vector {
     Animated(vellottie::Composition),
 }
 
-#[derive(TypeUuid, TypePath, Clone)]
-#[uuid = "39cadc56-aa9c-4543-3640-a018b74b5053"]
+#[derive(Asset, TypePath, Clone)]
 pub struct VelloVector {
     pub data: Vector,
     pub local_transform_bottom_center: Transform,

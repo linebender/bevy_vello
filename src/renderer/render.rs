@@ -82,7 +82,7 @@ impl From<ExtractedVectorAssetData> for PreparedVectorAssetData {
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
 pub fn render_scene(
-    renderer: Option<ResMut<VelloRenderer>>,
+    renderer: Option<NonSendMut<VelloRenderer>>,
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,

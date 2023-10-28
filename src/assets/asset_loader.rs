@@ -1,28 +1,54 @@
 use crate::{
     assets::parser::{load_lottie_from_bytes, load_svg_from_bytes},
-    compression,
+    compression, VelloVector,
 };
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext, LoadedAsset},
     prelude::*,
-    utils::BoxedFuture,
+    utils::{
+        thiserror::{self, Error},
+        BoxedFuture,
+    },
 };
 #[derive(Default)]
 pub struct VelloVectorLoader;
 
+#[non_exhaustive]
+#[derive(Debug, Error)]
+pub enum VectorLoaderError {
+    #[error("Could not load vector: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Could not parse vector: {0}")]
+    Parse(String),
+    #[error("Could not parse shader: {0}")]
+    FromUtf8(#[from] std::string::FromUtf8Error),
+    #[error("Could not parse shader: {0}")]
+    FromStrUtf8(#[from] std::str::Utf8Error),
+    #[error("Could not parse shader: {0}")]
+    Usvg(#[from] vello_svg::usvg::Error),
+}
+
 impl AssetLoader for VelloVectorLoader {
+    type Asset = VelloVector;
+
+    type Settings = ();
+
+    type Error = VectorLoaderError;
+
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
+        reader: &'a mut Reader,
+        _settings: &'a Self::Settings,
         load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
-            let mut bytes = bytes.to_vec();
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
             let path = load_context.path().to_owned();
             let mut ext = path
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
-                .ok_or(bevy::asset::Error::msg("Invalid extension"))?
+                .ok_or(VectorLoaderError::Parse("Invalid extension".to_string()))?
                 .to_owned();
 
             let gzipped = ext == "gz";
@@ -36,7 +62,9 @@ impl AssetLoader for VelloVectorLoader {
                 ext = path_without_gz
                     .extension()
                     .and_then(std::ffi::OsStr::to_str)
-                    .ok_or(bevy::asset::Error::msg("No extension before .gz?"))?
+                    .ok_or(VectorLoaderError::Parse(
+                        "No extension before .gz?".to_string(),
+                    ))?
                     .to_string();
             }
 
@@ -53,7 +81,7 @@ impl AssetLoader for VelloVectorLoader {
                         "finished parsing svg asset"
                     );
 
-                    load_context.set_default_asset(LoadedAsset::new(vello_vector));
+                    Ok(vello_vector)
                 }
                 "json" => {
                     let vello_vector = load_lottie_from_bytes(&bytes)?;
@@ -63,12 +91,12 @@ impl AssetLoader for VelloVectorLoader {
                         size = format!("{:?}", (vello_vector.width, vello_vector.height)),
                         "finished parsing json asset"
                     );
-                    load_context.set_default_asset(LoadedAsset::new(vello_vector));
+                    Ok(vello_vector)
                 }
-                _ => {}
+                _ => Err(VectorLoaderError::Parse(
+                    "Unknown file extension".to_string(),
+                )),
             }
-
-            Ok(())
         })
     }
 

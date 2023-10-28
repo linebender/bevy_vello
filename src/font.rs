@@ -17,7 +17,8 @@
 use std::sync::Arc;
 
 use bevy::{
-    asset::{AssetLoader, LoadContext, LoadedAsset},
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext, LoadedAsset},
+    prelude::*,
     reflect::{TypePath, TypeUuid},
     render::render_asset::RenderAsset,
     utils::BoxedFuture,
@@ -31,8 +32,9 @@ use vello::{
     SceneBuilder, SceneFragment,
 };
 
-#[derive(TypeUuid, TypePath)]
-#[uuid = "3a95cdc6-a9ac-4453-6043-abb748050513"]
+use crate::assets::VectorLoaderError;
+
+#[derive(Asset, TypePath)]
 pub struct VelloFont {
     gcx: GlyphContext,
     pub font: peniko::Font,
@@ -131,17 +133,24 @@ impl VelloFont {
 pub struct VelloFontLoader;
 
 impl AssetLoader for VelloFontLoader {
+    type Asset = VelloFont;
+
+    type Settings = ();
+
+    type Error = VectorLoaderError;
+
     fn load<'a>(
         &'a self,
-        bytes: &'a [u8],
+        reader: &'a mut Reader,
+        _settings: &'a Self::Settings,
         load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<(), bevy::asset::Error>> {
+    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
+            let mut bytes = Vec::new();
+            reader.read_to_end(&mut bytes).await?;
             let vello_font = VelloFont::new(bytes.to_vec());
 
-            load_context.set_default_asset(LoadedAsset::new(vello_font));
-
-            Ok(())
+            Ok(vello_font)
         })
     }
 

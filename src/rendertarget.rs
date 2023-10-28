@@ -159,7 +159,7 @@ pub fn setup_ss_rendertarget(
         .insert(render_target);
 }
 
-#[derive(AsBindGroup, TypeUuid, TypePath, Clone)]
+#[derive(AsBindGroup, TypeUuid, TypePath, Asset, Clone)]
 #[uuid = "b62bb455-a72c-4b56-87bb-81e0554e234f"]
 pub struct VelloCanvasMaterial {
     #[texture(0)]
@@ -169,11 +169,11 @@ pub struct VelloCanvasMaterial {
 
 impl Material2d for VelloCanvasMaterial {
     fn vertex_shader() -> ShaderRef {
-        SSRT_SHADER_HANDLE.typed().into()
+        SSRT_SHADER_HANDLE.into()
     }
 
     fn fragment_shader() -> ShaderRef {
-        SSRT_SHADER_HANDLE.typed().into()
+        SSRT_SHADER_HANDLE.into()
     }
 
     fn specialize(
@@ -199,7 +199,7 @@ impl Material2d for VelloCanvasMaterial {
 /// Hide the RenderTarget canvas if there is nothing to render
 pub fn clear_when_empty(
     mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
-    render_items: Query<(&mut Layer, &ComputedVisibility)>,
+    render_items: Query<(&mut Layer, &ViewVisibility)>,
 ) {
     if let Ok(mut visibility) = query_render_target.get_single_mut() {
         if render_items.is_empty() {

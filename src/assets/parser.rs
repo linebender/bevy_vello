@@ -4,9 +4,11 @@ use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
 use vello_svg::usvg::{self, TreeParsing};
 
+use super::asset_loader::VectorLoaderError;
+
 /// Deserialize the SVG source XML string from the file
 /// contents buffer represented as raw bytes into a `VelloVector`
-pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Error> {
+pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, VectorLoaderError> {
     let svg_str = std::str::from_utf8(bytes)?;
 
     let usvg = usvg::Tree::from_str(svg_str, &usvg::Options::default())?;
@@ -32,7 +34,7 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Err
 
 /// Deserialize the Lottie source JSON string from the file
 /// contents buffer represented as string into a `VelloVector`
-pub fn load_svg_from_str(svg_str: &str) -> Result<VelloVector, bevy::asset::Error> {
+pub fn load_svg_from_str(svg_str: &str) -> Result<VelloVector, VectorLoaderError> {
     let bytes = svg_str.as_bytes();
 
     load_svg_from_bytes(bytes)
@@ -40,10 +42,10 @@ pub fn load_svg_from_str(svg_str: &str) -> Result<VelloVector, bevy::asset::Erro
 
 /// Deserialize the Lottie source JSON string from the file
 /// contents buffer represented as a str into a `VelloVector`
-pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::Error> {
+pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloVector, VectorLoaderError> {
     // Load Lottie JSON bytes with the Velato (bodymovin) parser
     let composition = vellottie::Composition::from_bytes(bytes)
-        .map_err(|err| bevy::asset::Error::msg(format!("Unable to parse lottie JSON: {err:?}")))?;
+        .map_err(|err| VectorLoaderError::Parse(format!("Unable to parse lottie JSON: {err:?}")))?;
 
     let width = composition.width as f32;
     let height = composition.height as f32;
@@ -61,7 +63,7 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloVector, bevy::asset::
 
 /// Deserialize the Lottie source JSON string from the file
 /// contents buffer represented as a str into a `VelloVector`
-pub fn load_lottie_from_str(json_str: &str) -> Result<VelloVector, bevy::asset::Error> {
+pub fn load_lottie_from_str(json_str: &str) -> Result<VelloVector, VectorLoaderError> {
     let bytes = json_str.as_bytes();
 
     load_lottie_from_bytes(bytes)
