@@ -25,11 +25,11 @@ pub use rendertarget::VelloCanvasMaterial;
 pub use assets::VelloVectorLoader;
 pub use font::VelloFontLoader;
 
-pub struct BevyVelloPlugin;
+pub struct VelloPlugin;
 
 const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
 
-impl Plugin for BevyVelloPlugin {
+impl Plugin for VelloPlugin {
     fn build(&self, app: &mut App) {
         load_internal_asset!(
             app,

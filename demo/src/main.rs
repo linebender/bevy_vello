@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_vello::{
-    BevyVelloPlugin, ColorPaletteSwap, Origin, VelloText, VelloTextBundle, VelloVector,
+    ColorPaletteSwap, Origin, VelloPlugin, VelloText, VelloTextBundle, VelloVector,
     VelloVectorBundle,
 };
 
@@ -12,7 +12,7 @@ const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 1.0, 1.0);
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(AssetPlugin { ..default() }))
-        .add_plugins(BevyVelloPlugin)
+        .add_plugins(VelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, (camera_system, drag_and_drop))
         .run();
