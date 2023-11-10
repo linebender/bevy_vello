@@ -3,7 +3,7 @@ use crate::{
     compression, VelloVector,
 };
 use bevy::{
-    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext, LoadedAsset},
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
     utils::{
         thiserror::{self, Error},

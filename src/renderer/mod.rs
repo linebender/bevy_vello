@@ -17,10 +17,15 @@ impl FromWorld for VelloRenderer {
         VelloRenderer(
             Renderer::new(
                 device.wgpu_device(),
-                &RendererOptions {
+                RendererOptions {
                     surface_format: None,
                     timestamp_period: 0.0,
                     use_cpu: false,
+                    antialiasing_support: vello::AaSupport {
+                        area: false,
+                        msaa8: false,
+                        msaa16: true,
+                    },
                 },
             )
             .expect("no gpu device"),

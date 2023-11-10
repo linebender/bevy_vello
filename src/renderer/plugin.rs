@@ -5,7 +5,7 @@ use bevy::{
         renderer::RenderDevice, Render, RenderApp, RenderSet,
     },
 };
-use vello::{Renderer, RendererOptions};
+use vello::{AaSupport, Renderer, RendererOptions};
 
 use super::{
     extract::{self, ExtractedPixelScale},
@@ -66,10 +66,15 @@ impl Plugin for VelloRenderPlugin {
         render_app.insert_non_send_resource(VelloRenderer(
             Renderer::new(
                 device.wgpu_device(),
-                &RendererOptions {
+                RendererOptions {
                     surface_format: None,
                     timestamp_period: 0.0,
                     use_cpu: false,
+                    antialiasing_support: AaSupport {
+                        area: false,
+                        msaa8: false,
+                        msaa16: true,
+                    },
                 },
             )
             .unwrap(),

@@ -2,10 +2,7 @@
 // #![deny(missing_docs)] - to add before 1.0
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-use bevy::{
-    asset::load_internal_asset, prelude::*, reflect::TypeUuid, sprite::Material2dPlugin,
-    utils::HashMap,
-};
+use bevy::{asset::load_internal_asset, prelude::*, sprite::Material2dPlugin, utils::HashMap};
 use debug::DebugVisualizationsPlugin;
 use font::VelloFont;
 use renderer::VelloRenderPlugin;

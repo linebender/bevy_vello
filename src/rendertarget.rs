@@ -64,7 +64,7 @@ pub fn resize_rendertargets(
     let Ok(window) = windows.get_single() else {
         return;
     };
-    if window_resize_events.iter().last().is_some() {
+    if window_resize_events.read().last().is_some() {
         let size = Extent3d {
             width: window.resolution.physical_width(),
             height: window.resolution.physical_height(),

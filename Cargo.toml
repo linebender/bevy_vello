@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
 [workspace.dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy.git", version = "0.12.0-dev", default-features = true }
+bevy = { version = "0.12.0", default-features = true }
 
 [package]
 name = "bevy-vello"
@@ -29,9 +29,9 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { workspace = true }
-vello = { git = "https://github.com/linebender/vello", rev = "b5e3ae586846c8b9c7ad9b4830d8035a807eb15f" }
-vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", branch = "bevy-0.12-dev" }
-vellottie = { git = "https://github.com/vectorgameexperts/vellottie", branch = "bevy-0.12-dev" }
+vello = { git = "https://github.com/linebender/vello", rev = "28914d66f675efecf03c53261a0fb1b8ecce4fe9" }
+vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg" }
+vellottie = { git = "https://github.com/vectorgameexperts/vellottie" }
 flate2 = "1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]

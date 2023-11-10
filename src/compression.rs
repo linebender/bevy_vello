@@ -11,8 +11,7 @@ pub fn decompress_gzip(content: &[u8]) -> Result<String, VectorLoaderError> {
     }
     let mut d = flate2::read::GzDecoder::new(content);
     let mut s = String::new();
-    d.read_to_string(&mut s)
-        .map_err(|e| VectorLoaderError::from(e))?;
+    d.read_to_string(&mut s).map_err(VectorLoaderError::from)?;
     #[cfg(debug_assertions)]
     {
         let new_bytes = s.as_bytes();
