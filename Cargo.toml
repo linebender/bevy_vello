@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
 [workspace.dependencies]
-bevy = { version = "0.12.0", default-features = true }
+bevy = { version = "0.12", default-features = true }
 
 [package]
 name = "bevy-vello"
