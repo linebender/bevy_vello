@@ -4,7 +4,7 @@ members = ["demo"]
 
 [workspace.package]
 edition = "2021"
-version = "0.3.7"
+version = "0.3.8"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
@@ -30,8 +30,8 @@ repository.workspace = true
 [dependencies]
 bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "28914d66f675efecf03c53261a0fb1b8ecce4fe9" }
-vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg" }
-vellottie = { git = "https://github.com/vectorgameexperts/vellottie" }
+vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.1" }
+vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.1" }
 flate2 = "1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
