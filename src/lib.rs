@@ -15,6 +15,10 @@ mod metadata;
 mod renderer;
 mod rendertarget;
 
+// Re-exports
+pub use vello_svg;
+pub use vellottie;
+
 pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str,
     VelloVector,
