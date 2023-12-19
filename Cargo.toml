@@ -48,6 +48,9 @@ repository.workspace = true
 
 [lib]
 
+[features]
+debug = []
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { workspace = true }
