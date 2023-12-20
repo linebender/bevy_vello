@@ -19,6 +19,10 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
 |0.11|0.2, main|
 |<= 0.10|0.1|
 
+## Cargo features
+
+- `debug` - Draws debug lines around the viewbox and a red cross on the anchor point
+
 ## Features
 
 - Spawn vector graphics on separate layers
