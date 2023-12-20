@@ -6,6 +6,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### changed
+
+- `DebugVisualizations` are now feature-gated behind the `debug` cargo feature
+
+## 0.3
+
 ### added
 
 - added `Origin` to `VelloVectorBundle` to give the user the option to change the vector's transform origin
@@ -13,6 +19,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### changed
 
+- updated to bevy 0.12
 - switched to `vellottie` for rendering lotties
 - switched to `vello-svg` for rendering svgs
 

@@ -3,13 +3,12 @@
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 use bevy::{asset::load_internal_asset, prelude::*, sprite::Material2dPlugin, utils::HashMap};
-use debug::DebugVisualizationsPlugin;
 use font::VelloFont;
 use renderer::VelloRenderPlugin;
 use std::ops::RangeInclusive;
+
 mod assets;
 mod compression;
-mod debug;
 mod font;
 mod metadata;
 mod renderer;
@@ -23,11 +22,13 @@ pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str, Vector,
     VelloVector,
 };
-pub use debug::DebugVisualizations;
 pub use rendertarget::VelloCanvasMaterial;
 
 pub use assets::VelloVectorLoader;
 pub use font::VelloFontLoader;
+
+#[cfg(feature = "debug")]
+pub mod debug;
 
 pub struct VelloPlugin;
 
@@ -48,7 +49,8 @@ impl Plugin for VelloPlugin {
             .init_asset_loader::<VelloFontLoader>();
         app.add_plugins((
             Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(),
-            DebugVisualizationsPlugin,
+            #[cfg(feature = "debug")]
+            debug::DebugVisualizationsPlugin,
         ));
         app.add_systems(Startup, rendertarget::setup_ss_rendertarget)
             .add_systems(
@@ -133,7 +135,8 @@ pub struct VelloVectorBundle {
     pub origin: Origin,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
-    pub debug_visualizations: DebugVisualizations,
+    #[cfg(feature = "debug")]
+    pub debug_visualizations: debug::DebugVisualizations,
     /// User indication of whether an entity is visible
     /// Algorithmically-computed indication of whether an entity is visible
     //and /// should be extracted for rendering
@@ -150,7 +153,8 @@ impl Default for VelloVectorBundle {
             origin: Default::default(),
             transform: Default::default(),
             global_transform: Default::default(),
-            debug_visualizations: DebugVisualizations::Visible,
+            #[cfg(feature = "debug")]
+            debug_visualizations: debug::DebugVisualizations::Visible,
             visibility: Visibility::Inherited,
             inherited_visibility: InheritedVisibility::default(),
             view_visibility: ViewVisibility::default(),
