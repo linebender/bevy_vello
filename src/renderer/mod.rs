@@ -22,9 +22,9 @@ impl FromWorld for VelloRenderer {
                     timestamp_period: 0.0,
                     use_cpu: false,
                     antialiasing_support: vello::AaSupport {
-                        area: false,
+                        area: true,
                         msaa8: false,
-                        msaa16: true,
+                        msaa16: false,
                     },
                 },
             )

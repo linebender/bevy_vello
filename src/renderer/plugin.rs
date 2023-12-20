@@ -71,9 +71,9 @@ impl Plugin for VelloRenderPlugin {
                     timestamp_period: 0.0,
                     use_cpu: false,
                     antialiasing_support: AaSupport {
-                        area: false,
+                        area: true,
                         msaa8: false,
-                        msaa16: true,
+                        msaa16: false,
                     },
                 },
             )

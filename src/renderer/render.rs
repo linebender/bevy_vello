@@ -209,7 +209,7 @@ pub fn render_scene(
                         base_color: vello::peniko::Color::BLACK.with_alpha_factor(0.0),
                         width: gpu_image.size.x as u32,
                         height: gpu_image.size.y as u32,
-                        antialiasing_method: vello::AaConfig::Msaa16,
+                        antialiasing_method: vello::AaConfig::Area,
                     },
                 )
                 .unwrap();
