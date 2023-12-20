@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_vello::{
-    ColorPaletteSwap, Origin, VelloPlugin, VelloText, VelloTextBundle, VelloVector,
-    VelloVectorBundle,
+    debug::DebugVisualizations, ColorPaletteSwap, Origin, VelloPlugin, VelloText, VelloTextBundle,
+    VelloVector, VelloVectorBundle,
 };
 
 const BODY_BASE: Color = Color::rgba(129. / 255., 94. / 255., 1.0, 1.0);
@@ -26,7 +26,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             origin: bevy_vello::Origin::Center,
             // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
             vector: asset_server.load("../assets/squid.json"),
-            debug_visualizations: bevy_vello::DebugVisualizations::Visible,
+            debug_visualizations: DebugVisualizations::Visible,
             ..default()
         })
         .insert(
