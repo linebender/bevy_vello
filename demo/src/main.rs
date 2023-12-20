@@ -23,7 +23,6 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     commands.spawn(Camera2dBundle::default());
     commands
         .spawn(VelloVectorBundle {
-            layer: bevy_vello::Layer::Background,
             origin: bevy_vello::Origin::Center,
             // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
             vector: asset_server.load("../assets/squid.json"),

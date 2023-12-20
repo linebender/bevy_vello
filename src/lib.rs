@@ -63,15 +63,12 @@ impl Plugin for VelloPlugin {
     }
 }
 
-#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
-pub enum Layer {
-    Background,
-    Shadow,
+pub enum RenderMode {
     #[default]
-    Ground,
-    Foreground,
-    UI,
+    WorldSpace = 0,
+    ScreenSpace = 1,
 }
 
 #[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
@@ -129,8 +126,8 @@ impl ColorPaletteSwap {
 #[derive(Bundle)]
 pub struct VelloVectorBundle {
     pub vector: Handle<VelloVector>,
-    /// Configures the draw order within the vello canvas
-    pub layer: Layer,
+    /// The coordinate space in which this vector should be rendered.
+    pub render_mode: RenderMode,
     /// This object's transform local origin. Enable debug visualizations to visualize (red X)
     pub origin: Origin,
     pub transform: Transform,
@@ -149,7 +146,7 @@ impl Default for VelloVectorBundle {
     fn default() -> Self {
         Self {
             vector: Default::default(),
-            layer: Default::default(),
+            render_mode: RenderMode::WorldSpace,
             origin: Default::default(),
             transform: Default::default(),
             global_transform: Default::default(),
@@ -172,7 +169,7 @@ pub struct VelloText {
 pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
-    pub layer: Layer,
+    pub render_mode: RenderMode,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible
@@ -188,7 +185,7 @@ impl Default for VelloTextBundle {
         Self {
             font: Default::default(),
             text: Default::default(),
-            layer: Layer::Foreground,
+            render_mode: RenderMode::WorldSpace,
             transform: Default::default(),
             global_transform: Default::default(),
             visibility: Visibility::Inherited,

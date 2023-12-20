@@ -25,13 +25,7 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
 
 ## Features
 
-- Spawn vector graphics on separate layers
-  |Layer|Render order|
-  |---|---|
-  |Background|Always behind all other layers|
-  |Ground|2.5D-style render ordering via Y-coordinate|
-  |Foreground|Always on top of Ground/Background|
-  |UI|On top of Foreground layer; shows Bevy UI Nodes bundled with a `VelloVector` |
+- Spawn vector graphics rendering either in screen-space or world-space coordinates.
 - Support for fonts
   - NOTE: to avoid conflict with bevy's built-in font loader, rename fonts used by `bevy-vello` to something else (example: `*.vtff`). This can probably be an improvement in the future.
 - Debug draw gizmos for the objects local origin (red X) and canvas size (white bounding box)
