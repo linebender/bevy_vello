@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_vello::{
     debug::DebugVisualizations, ColorPaletteSwap, Origin, VelloPlugin, VelloText, VelloTextBundle,
     VelloVector, VelloVectorBundle,
@@ -11,6 +11,7 @@ const SUCKERS: Color = Color::rgba(235. / 255., 189. / 255., 1.0, 1.0);
 
 fn main() {
     App::new()
+        .insert_resource(AssetMetaCheck::Never)
         .add_plugins(DefaultPlugins.set(AssetPlugin { ..default() }))
         .add_plugins(VelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
