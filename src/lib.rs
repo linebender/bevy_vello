@@ -2,10 +2,9 @@
 // #![deny(missing_docs)] - to add before 1.0
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-use bevy::{asset::load_internal_asset, prelude::*, sprite::Material2dPlugin, utils::HashMap};
+use bevy::{asset::load_internal_asset, prelude::*, sprite::Material2dPlugin};
 use font::VelloFont;
 use renderer::VelloRenderPlugin;
-use std::ops::RangeInclusive;
 
 mod assets;
 mod font;
@@ -76,50 +75,6 @@ pub enum Origin {
     #[default]
     BottomCenter,
     Center,
-}
-
-#[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
-#[reflect(Component)]
-/// Add this component to a `VelloVectorBundle` entity to enable runtime color editing.
-/// This interface allows swapping colors in a lottie composition by selecting the desired layer
-/// and shape and overriding the original color with a new color.
-///
-/// Only works for layer shapes with fill or stroke elements,
-/// which must be fixed (non-animated, for now) and solid-colored (no gradients, for now)
-pub struct ColorPaletteSwap {
-    colors: HashMap<(String, RangeInclusive<usize>), Color>,
-}
-
-impl ColorPaletteSwap {
-    pub fn empty() -> Self {
-        Self {
-            colors: HashMap::default(),
-        }
-    }
-
-    /// Swap a color for the selected layer and shape combination. `layer_filter` will select any layer which
-    /// contains the provided string. Select shapes within the layer with `shape_numbers`. Adding the same swap
-    /// (layer,shape) key will override the previous entry's color
-    pub fn add(
-        mut self,
-        layer_filter: &str,
-        shape_numbers: RangeInclusive<usize>,
-        color: Color,
-    ) -> Self {
-        self.colors
-            .insert((layer_filter.to_string(), shape_numbers), color);
-        Self {
-            colors: self.colors,
-        }
-    }
-
-    /// Swap a color for the selected layer and shape combination. `layer_filter` will select any layer which
-    /// contains the provided string. Select shapes within the layer with `shape_numbers`. Editing colors with
-    /// an existing (layer,shape) key will override the previous entry's color
-    pub fn edit(&mut self, layer_filter: &str, shape_numbers: RangeInclusive<usize>, color: Color) {
-        self.colors
-            .insert((layer_filter.to_string(), shape_numbers), color);
-    }
 }
 
 #[derive(Bundle)]
