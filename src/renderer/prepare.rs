@@ -6,7 +6,7 @@ use vello::kurbo::Affine;
 
 use crate::{
     assets::vector::{Vector, VelloVector},
-    ColorPaletteSwap, Layer,
+    ColorPaletteSwap, RenderMode,
 };
 
 use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
@@ -96,12 +96,11 @@ pub fn prepare_vector_affines(
                 None => continue,
             };
 
-        // The vello scene transform is world-space for all normal vectors and screen-space for UI vectors
-        let raw_transform = match render_vector.layer {
-            Layer::UI => {
+        let raw_transform = match render_vector.render_mode {
+            RenderMode::ScreenSpace => {
                 let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
 
-                // Make the UI vector instance sized to fill the entire UI Node box if it's bundled with a Node
+                // Make the screen space vector instance sized to fill the entire UI Node box if it's bundled with a Node
                 if let Some(node) = &render_vector.ui_node {
                     let fill_scale = node.size() / vector_size;
                     model_matrix.x_axis.x *= fill_scale.x;
@@ -112,7 +111,7 @@ pub fn prepare_vector_affines(
                 local_center_matrix.w_axis.y *= -1.0;
                 model_matrix * local_center_matrix
             }
-            _ => {
+            RenderMode::WorldSpace => {
                 let local_matrix = match render_vector.origin {
                     crate::Origin::BottomCenter => local_bottom_center_matrix,
                     crate::Origin::Center => local_center_matrix,
@@ -189,9 +188,9 @@ pub fn prepare_text_affines(
         let view_proj_matrix = projection_mat * view_mat.inverse();
         let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
 
-        let raw_transform = match render_text.layer {
-            Layer::UI => world_transform.compute_matrix().mul_scalar(pixel_scale.0),
-            _ => vello_matrix * model_matrix,
+        let raw_transform = match render_text.render_mode {
+            RenderMode::ScreenSpace => world_transform.compute_matrix().mul_scalar(pixel_scale.0),
+            RenderMode::WorldSpace => vello_matrix * model_matrix,
         };
 
         let transform: [f32; 16] = raw_transform.to_cols_array();

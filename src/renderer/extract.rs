@@ -4,14 +4,14 @@ use bevy::{
     window::PrimaryWindow,
 };
 
-use crate::{font::VelloFont, ColorPaletteSwap, Layer, Origin, VelloText, VelloVector};
+use crate::{font::VelloFont, ColorPaletteSwap, Origin, RenderMode, VelloText, VelloVector};
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
     pub vector_handle: Handle<VelloVector>,
     pub render_data: VelloVector,
     pub transform: GlobalTransform,
-    pub layer: Layer,
+    pub render_mode: RenderMode,
     pub origin: Origin,
     pub color_pallette_swap: Option<ColorPaletteSwap>,
     pub ui_node: Option<Node>,
@@ -22,7 +22,7 @@ pub fn vector_instances(
     query_vectors: Extract<
         Query<(
             &Handle<VelloVector>,
-            &Layer,
+            &RenderMode,
             Option<&Origin>,
             &GlobalTransform,
             Option<&ColorPaletteSwap>,
@@ -35,7 +35,7 @@ pub fn vector_instances(
 ) {
     for (
         vello_vector_handle,
-        layer,
+        render_mode,
         origin,
         transform,
         color_pallette_swap,
@@ -50,7 +50,7 @@ pub fn vector_instances(
                     vector_handle: vello_vector_handle.clone(),
                     render_data: asset_data.to_owned(),
                     transform: *transform,
-                    layer: *layer,
+                    render_mode: *render_mode,
                     origin: origin.copied().unwrap_or_default(),
                     color_pallette_swap: color_pallette_swap.cloned(),
                     ui_node: ui_node.cloned(),
@@ -65,7 +65,7 @@ pub struct ExtractedRenderText {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
     pub transform: GlobalTransform,
-    pub layer: Layer,
+    pub render_mode: RenderMode,
 }
 
 impl ExtractComponent for ExtractedRenderText {
@@ -73,20 +73,23 @@ impl ExtractComponent for ExtractedRenderText {
         &'static Handle<VelloFont>,
         &'static VelloText,
         &'static GlobalTransform,
-        &'static Layer,
+        &'static RenderMode,
     );
 
     type Filter = ();
     type Out = Self;
 
     fn extract_component(
-        (vello_font_handle, text, transform, layer): bevy::ecs::query::QueryItem<'_, Self::Query>,
+        (vello_font_handle, text, transform, render_mode): bevy::ecs::query::QueryItem<
+            '_,
+            Self::Query,
+        >,
     ) -> Option<Self> {
         Some(Self {
             font: vello_font_handle.clone(),
             text: text.clone(),
             transform: *transform,
-            layer: *layer,
+            render_mode: *render_mode,
         })
     }
 }

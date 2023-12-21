@@ -11,7 +11,7 @@ use vello::{RenderParams, Scene, SceneBuilder};
 use crate::{
     assets::vector::{Vector, VelloVector},
     font::VelloFont,
-    Layer,
+    RenderMode,
 };
 
 use super::{
@@ -104,100 +104,71 @@ pub fn render_scene(
         let mut scene = Scene::default();
         let mut builder = SceneBuilder::for_scene(&mut scene);
 
-        // Background items: z ordered
-        let mut vector_render_queue: Vec<(_, _)> = render_vectors
-            .iter()
-            .filter(|(_, v)| v.layer == Layer::Background)
-            .collect();
-        vector_render_queue.sort_by(|(_, a), (_, b)| {
-            let a = a.transform.translation().z;
-            let b = b.transform.translation().z;
-            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
-        });
+        enum RenderItem<'a> {
+            Vector(&'a ExtractedRenderVector),
+            Text(&'a ExtractedRenderText),
+        }
+        let mut render_queue: Vec<(f32, RenderMode, (&PreparedAffine, RenderItem))> =
+            render_vectors
+                .iter()
+                .map(|(a, b)| {
+                    (
+                        b.transform.translation().z,
+                        b.render_mode,
+                        (a, RenderItem::Vector(b)),
+                    )
+                })
+                .collect();
+        render_queue.extend(query_render_texts.iter().map(|(a, b)| {
+            (
+                b.transform.translation().z,
+                b.render_mode,
+                (a, RenderItem::Text(b)),
+            )
+        }));
 
-        // Shadow items: z ordered
-        let mut shadow_items: Vec<(_, _)> = render_vectors
-            .iter()
-            .filter(|(_, v)| v.layer == Layer::Shadow)
-            .collect();
-        shadow_items.sort_by(|(_, a), (_, b)| {
-            let a = a.transform.translation().z;
-            let b = b.transform.translation().z;
-            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
-        });
-        vector_render_queue.append(&mut shadow_items);
+        // Sort by render mode with screen space on top, then by z-index
+        render_queue.sort_by(
+            |(a_z_index, a_render_mode, _), (b_z_index, b_render_mode, _)| {
+                let z_index = a_z_index
+                    .partial_cmp(b_z_index)
+                    .unwrap_or(std::cmp::Ordering::Equal);
+                let render_mode = a_render_mode.cmp(b_render_mode);
 
-        // Ground items: y ordered
-        let mut middle_items: Vec<(_, _)> = render_vectors
-            .iter()
-            .filter(|(_, v)| v.layer == Layer::Ground)
-            .collect();
-        middle_items.sort_by(|(_, a), (_, b)| {
-            let a = a.transform.translation().y;
-            let b = b.transform.translation().y;
-            b.partial_cmp(&a).unwrap_or(std::cmp::Ordering::Equal)
-        });
-        vector_render_queue.append(&mut middle_items);
-
-        // Foreground items: z ordered
-        let mut fg_items: Vec<(_, _)> = render_vectors
-            .iter()
-            .filter(|(_, v)| v.layer == Layer::Foreground)
-            .collect();
-        fg_items.sort_by(|(_, a), (_, b)| {
-            let a = a.transform.translation().z;
-            let b = b.transform.translation().z;
-            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
-        });
-        vector_render_queue.append(&mut fg_items);
-
-        // UI items
-        let mut ui_items: Vec<(_, _)> = render_vectors
-            .iter()
-            .filter(|(_, v)| v.layer == Layer::UI)
-            .collect();
-        ui_items.sort_by(|(_, a), (_, b)| {
-            let a = a.transform.translation().z;
-            let b = b.transform.translation().z;
-            a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)
-        });
-        vector_render_queue.append(&mut ui_items);
+                render_mode.then(z_index)
+            },
+        );
 
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
-        for (
-            PreparedAffine(affine),
-            ExtractedRenderVector {
-                render_data: vector_data,
-                ..
-            },
-        ) in vector_render_queue.iter()
-        {
-            match &vector_data.data {
-                Vector::Static(fragment) => {
-                    builder.append(fragment, Some(*affine));
-                }
-                Vector::Animated(composition) => {
-                    velato_renderer.0.render(
-                        composition,
-                        time.elapsed_seconds(),
-                        *affine,
-                        1.0,
-                        &mut builder,
-                    );
+        for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter() {
+            match render_item {
+                RenderItem::Vector(ExtractedRenderVector {
+                    render_data: vector_data,
+                    ..
+                }) => match &vector_data.data {
+                    Vector::Static(fragment) => {
+                        builder.append(fragment, Some(affine));
+                    }
+                    Vector::Animated(composition) => {
+                        velato_renderer.0.render(
+                            composition,
+                            time.elapsed_seconds(),
+                            affine,
+                            1.0,
+                            &mut builder,
+                        );
+                    }
+                },
+                RenderItem::Text(ExtractedRenderText { font, text, .. }) => {
+                    if let Some(font) = font_render_assets.get_mut(font) {
+                        font.render_centered(&mut builder, text.size, affine, &text.content);
+                    }
                 }
             }
         }
 
-        for (&PreparedAffine(affine), ExtractedRenderText { font, text, .. }) in
-            query_render_texts.iter()
-        {
-            if let Some(font) = font_render_assets.get_mut(font) {
-                font.render_centered(&mut builder, text.size, affine, &text.content);
-            }
-        }
-
-        if !vector_render_queue.is_empty() {
+        if !render_queue.is_empty() {
             renderer
                 .0
                 .render_to_texture(
