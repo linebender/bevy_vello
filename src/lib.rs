@@ -8,7 +8,6 @@ use renderer::VelloRenderPlugin;
 use std::ops::RangeInclusive;
 
 mod assets;
-mod compression;
 mod font;
 mod metadata;
 mod renderer;

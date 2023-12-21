@@ -1,6 +1,6 @@
 use crate::{
     assets::parser::{load_lottie_from_bytes, load_svg_from_bytes},
-    compression, VelloVector,
+    VelloVector,
 };
 use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
@@ -45,28 +45,11 @@ impl AssetLoader for VelloVectorLoader {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
             let path = load_context.path().to_owned();
-            let mut ext = path
+            let ext = path
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
                 .ok_or(VectorLoaderError::Parse("Invalid extension".to_string()))?
                 .to_owned();
-
-            let gzipped = ext == "gz";
-            if gzipped {
-                debug!("decompressing {}...", path.display());
-                // Decompress
-                let decrompressed_bytes = compression::decompress_gzip(&bytes)?;
-                let path_without_gz = path.with_extension("");
-                bytes = decrompressed_bytes.into_bytes();
-                // Remove .gz extension
-                ext = path_without_gz
-                    .extension()
-                    .and_then(std::ffi::OsStr::to_str)
-                    .ok_or(VectorLoaderError::Parse(
-                        "No extension before .gz?".to_string(),
-                    ))?
-                    .to_string();
-            }
 
             debug!("parsing {}...", load_context.path().display());
             match ext.as_str() {
@@ -101,6 +84,6 @@ impl AssetLoader for VelloVectorLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["svg", "json", "svg.gz", "json.gz"]
+        &["svg", "json"]
     }
 }
