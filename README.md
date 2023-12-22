@@ -11,12 +11,12 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
 
 ## Bevy version support
 
-**NOTE**: You must use a git rev for now, we cannot publish to crates.io. See [issue #3](https://github.com/vectorgameexperts/bevy-vello/issues/3).
+**NOTE**: You must use a git rev for now, and match our version of vello. We cannot publish to crates.io. See [issue #3](https://github.com/vectorgameexperts/bevy-vello/issues/3).
 
 |bevy|bevy-vello|
 |---|---|
 |0.12|0.3, main|
-|0.11|0.2, main|
+|0.11|0.2|
 |<= 0.10|0.1|
 
 ## Cargo features
