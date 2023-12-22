@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - `DebugVisualizations` are now feature-gated behind the `debug` cargo feature
 
+### removed
+
+- `.svg.gz` support - [Since a Gzip plugin is now possble](https://github.com/bevyengine/bevy/issues/10518)
+- `.json.gz` support - [Since a Gzip plugin is now possble](https://github.com/bevyengine/bevy/issues/10518)
+- color swapping: color swapping will be re-introduced in a future version when it is stabilized
+
 ## 0.3
 
 ### added

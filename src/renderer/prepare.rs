@@ -4,62 +4,9 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use crate::{
-    assets::vector::{Vector, VelloVector},
-    ColorPaletteSwap, RenderMode,
-};
+use crate::{assets::vector::VelloVector, RenderMode};
 
 use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
-
-pub fn prepare_vector_composition_edits(mut render_vectors: Query<&mut ExtractedRenderVector>) {
-    // Big-O: O(n), where n = shapes;
-    // Nesting: "vectors * layers * shape groups * shapes"
-    'vectors: for mut render_vector in render_vectors.iter_mut() {
-        // Get vector and color swap or there's no use continuing...
-
-        let Some(ColorPaletteSwap { colors }) = render_vector.color_pallette_swap.clone() else {
-            continue 'vectors;
-        };
-
-        // Perform recolors!
-        let Vector::Animated(ref mut composition) = render_vector.render_data.data else {
-            continue 'vectors;
-        };
-        'layers: for (_layer_index, layer) in composition.layers.iter_mut().enumerate() {
-            let vellottie::runtime::model::Content::Shape(ref mut shapes) = layer.content else {
-                continue 'layers;
-            };
-            'shapegroups: for (shape_index, shape) in shapes.iter_mut().enumerate() {
-                let vellottie::runtime::model::Shape::Group(ref mut shapes, _transform) = shape
-                else {
-                    continue 'shapegroups;
-                };
-                'shapes: for shape in shapes.iter_mut() {
-                    let vellottie::runtime::model::Shape::Draw(ref mut draw) = shape else {
-                        continue 'shapes;
-                    };
-                    let vellottie::runtime::model::Brush::Fixed(ref mut brush) = draw.brush else {
-                        continue 'shapes;
-                    };
-                    let vello::peniko::Brush::Solid(ref mut solid) = brush else {
-                        continue 'shapes;
-                    };
-
-                    for ((layer_name, shape_indices), color) in colors.iter() {
-                        if layer.name.contains(layer_name) && shape_indices.contains(&shape_index) {
-                            *solid = vello::peniko::Color::rgba(
-                                color.r().into(),
-                                color.g().into(),
-                                color.b().into(),
-                                color.a().into(),
-                            );
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 #[derive(Component, Copy, Clone)]
 pub struct PreparedAffine(pub Affine);

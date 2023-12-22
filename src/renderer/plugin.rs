@@ -29,10 +29,6 @@ impl Plugin for VelloRenderPlugin {
         );
         render_app.add_systems(
             Render,
-            prepare::prepare_vector_composition_edits.in_set(RenderSet::Prepare),
-        );
-        render_app.add_systems(
-            Render,
             prepare::prepare_text_affines.in_set(RenderSet::Prepare),
         );
         render_app.add_systems(Render, render::render_scene.in_set(RenderSet::Render));
