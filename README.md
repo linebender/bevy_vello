@@ -30,7 +30,7 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
   - NOTE: to avoid conflict with bevy's built-in font loader, rename fonts used by `bevy-vello` to something else (example: `*.vtff`). This can probably be an improvement in the future.
 - Debug draw gizmos for the objects local origin (red X) and canvas size (white bounding box)
 
-## Run Demo
+## Run Examples
 
 - Native
 
@@ -41,7 +41,7 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
 - WASM (requires `cargo install trunk`)
 
   ```shell
-  cd demo
+  cd examples/demo
   trunk serve
   ```
 

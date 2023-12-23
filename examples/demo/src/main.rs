@@ -66,18 +66,17 @@ fn camera_system(
 /// Drag and drop any SVG or Lottie JSON asset into the window and change the displayed asset
 fn drag_and_drop(
     mut query: Query<(&Transform, &mut Handle<VelloVector>)>,
-    _asset_server: ResMut<AssetServer>,
-    mut _dnd_evr: EventReader<FileDragAndDrop>,
+    asset_server: ResMut<AssetServer>,
+    mut dnd_evr: EventReader<FileDragAndDrop>,
 ) {
-    let Ok((_, mut _vector)) = query.get_single_mut() else {
+    let Ok((_, mut vector)) = query.get_single_mut() else {
         return;
     };
 
-    // todo: this broke after migration to bevy 0.12
-    // for ev in dnd_evr.iter() {
-    //     if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {
-    //         let new_handle = asset_server.load(path_buf.to_str().unwrap());
-    //         *vector = new_handle;
-    //     }
-    // }
+    for ev in dnd_evr.read() {
+        if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {
+            let new_handle = asset_server.load(path_buf.to_str().unwrap().to_owned());
+            *vector = new_handle;
+        }
+    }
 }

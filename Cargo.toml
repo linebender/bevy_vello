@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["demo"]
+members = ["examples/demo","examples/editor"]
 
 [workspace.package]
 edition = "2021"
@@ -30,6 +30,7 @@ bevy = { version = "0.12", default-features = false, features = [
   "tonemapping_luts",
   "vorbis",
   "x11",
+  "wayland",
   "zstd",
 ] }
 

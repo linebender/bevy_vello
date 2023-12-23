@@ -1,6 +1,6 @@
 [package]
-name = "demo"
-description = "The vellottie demo"
+name = "editor"
+description = "The bevy-vello demo w/ an editor"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -9,5 +9,7 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy-vello = { path = "../", features = ["debug"] }
+bevy-vello = { path = "../../", features = ["debug"] }
 bevy = { workspace = true }
+bevy_egui = "0.24"
+rfd = "0.12.1"
