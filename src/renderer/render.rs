@@ -1,3 +1,13 @@
+use super::{
+    extract::{ExtractedRenderText, ExtractedRenderVector},
+    prepare::PreparedAffine,
+    LottieRenderer, SSRenderTarget, VelloRenderer,
+};
+use crate::{
+    assets::vector::{Vector, VelloVector},
+    font::VelloFont,
+    RenderMode,
+};
 use bevy::{
     prelude::*,
     reflect::TypeUuid,
@@ -7,18 +17,6 @@ use bevy::{
     },
 };
 use vello::{RenderParams, Scene, SceneBuilder};
-
-use crate::{
-    assets::vector::{Vector, VelloVector},
-    font::VelloFont,
-    RenderMode,
-};
-
-use super::{
-    extract::{ExtractedRenderText, ExtractedRenderVector},
-    prepare::PreparedAffine,
-    LottieRenderer, SSRenderTarget, VelloRenderer,
-};
 
 #[derive(Clone)]
 pub struct ExtractedVectorAssetData {

@@ -4,33 +4,22 @@ members = ["demo"]
 
 [workspace.package]
 edition = "2021"
-version = "0.3.14"
+version = "0.3.15"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
 [workspace.dependencies]
+# TODO: We shouldn't need all of these features...
 bevy = { version = "0.12", default-features = false, features = [
-  "android_shared_stdcxx",
-  "animation",
-  "bevy_animation",
   "bevy_asset",
-  "bevy_audio",
-  "bevy_core_pipeline",
-  "bevy_gilrs",
-  "bevy_render",
-  "bevy_gizmos",
-  "bevy_scene",
-  "bevy_sprite",
-  "bevy_text",
-  "bevy_ui",
   "bevy_winit",
-  "hdr",
-  "ktx2",
-  "png",
-  "tonemapping_luts",
-  "vorbis",
+  "bevy_core_pipeline",
+  "bevy_pbr",
+  "bevy_render",
+  "bevy_ui",
+  "multi-threaded",
   "x11",
-  "zstd",
+  "tonemapping_luts",
 ] }
 
 [package]
@@ -50,7 +39,7 @@ repository.workspace = true
 
 [features]
 default = []
-debug = []
+debug = ["bevy/bevy_gizmos"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]

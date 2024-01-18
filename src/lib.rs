@@ -3,6 +3,7 @@
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 mod assets;
+mod color_swapping;
 mod font;
 mod metadata;
 mod plugin;
@@ -24,7 +25,9 @@ pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str, Vector,
     VelloVector,
 };
+pub use color_swapping::ColorPaletteSwap;
 pub use font::VelloFontLoader;
+pub use plugin::VelloPlugin;
 pub use rendertarget::VelloCanvasMaterial;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]

@@ -20,25 +20,30 @@ impl Plugin for VelloRenderPlugin {
         let Ok(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
-        render_app.insert_resource(LottieRenderer(vellottie::Renderer::new()));
-        render_app.insert_resource(ExtractedPixelScale(1.0));
 
-        render_app.add_systems(
-            Render,
-            prepare::prepare_vector_affines.in_set(RenderSet::Prepare),
-        );
-        render_app.add_systems(
-            Render,
-            prepare::prepare_text_affines.in_set(RenderSet::Prepare),
-        );
-        render_app.add_systems(Render, render::render_scene.in_set(RenderSet::Render));
-        render_app.add_systems(
-            ExtractSchedule,
-            (
-                extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
-                extract::vector_instances,
-            ),
-        );
+        render_app
+            .insert_resource(LottieRenderer(vellottie::Renderer::new()))
+            .insert_resource(ExtractedPixelScale(1.0))
+            .add_systems(
+                Render,
+                prepare::prepare_vector_affines.in_set(RenderSet::Prepare),
+            )
+            .add_systems(
+                Render,
+                prepare::prepare_vector_composition_edits.in_set(RenderSet::Prepare),
+            )
+            .add_systems(
+                Render,
+                prepare::prepare_text_affines.in_set(RenderSet::Prepare),
+            )
+            .add_systems(Render, render::render_scene.in_set(RenderSet::Render))
+            .add_systems(
+                ExtractSchedule,
+                (
+                    extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
+                    extract::vector_instances,
+                ),
+            );
 
         app.add_plugins((
             ExtractComponentPlugin::<extract::ExtractedRenderText>::default(),

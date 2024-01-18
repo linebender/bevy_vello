@@ -26,6 +26,7 @@ A bevy plugin which provides rendering support for [lottie](https://lottiefiles.
 ## Features
 
 - Spawn vector graphics rendering either in screen-space or world-space coordinates.
+- Edit the colors of an animated Lottie file at runtime with a `ColorPaletteSwap` component.
 - Support for fonts
   - NOTE: to avoid conflict with bevy's built-in font loader, rename fonts used by `bevy-vello` to something else (example: `*.vtff`). This can probably be an improvement in the future.
 - Debug draw gizmos for the objects local origin (red X) and canvas size (white bounding box)

@@ -1,7 +1,7 @@
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_vello::{
-    debug::DebugVisualizations, Origin, VelloPlugin, VelloText, VelloTextBundle, VelloVector,
-    VelloVectorBundle,
+    debug::DebugVisualizations, ColorPaletteSwap, Origin, VelloPlugin, VelloText, VelloTextBundle,
+    VelloVector, VelloVectorBundle,
 };
 
 fn main() {
@@ -10,19 +10,27 @@ fn main() {
         .add_plugins(DefaultPlugins.set(AssetPlugin { ..default() }))
         .add_plugins(VelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
-        .add_systems(Update, (camera_system, drag_and_drop))
+        .add_systems(Update, (camera_system, drag_and_drop, print_metadata))
         .run();
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
-    commands.spawn(VelloVectorBundle {
-        origin: bevy_vello::Origin::Center,
-        // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
-        vector: asset_server.load("../assets/squid.json"),
-        debug_visualizations: DebugVisualizations::Visible,
-        ..default()
-    });
+    commands
+        .spawn(VelloVectorBundle {
+            origin: bevy_vello::Origin::Center,
+            // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
+            vector: asset_server.load("../assets/squid.json"),
+            debug_visualizations: DebugVisualizations::Visible,
+            ..default()
+        })
+        // Remap the sucker colors to green!
+        .insert({
+            const SUCKERS: Color = Color::rgba(0.0, 1.0, 0.0, 1.0);
+            ColorPaletteSwap::empty()
+                .add("suckers ", SUCKERS)
+                .add("suckers Flip", SUCKERS)
+        });
 
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
@@ -32,6 +40,23 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         },
         ..default()
     });
+}
+
+fn print_metadata(
+    mut asset_ev: EventReader<AssetEvent<VelloVector>>,
+    assets: Res<Assets<VelloVector>>,
+) {
+    for ev in asset_ev.read() {
+        if let AssetEvent::LoadedWithDependencies { id } = ev {
+            let asset = assets.get(*id).unwrap();
+            if let Some(metadata) = asset.metadata() {
+                info!(
+                    "Animated asset loaded. Layers:\n{:#?}",
+                    metadata.get_layers()
+                );
+            }
+        }
+    }
 }
 
 /// Transform the camera to the center of the vector graphic apply zooming
@@ -65,19 +90,18 @@ fn camera_system(
 
 /// Drag and drop any SVG or Lottie JSON asset into the window and change the displayed asset
 fn drag_and_drop(
-    mut query: Query<(&Transform, &mut Handle<VelloVector>)>,
-    _asset_server: ResMut<AssetServer>,
-    mut _dnd_evr: EventReader<FileDragAndDrop>,
+    mut query: Query<&mut Handle<VelloVector>>,
+    asset_server: ResMut<AssetServer>,
+    mut dnd_evr: EventReader<FileDragAndDrop>,
 ) {
-    let Ok((_, mut _vector)) = query.get_single_mut() else {
+    let Ok(mut vector) = query.get_single_mut() else {
         return;
     };
-
-    // todo: this broke after migration to bevy 0.12
-    // for ev in dnd_evr.iter() {
-    //     if let FileDragAndDrop::DroppedFile { path_buf, .. } = ev {
-    //         let new_handle = asset_server.load(path_buf.to_str().unwrap());
-    //         *vector = new_handle;
-    //     }
-    // }
+    for ev in dnd_evr.read() {
+        let FileDragAndDrop::DroppedFile { path_buf, .. } = ev else {
+            continue;
+        };
+        let new_handle = asset_server.load(path_buf.clone());
+        *vector = new_handle;
+    }
 }
