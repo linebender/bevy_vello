@@ -16,16 +16,12 @@ use bevy::{
     window::{WindowResized, WindowResolution},
 };
 
-use crate::{renderer::SSRenderTarget, RenderMode, SSRT_SHADER_HANDLE};
+use crate::{renderer::SSRenderTarget, RenderMode};
 
-#[derive(Component)]
-struct MainCamera;
+/// A handle to the screen space render target shader.
+pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
 
-pub fn setup_image(
-    _commands: &mut Commands,
-    images: &mut Assets<Image>,
-    window: &WindowResolution,
-) -> Handle<Image> {
+pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
         width: window.physical_width(),
         height: window.physical_height(),
@@ -70,34 +66,12 @@ pub fn resize_rendertargets(
             height: window.resolution.physical_height(),
             ..default()
         };
-
         for (mut target, target_mat_handle) in query.iter_mut() {
-            let mut image = Image {
-                texture_descriptor: TextureDescriptor {
-                    label: None,
-                    size,
-                    dimension: TextureDimension::D2,
-                    format: TextureFormat::Rgba8Unorm,
-                    mip_level_count: 1,
-                    sample_count: 1,
-                    usage: TextureUsages::TEXTURE_BINDING
-                        | TextureUsages::COPY_DST
-                        | TextureUsages::STORAGE_BINDING,
-                    view_formats: &[],
-                },
-                ..default()
-            };
-
-            // fill image.data with zeroes
-            image.resize(size);
-
-            let image_handle = images.add(image);
-
+            let image = setup_image(&mut images, &window.resolution);
             if let Some(mat) = target_materials.get_mut(target_mat_handle) {
-                target.0 = image_handle.clone();
-                mat.texture = image_handle;
+                target.0 = image.clone();
+                mat.texture = image;
             }
-
             debug!(
                 size = format!(
                     "Resized Vello render image to {:?}",
@@ -124,24 +98,24 @@ pub fn setup_ss_rendertarget(
     let mesh_handle = render_target_mesh_handle.get_or_insert_with(|| {
         let mut rendertarget_quad = Mesh::new(PrimitiveTopology::TriangleList);
 
-        let mut v_pos = vec![[-1.0, -1.0, 0.0]];
-        v_pos.push([1.0, -1.0, 0.0]);
-        v_pos.push([1.0, 1.0, 0.0]);
-        v_pos.push([-1.0, 1.0, 0.0]);
+        // Rectangle of the screen
+        let verts = vec![
+            [-1.0, -1.0, 0.0],
+            [1.0, -1.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [-1.0, 1.0, 0.0],
+        ];
+        rendertarget_quad.insert_attribute(Mesh::ATTRIBUTE_POSITION, verts);
 
-        // Set the position attribute
-        rendertarget_quad.insert_attribute(Mesh::ATTRIBUTE_POSITION, v_pos);
-
-        let v_pos = vec![[-1.0, -1.0], [1.0, -1.0], [1.0, 1.0], [1.0, 1.0]];
-
-        rendertarget_quad.insert_attribute(Mesh::ATTRIBUTE_UV_0, v_pos);
+        let uv_pos = vec![[-1.0, -1.0], [1.0, -1.0], [1.0, 1.0], [1.0, 1.0]];
+        rendertarget_quad.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv_pos);
 
         let indices = vec![0, 1, 2, 0, 2, 3];
         rendertarget_quad.set_indices(Some(Indices::U32(indices)));
 
         meshes.add(rendertarget_quad)
     });
-    let texture_image = setup_image(&mut commands, &mut images, &window.resolution);
+    let texture_image = setup_image(&mut images, &window.resolution);
     let render_target = SSRenderTarget(texture_image.clone());
     let mesh = Mesh2dHandle(mesh_handle.clone());
     let material = custom_materials.add(VelloCanvasMaterial {

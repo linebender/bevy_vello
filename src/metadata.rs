@@ -1,5 +1,6 @@
 use vellottie::Composition;
 
+/// Metadata used for introspection and color swapping.
 pub struct Metadata {
     pub(crate) composition: Composition,
 }

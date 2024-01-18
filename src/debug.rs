@@ -1,6 +1,5 @@
-use bevy::{math::Vec3Swizzles, prelude::*};
-
 use crate::{Origin, VelloVector};
+use bevy::{math::Vec3Swizzles, prelude::*};
 
 pub struct DebugVisualizationsPlugin;
 

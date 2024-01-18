@@ -14,8 +14,6 @@
 //
 // Also licensed under MIT license, at your choice.
 
-use std::sync::Arc;
-
 use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
     prelude::*,
@@ -23,6 +21,7 @@ use bevy::{
     render::render_asset::RenderAsset,
     utils::BoxedFuture,
 };
+use std::sync::Arc;
 use vello::{
     fello::meta::MetadataProvider,
     fello::raw::FontRef,
