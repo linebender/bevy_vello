@@ -18,8 +18,8 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloVector, VectorLoaderErro
     let mut builder = SceneBuilder::for_fragment(&mut scene_frag);
     vello_svg::render_tree(&mut builder, &usvg, None);
 
-    let width = usvg.size.width() as f32;
-    let height = usvg.size.height() as f32;
+    let width = usvg.size.width();
+    let height = usvg.size.height();
 
     let vello_vector = VelloVector {
         data: Vector::Static(Arc::new(scene_frag)),
