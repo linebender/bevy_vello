@@ -9,7 +9,6 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
 [workspace.dependencies]
-# TODO: We shouldn't need all of these features...
 bevy = { version = "0.12", default-features = false, features = [
   "bevy_asset",
   "bevy_winit",
