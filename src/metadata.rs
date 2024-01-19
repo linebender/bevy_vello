@@ -1,8 +1,9 @@
+use std::sync::Arc;
 use vellottie::Composition;
 
 /// Metadata used for introspection and color swapping.
 pub struct Metadata {
-    pub(crate) composition: Composition,
+    pub(crate) composition: Arc<Composition>,
 }
 
 impl Metadata {
@@ -12,17 +13,5 @@ impl Metadata {
             .iter()
             .map(|l| l.name.clone())
             .collect()
-    }
-
-    pub fn get_layer_shapes(&self, layer: &str) -> Option<usize> {
-        match self.composition.layers.iter().find(|l| l.name.eq(&layer)) {
-            Some(layer) => {
-                let vellottie::runtime::model::Content::Shape(ref shapes) = layer.content else {
-                    return None;
-                };
-                Some(shapes.iter().len())
-            }
-            None => None,
-        }
     }
 }

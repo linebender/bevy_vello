@@ -7,31 +7,30 @@ use bevy_vello::{
 fn main() {
     App::new()
         .insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins.set(AssetPlugin { ..default() }))
+        .add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
-        .add_systems(Update, (camera_system, drag_and_drop, print_metadata))
+        .add_systems(
+            Update,
+            (
+                camera_system,
+                drag_and_drop,
+                print_metadata,
+                dynamic_color_remapping,
+            ),
+        )
         .run();
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
-    commands
-        .spawn(VelloVectorBundle {
-            origin: bevy_vello::Origin::Center,
-            // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
-            vector: asset_server.load("../assets/squid.json"),
-            debug_visualizations: DebugVisualizations::Visible,
-            ..default()
-        })
-        // Remap the sucker colors to green!
-        .insert({
-            const SUCKERS: Color = Color::rgba(0.0, 1.0, 0.0, 1.0);
-            ColorPaletteSwap::empty()
-                .add("suckers ", SUCKERS)
-                .add("suckers Flip", SUCKERS)
-        });
-
+    commands.spawn(VelloVectorBundle {
+        origin: bevy_vello::Origin::Center,
+        // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
+        vector: asset_server.load("../assets/squid.json"),
+        debug_visualizations: DebugVisualizations::Visible,
+        ..default()
+    });
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
         text: VelloText {
@@ -40,6 +39,22 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         },
         ..default()
     });
+}
+
+fn dynamic_color_remapping(
+    mut commands: Commands,
+    mut q: Query<Entity, With<Handle<VelloVector>>>,
+    time: Res<Time>,
+) {
+    for e in q.iter_mut() {
+        commands.entity(e).insert({
+            const CYCLE_SECONDS: f32 = 3.0;
+            let color = Color::hsl(time.elapsed_seconds() % CYCLE_SECONDS * 360.0, 1.0, 0.5);
+            ColorPaletteSwap::empty()
+                .add("suckers ", color)
+                .add("suckers Flip", color)
+        });
+    }
 }
 
 fn print_metadata(

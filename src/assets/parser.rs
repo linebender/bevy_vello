@@ -51,7 +51,10 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloVector, VectorLoaderE
     let height = composition.height as f32;
 
     let vello_vector = VelloVector {
-        data: Vector::Animated(composition),
+        data: Vector::Animated {
+            original: Arc::new(composition),
+            dirty: None,
+        },
         local_transform_bottom_center: compute_local_transform(width, height),
         local_transform_center: compute_local_transform_center(width, height),
         width,

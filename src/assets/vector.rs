@@ -10,7 +10,12 @@ use vello::SceneFragment;
 #[derive(Clone)]
 pub enum Vector {
     Static(Arc<SceneFragment>),
-    Animated(vellottie::Composition),
+    Animated {
+        /// The original copy
+        original: Arc<vellottie::Composition>,
+        /// A modified copy, used for color swapping
+        dirty: Option<vellottie::Composition>,
+    },
 }
 
 #[derive(Asset, TypePath, Clone)]
@@ -84,9 +89,9 @@ impl VelloVector {
     /// Gets the lottie metadata (if vector is a lottie), an object used for inspecting
     /// this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
-        if let Vector::Animated(composition) = &self.data {
+        if let Vector::Animated { original, .. } = &self.data {
             Some(Metadata {
-                composition: composition.clone(),
+                composition: original.clone(),
             })
         } else {
             None

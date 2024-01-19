@@ -1,8 +1,17 @@
 # Usage
 
-```shell
-cargo run -p demo
-```
+Native:
+
+  ```shell
+  cargo run -p demo
+  ```
+
+WASM:
+
+  ```shell
+  cargo install trunk
+  trunk serve
+  ```
 
 We provide some example assets in [assets].
 

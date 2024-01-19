@@ -169,16 +169,23 @@ pub fn prepare_vector_composition_edits(mut render_vectors: Query<&mut Extracted
             ..
         } = render_vector.as_mut();
 
-        // Continue if there are no colors
-        let Some(ColorPaletteSwap { ref colors }) = color_swaps else {
+        // Perform recolors!
+        // TODO: Recoloring SVGs
+        let Vector::Animated {
+            ref original,
+            ref mut dirty,
+        } = render_data.data
+        else {
             continue 'vectors;
         };
 
-        // Perform recolors!
-        // TODO: Recoloring SVGs
-        let Vector::Animated(ref mut composition) = render_data.data else {
+        // Continue if there are no colors
+        let Some(ColorPaletteSwap { ref colors }) = color_swaps else {
+            dirty.take();
             continue 'vectors;
         };
+
+        let mut composition = vellottie::Composition::clone(original);
         'layers: for layer in composition.layers.iter_mut() {
             // Continue if this layer doesn't have a color swap
             let Some(target_color) = colors.get(&layer.name) else {
@@ -217,6 +224,7 @@ pub fn prepare_vector_composition_edits(mut render_vectors: Query<&mut Extracted
                 }
             }
         }
+        dirty.replace(composition);
     }
 }
 

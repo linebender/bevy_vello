@@ -148,7 +148,8 @@ pub fn render_scene(
                     Vector::Static(fragment) => {
                         builder.append(fragment, Some(affine));
                     }
-                    Vector::Animated(composition) => {
+                    Vector::Animated { original, dirty } => {
+                        let composition = dirty.as_ref().unwrap_or(original);
                         velato_renderer.0.render(
                             composition,
                             time.elapsed_seconds(),
