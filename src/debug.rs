@@ -1,4 +1,4 @@
-use crate::{Origin, VelloVector};
+use crate::{Origin, VelloAsset};
 use bevy::{math::Vec3Swizzles, prelude::*};
 
 pub struct DebugVisualizationsPlugin;
@@ -20,15 +20,15 @@ pub enum DebugVisualizations {
 fn draw_viewbox(
     query_world: Query<
         (
-            &Handle<VelloVector>,
+            &Handle<VelloAsset>,
             &GlobalTransform,
             Option<&Origin>,
             &DebugVisualizations,
         ),
         Without<Node>,
     >,
-    query_ui: Query<(&Handle<VelloVector>, &GlobalTransform, &DebugVisualizations), With<Node>>,
-    vectors: Res<Assets<VelloVector>>,
+    query_ui: Query<(&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations), With<Node>>,
+    vectors: Res<Assets<VelloAsset>>,
     query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
     mut gizmos: Gizmos,
 ) {
@@ -45,7 +45,7 @@ fn draw_viewbox(
     {
         if let Some(vector) = vectors.get(vector) {
             let [min, x_axis, max, y_axis] =
-                vector.bb_in_world(transform, origin.unwrap_or(&Origin::default()));
+                vector.bb_in_world_space(transform, origin.unwrap_or(&Origin::default()));
 
             gizmos.line_2d(min, x_axis, Color::WHITE);
             gizmos.line_2d(min, y_axis, Color::WHITE);
@@ -65,14 +65,14 @@ fn draw_viewbox(
         }
     }
 
-    // Show ui-space vectors
+    // Show screen-space vectors
     for (vector, transform, _) in query_ui
         .iter()
         .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
             let &[Some(min), Some(x_axis), Some(max), Some(y_axis)] = vector
-                .bb_in_world_ui(transform)
+                .bb_in_screen_space(transform)
                 .iter()
                 .map(|&v| camera.viewport_to_world_2d(view, v))
                 .collect::<Vec<Option<Vec2>>>()

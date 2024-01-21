@@ -4,9 +4,10 @@ use super::{
     LottieRenderer, SSRenderTarget, VelloRenderer,
 };
 use crate::{
-    assets::vector::{Vector, VelloVector},
+    assets::vector::{Vector, VelloAsset},
     font::VelloFont,
-    RenderMode,
+    playback_settings::{PlaybackDirection, PlaybackSettings},
+    CoordinateSpace,
 };
 use bevy::{
     prelude::*,
@@ -17,6 +18,7 @@ use bevy::{
     },
 };
 use vello::{RenderParams, Scene, SceneBuilder};
+use vello_svg::usvg::strict_num::Ulps;
 
 #[derive(Clone)]
 pub struct ExtractedVectorAssetData {
@@ -25,7 +27,7 @@ pub struct ExtractedVectorAssetData {
     size: Vec2,
 }
 
-impl RenderAsset for VelloVector {
+impl RenderAsset for VelloAsset {
     type ExtractedAsset = ExtractedVectorAssetData;
 
     type PreparedAsset = PreparedVectorAssetData;
@@ -80,7 +82,6 @@ impl From<ExtractedVectorAssetData> for PreparedVectorAssetData {
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
 pub fn render_scene(
-    renderer: Option<NonSendMut<VelloRenderer>>,
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
@@ -88,10 +89,11 @@ pub fn render_scene(
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
-    mut velato_renderer: ResMut<LottieRenderer>,
+    vello_renderer: Option<NonSendMut<VelloRenderer>>,
+    mut velottie_renderer: ResMut<LottieRenderer>,
     time: Res<Time>,
 ) {
-    let mut renderer = if let Some(renderer) = renderer {
+    let mut renderer = if let Some(renderer) = vello_renderer {
         renderer
     } else {
         return;
@@ -106,7 +108,7 @@ pub fn render_scene(
             Vector(&'a ExtractedRenderVector),
             Text(&'a ExtractedRenderText),
         }
-        let mut render_queue: Vec<(f32, RenderMode, (&PreparedAffine, RenderItem))> =
+        let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
             render_vectors
                 .iter()
                 .map(|(a, b)| {
@@ -142,21 +144,66 @@ pub fn render_scene(
         for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter() {
             match render_item {
                 RenderItem::Vector(ExtractedRenderVector {
-                    render_data: vector_data,
+                    render_data,
+                    playback_settings,
                     ..
-                }) => match &vector_data.data {
-                    Vector::Static(fragment) => {
+                }) => match &render_data.data {
+                    Vector::Svg {
+                        original: fragment, ..
+                    } => {
                         builder.append(fragment, Some(affine));
                     }
-                    Vector::Animated { original, dirty } => {
+                    Vector::Lottie {
+                        original,
+                        dirty,
+                        playback_started,
+                    } => {
                         let composition = dirty.as_ref().unwrap_or(original);
-                        velato_renderer.0.render(
-                            composition,
-                            time.elapsed_seconds(),
-                            affine,
-                            1.0,
-                            &mut builder,
-                        );
+                        let t = if let Some(PlaybackSettings {
+                            autoplay,
+                            direction,
+                            speed,
+                            looping,
+                            segments,
+                        }) = playback_settings
+                        {
+                            let mut segments = composition.frames.start.max(segments.start)
+                                ..composition.frames.end.min(segments.end);
+                            if *direction == PlaybackDirection::Reverse {
+                                segments = segments.end..segments.start;
+                            }
+                            if !autoplay {
+                                // Static frame
+                                match direction {
+                                    PlaybackDirection::Normal => segments.start,
+                                    PlaybackDirection::Reverse => segments.start.prev(),
+                                }
+                            } else {
+                                let speed = speed * (*direction as i32 as f32);
+                                let elapsed_t = playback_started.elapsed().as_secs_f32() * speed;
+                                let anim_length =
+                                    (segments.end - segments.start).abs() / composition.frame_rate;
+                                if *looping {
+                                    // Currently looping
+                                    segments.start / composition.frame_rate
+                                        + elapsed_t % anim_length
+                                } else if elapsed_t.abs() >= anim_length {
+                                    // Not looping - Playback finished, stay on the last frame
+                                    match direction {
+                                        PlaybackDirection::Normal => segments.end.prev(),
+                                        PlaybackDirection::Reverse => segments.end.next(),
+                                    }
+                                } else {
+                                    // Not looping - Still playing
+                                    segments.start / composition.frame_rate + elapsed_t
+                                }
+                            }
+                        } else {
+                            time.elapsed_seconds()
+                        };
+                        velottie_renderer
+                            .0
+                            .render(composition, t, affine, 1.0, &mut builder);
                     }
                 },
                 RenderItem::Text(ExtractedRenderText { font, text, .. }) => {

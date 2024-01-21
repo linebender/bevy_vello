@@ -1,5 +1,7 @@
 use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
-use crate::{assets::vector::VelloVector, color_swapping::ColorPaletteSwap, RenderMode, Vector};
+use crate::{
+    assets::vector::VelloAsset, color_swapping::ColorPaletteSwap, CoordinateSpace, Vector,
+};
 use bevy::{
     prelude::*,
     render::{camera::ExtractedCamera, render_asset::RenderAssets, view::ExtractedView},
@@ -14,7 +16,7 @@ pub fn prepare_vector_affines(
     mut commands: Commands,
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
     mut render_vectors: Query<(Entity, &ExtractedRenderVector)>,
-    render_vector_assets: Res<RenderAssets<VelloVector>>,
+    render_vector_assets: Res<RenderAssets<VelloAsset>>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let Ok((camera, view)) = camera.get_single() else {
@@ -43,7 +45,7 @@ pub fn prepare_vector_affines(
             };
 
         let raw_transform = match render_vector.render_mode {
-            RenderMode::ScreenSpace => {
+            CoordinateSpace::ScreenSpace => {
                 let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
 
                 // Make the screen space vector instance sized to fill the entire UI Node box if it's bundled with a Node
@@ -57,7 +59,7 @@ pub fn prepare_vector_affines(
                 local_center_matrix.w_axis.y *= -1.0;
                 model_matrix * local_center_matrix
             }
-            RenderMode::WorldSpace => {
+            CoordinateSpace::WorldSpace => {
                 let local_matrix = match render_vector.origin {
                     crate::Origin::BottomCenter => local_bottom_center_matrix,
                     crate::Origin::Center => local_center_matrix,
@@ -135,8 +137,10 @@ pub fn prepare_text_affines(
         let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
 
         let raw_transform = match render_text.render_mode {
-            RenderMode::ScreenSpace => world_transform.compute_matrix().mul_scalar(pixel_scale.0),
-            RenderMode::WorldSpace => vello_matrix * model_matrix,
+            CoordinateSpace::ScreenSpace => {
+                world_transform.compute_matrix().mul_scalar(pixel_scale.0)
+            }
+            CoordinateSpace::WorldSpace => vello_matrix * model_matrix,
         };
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
@@ -171,9 +175,10 @@ pub fn prepare_vector_composition_edits(mut render_vectors: Query<&mut Extracted
 
         // Perform recolors!
         // TODO: Recoloring SVGs
-        let Vector::Animated {
+        let Vector::Lottie {
             ref original,
             ref mut dirty,
+            playback_started: _,
         } = render_data.data
         else {
             continue 'vectors;

@@ -1,5 +1,6 @@
 use crate::{
-    color_swapping::ColorPaletteSwap, font::VelloFont, Origin, RenderMode, VelloText, VelloVector,
+    color_swapping::ColorPaletteSwap, font::VelloFont, playback_settings::PlaybackSettings,
+    CoordinateSpace, Origin, VelloAsset, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -9,11 +10,12 @@ use bevy::{
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
-    pub vector_handle: Handle<VelloVector>,
-    pub render_data: VelloVector,
+    pub vector_handle: Handle<VelloAsset>,
+    pub render_data: VelloAsset,
     pub transform: GlobalTransform,
-    pub render_mode: RenderMode,
+    pub render_mode: CoordinateSpace,
     pub origin: Origin,
+    pub playback_settings: Option<PlaybackSettings>,
     pub color_swaps: Option<ColorPaletteSwap>,
     pub ui_node: Option<Node>,
 }
@@ -22,23 +24,25 @@ pub fn vector_instances(
     mut commands: Commands,
     query_vectors: Extract<
         Query<(
-            &Handle<VelloVector>,
-            &RenderMode,
+            &Handle<VelloAsset>,
+            &CoordinateSpace,
             Option<&Origin>,
             &GlobalTransform,
+            Option<&PlaybackSettings>,
             Option<&ColorPaletteSwap>,
             Option<&Node>,
             &ViewVisibility,
             &InheritedVisibility,
         )>,
     >,
-    assets: Extract<Res<Assets<VelloVector>>>,
+    assets: Extract<Res<Assets<VelloAsset>>>,
 ) {
     for (
         vello_vector_handle,
         render_mode,
         origin,
         transform,
+        playback,
         color_swaps,
         ui_node,
         view_visibility,
@@ -52,6 +56,7 @@ pub fn vector_instances(
                     render_data: asset_data.to_owned(),
                     transform: *transform,
                     color_swaps: color_swaps.cloned(),
+                    playback_settings: playback.cloned(),
                     render_mode: *render_mode,
                     origin: origin.copied().unwrap_or_default(),
                     ui_node: ui_node.cloned(),
@@ -66,7 +71,7 @@ pub struct ExtractedRenderText {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
     pub transform: GlobalTransform,
-    pub render_mode: RenderMode,
+    pub render_mode: CoordinateSpace,
 }
 
 impl ExtractComponent for ExtractedRenderText {
@@ -74,7 +79,7 @@ impl ExtractComponent for ExtractedRenderText {
         &'static Handle<VelloFont>,
         &'static VelloText,
         &'static GlobalTransform,
-        &'static RenderMode,
+        &'static CoordinateSpace,
     );
 
     type Filter = ();

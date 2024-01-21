@@ -1,6 +1,6 @@
 use crate::{
     assets::parser::{load_lottie_from_bytes, load_svg_from_bytes},
-    VelloVector,
+    VelloAsset,
 };
 use bevy::{
     asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
@@ -11,7 +11,7 @@ use bevy::{
     },
 };
 #[derive(Default)]
-pub struct VelloVectorLoader;
+pub struct VelloAssetLoader;
 
 #[non_exhaustive]
 #[derive(Debug, Error)]
@@ -28,8 +28,8 @@ pub enum VectorLoaderError {
     Usvg(#[from] vello_svg::usvg::Error),
 }
 
-impl AssetLoader for VelloVectorLoader {
-    type Asset = VelloVector;
+impl AssetLoader for VelloAssetLoader {
+    type Asset = VelloAsset;
 
     type Settings = ();
 

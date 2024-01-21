@@ -16,7 +16,7 @@ use bevy::{
     window::{WindowResized, WindowResolution},
 };
 
-use crate::{renderer::SSRenderTarget, RenderMode};
+use crate::{renderer::SSRenderTarget, CoordinateSpace};
 
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
@@ -173,7 +173,7 @@ impl Material2d for VelloCanvasMaterial {
 /// Hide the RenderTarget canvas if there is nothing to render
 pub fn clear_when_empty(
     mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
-    render_items: Query<(&mut RenderMode, &ViewVisibility)>,
+    render_items: Query<(&mut CoordinateSpace, &ViewVisibility)>,
 ) {
     if let Ok(mut visibility) = query_render_target.get_single_mut() {
         if render_items.is_empty() {

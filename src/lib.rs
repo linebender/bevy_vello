@@ -6,9 +6,12 @@ mod assets;
 mod color_swapping;
 mod font;
 mod metadata;
+mod playback_settings;
 mod plugin;
 mod renderer;
 mod rendertarget;
+#[cfg(feature = "state-machines")]
+mod state_machine;
 
 use bevy::prelude::*;
 use font::VelloFont;
@@ -20,19 +23,22 @@ pub use vellottie;
 #[cfg(feature = "debug")]
 pub mod debug;
 
-pub use assets::VelloVectorLoader;
+pub use assets::VelloAssetLoader;
 pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str, Vector,
-    VelloVector,
+    VelloAsset,
 };
 pub use color_swapping::ColorPaletteSwap;
 pub use font::VelloFontLoader;
+pub use playback_settings::{PlaybackDirection, PlaybackSettings};
 pub use plugin::VelloPlugin;
 pub use rendertarget::VelloCanvasMaterial;
+#[cfg(feature = "state-machines")]
+pub use state_machine::{State, StateMachine, StateTransition};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
-pub enum RenderMode {
+pub enum CoordinateSpace {
     #[default]
     WorldSpace = 0,
     ScreenSpace = 1,
@@ -41,16 +47,16 @@ pub enum RenderMode {
 #[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
 pub enum Origin {
-    #[default]
     BottomCenter,
+    #[default]
     Center,
 }
 
 #[derive(Bundle)]
-pub struct VelloVectorBundle {
-    pub vector: Handle<VelloVector>,
+pub struct VelloAssetBundle {
+    pub vector: Handle<VelloAsset>,
     /// The coordinate space in which this vector should be rendered.
-    pub render_mode: RenderMode,
+    pub coordinate_space: CoordinateSpace,
     /// This object's transform local origin. Enable debug visualizations to visualize (red X)
     pub origin: Origin,
     pub transform: Transform,
@@ -65,11 +71,11 @@ pub struct VelloVectorBundle {
     pub view_visibility: ViewVisibility,
 }
 
-impl Default for VelloVectorBundle {
+impl Default for VelloAssetBundle {
     fn default() -> Self {
         Self {
             vector: Default::default(),
-            render_mode: RenderMode::WorldSpace,
+            coordinate_space: CoordinateSpace::WorldSpace,
             origin: Default::default(),
             transform: Default::default(),
             global_transform: Default::default(),
@@ -92,7 +98,7 @@ pub struct VelloText {
 pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
-    pub render_mode: RenderMode,
+    pub coordinate_space: CoordinateSpace,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible
@@ -108,7 +114,7 @@ impl Default for VelloTextBundle {
         Self {
             font: Default::default(),
             text: Default::default(),
-            render_mode: RenderMode::WorldSpace,
+            coordinate_space: CoordinateSpace::WorldSpace,
             transform: Default::default(),
             global_transform: Default::default(),
             visibility: Visibility::Inherited,

@@ -37,8 +37,9 @@ repository.workspace = true
 [lib]
 
 [features]
-default = []
+default = ["state-machines"]
 debug = ["bevy/bevy_gizmos"]
+state-machines = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
@@ -50,8 +51,3 @@ flate2 = "1.0"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"
-
-# These settings are to get the WASM blob smaller for the demo.
-[profile.release.package."demo"]
-codegen-units = 1
-opt-level = 'z'

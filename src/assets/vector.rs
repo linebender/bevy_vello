@@ -3,23 +3,31 @@ use bevy::{
     math::{Vec3A, Vec3Swizzles, Vec4Swizzles},
     prelude::*,
     reflect::TypePath,
+    utils::Instant,
 };
 use std::sync::Arc;
 use vello::SceneFragment;
 
 #[derive(Clone)]
 pub enum Vector {
-    Static(Arc<SceneFragment>),
-    Animated {
-        /// The original copy
+    Svg {
+        /// The original image encoding
+        original: Arc<SceneFragment>,
+        /// The time we started rendering this asset
+        playback_started: Instant,
+    },
+    Lottie {
+        /// The original image encoding
         original: Arc<vellottie::Composition>,
-        /// A modified copy, used for color swapping
+        /// A modified copy, used for color swapping or modifications
         dirty: Option<vellottie::Composition>,
+        /// The time we started rendering this asset
+        playback_started: Instant,
     },
 }
 
 #[derive(Asset, TypePath, Clone)]
-pub struct VelloVector {
+pub struct VelloAsset {
     pub data: Vector,
     pub local_transform_bottom_center: Transform,
     pub local_transform_center: Transform,
@@ -27,7 +35,7 @@ pub struct VelloVector {
     pub height: f32,
 }
 
-impl VelloVector {
+impl VelloAsset {
     pub fn center_in_world(&self, transform: &GlobalTransform, origin: &Origin) -> Vec2 {
         let world_transform = transform.compute_matrix();
         let local_transform = match origin {
@@ -44,7 +52,7 @@ impl VelloVector {
     }
 
     /// Returns the 4 corner points of this vector's bounding box in world space
-    pub fn bb_in_world(&self, transform: &GlobalTransform, origin: &Origin) -> [Vec2; 4] {
+    pub fn bb_in_world_space(&self, transform: &GlobalTransform, origin: &Origin) -> [Vec2; 4] {
         let min = Vec3A::ZERO;
         let x_axis = Vec3A::new(self.width, 0.0, 0.0);
 
@@ -68,7 +76,7 @@ impl VelloVector {
         [min, x_axis, max, y_axis]
     }
 
-    pub fn bb_in_world_ui(&self, transform: &GlobalTransform) -> [Vec2; 4] {
+    pub fn bb_in_screen_space(&self, transform: &GlobalTransform) -> [Vec2; 4] {
         let min = Vec3A::ZERO;
         let x_axis = Vec3A::new(self.width, 0.0, 0.0);
 
@@ -89,7 +97,7 @@ impl VelloVector {
     /// Gets the lottie metadata (if vector is a lottie), an object used for inspecting
     /// this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
-        if let Vector::Animated { original, .. } = &self.data {
+        if let Vector::Lottie { original, .. } = &self.data {
             Some(Metadata {
                 composition: original.clone(),
             })
