@@ -33,10 +33,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                 .with_state(
                     AnimationState::new("slow")
                         .with_asset(asset_server.load("../assets/squid.json"))
-                        .with_transition(AnimationTransition::OnAfter {
-                            state: "fast",
-                            secs: 0.5,
-                        })
+                        .with_transition(AnimationTransition::OnMouseEnter { state: "fast" })
                         .with_playback_settings(PlaybackSettings {
                             autoplay: true,
                             direction: PlaybackDirection::Normal,
@@ -55,7 +52,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             looping: true,
                             segments: 0.0..96.0,
                         })
-                        .with_transition(AnimationTransition::OnComplete { state: "slow" }),
+                        .with_transition(AnimationTransition::OnMouseLeave { state: "slow" }),
                 ),
         );
     commands.spawn(VelloTextBundle {
@@ -66,6 +63,86 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         },
         ..default()
     });
+
+    commands
+        .spawn(VelloAssetBundle {
+            origin: bevy_vello::Origin::Center,
+            vector: asset_server.load("../assets/Front.json"),
+            transform: Transform::from_translation(Vec3::new(300.0, 200.0, 0.0)),
+            debug_visualizations: DebugVisualizations::Visible,
+            ..default()
+        })
+        .insert(
+            AnimationController::new("slow")
+                .with_state(
+                    AnimationState::new("slow")
+                        .with_asset(asset_server.load("../assets/Front.json"))
+                        .with_transition(AnimationTransition::OnMouseEnter { state: "fast" })
+                        .with_playback_settings(PlaybackSettings {
+                            autoplay: true,
+                            direction: PlaybackDirection::Normal,
+                            speed: 0.2,
+                            looping: true,
+                            segments: 0.0..96.0,
+                        }),
+                )
+                .with_state(
+                    AnimationState::new("fast")
+                        .with_asset(asset_server.load("../assets/Front.json"))
+                        .with_playback_settings(PlaybackSettings {
+                            autoplay: true,
+                            direction: PlaybackDirection::Reverse,
+                            speed: 1.0,
+                            looping: true,
+                            segments: 0.0..96.0,
+                        })
+                        .with_transition(AnimationTransition::OnMouseLeave { state: "slow" }),
+                ),
+        );
+
+    commands
+        .spawn(VelloAssetBundle {
+            origin: bevy_vello::Origin::Center,
+            vector: asset_server.load("../assets/example.json"),
+            transform: Transform::from_translation(Vec3::new(-750.0, 0.0, 0.0))
+                .with_scale(Vec3::splat(30.0)),
+            debug_visualizations: DebugVisualizations::Visible,
+            ..default()
+        })
+        .insert(
+            AnimationController::new("stopped")
+                .with_state(
+                    AnimationState::new("stopped")
+                        .with_asset(asset_server.load("../assets/example.json"))
+                        .with_transition(AnimationTransition::OnMouseEnter { state: "play" })
+                        .with_playback_settings(PlaybackSettings {
+                            autoplay: false,
+                            ..default()
+                        }),
+                )
+                .with_state(
+                    AnimationState::new("play")
+                        .with_asset(asset_server.load("../assets/example.json"))
+                        .with_transition(AnimationTransition::OnMouseLeave { state: "rev" })
+                        .with_playback_settings(PlaybackSettings {
+                            autoplay: true,
+                            direction: PlaybackDirection::Normal,
+                            looping: false,
+                            ..default()
+                        }),
+                )
+                .with_state(
+                    AnimationState::new("rev")
+                        .with_asset(asset_server.load("../assets/example.json"))
+                        .with_playback_settings(PlaybackSettings {
+                            autoplay: true,
+                            direction: PlaybackDirection::Reverse,
+                            looping: false,
+                            ..default()
+                        })
+                        .with_transition(AnimationTransition::OnComplete { state: "stopped" }),
+                ),
+        );
 }
 
 fn dynamic_color_remapping(

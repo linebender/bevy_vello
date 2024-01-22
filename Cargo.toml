@@ -37,7 +37,7 @@ repository.workspace = true
 [lib]
 
 [features]
-default = ["animation-controller"]
+default = ["animation-controller", "debug"]
 debug = ["bevy/bevy_gizmos"]
 animation-controller = []
 

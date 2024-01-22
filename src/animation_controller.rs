@@ -147,16 +147,29 @@ pub mod systems {
     pub fn run_transitions(
         mut query_sm: Query<(
             &mut AnimationController,
+            &GlobalTransform,
             Option<&PlaybackSettings>,
             &mut Handle<VelloAsset>,
         )>,
         mut assets: ResMut<Assets<VelloAsset>>,
 
         // For input events
+        windows: Query<&Window>,
+        query_view: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
         buttons: Res<Input<MouseButton>>,
-        mut hovered_while_pressed: Local<bool>,
+        mut hovered: Local<bool>,
     ) {
-        for (mut controller, playback_settings, current_asset_handle) in query_sm.iter_mut() {
+        let window = windows.single();
+        let (camera, view) = query_view.single();
+
+        let pointer_pos = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world(view, cursor))
+            .map(|ray| ray.origin.truncate());
+
+        for (mut controller, gtransform, playback_settings, current_asset_handle) in
+            query_sm.iter_mut()
+        {
             let current_state_name = controller.current_state.to_owned();
             let current_asset_id = current_asset_handle.id();
 
@@ -164,6 +177,27 @@ pub mod systems {
             let current_asset = assets
                 .get_mut(current_asset_id)
                 .unwrap_or_else(|| panic!("asset not found for state: '{current_state_name}'"));
+
+            let is_inside = {
+                match pointer_pos {
+                    Some(pointer_pos) => {
+                        let local_transform = current_asset
+                            .local_transform_center
+                            .compute_matrix()
+                            .inverse();
+                        let transform = gtransform.compute_matrix() * local_transform;
+                        let mouse_local = transform
+                            .inverse()
+                            .transform_point3(pointer_pos.extend(0.0));
+                        mouse_local.x <= current_asset.width
+                            && mouse_local.x >= 0.0
+                            && mouse_local.y >= -current_asset.height
+                            && mouse_local.y <= 0.0
+                    }
+                    None => false,
+                }
+            };
+
             for transition in current_state.transitions.iter() {
                 match transition {
                     AnimationTransition::OnAfter { state, secs } => {
@@ -202,13 +236,25 @@ pub mod systems {
                         };
                     }
                     AnimationTransition::OnMouseEnter { state } => {
-                        todo!("pointer transitions")
+                        if is_inside {
+                            controller.pending_next_state = Some(state);
+                            break;
+                        }
                     }
                     AnimationTransition::OnMouseClick { state } => {
-                        todo!("pointer transitions")
+                        if is_inside && buttons.just_pressed(MouseButton::Left) {
+                            controller.pending_next_state = Some(state);
+                            break;
+                        }
                     }
                     AnimationTransition::OnMouseLeave { state } => {
-                        todo!("pointer transitions")
+                        if *hovered && !is_inside {
+                            controller.pending_next_state = Some(state);
+                            *hovered = false;
+                            break;
+                        } else if is_inside {
+                            *hovered = true;
+                        }
                     }
                 }
             }
