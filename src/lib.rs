@@ -34,7 +34,7 @@ pub use playback_settings::{PlaybackDirection, PlaybackSettings};
 pub use plugin::VelloPlugin;
 pub use rendertarget::VelloCanvasMaterial;
 #[cfg(feature = "state-machines")]
-pub use state_machine::{State, StateMachine, StateTransition};
+pub use state_machine::{AnimationController, AnimationState, AnimationTransition};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]

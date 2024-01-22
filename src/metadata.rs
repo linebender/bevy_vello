@@ -7,11 +7,7 @@ pub struct Metadata {
 }
 
 impl Metadata {
-    pub fn get_layers(&self) -> Vec<String> {
-        self.composition
-            .layers
-            .iter()
-            .map(|l| l.name.clone())
-            .collect()
+    pub fn get_layers(&self) -> impl Iterator<Item = &str> {
+        self.composition.layers.iter().map(|l| l.name.as_str())
     }
 }

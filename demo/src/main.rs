@@ -1,8 +1,8 @@
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_vello::{
-    debug::DebugVisualizations, ColorPaletteSwap, Origin, PlaybackDirection, PlaybackSettings,
-    State, StateMachine, StateTransition, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText,
-    VelloTextBundle,
+    debug::DebugVisualizations, AnimationController, AnimationState, AnimationTransition,
+    ColorPaletteSwap, Origin, PlaybackDirection, PlaybackSettings, VelloAsset, VelloAssetBundle,
+    VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
@@ -28,16 +28,18 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     commands
         .spawn(VelloAssetBundle {
             origin: bevy_vello::Origin::Center,
-            // Can only load *.json (Lottie animations) and *.svg (static vector graphics)
             vector: asset_server.load("../assets/squid.json"),
             debug_visualizations: DebugVisualizations::Visible,
             ..default()
         })
         .insert(
-            StateMachine::new("demo-sm", "fast")
+            AnimationController::new("slow")
                 .with_state(
-                    State::new("slow", asset_server.load("../assets/squid.json"))
-                        .with_transition(StateTransition::OnComplete { state: "fast" })
+                    AnimationState::new("slow")
+                        .with_transition(AnimationTransition::OnAfter {
+                            state: "fast",
+                            secs: 0.5,
+                        })
                         .with_playback_settings(PlaybackSettings {
                             autoplay: true,
                             direction: PlaybackDirection::Normal,
@@ -47,7 +49,8 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                         }),
                 )
                 .with_state(
-                    State::new("fast", asset_server.load("../assets/squid.json"))
+                    AnimationState::new("fast")
+                        .with_asset(asset_server.load("../assets/squid.json"))
                         .with_playback_settings(PlaybackSettings {
                             autoplay: true,
                             direction: PlaybackDirection::Reverse,
@@ -55,7 +58,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             looping: true,
                             segments: 0.0..96.0,
                         })
-                        .with_transition(StateTransition::OnComplete { state: "slow" }),
+                        .with_transition(AnimationTransition::OnComplete { state: "slow" }),
                 ),
         );
     commands.spawn(VelloTextBundle {
@@ -98,7 +101,7 @@ fn print_metadata(
             if let Some(metadata) = asset.metadata() {
                 info!(
                     "Animated asset loaded. Layers:\n{:#?}",
-                    metadata.get_layers()
+                    metadata.get_layers().collect::<Vec<_>>()
                 );
             }
         }
