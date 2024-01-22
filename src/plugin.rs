@@ -36,7 +36,7 @@ impl Plugin for VelloPlugin {
                 ),
             );
 
-        #[cfg(feature = "state-machines")]
-        app.add_plugins(crate::state_machine::StateMachinePlugin);
+        #[cfg(feature = "animation-controller")]
+        app.add_plugins(crate::animation_controller::AnimationControllerPlugin);
     }
 }

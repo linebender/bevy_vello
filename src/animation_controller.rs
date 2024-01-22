@@ -4,17 +4,19 @@ use bevy::{prelude::*, utils::hashbrown::HashMap};
 #[derive(Component, Default)]
 pub struct AnimationController {
     current_state: &'static str,
-    next_state: Option<&'static str>,
+    pending_next_state: Option<&'static str>,
     states: HashMap<&'static str, AnimationState>,
 }
 
 impl AnimationController {
-    pub fn current_state(&self) -> &str {
-        self.current_state
+    pub fn current_state(&self) -> &AnimationState {
+        self.states
+            .get(self.current_state)
+            .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state))
     }
 
     pub fn transition(&mut self, state: &'static str) {
-        self.next_state.replace(state);
+        self.pending_next_state.replace(state);
     }
 }
 
@@ -54,7 +56,7 @@ impl AnimationController {
     pub fn new(initial_state: &'static str) -> AnimationController {
         AnimationController {
             current_state: initial_state,
-            next_state: Some(initial_state),
+            pending_next_state: Some(initial_state),
             states: HashMap::new(),
         }
     }
@@ -91,9 +93,9 @@ impl AnimationState {
     }
 }
 
-pub struct StateMachinePlugin;
+pub struct AnimationControllerPlugin;
 
-impl Plugin for StateMachinePlugin {
+impl Plugin for AnimationControllerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(
             Update,
@@ -112,16 +114,16 @@ pub mod systems {
         mut query_sm: Query<(Entity, &mut AnimationController, &mut Handle<VelloAsset>)>,
         mut assets: ResMut<Assets<VelloAsset>>,
     ) {
-        for (entity, mut state_machine, mut cur_handle) in query_sm.iter_mut() {
-            let Some(next_state) = state_machine.next_state.take() else {
+        for (entity, mut controller, mut cur_handle) in query_sm.iter_mut() {
+            let Some(next_state) = controller.pending_next_state.take() else {
                 continue;
             };
-            let target_state = state_machine
+            let target_state = controller
                 .states
                 .get(&next_state)
                 .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
 
-            info!("state machine transitioning to={next_state}");
+            info!("animation controller transitioning to={next_state}");
             let target_asset = assets.get_mut(target_state.asset.id()).unwrap();
             match &mut target_asset.data {
                 Vector::Svg {
@@ -138,7 +140,7 @@ pub mod systems {
             if let Some(playback_settings) = &target_state.playback_settings {
                 commands.entity(entity).insert(playback_settings.clone());
             }
-            state_machine.current_state = next_state;
+            controller.current_state = next_state;
         }
     }
 
@@ -149,15 +151,16 @@ pub mod systems {
             &mut Handle<VelloAsset>,
         )>,
         mut assets: ResMut<Assets<VelloAsset>>,
+
+        // For input events
+        buttons: Res<Input<MouseButton>>,
+        mut hovered_while_pressed: Local<bool>,
     ) {
-        for (mut state_machine, playback_settings, current_asset_handle) in query_sm.iter_mut() {
-            let current_state_name = state_machine.current_state.to_owned();
+        for (mut controller, playback_settings, current_asset_handle) in query_sm.iter_mut() {
+            let current_state_name = controller.current_state.to_owned();
             let current_asset_id = current_asset_handle.id();
 
-            let current_state = state_machine
-                .states
-                .get(current_state_name.as_str())
-                .unwrap_or_else(|| panic!("state not found: '{current_state_name}'"));
+            let current_state = controller.current_state();
             let current_asset = assets
                 .get_mut(current_asset_id)
                 .unwrap_or_else(|| panic!("asset not found for state: '{current_state_name}'"));
@@ -174,7 +177,7 @@ pub mod systems {
                         };
                         let elapsed_dt = started.elapsed().as_secs_f32();
                         if elapsed_dt > *secs {
-                            state_machine.next_state = Some(state);
+                            controller.pending_next_state = Some(state);
                             break;
                         }
                     }
@@ -192,7 +195,7 @@ pub mod systems {
                                 }
                                 let complete_dt = (original.frames.end - original.frames.start).abs() / original.frame_rate;
                                 if elapsed_dt > complete_dt {
-                                    state_machine.next_state = Some(state);
+                                    controller.pending_next_state = Some(state);
                                     break;
                                 }
                             },

@@ -8,7 +8,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### added
 
-- State machines are now available behind the `state-machines` cargo feature
+- State machines are now available behind the `animation-controller` cargo feature
 - `PlaybackSettings` can now be bundled with `VelloAssetBundle` to augment playback
 
 ### changed

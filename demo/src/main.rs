@@ -1,7 +1,7 @@
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_vello::{
     debug::DebugVisualizations, AnimationController, AnimationState, AnimationTransition,
-    ColorPaletteSwap, Origin, PlaybackDirection, PlaybackSettings, VelloAsset, VelloAssetBundle,
+    ColorPaletteSwap, PlaybackDirection, PlaybackSettings, VelloAsset, VelloAssetBundle,
     VelloPlugin, VelloText, VelloTextBundle,
 };
 
@@ -10,21 +10,17 @@ fn main() {
         .insert_resource(AssetMetaCheck::Never)
         .add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin)
+        .add_plugins(bevy_pancam::PanCamPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(
             Update,
-            (
-                camera_system,
-                drag_and_drop,
-                print_metadata,
-                dynamic_color_remapping,
-            ),
+            (drag_and_drop, print_metadata, dynamic_color_remapping),
         )
         .run();
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands
         .spawn(VelloAssetBundle {
             origin: bevy_vello::Origin::Center,
@@ -36,6 +32,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             AnimationController::new("slow")
                 .with_state(
                     AnimationState::new("slow")
+                        .with_asset(asset_server.load("../assets/squid.json"))
                         .with_transition(AnimationTransition::OnAfter {
                             state: "fast",
                             secs: 0.5,
@@ -105,35 +102,6 @@ fn print_metadata(
                 );
             }
         }
-    }
-}
-
-/// Transform the camera to the center of the vector graphic apply zooming
-fn camera_system(
-    mut query: Query<(&GlobalTransform, &mut Handle<VelloAsset>, &Origin)>,
-    mut query_cam: Query<&mut Transform, (With<Camera>, Without<Handle<VelloAsset>>)>,
-    vectors: ResMut<Assets<VelloAsset>>,
-    mut q: Query<&mut OrthographicProjection, With<Camera>>,
-    time: Res<Time>,
-) {
-    let Ok(mut projection) = q.get_single_mut() else {
-        return;
-    };
-    let Ok(mut camera_transform) = query_cam.get_single_mut() else {
-        return;
-    };
-    let Ok((target_transform, vector, origin)) = query.get_single_mut() else {
-        return;
-    };
-
-    // Zoom in & out to demonstrate scalability and show the vector graphic's viewbox/anchor point
-    //projection.scale = 2.0 * time.elapsed_seconds().sin().clamp(0.2, 0.8);
-
-    // Set the camera position to the center point of the vector
-    if let Some(vector) = vectors.get(vector.as_ref()) {
-        camera_transform.translation = vector
-            .center_in_world(target_transform, origin)
-            .extend(camera_transform.translation.z);
     }
 }
 
