@@ -5,8 +5,7 @@ use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
 use vello_svg::usvg::{self, TreeParsing};
 
-/// Deserialize the SVG source XML string from the file
-/// contents buffer represented as raw bytes into a `VelloAsset`
+/// Deserialize an SVG file from bytes.
 pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError> {
     let svg_str = std::str::from_utf8(bytes)?;
 
@@ -34,16 +33,14 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
     Ok(vello_vector)
 }
 
-/// Deserialize the Lottie source JSON string from the file
-/// contents buffer represented as string into a `VelloAsset`
+/// Deserialize an SVG file from a string slice.
 pub fn load_svg_from_str(svg_str: &str) -> Result<VelloAsset, VectorLoaderError> {
     let bytes = svg_str.as_bytes();
 
     load_svg_from_bytes(bytes)
 }
 
-/// Deserialize the Lottie source JSON string from the file
-/// contents buffer represented as a str into a `VelloAsset`
+/// Deserialize a Lottie file from bytes.
 pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError> {
     // Load Lottie JSON bytes with the Velato (bodymovin) parser
     let composition = vellottie::Composition::from_bytes(bytes)
@@ -67,8 +64,7 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
     Ok(vello_vector)
 }
 
-/// Deserialize the Lottie source JSON string from the file
-/// contents buffer represented as a str into a `VelloAsset`
+/// Deserialize a Lottie file from a string slice.
 pub fn load_lottie_from_str(json_str: &str) -> Result<VelloAsset, VectorLoaderError> {
     let bytes = json_str.as_bytes();
 
