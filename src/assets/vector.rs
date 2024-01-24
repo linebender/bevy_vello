@@ -14,15 +14,17 @@ pub enum Vector {
         /// The original image encoding
         original: Arc<SceneFragment>,
         /// The time we started rendering this asset
-        playback_started: Instant,
+        first_frame: Option<Instant>,
     },
     Lottie {
         /// The original image encoding
         original: Arc<vellottie::Composition>,
-        /// A modified copy, used for color swapping or modifications
-        dirty: Option<vellottie::Composition>,
+        /// A modified copy, used for color swapping
+        colored: Option<vellottie::Composition>,
         /// The time we started rendering this asset
-        playback_started: Instant,
+        first_frame: Option<Instant>,
+        /// The last frame rendered
+        playhead: f32,
     },
 }
 

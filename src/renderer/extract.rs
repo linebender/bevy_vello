@@ -10,12 +10,11 @@ use bevy::{
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
-    pub vector_handle: Handle<VelloAsset>,
-    pub render_data: VelloAsset,
+    pub asset: VelloAsset,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub origin: Origin,
-    pub playback_settings: Option<PlaybackSettings>,
+    pub playback_settings: PlaybackSettings,
     pub color_swaps: Option<ColorPaletteSwap>,
     pub ui_node: Option<Node>,
 }
@@ -49,14 +48,13 @@ pub fn vector_instances(
         inherited_visibility,
     ) in query_vectors.iter()
     {
-        if let Some(asset_data) = assets.get(vello_vector_handle) {
+        if let Some(asset) = assets.get(vello_vector_handle) {
             if view_visibility.get() && inherited_visibility.get() {
                 commands.spawn(ExtractedRenderVector {
-                    vector_handle: vello_vector_handle.clone(),
-                    render_data: asset_data.to_owned(),
+                    asset: asset.to_owned(),
                     transform: *transform,
                     color_swaps: color_swaps.cloned(),
-                    playback_settings: playback.cloned(),
+                    playback_settings: playback.cloned().unwrap_or_default(),
                     render_mode: *render_mode,
                     origin: origin.copied().unwrap_or_default(),
                     ui_node: ui_node.cloned(),

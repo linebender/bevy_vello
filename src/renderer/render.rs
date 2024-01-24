@@ -1,13 +1,12 @@
 use super::{
     extract::{ExtractedRenderText, ExtractedRenderVector},
     prepare::PreparedAffine,
-    LottieRenderer, SSRenderTarget, VelloRenderer,
+    BevyVelloRenderer, LottieRenderer, SSRenderTarget,
 };
 use crate::{
     assets::vector::{Vector, VelloAsset},
     font::VelloFont,
-    playback_settings::{PlaybackDirection, PlaybackSettings},
-    CoordinateSpace,
+    AnimationDirection, CoordinateSpace,
 };
 use bevy::{
     prelude::*,
@@ -89,9 +88,8 @@ pub fn render_scene(
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
-    vello_renderer: Option<NonSendMut<VelloRenderer>>,
+    vello_renderer: Option<NonSendMut<BevyVelloRenderer>>,
     mut velottie_renderer: ResMut<LottieRenderer>,
-    time: Res<Time>,
 ) {
     let mut renderer = if let Some(renderer) = vello_renderer {
         renderer
@@ -141,13 +139,13 @@ pub fn render_scene(
 
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
-        for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter() {
+        for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter_mut() {
             match render_item {
                 RenderItem::Vector(ExtractedRenderVector {
-                    render_data,
+                    asset,
                     playback_settings,
                     ..
-                }) => match &render_data.data {
+                }) => match &asset.data {
                     Vector::Svg {
                         original: fragment, ..
                     } => {
@@ -155,51 +153,35 @@ pub fn render_scene(
                     }
                     Vector::Lottie {
                         original,
-                        dirty,
-                        playback_started,
+                        colored,
+                        playhead,
+                        first_frame: _,
                     } => {
-                        let composition = dirty.as_ref().unwrap_or(original);
-                        let t = if let Some(PlaybackSettings {
-                            autoplay,
-                            direction,
-                            speed,
-                            looping,
-                            segments,
-                        }) = playback_settings
-                        {
-                            let mut segments = composition.frames.start.max(segments.start)
-                                ..composition.frames.end.min(segments.end);
-                            if *direction == PlaybackDirection::Reverse {
-                                segments = segments.end..segments.start;
-                            }
-                            if !autoplay {
-                                // Static frame
-                                match direction {
-                                    PlaybackDirection::Normal => segments.start,
-                                    PlaybackDirection::Reverse => segments.start.prev(),
+                        let composition = colored.as_ref().unwrap_or(original);
+                        let t = {
+                            let start_frame =
+                                playback_settings.segments.start.max(original.frames.start);
+                            let end_frame = playback_settings.segments.end.min(original.frames.end);
+                            let length = end_frame - start_frame;
+
+                            let frame = match playback_settings.looping {
+                                crate::AnimationLoopBehavior::None => {
+                                    playhead.clamp(start_frame, end_frame)
                                 }
-                            } else {
-                                let speed = speed * (*direction as i32 as f32);
-                                let elapsed_t = playback_started.elapsed().as_secs_f32() * speed;
-                                let anim_length =
-                                    (segments.end - segments.start).abs() / composition.frame_rate;
-                                if *looping {
-                                    // Currently looping
-                                    segments.start / composition.frame_rate
-                                        + elapsed_t % anim_length
-                                } else if elapsed_t.abs() >= anim_length {
-                                    // Not looping - Playback finished, stay on the last frame
-                                    match direction {
-                                        PlaybackDirection::Normal => segments.end.prev(),
-                                        PlaybackDirection::Reverse => segments.end.next(),
-                                    }
-                                } else {
-                                    // Not looping - Still playing
-                                    segments.start / composition.frame_rate + elapsed_t
+                                crate::AnimationLoopBehavior::Amount(_) => todo!(),
+                                crate::AnimationLoopBehavior::Loop => playhead % length,
+                            };
+                            let normal_frame = match playback_settings.direction {
+                                AnimationDirection::Normal => {
+                                    (start_frame + frame).min(end_frame.prev())
                                 }
-                            }
-                        } else {
-                            time.elapsed_seconds()
+                                AnimationDirection::Reverse => {
+                                    (end_frame - frame).min(end_frame.prev())
+                                }
+                            };
+                            let t = normal_frame / composition.frame_rate;
+                            error!("playhead: {playhead}, frame: {frame}, normal_frame: {normal_frame}, t: {t}");
+                            t
                         };
                         velottie_renderer
                             .0

@@ -24,7 +24,7 @@ pub use vellottie;
 pub mod debug;
 
 #[cfg(feature = "animation-controller")]
-pub use animation_controller::{AnimationController, AnimationState, AnimationTransition};
+pub use animation_controller::{AnimationState, AnimationTransition, LottiePlayer};
 pub use assets::VelloAssetLoader;
 pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str, Vector,
@@ -32,7 +32,9 @@ pub use assets::{
 };
 pub use color_swapping::ColorPaletteSwap;
 pub use font::VelloFontLoader;
-pub use playback_settings::{PlaybackDirection, PlaybackSettings};
+pub use playback_settings::{
+    AnimationDirection, AnimationLoopBehavior, AnimationPlayMode, PlaybackSettings,
+};
 pub use plugin::VelloPlugin;
 pub use rendertarget::VelloCanvasMaterial;
 

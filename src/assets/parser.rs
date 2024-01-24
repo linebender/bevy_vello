@@ -1,6 +1,6 @@
 use super::asset_loader::VectorLoaderError;
 use crate::{assets::vector::Vector, VelloAsset};
-use bevy::{prelude::*, utils::Instant};
+use bevy::prelude::*;
 use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
 use vello_svg::usvg::{self, TreeParsing};
@@ -23,7 +23,7 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
     let vello_vector = VelloAsset {
         data: Vector::Svg {
             original: Arc::new(scene_frag),
-            playback_started: Instant::now(),
+            first_frame: None,
         },
         local_transform_bottom_center: compute_local_transform(width, height),
         local_transform_center: compute_local_transform_center(width, height),
@@ -54,9 +54,10 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
 
     let vello_vector = VelloAsset {
         data: Vector::Lottie {
+            playhead: composition.frames.start,
             original: Arc::new(composition),
-            dirty: None,
-            playback_started: Instant::now(),
+            colored: None,
+            first_frame: None,
         },
         local_transform_bottom_center: compute_local_transform(width, height),
         local_transform_center: compute_local_transform_center(width, height),

@@ -9,12 +9,12 @@ pub use plugin::VelloRenderPlugin;
 use bevy::{prelude::*, render::renderer::RenderDevice};
 use vello::{Renderer, RendererOptions};
 
-pub struct VelloRenderer(Renderer);
+pub struct BevyVelloRenderer(Renderer);
 
-impl FromWorld for VelloRenderer {
+impl FromWorld for BevyVelloRenderer {
     fn from_world(world: &mut World) -> Self {
         let device = world.get_resource::<RenderDevice>().unwrap();
-        VelloRenderer(
+        BevyVelloRenderer(
             Renderer::new(
                 device.wgpu_device(),
                 RendererOptions {
@@ -34,4 +34,10 @@ impl FromWorld for VelloRenderer {
 }
 
 #[derive(Resource)]
-pub struct LottieRenderer(pub vellottie::Renderer);
+pub struct LottieRenderer(vellottie::Renderer);
+
+impl Default for LottieRenderer {
+    fn default() -> Self {
+        Self(vellottie::Renderer::new())
+    }
+}

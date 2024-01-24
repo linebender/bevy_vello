@@ -1,8 +1,9 @@
 use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy_egui::EguiPlugin;
 use bevy_vello::{
-    debug::DebugVisualizations, AnimationController, AnimationState, AnimationTransition,
-    ColorPaletteSwap, PlaybackDirection, PlaybackSettings, VelloAsset, VelloAssetBundle,
-    VelloPlugin, VelloText, VelloTextBundle,
+    debug::DebugVisualizations, AnimationDirection, AnimationLoopBehavior, AnimationPlayMode,
+    AnimationState, AnimationTransition, ColorPaletteSwap, LottiePlayer, PlaybackSettings,
+    VelloAsset, VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
@@ -10,6 +11,7 @@ fn main() {
         .insert_resource(AssetMetaCheck::Never)
         .add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin)
+        .add_plugins(EguiPlugin)
         .add_plugins(bevy_pancam::PanCamPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(
@@ -21,40 +23,41 @@ fn main() {
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
-    commands
-        .spawn(VelloAssetBundle {
-            origin: bevy_vello::Origin::Center,
-            vector: asset_server.load("../assets/squid.json"),
-            debug_visualizations: DebugVisualizations::Visible,
-            ..default()
-        })
-        .insert(
-            AnimationController::new("slow")
-                .with_state(
-                    AnimationState::new("slow")
-                        .with_asset(asset_server.load("../assets/squid.json"))
-                        .with_transition(AnimationTransition::OnMouseEnter { state: "fast" })
-                        .with_playback_settings(PlaybackSettings {
-                            autoplay: true,
-                            direction: PlaybackDirection::Normal,
-                            speed: 0.2,
-                            looping: true,
-                            segments: 0.0..96.0,
-                        }),
-                )
-                .with_state(
-                    AnimationState::new("fast")
-                        .with_asset(asset_server.load("../assets/squid.json"))
-                        .with_playback_settings(PlaybackSettings {
-                            autoplay: true,
-                            direction: PlaybackDirection::Reverse,
-                            speed: 1.0,
-                            looping: true,
-                            segments: 0.0..96.0,
-                        })
-                        .with_transition(AnimationTransition::OnMouseLeave { state: "slow" }),
-                ),
-        );
+
+    //commands.spawn(VelloAssetBundle {
+    //    origin: bevy_vello::Origin::Center,
+    //    vector: asset_server.load("../assets/squid.json"),
+    //    transform: Transform::from_translation(Vec3::splat(-500.0)),
+    //    debug_visualizations: DebugVisualizations::Visible,
+    //    ..default()
+    //});
+    //
+    //commands
+    //    .spawn(VelloAssetBundle {
+    //        origin: bevy_vello::Origin::Center,
+    //        vector: asset_server.load("../assets/squid.json"),
+    //        debug_visualizations: DebugVisualizations::Visible,
+    //        ..default()
+    //    })
+    //    .insert(
+    //        LottiePlayer::new("slow")
+    //            .with_state(
+    //                AnimationState::new("slow")
+    //                    .with_transition(AnimationTransition::OnMouseEnter { state: "fast" })
+    //                    .with_playback_settings(PlaybackSettings {
+    //                        speed: 0.2,
+    //                        ..default()
+    //                    }),
+    //            )
+    //            .with_state(
+    //                AnimationState::new("fast")
+    //                    .with_playback_settings(PlaybackSettings {
+    //                        speed: 0.6,
+    //                        ..default()
+    //                    })
+    //                    .with_transition(AnimationTransition::OnMouseLeave { state: "slow" }),
+    //            ),
+    //    );
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
         text: VelloText {
@@ -67,53 +70,16 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     commands
         .spawn(VelloAssetBundle {
             origin: bevy_vello::Origin::Center,
-            vector: asset_server.load("../assets/Front.json"),
-            transform: Transform::from_translation(Vec3::new(300.0, 200.0, 0.0)),
-            debug_visualizations: DebugVisualizations::Visible,
-            ..default()
-        })
-        .insert(
-            AnimationController::new("slow")
-                .with_state(
-                    AnimationState::new("slow")
-                        .with_asset(asset_server.load("../assets/Front.json"))
-                        .with_transition(AnimationTransition::OnMouseEnter { state: "fast" })
-                        .with_playback_settings(PlaybackSettings {
-                            autoplay: true,
-                            direction: PlaybackDirection::Normal,
-                            speed: 0.2,
-                            looping: true,
-                            segments: 0.0..96.0,
-                        }),
-                )
-                .with_state(
-                    AnimationState::new("fast")
-                        .with_asset(asset_server.load("../assets/Front.json"))
-                        .with_playback_settings(PlaybackSettings {
-                            autoplay: true,
-                            direction: PlaybackDirection::Reverse,
-                            speed: 1.0,
-                            looping: true,
-                            segments: 0.0..96.0,
-                        })
-                        .with_transition(AnimationTransition::OnMouseLeave { state: "slow" }),
-                ),
-        );
-
-    commands
-        .spawn(VelloAssetBundle {
-            origin: bevy_vello::Origin::Center,
             vector: asset_server.load("../assets/example.json"),
-            transform: Transform::from_translation(Vec3::new(-750.0, 0.0, 0.0))
-                .with_scale(Vec3::splat(30.0)),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
+                .with_scale(Vec3::splat(20.0)),
             debug_visualizations: DebugVisualizations::Visible,
             ..default()
         })
         .insert(
-            AnimationController::new("stopped")
+            LottiePlayer::new("stopped")
                 .with_state(
                     AnimationState::new("stopped")
-                        .with_asset(asset_server.load("../assets/example.json"))
                         .with_transition(AnimationTransition::OnMouseEnter { state: "play" })
                         .with_playback_settings(PlaybackSettings {
                             autoplay: false,
@@ -122,25 +88,22 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                 )
                 .with_state(
                     AnimationState::new("play")
-                        .with_asset(asset_server.load("../assets/example.json"))
                         .with_transition(AnimationTransition::OnMouseLeave { state: "rev" })
                         .with_playback_settings(PlaybackSettings {
-                            autoplay: true,
-                            direction: PlaybackDirection::Normal,
-                            looping: false,
+                            direction: AnimationDirection::Normal,
+                            looping: AnimationLoopBehavior::None,
                             ..default()
-                        }),
+                        })
+                        .reset_playhead_on_transition(false),
                 )
                 .with_state(
                     AnimationState::new("rev")
-                        .with_asset(asset_server.load("../assets/example.json"))
                         .with_playback_settings(PlaybackSettings {
-                            autoplay: true,
-                            direction: PlaybackDirection::Reverse,
-                            looping: false,
+                            direction: AnimationDirection::Reverse,
                             ..default()
                         })
-                        .with_transition(AnimationTransition::OnComplete { state: "stopped" }),
+                        .with_transition(AnimationTransition::OnComplete { state: "stopped" })
+                        .reset_playhead_on_transition(true),
                 ),
         );
 }
@@ -159,6 +122,7 @@ fn dynamic_color_remapping(
                 0.5,
             );
             ColorPaletteSwap::empty()
+                .add("calendar", color)
                 .add("suckers ", color)
                 .add("suckers Flip", color)
         });

@@ -48,6 +48,7 @@ vello = { git = "https://github.com/linebender/vello", rev = "28914d66f675efecf0
 vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.1" }
 vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.1" }
 flate2 = "1.0"
+web-time = "*"
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 wasm-bindgen-test = "0.3"

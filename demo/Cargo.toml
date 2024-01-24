@@ -12,6 +12,7 @@ publish = false
 bevy-vello = { path = "../", features = ["debug"] }
 bevy = { workspace = true }
 bevy_pancam = "0.10"
+bevy_egui = "0.24"
 
 
 # These settings are to get the WASM blob smaller for the demo.
