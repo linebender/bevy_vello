@@ -2,11 +2,9 @@ use crate::{
     playback_settings::{AnimationLoopBehavior, AnimationPlayMode},
     AnimationDirection, PlaybackSettings, VelloAsset,
 };
-use bevy::{
-    prelude::*,
-    render::{Render, RenderSet},
-    utils::hashbrown::HashMap,
-};
+use bevy::{prelude::*, utils::hashbrown::HashMap};
+use vello_svg::usvg::strict_num::Ulps;
+use vellottie::Composition;
 
 #[derive(Component, Default, Debug)]
 pub struct LottiePlayer {
@@ -135,7 +133,7 @@ impl AnimationState {
             asset: Default::default(),
             playback_settings: None,
             transitions: vec![],
-            reset_playhead_on_transition: true,
+            reset_playhead_on_transition: false,
         }
     }
 
@@ -168,8 +166,8 @@ impl Plugin for AnimationControllerPlugin {
             Update,
             (
                 systems::advance_playheads,
-                systems::set_state,
                 systems::run_transitions,
+                systems::set_state,
             )
                 .chain(),
         );
@@ -178,7 +176,10 @@ impl Plugin for AnimationControllerPlugin {
 
 pub mod systems {
     use super::{AnimationTransition, LottiePlayer};
-    use crate::{PlaybackSettings, Vector, VelloAsset};
+    use crate::{
+        animation_controller::calculate_playhead, AnimationDirection, PlaybackSettings, Vector,
+        VelloAsset,
+    };
     use bevy::{prelude::*, utils::Instant};
 
     /// Advance all the playheads in the scene
@@ -206,10 +207,9 @@ pub mod systems {
             let VelloAsset {
                 data:
                     Vector::Lottie {
-                        original,
-                        colored: _,  // Set on render
+                        composition,
                         first_frame, // Set on render
-                        playhead,
+                        rendered_frames,
                     },
                 ..
             } = asset
@@ -221,18 +221,23 @@ pub mod systems {
                 first_frame.replace(Instant::now());
             }
 
-            // Move playhead
-            let elapsed_frames = dt * playback_settings.speed * original.frame_rate;
-            *playhead += elapsed_frames;
+            // Move frames to control playhead
+            let elapsed_frames = dt * playback_settings.speed * composition.frame_rate;
+            *rendered_frames += elapsed_frames;
         }
     }
 
     pub fn set_state(
         mut commands: Commands,
-        mut query_sm: Query<(Entity, &mut LottiePlayer, &mut Handle<VelloAsset>)>,
+        mut query_sm: Query<(
+            Entity,
+            &mut LottiePlayer,
+            Option<&PlaybackSettings>,
+            &mut Handle<VelloAsset>,
+        )>,
         mut assets: ResMut<Assets<VelloAsset>>,
     ) {
-        for (entity, mut controller, mut cur_handle) in query_sm.iter_mut() {
+        for (entity, mut controller, current_settings, mut cur_handle) in query_sm.iter_mut() {
             let Some(next_state) = controller.pending_next_state.take() else {
                 continue;
             };
@@ -259,14 +264,30 @@ pub mod systems {
                     first_frame.take();
                 }
                 Vector::Lottie {
-                    original,
-                    colored: _,
+                    composition,
                     first_frame,
-                    playhead,
+                    rendered_frames,
                 } => {
                     first_frame.take();
                     if controller.state().reset_playhead_on_transition {
-                        *playhead = original.frames.start;
+                        *rendered_frames = 0.0;
+                    } else {
+                        // Reset loops
+                        let playhead = calculate_playhead(
+                            *rendered_frames,
+                            composition,
+                            &current_settings.cloned().unwrap_or_default(),
+                        );
+                        // Need to reset to the correct frame
+                        if target_state
+                            .playback_settings
+                            .as_ref()
+                            .is_some_and(|pb| pb.direction == AnimationDirection::Reverse)
+                        {
+                            *rendered_frames = composition.frames.end - playhead;
+                        } else {
+                            *rendered_frames %= composition.frames.end - composition.frames.start;
+                        }
                     }
                 }
             }
@@ -342,10 +363,10 @@ pub mod systems {
                         match &current_asset.data {
                             crate::Vector::Svg {..} => warn!("invalid state: '{}', `OnComplete` is only valid for Lottie files. Use `OnAfter` for SVG.", controller.state().id),
                             crate::Vector::Lottie {
-                                original: composition,
-                                playhead, ..
+                                composition,
+                                rendered_frames, ..
                             } => {
-                                if *playhead >= composition.frames.end {
+                                if *rendered_frames >= composition.frames.end - composition.frames.start {
                                     controller.pending_next_state = Some(state);
                                     break;
                                 }
@@ -387,4 +408,29 @@ pub mod systems {
             }
         }
     }
+}
+
+pub(crate) fn calculate_playhead(
+    rendered_frames: f32,
+    composition: &Composition,
+    playback_settings: &PlaybackSettings,
+) -> f32 {
+    let start_frame = playback_settings
+        .segments
+        .start
+        .max(composition.frames.start);
+    let end_frame = playback_settings.segments.end.min(composition.frames.end);
+    let length = end_frame - start_frame;
+
+    let frame = match playback_settings.looping {
+        crate::AnimationLoopBehavior::None => rendered_frames.min(length),
+        crate::AnimationLoopBehavior::Amount(_) => todo!(),
+        crate::AnimationLoopBehavior::Loop => rendered_frames % length,
+    };
+    let playhead = match playback_settings.direction {
+        AnimationDirection::Normal => (start_frame + frame).min(end_frame.prev()),
+        AnimationDirection::Reverse => (end_frame - frame).min(end_frame.prev()),
+    };
+    error!("rendered_frames: {rendered_frames}, frame: {frame}, playhead: {playhead}");
+    playhead
 }

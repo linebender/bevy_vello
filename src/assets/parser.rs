@@ -54,9 +54,8 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
 
     let vello_vector = VelloAsset {
         data: Vector::Lottie {
-            playhead: composition.frames.start,
-            original: Arc::new(composition),
-            colored: None,
+            composition: Arc::new(composition),
+            rendered_frames: 0.0,
             first_frame: None,
         },
         local_transform_bottom_center: compute_local_transform(width, height),

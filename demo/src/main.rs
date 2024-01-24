@@ -1,9 +1,9 @@
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_egui::EguiPlugin;
 use bevy_vello::{
-    debug::DebugVisualizations, AnimationDirection, AnimationLoopBehavior, AnimationPlayMode,
-    AnimationState, AnimationTransition, ColorPaletteSwap, LottiePlayer, PlaybackSettings,
-    VelloAsset, VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
+    debug::DebugVisualizations, AnimationDirection, AnimationLoopBehavior, AnimationState,
+    AnimationTransition, ColorPaletteSwap, LottiePlayer, PlaybackSettings, VelloAsset,
+    VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
@@ -93,8 +93,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             direction: AnimationDirection::Normal,
                             looping: AnimationLoopBehavior::None,
                             ..default()
-                        })
-                        .reset_playhead_on_transition(false),
+                        }),
                 )
                 .with_state(
                     AnimationState::new("rev")
@@ -102,8 +101,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             direction: AnimationDirection::Reverse,
                             ..default()
                         })
-                        .with_transition(AnimationTransition::OnComplete { state: "stopped" })
-                        .reset_playhead_on_transition(true),
+                        .with_transition(AnimationTransition::OnComplete { state: "stopped" }),
                 ),
         );
 }

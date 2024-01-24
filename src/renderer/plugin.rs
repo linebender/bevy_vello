@@ -35,7 +35,6 @@ impl Plugin for VelloRenderPlugin {
                 Render,
                 (
                     prepare::prepare_vector_affines,
-                    prepare::prepare_recoloring,
                     prepare::prepare_text_affines,
                 )
                     .in_set(RenderSet::Prepare),

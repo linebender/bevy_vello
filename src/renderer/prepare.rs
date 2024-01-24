@@ -1,5 +1,5 @@
 use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
-use crate::{assets::vector::VelloAsset, CoordinateSpace, Vector};
+use crate::{assets::vector::VelloAsset, CoordinateSpace};
 use bevy::{
     prelude::*,
     render::{camera::ExtractedCamera, render_asset::RenderAssets, view::ExtractedView},
@@ -160,34 +160,5 @@ pub fn prepare_text_affines(
         commands
             .entity(entity)
             .insert(PreparedAffine(Affine::new(transform)));
-    }
-}
-
-pub fn prepare_recoloring(mut render_vectors: Query<&mut ExtractedRenderVector>) {
-    for mut render_vector in render_vectors.iter_mut() {
-        // Get vector and color swap or there's no use continuing...
-        let ExtractedRenderVector {
-            asset, color_swaps, ..
-        } = render_vector.as_mut();
-
-        // Perform recolors!
-        // TODO: Recoloring SVGs
-        let Vector::Lottie {
-            ref original,
-            ref mut colored,
-            ..
-        } = asset.data
-        else {
-            continue;
-        };
-
-        // Continue if there are no colors
-        let Some(color_swaps) = color_swaps else {
-            colored.take();
-            continue;
-        };
-
-        let colored_composition = color_swaps.create(original);
-        colored.replace(colored_composition);
     }
 }

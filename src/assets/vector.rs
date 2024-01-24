@@ -18,13 +18,11 @@ pub enum Vector {
     },
     Lottie {
         /// The original image encoding
-        original: Arc<vellottie::Composition>,
-        /// A modified copy, used for color swapping
-        colored: Option<vellottie::Composition>,
+        composition: Arc<vellottie::Composition>,
         /// The time we started rendering this asset
         first_frame: Option<Instant>,
         /// The last frame rendered
-        playhead: f32,
+        rendered_frames: f32,
     },
 }
 
@@ -99,9 +97,9 @@ impl VelloAsset {
     /// Gets the lottie metadata (if vector is a lottie), an object used for inspecting
     /// this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
-        if let Vector::Lottie { original, .. } = &self.data {
+        if let Vector::Lottie { composition, .. } = &self.data {
             Some(Metadata {
-                composition: original.clone(),
+                composition: composition.clone(),
             })
         } else {
             None

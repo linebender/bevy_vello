@@ -4,9 +4,10 @@ use super::{
     BevyVelloRenderer, LottieRenderer, SSRenderTarget,
 };
 use crate::{
+    animation_controller::calculate_playhead,
     assets::vector::{Vector, VelloAsset},
     font::VelloFont,
-    AnimationDirection, CoordinateSpace,
+    CoordinateSpace,
 };
 use bevy::{
     prelude::*,
@@ -17,7 +18,6 @@ use bevy::{
     },
 };
 use vello::{RenderParams, Scene, SceneBuilder};
-use vello_svg::usvg::strict_num::Ulps;
 
 #[derive(Clone)]
 pub struct ExtractedVectorAssetData {
@@ -144,6 +144,7 @@ pub fn render_scene(
                 RenderItem::Vector(ExtractedRenderVector {
                     asset,
                     playback_settings,
+                    color_swaps,
                     ..
                 }) => match &asset.data {
                     Vector::Svg {
@@ -152,40 +153,26 @@ pub fn render_scene(
                         builder.append(fragment, Some(affine));
                     }
                     Vector::Lottie {
-                        original,
-                        colored,
-                        playhead,
+                        composition,
+                        rendered_frames,
                         first_frame: _,
                     } => {
-                        let composition = colored.as_ref().unwrap_or(original);
-                        let t = {
-                            let start_frame =
-                                playback_settings.segments.start.max(original.frames.start);
-                            let end_frame = playback_settings.segments.end.min(original.frames.end);
-                            let length = end_frame - start_frame;
-
-                            let frame = match playback_settings.looping {
-                                crate::AnimationLoopBehavior::None => {
-                                    playhead.clamp(start_frame, end_frame)
-                                }
-                                crate::AnimationLoopBehavior::Amount(_) => todo!(),
-                                crate::AnimationLoopBehavior::Loop => playhead % length,
-                            };
-                            let normal_frame = match playback_settings.direction {
-                                AnimationDirection::Normal => {
-                                    (start_frame + frame).min(end_frame.prev())
-                                }
-                                AnimationDirection::Reverse => {
-                                    (end_frame - frame).min(end_frame.prev())
-                                }
-                            };
-                            let t = normal_frame / composition.frame_rate;
-                            error!("playhead: {playhead}, frame: {frame}, normal_frame: {normal_frame}, t: {t}");
-                            t
-                        };
-                        velottie_renderer
-                            .0
-                            .render(composition, t, affine, 1.0, &mut builder);
+                        let t =
+                            calculate_playhead(*rendered_frames, composition, playback_settings)
+                                / composition.frame_rate;
+                        velottie_renderer.0.render(
+                            {
+                                color_swaps
+                                    .as_ref()
+                                    .map(|cs| cs.create(composition))
+                                    .as_ref()
+                                    .unwrap_or(composition)
+                            },
+                            t,
+                            affine,
+                            1.0,
+                            &mut builder,
+                        );
                     }
                 },
                 RenderItem::Text(ExtractedRenderText { font, text, .. }) => {
