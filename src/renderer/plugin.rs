@@ -11,7 +11,7 @@ use super::{
     extract::{self, ExtractedPixelScale},
     prepare, render, BevyVelloRenderer, LottieRenderer,
 };
-use crate::{VelloAsset, VelloFont};
+use crate::VelloFont;
 
 pub struct VelloRenderPlugin;
 
@@ -44,7 +44,6 @@ impl Plugin for VelloRenderPlugin {
         app.add_plugins((
             ExtractComponentPlugin::<extract::ExtractedRenderText>::default(),
             ExtractComponentPlugin::<extract::SSRenderTarget>::default(),
-            RenderAssetPlugin::<VelloAsset>::default(),
             RenderAssetPlugin::<VelloFont>::default(),
         ));
     }

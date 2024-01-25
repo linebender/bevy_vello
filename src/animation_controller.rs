@@ -10,8 +10,20 @@ use vellottie::Composition;
 pub struct LottiePlayer {
     initial_state: &'static str,
     current_state: &'static str,
-    pending_next_state: Option<&'static str>,
+    next_state: Option<&'static str>,
     states: HashMap<&'static str, AnimationState>,
+    /// A pending frame to seek to.
+    pending_seek_frame: Option<f32>,
+    /// A pending duration to change to.
+    pending_direction: Option<AnimationDirection>,
+    /// A pending intermission to change to.
+    pending_intermission: Option<f32>,
+    /// A pending loop behavior to change to.
+    pending_loop_behavior: Option<AnimationLoopBehavior>,
+    /// A pending play mode to change to.
+    pending_play_mode: Option<AnimationPlayMode>,
+    /// A pending speed to change to.
+    pending_speed: Option<f32>,
     /// Whether the player has started.
     started: bool,
     /// Whether the player is playing. State machines will continue unless stopped.
@@ -21,54 +33,72 @@ pub struct LottiePlayer {
 }
 
 impl LottiePlayer {
+    /// The current state.
     pub fn state(&self) -> &AnimationState {
         self.states
             .get(self.current_state)
             .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state))
     }
 
+    /// Transition to the next state.
     pub fn transition(&mut self, state: &'static str) {
-        self.pending_next_state.replace(state);
+        self.next_state.replace(state);
     }
 
+    /// Resets or goes back to the default/initial animation.
     pub fn reset(&mut self) {
-        todo!()
+        self.next_state = Some(self.initial_state);
     }
 
+    /// Seeks to a specific frame.
     pub fn seek(&mut self, frame: f32) {
-        todo!()
+        self.pending_seek_frame = Some(frame);
     }
 
+    /// Sets the player direction. Applies to all animations.
     pub fn set_direction(&mut self, direction: AnimationDirection) {
-        todo!()
+        self.pending_direction = Some(direction);
     }
 
+    /// Sets the pause between loops. Applies to all animations.
+    pub fn set_intermission(&mut self, intermission: f32) {
+        self.pending_intermission = Some(intermission);
+    }
+
+    /// Sets the loop behavior. Applies to all animations.
     pub fn set_loop_behavior(&mut self, loop_behavior: AnimationLoopBehavior) {
-        todo!()
+        self.pending_loop_behavior = Some(loop_behavior);
     }
 
+    /// Sets the play mode. Applies to all animations.
     pub fn set_play_mode(&mut self, mode: AnimationPlayMode) {
-        todo!()
+        self.pending_play_mode = Some(mode);
     }
 
+    /// Sets the animation speed. Applies to all animations.
     pub fn set_speed(&mut self, speed: f32) {
-        todo!()
+        self.pending_speed = Some(speed);
     }
 
+    /// Toggle the play state.
     pub fn toggle_play(&mut self) {
-        todo!()
+        self.playing = !self.playing;
     }
 
+    /// Play the animation.
     pub fn play(&mut self) {
-        todo!()
+        self.playing = true;
+        self.stopped = false;
     }
 
+    /// Pauses the animation. State machines will continue.
     pub fn pause(&mut self) {
-        todo!()
+        self.playing = false;
     }
 
+    /// Stops the animation. State machines will not run.
     pub fn stop(&mut self) {
-        todo!()
+        self.stopped = true;
     }
 }
 
@@ -79,6 +109,7 @@ pub struct AnimationState {
     pub playback_settings: Option<PlaybackSettings>,
     pub transitions: Vec<AnimationTransition>,
     pub reset_playhead_on_transition: bool,
+    pub reset_playhead_on_start: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -112,7 +143,13 @@ impl LottiePlayer {
         LottiePlayer {
             initial_state,
             current_state: initial_state,
-            pending_next_state: Some(initial_state),
+            next_state: Some(initial_state),
+            pending_seek_frame: None,
+            pending_direction: None,
+            pending_intermission: None,
+            pending_loop_behavior: None,
+            pending_play_mode: None,
+            pending_speed: None,
             states: HashMap::new(),
             started: false,
             playing: false,
@@ -134,6 +171,7 @@ impl AnimationState {
             playback_settings: None,
             transitions: vec![],
             reset_playhead_on_transition: false,
+            reset_playhead_on_start: false,
         }
     }
 
@@ -156,6 +194,11 @@ impl AnimationState {
         self.reset_playhead_on_transition = reset;
         self
     }
+
+    pub fn reset_playhead_on_start(mut self, reset: bool) -> Self {
+        self.reset_playhead_on_start = reset;
+        self
+    }
 }
 
 pub struct AnimationControllerPlugin;
@@ -165,6 +208,7 @@ impl Plugin for AnimationControllerPlugin {
         app.add_systems(
             Update,
             (
+                systems::apply_player_inputs,
                 systems::advance_playheads,
                 systems::run_transitions,
                 systems::set_state,
@@ -181,6 +225,104 @@ pub mod systems {
         VelloAsset,
     };
     use bevy::{prelude::*, utils::Instant};
+
+    /// Apply inputs the developer has made, e.g. `player.seek(frame)`
+    pub fn apply_player_inputs(
+        mut query: Query<(
+            &mut LottiePlayer,
+            &mut PlaybackSettings,
+            &Handle<VelloAsset>,
+        )>,
+        mut assets: ResMut<Assets<VelloAsset>>,
+    ) {
+        for (mut player, mut playback_settings, asset_handle) in query.iter_mut() {
+            let asset = assets.get_mut(asset_handle.id()).unwrap();
+            let VelloAsset {
+                data:
+                    Vector::Lottie {
+                        composition,
+                        first_frame: _,
+                        rendered_frames,
+                    },
+                ..
+            } = asset
+            else {
+                continue;
+            };
+
+            if let Some(direction) = player.pending_direction {
+                for playback_settings in player
+                    .states
+                    .values_mut()
+                    .flat_map(|s| s.playback_settings.as_mut())
+                    .chain([playback_settings.as_mut()])
+                {
+                    playback_settings.direction = direction;
+                }
+            }
+            if let Some(intermission) = player.pending_intermission {
+                // Adjust to the new intermission
+                let loops_played = *rendered_frames
+                    / (composition.frames.end - composition.frames.start
+                        + playback_settings.intermission);
+                let dt_intermission = intermission - playback_settings.intermission;
+                let dt_frames = dt_intermission * loops_played;
+                *rendered_frames = (*rendered_frames + dt_frames).min(0.0);
+                // Apply
+                for playback_settings in player
+                    .states
+                    .values_mut()
+                    .flat_map(|s| s.playback_settings.as_mut())
+                    .chain([playback_settings.as_mut()])
+                {
+                    playback_settings.intermission = intermission;
+                }
+            }
+            if let Some(loop_behavior) = player.pending_loop_behavior {
+                // Apply
+                for playback_settings in player
+                    .states
+                    .values_mut()
+                    .flat_map(|s| s.playback_settings.as_mut())
+                    .chain([playback_settings.as_mut()])
+                {
+                    playback_settings.looping = loop_behavior;
+                }
+            }
+            if let Some(play_mode) = player.pending_play_mode {
+                // Apply
+                for playback_settings in player
+                    .states
+                    .values_mut()
+                    .flat_map(|s| s.playback_settings.as_mut())
+                    .chain([playback_settings.as_mut()])
+                {
+                    playback_settings.play_mode = play_mode;
+                }
+            }
+            if let Some(seek_frame) = player.pending_seek_frame {
+                // Get the frame local to this loop
+                let local_frame = *rendered_frames
+                    % (composition.frames.end - composition.frames.start
+                        + playback_settings.intermission);
+                // Bound the seek frame within the composition
+                let local_seek_frame =
+                    seek_frame % (composition.frames.end - composition.frames.start);
+                *rendered_frames = *rendered_frames - local_frame + local_seek_frame;
+            }
+            if let Some(speed) = player.pending_speed {
+                // Apply
+                for playback_settings in player
+                    .states
+                    .values_mut()
+                    .flat_map(|s| s.playback_settings.as_mut())
+                    .chain([playback_settings.as_mut()])
+                {
+                    playback_settings.speed = speed;
+                }
+            }
+        }
+    }
 
     /// Advance all the playheads in the scene
     pub fn advance_playheads(
@@ -237,8 +379,8 @@ pub mod systems {
         )>,
         mut assets: ResMut<Assets<VelloAsset>>,
     ) {
-        for (entity, mut controller, current_settings, mut cur_handle) in query_sm.iter_mut() {
-            let Some(next_state) = controller.pending_next_state.take() else {
+        for (entity, mut controller, playback_settings, mut cur_handle) in query_sm.iter_mut() {
+            let Some(next_state) = controller.next_state.take() else {
                 continue;
             };
             info!("animation controller transitioning to={next_state}");
@@ -269,14 +411,17 @@ pub mod systems {
                     rendered_frames,
                 } => {
                     first_frame.take();
-                    if controller.state().reset_playhead_on_transition {
+                    if controller.state().reset_playhead_on_transition
+                        || target_state.reset_playhead_on_start
+                    {
+                        info!("reset");
                         *rendered_frames = 0.0;
                     } else {
                         // Reset loops
                         let playhead = calculate_playhead(
                             *rendered_frames,
                             composition,
-                            &current_settings.cloned().unwrap_or_default(),
+                            &playback_settings.cloned().unwrap_or_default(),
                         );
                         // Need to reset to the correct frame
                         if target_state
@@ -300,7 +445,12 @@ pub mod systems {
     }
 
     pub fn run_transitions(
-        mut query_sm: Query<(&mut LottiePlayer, &GlobalTransform, &mut Handle<VelloAsset>)>,
+        mut query_sm: Query<(
+            &mut LottiePlayer,
+            &PlaybackSettings,
+            &GlobalTransform,
+            &mut Handle<VelloAsset>,
+        )>,
         mut assets: ResMut<Assets<VelloAsset>>,
 
         // For transitions
@@ -317,7 +467,9 @@ pub mod systems {
             .and_then(|cursor| camera.viewport_to_world(view, cursor))
             .map(|ray| ray.origin.truncate());
 
-        for (mut controller, gtransform, current_asset_handle) in query_sm.iter_mut() {
+        for (mut controller, playback_settings, gtransform, current_asset_handle) in
+            query_sm.iter_mut()
+        {
             if controller.stopped {
                 continue;
             }
@@ -355,7 +507,7 @@ pub mod systems {
                             | Vector::Lottie { first_frame, .. } => first_frame,
                         };
                         if started.is_some_and(|s| s.elapsed().as_secs_f32() > *secs) {
-                            controller.pending_next_state = Some(state);
+                            controller.next_state = Some(state);
                             break;
                         }
                     }
@@ -366,8 +518,8 @@ pub mod systems {
                                 composition,
                                 rendered_frames, ..
                             } => {
-                                if *rendered_frames >= composition.frames.end - composition.frames.start {
-                                    controller.pending_next_state = Some(state);
+                                if *rendered_frames >= composition.frames.end - composition.frames.start + playback_settings.intermission {
+                                    controller.next_state = Some(state);
                                     break;
                                 }
                             },
@@ -375,19 +527,19 @@ pub mod systems {
                     }
                     AnimationTransition::OnMouseEnter { state } => {
                         if is_inside {
-                            controller.pending_next_state = Some(state);
+                            controller.next_state = Some(state);
                             break;
                         }
                     }
                     AnimationTransition::OnMouseClick { state } => {
                         if is_inside && buttons.just_pressed(MouseButton::Left) {
-                            controller.pending_next_state = Some(state);
+                            controller.next_state = Some(state);
                             break;
                         }
                     }
                     AnimationTransition::OnMouseLeave { state } => {
                         if *hovered && !is_inside {
-                            controller.pending_next_state = Some(state);
+                            controller.next_state = Some(state);
                             *hovered = false;
                             break;
                         } else if is_inside {
@@ -400,7 +552,7 @@ pub mod systems {
                             | Vector::Lottie { first_frame, .. } => first_frame,
                         };
                         if first_frame.is_some() {
-                            controller.pending_next_state = Some(state);
+                            controller.next_state = Some(state);
                             break;
                         }
                     }
@@ -420,11 +572,11 @@ pub(crate) fn calculate_playhead(
         .start
         .max(composition.frames.start);
     let end_frame = playback_settings.segments.end.min(composition.frames.end);
-    let length = end_frame - start_frame;
+    let length = end_frame - start_frame + playback_settings.intermission;
 
     let frame = match playback_settings.looping {
         crate::AnimationLoopBehavior::None => rendered_frames.min(length),
-        crate::AnimationLoopBehavior::Amount(_) => todo!(),
+        crate::AnimationLoopBehavior::Amount(loops) => rendered_frames.min(loops * length) % length,
         crate::AnimationLoopBehavior::Loop => rendered_frames % length,
     };
     let playhead = match playback_settings.direction {

@@ -1,8 +1,8 @@
 use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
-use crate::{assets::vector::VelloAsset, CoordinateSpace};
+use crate::CoordinateSpace;
 use bevy::{
     prelude::*,
-    render::{camera::ExtractedCamera, render_asset::RenderAssets, view::ExtractedView},
+    render::{camera::ExtractedCamera, view::ExtractedView},
 };
 use vello::kurbo::Affine;
 
@@ -13,7 +13,6 @@ pub fn prepare_vector_affines(
     mut commands: Commands,
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
     mut render_vectors: Query<(Entity, &ExtractedRenderVector)>,
-    render_vector_assets: Res<RenderAssets<VelloAsset>>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let Ok((camera, view)) = camera.get_single() else {

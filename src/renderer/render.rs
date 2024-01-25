@@ -4,78 +4,17 @@ use super::{
     BevyVelloRenderer, LottieRenderer, SSRenderTarget,
 };
 use crate::{
-    animation_controller::calculate_playhead,
-    assets::vector::{Vector, VelloAsset},
-    font::VelloFont,
+    animation_controller::calculate_playhead, assets::vector::Vector, font::VelloFont,
     CoordinateSpace,
 };
 use bevy::{
     prelude::*,
-    reflect::TypeUuid,
     render::{
-        render_asset::{RenderAsset, RenderAssets},
+        render_asset::RenderAssets,
         renderer::{RenderDevice, RenderQueue},
     },
 };
 use vello::{RenderParams, Scene, SceneBuilder};
-
-#[derive(Clone)]
-pub struct ExtractedVectorAssetData {
-    local_transform_bottom_center: Transform,
-    local_transform_center: Transform,
-    size: Vec2,
-}
-
-impl RenderAsset for VelloAsset {
-    type ExtractedAsset = ExtractedVectorAssetData;
-
-    type PreparedAsset = PreparedVectorAssetData;
-
-    type Param = ();
-
-    fn extract_asset(&self) -> Self::ExtractedAsset {
-        ExtractedVectorAssetData {
-            local_transform_bottom_center: self.local_transform_bottom_center,
-            local_transform_center: self.local_transform_center,
-            size: Vec2::new(self.width, self.height),
-        }
-    }
-
-    fn prepare_asset(
-        data: Self::ExtractedAsset,
-        _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
-    ) -> Result<
-        Self::PreparedAsset,
-        bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
-    > {
-        Ok(data.into())
-    }
-}
-
-#[derive(TypeUuid, Clone)]
-#[uuid = "39cadc56-aa9c-4543-3640-a018b74b5054"]
-pub struct PreparedVectorAssetData {
-    pub local_bottom_center_matrix: Mat4,
-    pub local_center_matrix: Mat4,
-    pub size: Vec2,
-}
-
-impl From<ExtractedVectorAssetData> for PreparedVectorAssetData {
-    fn from(value: ExtractedVectorAssetData) -> Self {
-        let local_bottom_center_matrix = value
-            .local_transform_bottom_center
-            .compute_matrix()
-            .inverse();
-        let local_center_matrix = value.local_transform_center.compute_matrix().inverse();
-        let size = value.size;
-
-        PreparedVectorAssetData {
-            local_bottom_center_matrix,
-            local_center_matrix,
-            size,
-        }
-    }
-}
 
 /// Transforms all the vectors extracted from the game world and places them in
 /// a scene, and renders the scene to a texture with WGPU

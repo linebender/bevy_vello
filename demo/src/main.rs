@@ -84,7 +84,8 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                         .with_playback_settings(PlaybackSettings {
                             autoplay: false,
                             ..default()
-                        }),
+                        })
+                        .reset_playhead_on_start(true),
                 )
                 .with_state(
                     AnimationState::new("play")
