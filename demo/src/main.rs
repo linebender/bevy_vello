@@ -151,8 +151,24 @@ fn ui(
         .resizable(false)
         .title_bar(true)
         .collapsible(true);
+
+    let asset = assets.get(handle.id()).unwrap() else {
+        return;
+    };
+    let metadata = asset.metadata().unwrap();
+
     window.show(contexts.ctx_mut(), |ui| {
         ui.heading("Animation Controls");
+
+        let mut playhead = asset.calculate_playhead(playback_settings).unwrap();
+        ui.horizontal(|ui| {
+            ui.label("Playhead");
+            ui.add(egui::Slider::new(
+                &mut playhead,
+                playback_settings.segments.start..=playback_settings.segments.end,
+            ));
+        });
+
         ui.horizontal_wrapped(|ui| {
             if ui.button("Play").clicked() {
                 player.play();
@@ -195,12 +211,7 @@ fn ui(
 
         ui.separator();
 
-        let Some(metadata) = assets.get(handle.id()).unwrap().metadata() else {
-            return;
-        };
-
         ui.heading("Color Remapping");
-
         for layer in metadata.get_layers() {
             let color = color_swaps.get_mut(layer).cloned().unwrap_or_default();
             let mut color_edit = [color.r(), color.g(), color.b()];

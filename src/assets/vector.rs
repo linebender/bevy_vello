@@ -1,4 +1,4 @@
-use crate::{metadata::Metadata, Origin};
+use crate::{metadata::Metadata, AnimationDirection, Origin, PlaybackSettings};
 use bevy::{
     math::{Vec3A, Vec3Swizzles, Vec4Swizzles},
     prelude::*,
@@ -7,6 +7,7 @@ use bevy::{
 };
 use std::sync::Arc;
 use vello::SceneFragment;
+use vello_svg::usvg::strict_num::Ulps;
 
 #[derive(Clone)]
 pub enum Vector {
@@ -104,5 +105,38 @@ impl VelloAsset {
         } else {
             None
         }
+    }
+
+    /// Calculate the playhead. Returns `None` is the Vector is an SVG.
+    pub fn calculate_playhead(&self, playback_settings: &PlaybackSettings) -> Option<f32> {
+        let Vector::Lottie {
+            composition,
+            first_frame: _,
+            rendered_frames,
+        } = &self.data
+        else {
+            return None;
+        };
+
+        let start_frame = playback_settings
+            .segments
+            .start
+            .max(composition.frames.start);
+        let end_frame = playback_settings.segments.end.min(composition.frames.end);
+        let length = end_frame - start_frame + playback_settings.intermission;
+
+        let frame = match playback_settings.looping {
+            crate::AnimationLoopBehavior::None => rendered_frames.min(length),
+            crate::AnimationLoopBehavior::Amount(loops) => {
+                rendered_frames.min(loops * length) % length
+            }
+            crate::AnimationLoopBehavior::Loop => rendered_frames % length,
+        };
+        let playhead = match playback_settings.direction {
+            AnimationDirection::Normal => (start_frame + frame).min(end_frame.prev()),
+            AnimationDirection::Reverse => (end_frame - frame).min(end_frame.prev()),
+        };
+        error!("rendered_frames: {rendered_frames}, frame: {frame}, playhead: {playhead}");
+        Some(playhead)
     }
 }

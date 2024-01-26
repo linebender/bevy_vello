@@ -3,10 +3,7 @@ use super::{
     prepare::PreparedAffine,
     BevyVelloRenderer, LottieRenderer, SSRenderTarget,
 };
-use crate::{
-    animation_controller::calculate_playhead, assets::vector::Vector, font::VelloFont,
-    CoordinateSpace,
-};
+use crate::{assets::vector::Vector, font::VelloFont, CoordinateSpace};
 use bevy::{
     prelude::*,
     render::{
@@ -93,12 +90,11 @@ pub fn render_scene(
                     }
                     Vector::Lottie {
                         composition,
-                        rendered_frames,
+                        rendered_frames: _,
                         first_frame: _,
                     } => {
-                        let t =
-                            calculate_playhead(*rendered_frames, composition, playback_settings)
-                                / composition.frame_rate;
+                        let t = asset.calculate_playhead(playback_settings).unwrap()
+                            / composition.frame_rate;
                         velottie_renderer.0.render(
                             {
                                 color_swaps

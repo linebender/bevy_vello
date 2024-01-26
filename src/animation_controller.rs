@@ -53,6 +53,7 @@ impl LottiePlayer {
     /// Resets or goes back to the default/initial animation.
     pub fn reset(&mut self) {
         self.next_state = Some(self.initial_state);
+        self.seek(f32::MIN);
     }
 
     /// Seeks to a specific frame.
@@ -229,10 +230,7 @@ impl Plugin for AnimationControllerPlugin {
 
 pub mod systems {
     use super::{AnimationTransition, LottiePlayer};
-    use crate::{
-        animation_controller::calculate_playhead, AnimationDirection, PlaybackSettings, Vector,
-        VelloAsset,
-    };
+    use crate::{AnimationDirection, PlaybackSettings, Vector, VelloAsset};
     use bevy::{prelude::*, utils::Instant};
 
     /// Apply inputs the developer has made, e.g. `player.seek(frame)`
@@ -310,6 +308,8 @@ pub mod systems {
                 }
             }
             if let Some(seek_frame) = player.pending_seek_frame {
+                // Bound the seek frame
+                let seek_frame = seek_frame.clamp(composition.frames.start, composition.frames.end);
                 // Get the frame local to this loop
                 let local_frame = *rendered_frames
                     % (composition.frames.end - composition.frames.start
@@ -407,6 +407,8 @@ pub mod systems {
             }
 
             let asset = assets.get_mut(cur_handle.id()).unwrap();
+            let playback_settings = playback_settings.cloned().unwrap_or_default();
+            let playhead = asset.calculate_playhead(&playback_settings).unwrap();
             // Reset play state
             match &mut asset.data {
                 Vector::Svg {
@@ -424,13 +426,9 @@ pub mod systems {
                     if controller.state().reset_playhead_on_transition
                         || target_state.reset_playhead_on_start
                     {
-                        info!("reset");
                         *rendered_frames = 0.0;
                     } else {
                         // Reset loops
-                        let playback_settings = playback_settings.cloned().unwrap_or_default();
-                        let playhead =
-                            calculate_playhead(*rendered_frames, composition, &playback_settings);
                         // Need to reset to the correct frame - This depends on current direction and next direction.
                         let current_direction = playback_settings.direction;
                         let target_direction = target_state
@@ -580,29 +578,4 @@ pub mod systems {
             }
         }
     }
-}
-
-pub(crate) fn calculate_playhead(
-    rendered_frames: f32,
-    composition: &Composition,
-    playback_settings: &PlaybackSettings,
-) -> f32 {
-    let start_frame = playback_settings
-        .segments
-        .start
-        .max(composition.frames.start);
-    let end_frame = playback_settings.segments.end.min(composition.frames.end);
-    let length = end_frame - start_frame + playback_settings.intermission;
-
-    let frame = match playback_settings.looping {
-        crate::AnimationLoopBehavior::None => rendered_frames.min(length),
-        crate::AnimationLoopBehavior::Amount(loops) => rendered_frames.min(loops * length) % length,
-        crate::AnimationLoopBehavior::Loop => rendered_frames % length,
-    };
-    let playhead = match playback_settings.direction {
-        AnimationDirection::Normal => (start_frame + frame).min(end_frame.prev()),
-        AnimationDirection::Reverse => (end_frame - frame).min(end_frame.prev()),
-    };
-    error!("rendered_frames: {rendered_frames}, frame: {frame}, playhead: {playhead}");
-    playhead
 }
