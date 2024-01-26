@@ -40,6 +40,11 @@ impl LottiePlayer {
             .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state))
     }
 
+    /// The states in the player
+    pub fn states(&self) -> impl Iterator<Item = &AnimationState> {
+        self.states.values()
+    }
+
     /// Transition to the next state.
     pub fn transition(&mut self, state: &'static str) {
         self.next_state.replace(state);
@@ -82,7 +87,11 @@ impl LottiePlayer {
 
     /// Toggle the play state.
     pub fn toggle_play(&mut self) {
-        self.playing = !self.playing;
+        if self.stopped || !self.playing {
+            self.play();
+        } else {
+            self.pause();
+        }
     }
 
     /// Play the animation.
@@ -361,6 +370,7 @@ pub mod systems {
 
             if first_frame.is_none() {
                 first_frame.replace(Instant::now());
+                player.started = true;
             }
 
             // Move frames to control playhead
@@ -418,20 +428,30 @@ pub mod systems {
                         *rendered_frames = 0.0;
                     } else {
                         // Reset loops
-                        let playhead = calculate_playhead(
-                            *rendered_frames,
-                            composition,
-                            &playback_settings.cloned().unwrap_or_default(),
-                        );
-                        // Need to reset to the correct frame
-                        if target_state
+                        let playback_settings = playback_settings.cloned().unwrap_or_default();
+                        let playhead =
+                            calculate_playhead(*rendered_frames, composition, &playback_settings);
+                        // Need to reset to the correct frame - This depends on current direction and next direction.
+                        let current_direction = playback_settings.direction;
+                        let target_direction = target_state
                             .playback_settings
                             .as_ref()
-                            .is_some_and(|pb| pb.direction == AnimationDirection::Reverse)
-                        {
-                            *rendered_frames = composition.frames.end - playhead;
-                        } else {
-                            *rendered_frames %= composition.frames.end - composition.frames.start;
+                            .map(|pb| pb.direction)
+                            .unwrap_or(AnimationDirection::Normal);
+                        match (current_direction, target_direction) {
+                            // Normal -> Reverse
+                            (AnimationDirection::Normal, AnimationDirection::Reverse) => {
+                                *rendered_frames = composition.frames.end - playhead;
+                            }
+                            // Reverse -> Normal
+                            (AnimationDirection::Reverse, AnimationDirection::Normal) => {
+                                *rendered_frames = playhead;
+                            }
+                            // Reverse<->Reverse, Normal<->Normal
+                            _ => {
+                                *rendered_frames %=
+                                    composition.frames.end - composition.frames.start;
+                            }
                         }
                     }
                 }

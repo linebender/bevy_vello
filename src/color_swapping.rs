@@ -33,6 +33,14 @@ impl ColorPaletteSwap {
         self.colors.insert(layer_name.to_string(), color);
         self
     }
+
+    pub fn get(&self, layer_name: &str) -> Option<&Color> {
+        self.colors.get(layer_name)
+    }
+
+    pub fn get_mut(&mut self, layer_name: &str) -> Option<&mut Color> {
+        self.colors.get_mut(layer_name)
+    }
 }
 
 impl ColorPaletteSwap {
