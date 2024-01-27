@@ -3,8 +3,6 @@ use crate::{
     AnimationDirection, PlaybackSettings, VelloAsset,
 };
 use bevy::{prelude::*, utils::hashbrown::HashMap};
-use vello_svg::usvg::strict_num::Ulps;
-use vellottie::Composition;
 
 #[derive(Component, Default, Debug)]
 pub struct LottiePlayer {
@@ -109,6 +107,18 @@ impl LottiePlayer {
     /// Stops the animation. State machines will not run.
     pub fn stop(&mut self) {
         self.stopped = true;
+    }
+
+    pub fn is_playing(&self) -> bool {
+        self.playing
+    }
+
+    pub fn is_paused(&self) -> bool {
+        self.stopped || !self.playing
+    }
+
+    pub fn is_stopped(&self) -> bool {
+        self.stopped
     }
 }
 
@@ -216,7 +226,7 @@ pub struct AnimationControllerPlugin;
 impl Plugin for AnimationControllerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(
-            Update,
+            PostUpdate,
             (
                 systems::apply_player_inputs,
                 systems::advance_playheads,
@@ -257,7 +267,7 @@ pub mod systems {
                 continue;
             };
 
-            if let Some(direction) = player.pending_direction {
+            if let Some(direction) = player.pending_direction.take() {
                 for playback_settings in player
                     .states
                     .values_mut()
@@ -267,7 +277,7 @@ pub mod systems {
                     playback_settings.direction = direction;
                 }
             }
-            if let Some(intermission) = player.pending_intermission {
+            if let Some(intermission) = player.pending_intermission.take() {
                 // Adjust to the new intermission
                 let loops_played = *rendered_frames
                     / (composition.frames.end - composition.frames.start
@@ -285,7 +295,7 @@ pub mod systems {
                     playback_settings.intermission = intermission;
                 }
             }
-            if let Some(loop_behavior) = player.pending_loop_behavior {
+            if let Some(loop_behavior) = player.pending_loop_behavior.take() {
                 // Apply
                 for playback_settings in player
                     .states
@@ -296,7 +306,7 @@ pub mod systems {
                     playback_settings.looping = loop_behavior;
                 }
             }
-            if let Some(play_mode) = player.pending_play_mode {
+            if let Some(play_mode) = player.pending_play_mode.take() {
                 // Apply
                 for playback_settings in player
                     .states
@@ -307,19 +317,23 @@ pub mod systems {
                     playback_settings.play_mode = play_mode;
                 }
             }
-            if let Some(seek_frame) = player.pending_seek_frame {
+            if let Some(seek_frame) = player.pending_seek_frame.take() {
+                let start_frame = playback_settings
+                    .segments
+                    .start
+                    .max(composition.frames.start);
+                let end_frame = playback_settings.segments.end.min(composition.frames.end);
+                // FIXME: This should keep the correct number of loops. This resets the loops played!
                 // Bound the seek frame
-                let seek_frame = seek_frame.clamp(composition.frames.start, composition.frames.end);
-                // Get the frame local to this loop
-                let local_frame = *rendered_frames
-                    % (composition.frames.end - composition.frames.start
-                        + playback_settings.intermission);
-                // Bound the seek frame within the composition
-                let local_seek_frame =
-                    seek_frame % (composition.frames.end - composition.frames.start);
-                *rendered_frames = *rendered_frames - local_frame + local_seek_frame;
+                let seek_frame = match playback_settings.direction {
+                    AnimationDirection::Normal => seek_frame.clamp(start_frame, end_frame),
+                    AnimationDirection::Reverse => {
+                        end_frame - seek_frame.clamp(start_frame, end_frame)
+                    }
+                };
+                *rendered_frames = seek_frame;
             }
-            if let Some(speed) = player.pending_speed {
+            if let Some(speed) = player.pending_speed.take() {
                 // Apply
                 for playback_settings in player
                     .states

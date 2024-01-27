@@ -1,9 +1,9 @@
-use bevy::{asset::AssetMetaCheck, prelude::*, render::color};
+use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_vello::{
-    debug::DebugVisualizations, AnimationDirection, AnimationLoopBehavior, AnimationState,
-    AnimationTransition, ColorPaletteSwap, LottiePlayer, PlaybackSettings, Vector, VelloAsset,
-    VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
+    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, AnimationDirection,
+    AnimationState, AnimationTransition, ColorPaletteSwap, LottiePlayer, PlaybackSettings, Vector,
+    VelloAsset, VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
@@ -25,28 +25,29 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         .spawn(VelloAssetBundle {
             origin: bevy_vello::Origin::Center,
             vector: asset_server.load("../assets/squid.json"),
+            transform: Transform::from_scale(Vec3::splat(0.5)),
             debug_visualizations: DebugVisualizations::Visible,
             ..default()
         })
         .insert(ColorPaletteSwap::default())
         .insert(
-            LottiePlayer::new("rev")
+            LottiePlayer::new("Normal")
                 .with_state(
-                    AnimationState::new("rev")
-                        .with_transition(AnimationTransition::OnMouseEnter { state: "fwd" })
+                    AnimationState::new("Normal")
+                        .with_playback_settings(PlaybackSettings {
+                            speed: 0.2,
+                            ..default()
+                        })
+                        .with_transition(AnimationTransition::OnMouseEnter { state: "Reverse" }),
+                )
+                .with_state(
+                    AnimationState::new("Reverse")
+                        .with_transition(AnimationTransition::OnMouseLeave { state: "Normal" })
                         .with_playback_settings(PlaybackSettings {
                             speed: 0.2,
                             direction: AnimationDirection::Reverse,
                             ..default()
                         }),
-                )
-                .with_state(
-                    AnimationState::new("fwd")
-                        .with_playback_settings(PlaybackSettings {
-                            speed: 0.2,
-                            ..default()
-                        })
-                        .with_transition(AnimationTransition::OnMouseLeave { state: "rev" }),
                 ),
         );
     commands.spawn(VelloTextBundle {
@@ -147,15 +148,21 @@ fn ui(
     else {
         return;
     };
-    let window = egui::Window::new("Character Builder")
+    let window = egui::Window::new("Controls")
         .resizable(false)
         .title_bar(true)
         .collapsible(true);
 
-    let asset = assets.get(handle.id()).unwrap() else {
+    let asset = assets.get(handle.id()).unwrap();
+    let metadata = asset.metadata().unwrap();
+    let Vector::Lottie {
+        composition,
+        first_frame: _,
+        rendered_frames: _,
+    } = &asset.data
+    else {
         return;
     };
-    let metadata = asset.metadata().unwrap();
 
     window.show(contexts.ctx_mut(), |ui| {
         ui.heading("Animation Controls");
@@ -163,10 +170,27 @@ fn ui(
         let mut playhead = asset.calculate_playhead(playback_settings).unwrap();
         ui.horizontal(|ui| {
             ui.label("Playhead");
-            ui.add(egui::Slider::new(
-                &mut playhead,
-                playback_settings.segments.start..=playback_settings.segments.end,
-            ));
+            if ui
+                .add(
+                    egui::Slider::new(
+                        &mut playhead,
+                        playback_settings
+                            .segments
+                            .start
+                            .max(composition.frames.start)
+                            ..=playback_settings
+                                .segments
+                                .end
+                                .min(composition.frames.end)
+                                .prev(),
+                    )
+                    .integer(),
+                )
+                .changed()
+            {
+                player.pause();
+                player.seek(playhead);
+            };
         });
 
         ui.horizontal_wrapped(|ui| {
@@ -189,18 +213,20 @@ fn ui(
 
         ui.heading("States");
         let mut transition = None;
-        for state in player.states() {
-            if ui.button(state.id).clicked() {
-                transition.replace(state.id);
+        ui.horizontal_wrapped(|ui| {
+            for state in player.states() {
+                if ui.button(state.id).clicked() {
+                    transition.replace(state.id);
+                }
             }
-        }
+        });
         if let Some(transition) = transition {
             player.transition(transition);
         }
 
         ui.separator();
 
-        ui.heading("State");
+        ui.heading("Current State");
         ui.label(format!("Autplay: {}", playback_settings.autoplay));
         ui.label(format!("Diration: {:?}", playback_settings.direction));
         ui.label(format!("Intermission: {}", playback_settings.intermission));
@@ -208,20 +234,31 @@ fn ui(
         ui.label(format!("Play mode: {:?}", playback_settings.play_mode));
         ui.label(format!("Segments: {:?}", playback_settings.segments));
         ui.label(format!("Speed: {}", playback_settings.speed));
-
+        ui.collapsing(
+            format!("Transitions: {}", player.state().transitions.len()),
+            |ui| {
+                for transition in player.state().transitions.iter() {
+                    ui.label(format!("{transition:?}"));
+                }
+            },
+        );
         ui.separator();
 
-        ui.heading("Color Remapping");
-        for layer in metadata.get_layers() {
-            let color = color_swaps.get_mut(layer).cloned().unwrap_or_default();
-            let mut color_edit = [color.r(), color.g(), color.b()];
-            ui.horizontal(|ui| {
-                if ui.color_edit_button_rgb(&mut color_edit).changed() {
-                    let [r, g, b] = color_edit;
-                    color_swaps.edit(layer, Color::rgb(r, g, b));
-                };
-                ui.label(layer);
-            });
-        }
+        ui.collapsing("Color Remapping", |ui| {
+            for layer in metadata.get_layers() {
+                let color = color_swaps.get_mut(layer).cloned().unwrap_or_default();
+                let mut color_edit = [color.r(), color.g(), color.b(), color.a()];
+                ui.horizontal(|ui| {
+                    if ui
+                        .color_edit_button_rgba_unmultiplied(&mut color_edit)
+                        .changed()
+                    {
+                        let [r, g, b, a] = color_edit;
+                        color_swaps.edit(layer, Color::rgba(r, g, b, a));
+                    };
+                    ui.label(layer);
+                });
+            }
+        });
     });
 }
