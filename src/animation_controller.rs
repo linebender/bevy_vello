@@ -113,10 +113,6 @@ impl LottiePlayer {
         self.playing
     }
 
-    pub fn is_paused(&self) -> bool {
-        self.stopped || !self.playing
-    }
-
     pub fn is_stopped(&self) -> bool {
         self.stopped
     }
@@ -125,10 +121,12 @@ impl LottiePlayer {
 #[derive(Debug, Clone)]
 pub struct AnimationState {
     pub id: &'static str,
-    pub asset: Handle<VelloAsset>,
+    pub asset: Option<Handle<VelloAsset>>,
     pub playback_settings: Option<PlaybackSettings>,
     pub transitions: Vec<AnimationTransition>,
+    /// Whether to reset the playhead when you transition away from this state
     pub reset_playhead_on_transition: bool,
+    /// Whether to reset the playhead when the transition it moved to this state
     pub reset_playhead_on_start: bool,
 }
 
@@ -196,7 +194,7 @@ impl AnimationState {
     }
 
     pub fn with_asset(mut self, asset: Handle<VelloAsset>) -> Self {
-        self.asset = asset;
+        self.asset.replace(asset);
         self
     }
 
@@ -242,6 +240,7 @@ pub mod systems {
     use super::{AnimationTransition, LottiePlayer};
     use crate::{AnimationDirection, PlaybackSettings, Vector, VelloAsset};
     use bevy::{prelude::*, utils::Instant};
+    use vello_svg::usvg::strict_num::Ulps;
 
     /// Apply inputs the developer has made, e.g. `player.seek(frame)`
     pub fn apply_player_inputs(
@@ -278,13 +277,34 @@ pub mod systems {
                 }
             }
             if let Some(intermission) = player.pending_intermission.take() {
-                // Adjust to the new intermission
-                let loops_played = *rendered_frames
-                    / (composition.frames.end - composition.frames.start
-                        + playback_settings.intermission);
-                let dt_intermission = intermission - playback_settings.intermission;
-                let dt_frames = dt_intermission * loops_played;
-                *rendered_frames = (*rendered_frames + dt_frames).min(0.0);
+                debug!("changed intermission: {intermission}");
+                // This math is particularly hairy. Several things are going on:
+                // 1) Preserve the loops completed thus far
+                // 2) Do not jump frames
+                // 3) Reset the intermission, if inside an intermission
+                let length = composition.frames.end - composition.frames.start;
+                let loops_completed = {
+                    if *rendered_frames > length + playback_settings.intermission {
+                        (*rendered_frames / (length + playback_settings.intermission)).trunc()
+                    } else if *rendered_frames > length {
+                        1.0
+                    } else {
+                        0.0
+                    }
+                };
+                let in_intermission = *rendered_frames > length
+                    && *rendered_frames >= loops_completed * length
+                    && *rendered_frames < loops_completed * length + playback_settings.intermission;
+                if in_intermission {
+                    debug!("in intermission, resetting to {intermission}");
+                    *rendered_frames = (loops_completed * (length + intermission)).prev();
+                } else {
+                    debug!("not in intermission, applying delta to {intermission}");
+                    let dt_intermission = intermission - playback_settings.intermission;
+                    let dt_frames = dt_intermission * loops_completed;
+                    debug!("loops: {loops_completed}, dt_intermission: {dt_intermission}, dt_frames: {dt_frames}");
+                    *rendered_frames = (*rendered_frames + dt_frames).max(0.0);
+                }
                 // Apply
                 for playback_settings in player
                     .states
@@ -323,7 +343,6 @@ pub mod systems {
                     .start
                     .max(composition.frames.start);
                 let end_frame = playback_settings.segments.end.min(composition.frames.end);
-                // FIXME: This should keep the correct number of loops. This resets the loops played!
                 // Bound the seek frame
                 let seek_frame = match playback_settings.direction {
                     AnimationDirection::Normal => seek_frame.clamp(start_frame, end_frame),
@@ -331,7 +350,10 @@ pub mod systems {
                         end_frame - seek_frame.clamp(start_frame, end_frame)
                     }
                 };
-                *rendered_frames = seek_frame;
+                // Preserve the current number of loops when seeking.
+                let length = end_frame - start_frame + playback_settings.intermission;
+                let loops_completed = (*rendered_frames / length).trunc();
+                *rendered_frames = loops_completed * length + seek_frame;
             }
             if let Some(speed) = player.pending_speed.take() {
                 // Apply
@@ -342,6 +364,7 @@ pub mod systems {
                     .chain([playback_settings.as_mut()])
                 {
                     playback_settings.speed = speed;
+                    error!("{}", playback_settings.speed);
                 }
             }
         }
@@ -416,8 +439,13 @@ pub mod systems {
                 .get(&next_state)
                 .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
 
-            if controller.state().asset.id() != target_state.asset.id() {
-                *cur_handle = target_state.asset.clone();
+            // Transitions to new assets will always reset the playhead
+            let mut changed_assets = false;
+            if let Some(ref next_asset) = target_state.asset {
+                if cur_handle.id() != next_asset.id() {
+                    *cur_handle = next_asset.clone();
+                    changed_assets = true;
+                }
             }
 
             let asset = assets.get_mut(cur_handle.id()).unwrap();
@@ -439,6 +467,7 @@ pub mod systems {
                     first_frame.take();
                     if controller.state().reset_playhead_on_transition
                         || target_state.reset_playhead_on_start
+                        || changed_assets
                     {
                         *rendered_frames = 0.0;
                     } else {
@@ -453,7 +482,8 @@ pub mod systems {
                         match (current_direction, target_direction) {
                             // Normal -> Reverse
                             (AnimationDirection::Normal, AnimationDirection::Reverse) => {
-                                *rendered_frames = composition.frames.end - playhead;
+                                *rendered_frames = (composition.frames.end - playhead)
+                                    .min(composition.frames.end.prev());
                             }
                             // Reverse -> Normal
                             (AnimationDirection::Reverse, AnimationDirection::Normal) => {
@@ -463,6 +493,8 @@ pub mod systems {
                             _ => {
                                 *rendered_frames %=
                                     composition.frames.end - composition.frames.start;
+                                *rendered_frames =
+                                    rendered_frames.min(composition.frames.end.prev());
                             }
                         }
                     }
@@ -545,7 +577,7 @@ pub mod systems {
                     }
                     AnimationTransition::OnComplete { state } => {
                         match &current_asset.data {
-                            crate::Vector::Svg {..} => warn!("invalid state: '{}', `OnComplete` is only valid for Lottie files. Use `OnAfter` for SVG.", controller.state().id),
+                            crate::Vector::Svg {..} => panic!("invalid state: '{}', `OnComplete` is only valid for Lottie files. Use `OnAfter` for SVG.", controller.state().id),
                             crate::Vector::Lottie {
                                 composition,
                                 rendered_frames, ..

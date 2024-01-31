@@ -44,7 +44,7 @@ impl ColorPaletteSwap {
 }
 
 impl ColorPaletteSwap {
-    pub fn create(&self, composition: &Composition) -> Composition {
+    pub fn recolor(&self, composition: &Composition) -> Composition {
         let mut composition = composition.clone();
         'layers: for layer in composition.layers.iter_mut() {
             // Continue if this layer doesn't have a color swap
@@ -118,9 +118,20 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
                         stop.color = target_color;
                     }
                 }
-                vellottie::runtime::model::ColorStops::Animated(_stops) => {
-                    error!("its the stops");
-                    // FIXME: Why does stops use f32 instead of color?
+                vellottie::runtime::model::ColorStops::Animated(stops) => {
+                    for _ in 0..stops.count {
+                        for stop in stops.values.iter_mut() {
+                            let _offset = stop[0];
+                            let r = &mut stop[1];
+                            *r = target_color.r as f32;
+                            let g = &mut stop[2];
+                            *g = target_color.g as f32;
+                            let b = &mut stop[3];
+                            *b = target_color.b as f32;
+                            let a = &mut stop[4];
+                            *a = target_color.a as f32;
+                        }
+                    }
                 }
             },
         },

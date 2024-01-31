@@ -125,18 +125,21 @@ impl VelloAsset {
         let end_frame = playback_settings.segments.end.min(composition.frames.end);
         let length = end_frame - start_frame + playback_settings.intermission;
 
-        let frame = match playback_settings.looping {
-            crate::AnimationLoopBehavior::None => rendered_frames.min(length),
+        let loop_frame = match playback_settings.looping {
+            crate::AnimationLoopBehavior::None => rendered_frames.min(length.prev()),
             crate::AnimationLoopBehavior::Amount(loops) => {
-                rendered_frames.min(loops * length) % length
+                rendered_frames.min((loops as f32 * length).prev())
             }
-            crate::AnimationLoopBehavior::Loop => rendered_frames % length,
+            crate::AnimationLoopBehavior::Loop => *rendered_frames,
         };
+        // Normalize frame
+        let normal_frame = loop_frame % length;
+        debug!("loop frame: {loop_frame}, normal = {normal_frame}");
         let playhead = match playback_settings.direction {
-            AnimationDirection::Normal => (start_frame + frame).min(end_frame.prev()),
-            AnimationDirection::Reverse => (end_frame - frame).min(end_frame.prev()),
-        };
-        error!("rendered_frames: {rendered_frames}, frame: {frame}, playhead: {playhead}");
+            AnimationDirection::Normal => start_frame + normal_frame,
+            AnimationDirection::Reverse => end_frame - normal_frame,
+        }
+        .clamp(start_frame, end_frame.prev());
         Some(playhead)
     }
 }

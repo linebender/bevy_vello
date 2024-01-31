@@ -1,55 +1,32 @@
-use bevy::{asset::AssetMetaCheck, prelude::*};
-use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*};
+use bevy_egui::{
+    egui::{self, Color32},
+    EguiContexts, EguiPlugin,
+};
 use bevy_vello::{
     debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, AnimationDirection,
-    AnimationState, AnimationTransition, ColorPaletteSwap, LottiePlayer, PlaybackSettings, Vector,
-    VelloAsset, VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
+    AnimationLoopBehavior, AnimationPlayMode, AnimationState, AnimationTransition,
+    ColorPaletteSwap, LottiePlayer, PlaybackSettings, Vector, VelloAsset, VelloAssetBundle,
+    VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
     App::new()
         .insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(LogPlugin {
+            filter: "wgpu=error,naga=warn,bevy_vello=debug".to_owned(),
+            ..default()
+        }))
         .add_plugins(EguiPlugin)
         .add_plugins(VelloPlugin)
         .add_plugins(bevy_pancam::PanCamPlugin)
         .add_systems(Startup, setup_vector_graphics)
-        .add_systems(Update, (drag_and_drop, print_metadata, ui))
+        .add_systems(Update, (drag_and_drop, print_metadata, ui, text_ui))
         .run();
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
-
-    commands
-        .spawn(VelloAssetBundle {
-            origin: bevy_vello::Origin::Center,
-            vector: asset_server.load("../assets/squid.json"),
-            transform: Transform::from_scale(Vec3::splat(0.5)),
-            debug_visualizations: DebugVisualizations::Visible,
-            ..default()
-        })
-        .insert(ColorPaletteSwap::default())
-        .insert(
-            LottiePlayer::new("Normal")
-                .with_state(
-                    AnimationState::new("Normal")
-                        .with_playback_settings(PlaybackSettings {
-                            speed: 0.2,
-                            ..default()
-                        })
-                        .with_transition(AnimationTransition::OnMouseEnter { state: "Reverse" }),
-                )
-                .with_state(
-                    AnimationState::new("Reverse")
-                        .with_transition(AnimationTransition::OnMouseLeave { state: "Normal" })
-                        .with_playback_settings(PlaybackSettings {
-                            speed: 0.2,
-                            direction: AnimationDirection::Reverse,
-                            ..default()
-                        }),
-                ),
-        );
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
         text: VelloText {
@@ -58,45 +35,44 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         },
         ..default()
     });
-
-    //commands
-    //    .spawn(VelloAssetBundle {
-    //        origin: bevy_vello::Origin::Center,
-    //        vector: asset_server.load("../assets/example.json"),
-    //        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
-    //            .with_scale(Vec3::splat(20.0)),
-    //        debug_visualizations: DebugVisualizations::Visible,
-    //        ..default()
-    //    })
-    //    .insert(
-    //        LottiePlayer::new("stopped")
-    //            .with_state(
-    //                AnimationState::new("stopped")
-    //                    .with_transition(AnimationTransition::OnMouseEnter { state: "play" })
-    //                    .with_playback_settings(PlaybackSettings {
-    //                        autoplay: false,
-    //                        ..default()
-    //                    })
-    //                    .reset_playhead_on_start(true),
-    //            )
-    //            .with_state(
-    //                AnimationState::new("play")
-    //                    .with_transition(AnimationTransition::OnMouseLeave { state: "rev" })
-    //                    .with_playback_settings(PlaybackSettings {
-    //                        direction: AnimationDirection::Normal,
-    //                        looping: AnimationLoopBehavior::None,
-    //                        ..default()
-    //                    }),
-    //            )
-    //            .with_state(
-    //                AnimationState::new("rev")
-    //                    .with_playback_settings(PlaybackSettings {
-    //                        direction: AnimationDirection::Reverse,
-    //                        ..default()
-    //                    })
-    //                    .with_transition(AnimationTransition::OnComplete { state: "stopped" }),
-    //            ),
-    //    );
+    commands
+        .spawn(VelloAssetBundle {
+            origin: bevy_vello::Origin::Center,
+            vector: asset_server.load("../assets/example.json"),
+            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
+                .with_scale(Vec3::splat(20.0)),
+            debug_visualizations: DebugVisualizations::Visible,
+            ..default()
+        })
+        .insert(ColorPaletteSwap::default())
+        .insert(
+            LottiePlayer::new("stopped")
+                .with_state({
+                    AnimationState::new("stopped")
+                        .with_transition(AnimationTransition::OnMouseEnter { state: "play" })
+                        .with_playback_settings(PlaybackSettings {
+                            autoplay: false,
+                            ..default()
+                        })
+                        .reset_playhead_on_start(true)
+                })
+                .with_state(
+                    AnimationState::new("play")
+                        .with_transition(AnimationTransition::OnMouseLeave { state: "rev" })
+                        .with_playback_settings(PlaybackSettings {
+                            looping: AnimationLoopBehavior::None,
+                            ..default()
+                        }),
+                )
+                .with_state(
+                    AnimationState::new("rev")
+                        .with_playback_settings(PlaybackSettings {
+                            direction: AnimationDirection::Reverse,
+                            ..default()
+                        })
+                        .with_transition(AnimationTransition::OnComplete { state: "stopped" }),
+                ),
+        );
 }
 
 fn print_metadata(
@@ -148,10 +124,6 @@ fn ui(
     else {
         return;
     };
-    let window = egui::Window::new("Controls")
-        .resizable(false)
-        .title_bar(true)
-        .collapsible(true);
 
     let asset = assets.get(handle.id()).unwrap();
     let metadata = asset.metadata().unwrap();
@@ -164,8 +136,12 @@ fn ui(
         return;
     };
 
+    let window = egui::Window::new("Controls")
+        .resizable(false)
+        .title_bar(true)
+        .collapsible(true);
     window.show(contexts.ctx_mut(), |ui| {
-        ui.heading("Animation Controls");
+        ui.heading("Lottie Player");
 
         let mut playhead = asset.calculate_playhead(playback_settings).unwrap();
         ui.horizontal(|ui| {
@@ -211,11 +187,84 @@ fn ui(
             }
         });
 
+        ui.separator();
+
+        ui.heading("Player Operations");
+        ui.label("Note: Player operations apply to ALL states!");
+        ui.horizontal(|ui| {
+            ui.label("Set Speed");
+            let mut speed = playback_settings.speed;
+            if ui.add(egui::Slider::new(&mut speed, 0.05..=2.0)).changed() {
+                player.set_speed(speed);
+            };
+        });
+        ui.horizontal(|ui| {
+            ui.label("Set Intermission");
+            let mut intermission = playback_settings.intermission;
+            if ui
+                .add(egui::Slider::new(&mut intermission, 0.0..=24.0))
+                .changed()
+            {
+                player.set_intermission(intermission);
+            };
+        });
+        ui.horizontal(|ui| {
+            ui.colored_label(Color32::YELLOW, "Set Direction");
+            let direction = playback_settings.direction;
+            if ui
+                .radio(direction == AnimationDirection::Normal, "Normal")
+                .clicked()
+            {
+                player.set_direction(AnimationDirection::Normal);
+            }
+            if ui
+                .radio(direction == AnimationDirection::Reverse, "Reverse")
+                .clicked()
+            {
+                player.set_direction(AnimationDirection::Reverse);
+            }
+        });
+        ui.horizontal(|ui| {
+            ui.label("Set Loop Behavior");
+            let looping = playback_settings.looping;
+            if ui
+                .radio(looping == AnimationLoopBehavior::None, "None")
+                .clicked()
+            {
+                player.set_loop_behavior(AnimationLoopBehavior::None);
+            }
+            if ui
+                .radio(looping == AnimationLoopBehavior::Loop, "Loop")
+                .clicked()
+            {
+                player.set_loop_behavior(AnimationLoopBehavior::Loop);
+            }
+        });
+        ui.horizontal(|ui| {
+            ui.colored_label(Color32::RED, "Set Play Mode");
+            let playmode = playback_settings.play_mode;
+            if ui
+                .radio(playmode == AnimationPlayMode::Normal, "Normal")
+                .clicked()
+            {
+                player.set_play_mode(AnimationPlayMode::Normal);
+            }
+            if ui
+                .radio(playmode == AnimationPlayMode::Bounce, "Bounce")
+                .clicked()
+            {
+                player.set_play_mode(AnimationPlayMode::Bounce);
+            }
+        });
+
+        ui.separator();
+
         ui.heading("States");
         let mut transition = None;
         ui.horizontal_wrapped(|ui| {
             for state in player.states() {
-                if ui.button(state.id).clicked() {
+                let selected = player.state().id == state.id;
+                if ui.radio(selected, state.id).clicked() {
                     transition.replace(state.id);
                 }
             }
@@ -224,41 +273,64 @@ fn ui(
             player.transition(transition);
         }
 
-        ui.separator();
-
         ui.heading("Current State");
+        ui.label(format!("Id: {}", player.state().id));
         ui.label(format!("Autplay: {}", playback_settings.autoplay));
-        ui.label(format!("Diration: {:?}", playback_settings.direction));
+        ui.label(format!("Duration: {:?}", playback_settings.direction));
         ui.label(format!("Intermission: {}", playback_settings.intermission));
         ui.label(format!("Loops: {:?}", playback_settings.looping));
         ui.label(format!("Play mode: {:?}", playback_settings.play_mode));
-        ui.label(format!("Segments: {:?}", playback_settings.segments));
+        ui.label(format!(
+            "Segments: {:?}",
+            playback_settings
+                .segments
+                .start
+                .max(composition.frames.start)
+                ..playback_settings.segments.end.min(composition.frames.end)
+        ));
         ui.label(format!("Speed: {}", playback_settings.speed));
-        ui.collapsing(
-            format!("Transitions: {}", player.state().transitions.len()),
-            |ui| {
-                for transition in player.state().transitions.iter() {
-                    ui.label(format!("{transition:?}"));
-                }
-            },
-        );
+        ui.heading(format!("Transitions: {}", player.state().transitions.len()));
+        for transition in player.state().transitions.iter() {
+            ui.label(format!("{transition:?}"));
+        }
+
         ui.separator();
 
-        ui.collapsing("Color Remapping", |ui| {
-            for layer in metadata.get_layers() {
-                let color = color_swaps.get_mut(layer).cloned().unwrap_or_default();
-                let mut color_edit = [color.r(), color.g(), color.b(), color.a()];
-                ui.horizontal(|ui| {
-                    if ui
-                        .color_edit_button_rgba_unmultiplied(&mut color_edit)
-                        .changed()
-                    {
-                        let [r, g, b, a] = color_edit;
-                        color_swaps.edit(layer, Color::rgba(r, g, b, a));
-                    };
-                    ui.label(layer);
-                });
-            }
+        ui.heading("Theme");
+        for layer in metadata.get_layers() {
+            let color = color_swaps.get_mut(layer).cloned().unwrap_or_default();
+            let mut color_edit = [color.r(), color.g(), color.b(), color.a()];
+            ui.horizontal(|ui| {
+                if ui
+                    .color_edit_button_rgba_unmultiplied(&mut color_edit)
+                    .changed()
+                {
+                    let [r, g, b, a] = color_edit;
+                    color_swaps.edit(layer, Color::rgba(r, g, b, a));
+                };
+                ui.label(layer);
+            });
+        }
+    });
+}
+
+fn text_ui(mut contexts: EguiContexts, mut texts: Query<&mut VelloText>) {
+    let Ok(mut text) = texts.get_single_mut() else {
+        return;
+    };
+
+    let window = egui::Window::new("Text")
+        .resizable(false)
+        .title_bar(true)
+        .collapsible(true);
+    window.show(contexts.ctx_mut(), |ui| {
+        ui.horizontal(|ui| {
+            ui.label("Content");
+            ui.text_edit_singleline(&mut text.content);
+        });
+        ui.horizontal(|ui| {
+            ui.label("Size");
+            ui.add(egui::Slider::new(&mut text.size, 5.0..=200.0));
         });
     });
 }

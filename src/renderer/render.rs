@@ -90,16 +90,17 @@ pub fn render_scene(
                     }
                     Vector::Lottie {
                         composition,
-                        rendered_frames: _,
+                        rendered_frames,
                         first_frame: _,
                     } => {
-                        let t = asset.calculate_playhead(playback_settings).unwrap()
-                            / composition.frame_rate;
+                        let playhead = asset.calculate_playhead(playback_settings).unwrap();
+                        let t = playhead / composition.frame_rate;
+                        debug!("rendered_frames: {rendered_frames}, playhead: {playhead}, t: {t}");
                         velottie_renderer.0.render(
                             {
                                 color_swaps
                                     .as_ref()
-                                    .map(|cs| cs.create(composition))
+                                    .map(|cs| cs.recolor(composition))
                                     .as_ref()
                                     .unwrap_or(composition)
                             },

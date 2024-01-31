@@ -38,7 +38,7 @@ pub enum AnimationDirection {
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
 pub enum AnimationLoopBehavior {
     None,
-    Amount(f32),
+    Amount(usize),
     #[default]
     Loop,
 }
