@@ -431,6 +431,7 @@ pub mod systems {
                 continue;
             };
             info!("animation controller transitioning to={next_state}");
+
             controller.started = false;
             controller.playing = false;
 
@@ -438,17 +439,18 @@ pub mod systems {
                 .states
                 .get(&next_state)
                 .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
+            let target_handle = target_state.asset.clone().unwrap_or(cur_handle.clone());
 
-            // Transitions to new assets will always reset the playhead
-            let mut changed_assets = false;
-            if let Some(ref next_asset) = target_state.asset {
-                if cur_handle.id() != next_asset.id() {
-                    *cur_handle = next_asset.clone();
-                    changed_assets = true;
-                }
-            }
+            let Some(asset) = assets.get_mut(target_handle.id()) else {
+                warn!("Asset not ready for transition... re-queue'ing...");
+                controller.next_state.replace(next_state);
+                return;
+            };
 
-            let asset = assets.get_mut(cur_handle.id()).unwrap();
+            // Switch to asset
+            let changed_assets = cur_handle.id() != target_handle.id();
+            *cur_handle = target_handle.clone();
+
             let playback_settings = playback_settings.cloned().unwrap_or_default();
             let playhead = asset.calculate_playhead(&playback_settings).unwrap();
             // Reset play state
