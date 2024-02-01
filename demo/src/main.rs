@@ -68,6 +68,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     AnimationState::new("rev")
                         .with_playback_settings(PlaybackSettings {
                             direction: AnimationDirection::Reverse,
+                            looping: AnimationLoopBehavior::None,
                             ..default()
                         })
                         .with_transition(AnimationTransition::OnComplete { state: "stopped" }),

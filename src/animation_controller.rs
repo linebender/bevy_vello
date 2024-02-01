@@ -594,6 +594,7 @@ pub mod systems {
                     AnimationTransition::OnMouseEnter { state } => {
                         if is_inside {
                             controller.next_state = Some(state);
+                            *hovered = true;
                             break;
                         }
                     }
