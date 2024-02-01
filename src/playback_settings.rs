@@ -3,7 +3,9 @@ use std::ops::Range;
 
 #[derive(PartialEq, Component, Clone, Debug, Reflect)]
 #[reflect(Component)]
-/// Add this component to a `VelloAssetBundle` entity to adjust playback settings.
+/// Playback settings which adjust the playback of a vello asset.
+///
+/// You can add this component directly to a `VelloAssetBundle` entity to adjust playback settings.
 pub struct PlaybackSettings {
     pub autoplay: bool,
     pub direction: AnimationDirection,
@@ -26,6 +28,7 @@ impl Default for PlaybackSettings {
     }
 }
 
+/// The direction to play the segments of a lottie animation.
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
 pub enum AnimationDirection {
     #[default]
@@ -33,6 +36,7 @@ pub enum AnimationDirection {
     Reverse = -1,
 }
 
+/// How often to loop.
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
 pub enum AnimationLoopBehavior {
     None,
@@ -41,6 +45,7 @@ pub enum AnimationLoopBehavior {
     Loop,
 }
 
+/// Play mode. When set to bounce, every other loop switches animation direction.
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
 pub enum AnimationPlayMode {
     #[default]
