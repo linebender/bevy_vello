@@ -8,12 +8,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### added
 
-- State machines are now available behind the `animation-controller` cargo feature
+- State machines are now available behind the `player` cargo feature
 - `PlaybackSettings` can now be bundled with `VelloAssetBundle` to augment playback
 
 ### changed
 
 - `RenderMode` changed to `CoordinateSpace`
+- `Vector` has been renamed to `VelloAssetData`
 - `VelloVector`, anywhere mentioned, has changed to `VelloAsset`
 - `DebugVisualizations` are now feature-gated behind the `debug` cargo feature
 - Color swapping now swaps by layer name only and applies to more cases (animated, gradients, etc.)

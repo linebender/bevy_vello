@@ -1,9 +1,13 @@
-use crate::{
-    playback_settings::{AnimationLoopBehavior, AnimationPlayMode},
-    AnimationDirection, PlaybackSettings, VelloAsset,
-};
+use crate::{playback_settings::AnimationLoopBehavior, PlaybackSettings, VelloAsset};
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 
+/// A lottie player that closely mirrors the behavior and functionality for dotLottie Interactivity.
+///
+/// See: https://docs.lottiefiles.com/dotlottie-js-external/
+///
+/// # Missing features
+/// - player.set_playmode
+/// - player.set_direction
 #[derive(Component, Default, Debug)]
 pub struct LottiePlayer {
     initial_state: &'static str,
@@ -12,14 +16,10 @@ pub struct LottiePlayer {
     states: HashMap<&'static str, AnimationState>,
     /// A pending frame to seek to.
     pending_seek_frame: Option<f32>,
-    /// A pending duration to change to.
-    pending_direction: Option<AnimationDirection>,
     /// A pending intermission to change to.
     pending_intermission: Option<f32>,
     /// A pending loop behavior to change to.
     pending_loop_behavior: Option<AnimationLoopBehavior>,
-    /// A pending play mode to change to.
-    pending_play_mode: Option<AnimationPlayMode>,
     /// A pending speed to change to.
     pending_speed: Option<f32>,
     /// Whether the player has started.
@@ -64,11 +64,6 @@ impl LottiePlayer {
         self.pending_seek_frame = Some(frame);
     }
 
-    /// Sets the player direction. Applies to all animations.
-    pub fn set_direction(&mut self, direction: AnimationDirection) {
-        self.pending_direction = Some(direction);
-    }
-
     /// Sets the pause between loops. Applies to all animations.
     pub fn set_intermission(&mut self, intermission: f32) {
         self.pending_intermission = Some(intermission);
@@ -77,11 +72,6 @@ impl LottiePlayer {
     /// Sets the loop behavior. Applies to all animations.
     pub fn set_loop_behavior(&mut self, loop_behavior: AnimationLoopBehavior) {
         self.pending_loop_behavior = Some(loop_behavior);
-    }
-
-    /// Sets the play mode. Applies to all animations.
-    pub fn set_play_mode(&mut self, mode: AnimationPlayMode) {
-        self.pending_play_mode = Some(mode);
     }
 
     /// Sets the animation speed. Applies to all animations.
@@ -168,10 +158,8 @@ impl LottiePlayer {
             current_state: initial_state,
             next_state: Some(initial_state),
             pending_seek_frame: None,
-            pending_direction: None,
             pending_intermission: None,
             pending_loop_behavior: None,
-            pending_play_mode: None,
             pending_speed: None,
             states: HashMap::new(),
             started: false,
@@ -243,7 +231,7 @@ impl Plugin for AnimationControllerPlugin {
 
 pub mod systems {
     use super::{AnimationTransition, LottiePlayer};
-    use crate::{AnimationDirection, PlaybackSettings, Vector, VelloAsset};
+    use crate::{AnimationDirection, PlaybackSettings, VelloAsset, VelloAssetData};
     use bevy::{prelude::*, utils::Instant};
     use vello_svg::usvg::strict_num::Ulps;
 
@@ -259,7 +247,7 @@ pub mod systems {
         for (mut player, mut playback_settings, asset_handle) in query.iter_mut() {
             let Some(VelloAsset {
                 data:
-                    Vector::Lottie {
+                    VelloAssetData::Lottie {
                         composition,
                         first_frame: _,
                         rendered_frames,
@@ -270,16 +258,6 @@ pub mod systems {
                 continue;
             };
 
-            if let Some(direction) = player.pending_direction.take() {
-                for playback_settings in player
-                    .states
-                    .values_mut()
-                    .flat_map(|s| s.playback_settings.as_mut())
-                    .chain([playback_settings.as_mut()])
-                {
-                    playback_settings.direction = direction;
-                }
-            }
             if let Some(intermission) = player.pending_intermission.take() {
                 debug!("changed intermission: {intermission}");
                 // This math is particularly hairy. Several things are going on:
@@ -328,17 +306,6 @@ pub mod systems {
                     .chain([playback_settings.as_mut()])
                 {
                     playback_settings.looping = loop_behavior;
-                }
-            }
-            if let Some(play_mode) = player.pending_play_mode.take() {
-                // Apply
-                for playback_settings in player
-                    .states
-                    .values_mut()
-                    .flat_map(|s| s.playback_settings.as_mut())
-                    .chain([playback_settings.as_mut()])
-                {
-                    playback_settings.play_mode = play_mode;
                 }
             }
             if let Some(seek_frame) = player.pending_seek_frame.take() {
@@ -397,7 +364,7 @@ pub mod systems {
             // Continue, assuming we are currently playing.
             let Some(VelloAsset {
                 data:
-                    Vector::Lottie {
+                    VelloAssetData::Lottie {
                         composition,
                         first_frame, // Set on render
                         rendered_frames,
@@ -458,13 +425,13 @@ pub mod systems {
             let playhead = asset.calculate_playhead(&playback_settings).unwrap();
             // Reset play state
             match &mut asset.data {
-                Vector::Svg {
+                VelloAssetData::Svg {
                     original: _,
                     first_frame,
                 } => {
                     first_frame.take();
                 }
-                Vector::Lottie {
+                VelloAssetData::Lottie {
                     composition,
                     first_frame,
                     rendered_frames,
@@ -572,8 +539,8 @@ pub mod systems {
                 match transition {
                     AnimationTransition::OnAfter { state, secs } => {
                         let started = match current_asset.data {
-                            Vector::Svg { first_frame, .. }
-                            | Vector::Lottie { first_frame, .. } => first_frame,
+                            VelloAssetData::Svg { first_frame, .. }
+                            | VelloAssetData::Lottie { first_frame, .. } => first_frame,
                         };
                         if started.is_some_and(|s| s.elapsed().as_secs_f32() >= *secs) {
                             controller.next_state = Some(state);
@@ -582,8 +549,8 @@ pub mod systems {
                     }
                     AnimationTransition::OnComplete { state } => {
                         match &current_asset.data {
-                            crate::Vector::Svg {..} => panic!("invalid state: '{}', `OnComplete` is only valid for Lottie files. Use `OnAfter` for SVG.", controller.state().id),
-                            crate::Vector::Lottie {
+                            crate::VelloAssetData::Svg {..} => panic!("invalid state: '{}', `OnComplete` is only valid for Lottie files. Use `OnAfter` for SVG.", controller.state().id),
+                            crate::VelloAssetData::Lottie {
                                 composition,
                                 rendered_frames, ..
                             } => {
@@ -618,8 +585,8 @@ pub mod systems {
                     }
                     AnimationTransition::OnShow { state } => {
                         let first_frame = match current_asset.data {
-                            Vector::Svg { first_frame, .. }
-                            | Vector::Lottie { first_frame, .. } => first_frame,
+                            VelloAssetData::Svg { first_frame, .. }
+                            | VelloAssetData::Lottie { first_frame, .. } => first_frame,
                         };
                         if first_frame.is_some() {
                             controller.next_state = Some(state);

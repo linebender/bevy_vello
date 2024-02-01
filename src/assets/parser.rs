@@ -1,5 +1,5 @@
 use super::asset_loader::VectorLoaderError;
-use crate::{assets::vector::Vector, VelloAsset};
+use crate::{assets::vector::VelloAssetData, VelloAsset};
 use bevy::prelude::*;
 use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
@@ -20,7 +20,7 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
     let height = usvg.size.height();
 
     let vello_vector = VelloAsset {
-        data: Vector::Svg {
+        data: VelloAssetData::Svg {
             original: Arc::new(scene_frag),
             first_frame: None,
         },
@@ -50,7 +50,7 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
     let height = composition.height as f32;
 
     let vello_vector = VelloAsset {
-        data: Vector::Lottie {
+        data: VelloAssetData::Lottie {
             composition: Arc::new(composition),
             rendered_frames: 0.0,
             first_frame: None,

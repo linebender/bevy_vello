@@ -88,7 +88,6 @@ pub fn setup_ss_rendertarget(
     mut images: ResMut<Assets<Image>>,
     mut custom_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
-    // query_vectors: Query<Entity, Added<Handle<VelloVector>>>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
 ) {
     let Ok(window) = windows.get_single() else {

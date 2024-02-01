@@ -37,6 +37,6 @@ impl Plugin for VelloPlugin {
             );
 
         #[cfg(feature = "animation-controller")]
-        app.add_plugins(crate::animation_controller::AnimationControllerPlugin);
+        app.add_plugins(crate::lottie_player::AnimationControllerPlugin);
     }
 }

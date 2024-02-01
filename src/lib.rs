@@ -2,16 +2,15 @@
 // #![deny(missing_docs)] - TODO add before 1.0
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-#[cfg(feature = "animation-controller")]
-mod animation_controller;
 mod assets;
-mod color_swapping;
 mod font;
+mod lottie_player;
 mod metadata;
 mod playback_settings;
 mod plugin;
 mod renderer;
 mod rendertarget;
+mod theme;
 
 use bevy::prelude::*;
 use font::VelloFont;
@@ -23,20 +22,19 @@ pub use vellottie;
 #[cfg(feature = "debug")]
 pub mod debug;
 
-#[cfg(feature = "animation-controller")]
-pub use animation_controller::{AnimationState, AnimationTransition, LottiePlayer};
 pub use assets::VelloAssetLoader;
 pub use assets::{
-    load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str, Vector,
-    VelloAsset,
+    load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str,
+    VelloAsset, VelloAssetData,
 };
-pub use color_swapping::ColorPaletteSwap;
 pub use font::VelloFontLoader;
+pub use lottie_player::{AnimationState, AnimationTransition, LottiePlayer};
 pub use playback_settings::{
     AnimationDirection, AnimationLoopBehavior, AnimationPlayMode, PlaybackSettings,
 };
 pub use plugin::VelloPlugin;
 pub use rendertarget::VelloCanvasMaterial;
+pub use theme::Theme;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]

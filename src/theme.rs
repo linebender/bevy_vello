@@ -6,16 +6,16 @@ use vellottie::{
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
-/// Add this component to a `VelloVectorBundle` entity to enable runtime color editing.
+/// Add this component to a `VelloAssetBundle` entity to enable runtime color editing.
 /// This interface allows swapping colors in a lottie composition by selecting the desired layer
 /// and shape and overriding the original color with a new color.
 ///
 /// Only works for layer shapes with fill or stroke elements.
-pub struct ColorPaletteSwap {
+pub struct Theme {
     pub(crate) colors: HashMap<String, Color>,
 }
 
-impl ColorPaletteSwap {
+impl Theme {
     pub fn empty() -> Self {
         Self {
             colors: HashMap::default(),
@@ -43,7 +43,7 @@ impl ColorPaletteSwap {
     }
 }
 
-impl ColorPaletteSwap {
+impl Theme {
     pub fn recolor(&self, composition: &Composition) -> Composition {
         let mut composition = composition.clone();
         'layers: for layer in composition.layers.iter_mut() {
@@ -72,6 +72,7 @@ impl ColorPaletteSwap {
     }
 }
 
+/// A helper method to recolor a shape with a target color.
 fn recolor_shape(shape: &mut Shape, target_color: vello::peniko::Color) {
     match shape {
         vellottie::runtime::model::Shape::Group(shapes, _) => {
@@ -87,7 +88,7 @@ fn recolor_shape(shape: &mut Shape, target_color: vello::peniko::Color) {
     }
 }
 
-/// A helper method  to recolor a brush with a target color.
+/// A helper method to recolor a brush with a target color.
 fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
     match brush {
         vellottie::runtime::model::Brush::Fixed(brush) => match brush {

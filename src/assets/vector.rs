@@ -10,7 +10,7 @@ use vello::SceneFragment;
 use vello_svg::usvg::strict_num::Ulps;
 
 #[derive(Clone)]
-pub enum Vector {
+pub enum VelloAssetData {
     Svg {
         /// The original image encoding
         original: Arc<SceneFragment>,
@@ -29,7 +29,7 @@ pub enum Vector {
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloAsset {
-    pub data: Vector,
+    pub data: VelloAssetData,
     pub local_transform_bottom_center: Transform,
     pub local_transform_center: Transform,
     pub width: f32,
@@ -77,6 +77,7 @@ impl VelloAsset {
         [min, x_axis, max, y_axis]
     }
 
+    /// Returns the 4 corner points of this vector's bounding box in screen space
     pub fn bb_in_screen_space(&self, transform: &GlobalTransform) -> [Vec2; 4] {
         let min = Vec3A::ZERO;
         let x_axis = Vec3A::new(self.width, 0.0, 0.0);
@@ -98,7 +99,7 @@ impl VelloAsset {
     /// Gets the lottie metadata (if vector is a lottie), an object used for inspecting
     /// this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
-        if let Vector::Lottie { composition, .. } = &self.data {
+        if let VelloAssetData::Lottie { composition, .. } = &self.data {
             Some(Metadata {
                 composition: composition.clone(),
             })
@@ -109,7 +110,7 @@ impl VelloAsset {
 
     /// Calculate the playhead. Returns `None` is the Vector is an SVG.
     pub fn calculate_playhead(&self, playback_settings: &PlaybackSettings) -> Option<f32> {
-        let Vector::Lottie {
+        let VelloAssetData::Lottie {
             composition,
             first_frame: _,
             rendered_frames,

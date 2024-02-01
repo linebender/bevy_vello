@@ -37,9 +37,8 @@ repository.workspace = true
 [lib]
 
 [features]
-default = ["animation-controller", "debug"]
+default = ["debug"]
 debug = ["bevy/bevy_gizmos"]
-animation-controller = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]

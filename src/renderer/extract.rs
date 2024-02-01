@@ -1,6 +1,6 @@
 use crate::{
-    color_swapping::ColorPaletteSwap, font::VelloFont, playback_settings::PlaybackSettings,
-    CoordinateSpace, Origin, VelloAsset, VelloText,
+    font::VelloFont, playback_settings::PlaybackSettings, theme::Theme, CoordinateSpace, Origin,
+    VelloAsset, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -15,7 +15,7 @@ pub struct ExtractedRenderVector {
     pub render_mode: CoordinateSpace,
     pub origin: Origin,
     pub playback_settings: PlaybackSettings,
-    pub color_swaps: Option<ColorPaletteSwap>,
+    pub color_swaps: Option<Theme>,
     pub ui_node: Option<Node>,
 }
 
@@ -28,7 +28,7 @@ pub fn vector_instances(
             Option<&Origin>,
             &GlobalTransform,
             Option<&PlaybackSettings>,
-            Option<&ColorPaletteSwap>,
+            Option<&Theme>,
             Option<&Node>,
             &ViewVisibility,
             &InheritedVisibility,

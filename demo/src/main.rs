@@ -1,13 +1,12 @@
 use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*};
 use bevy_egui::{
-    egui::{self, Color32},
+    egui::{self},
     EguiContexts, EguiPlugin,
 };
 use bevy_vello::{
     debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, AnimationDirection,
-    AnimationLoopBehavior, AnimationPlayMode, AnimationState, AnimationTransition,
-    ColorPaletteSwap, LottiePlayer, PlaybackSettings, Vector, VelloAsset, VelloAssetBundle,
-    VelloPlugin, VelloText, VelloTextBundle,
+    AnimationLoopBehavior, AnimationState, AnimationTransition, LottiePlayer, PlaybackSettings,
+    Theme, VelloAsset, VelloAssetBundle, VelloAssetData, VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
@@ -44,7 +43,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             debug_visualizations: DebugVisualizations::Visible,
             ..default()
         })
-        .insert(ColorPaletteSwap::default())
+        .insert(Theme::empty())
         .insert(
             LottiePlayer::new("stopped")
                 .with_state({
@@ -116,7 +115,7 @@ fn ui(
     mut player: Query<(
         &mut LottiePlayer,
         &PlaybackSettings,
-        &mut ColorPaletteSwap,
+        &mut Theme,
         &Handle<VelloAsset>,
     )>,
     assets: Res<Assets<VelloAsset>>,
@@ -128,7 +127,7 @@ fn ui(
 
     let asset = assets.get(handle.id()).unwrap();
     let metadata = asset.metadata().unwrap();
-    let Vector::Lottie {
+    let VelloAssetData::Lottie {
         composition,
         first_frame: _,
         rendered_frames: _,
@@ -210,22 +209,6 @@ fn ui(
             };
         });
         ui.horizontal(|ui| {
-            ui.colored_label(Color32::YELLOW, "Set Direction");
-            let direction = playback_settings.direction;
-            if ui
-                .radio(direction == AnimationDirection::Normal, "Normal")
-                .clicked()
-            {
-                player.set_direction(AnimationDirection::Normal);
-            }
-            if ui
-                .radio(direction == AnimationDirection::Reverse, "Reverse")
-                .clicked()
-            {
-                player.set_direction(AnimationDirection::Reverse);
-            }
-        });
-        ui.horizontal(|ui| {
             ui.label("Set Loop Behavior");
             let looping = playback_settings.looping;
             if ui
@@ -239,22 +222,6 @@ fn ui(
                 .clicked()
             {
                 player.set_loop_behavior(AnimationLoopBehavior::Loop);
-            }
-        });
-        ui.horizontal(|ui| {
-            ui.colored_label(Color32::RED, "Set Play Mode");
-            let playmode = playback_settings.play_mode;
-            if ui
-                .radio(playmode == AnimationPlayMode::Normal, "Normal")
-                .clicked()
-            {
-                player.set_play_mode(AnimationPlayMode::Normal);
-            }
-            if ui
-                .radio(playmode == AnimationPlayMode::Bounce, "Bounce")
-                .clicked()
-            {
-                player.set_play_mode(AnimationPlayMode::Bounce);
             }
         });
 
