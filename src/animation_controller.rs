@@ -43,6 +43,11 @@ impl LottiePlayer {
         self.states.values()
     }
 
+    /// The states in the player
+    pub fn states_mut(&mut self) -> impl Iterator<Item = &mut AnimationState> {
+        self.states.values_mut()
+    }
+
     /// Transition to the next state.
     pub fn transition(&mut self, state: &'static str) {
         self.next_state.replace(state);
@@ -252,8 +257,7 @@ pub mod systems {
         mut assets: ResMut<Assets<VelloAsset>>,
     ) {
         for (mut player, mut playback_settings, asset_handle) in query.iter_mut() {
-            let asset = assets.get_mut(asset_handle.id()).unwrap();
-            let VelloAsset {
+            let Some(VelloAsset {
                 data:
                     Vector::Lottie {
                         composition,
@@ -261,7 +265,7 @@ pub mod systems {
                         rendered_frames,
                     },
                 ..
-            } = asset
+            }) = assets.get_mut(asset_handle.id())
             else {
                 continue;
             };
@@ -391,8 +395,7 @@ pub mod systems {
             }
 
             // Continue, assuming we are currently playing.
-            let asset = assets.get_mut(asset_handle.id()).unwrap();
-            let VelloAsset {
+            let Some(VelloAsset {
                 data:
                     Vector::Lottie {
                         composition,
@@ -400,7 +403,7 @@ pub mod systems {
                         rendered_frames,
                     },
                 ..
-            } = asset
+            }) = assets.get_mut(asset_handle.id())
             else {
                 continue;
             };
@@ -572,7 +575,7 @@ pub mod systems {
                             Vector::Svg { first_frame, .. }
                             | Vector::Lottie { first_frame, .. } => first_frame,
                         };
-                        if started.is_some_and(|s| s.elapsed().as_secs_f32() > *secs) {
+                        if started.is_some_and(|s| s.elapsed().as_secs_f32() >= *secs) {
                             controller.next_state = Some(state);
                             break;
                         }
