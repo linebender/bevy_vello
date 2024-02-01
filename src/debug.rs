@@ -1,4 +1,4 @@
-use crate::{Origin, VelloAsset};
+use crate::VelloAsset;
 use bevy::{math::Vec3Swizzles, prelude::*};
 
 pub struct DebugVisualizationsPlugin;
@@ -19,12 +19,7 @@ pub enum DebugVisualizations {
 
 fn draw_viewbox(
     query_world: Query<
-        (
-            &Handle<VelloAsset>,
-            &GlobalTransform,
-            Option<&Origin>,
-            &DebugVisualizations,
-        ),
+        (&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations),
         Without<Node>,
     >,
     query_ui: Query<(&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations), With<Node>>,
@@ -39,13 +34,12 @@ fn draw_viewbox(
     const RED_X_SIZE: f32 = 8.0;
 
     // Show world-space vectors
-    for (vector, transform, origin, _) in query_world
+    for (vector, transform, _) in query_world
         .iter()
-        .filter(|(_, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
-            let [min, x_axis, max, y_axis] =
-                vector.bb_in_world_space(transform, origin.unwrap_or(&Origin::default()));
+            let [min, x_axis, max, y_axis] = vector.bb_in_world_space(transform);
 
             gizmos.line_2d(min, x_axis, Color::WHITE);
             gizmos.line_2d(min, y_axis, Color::WHITE);

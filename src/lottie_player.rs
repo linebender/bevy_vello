@@ -212,9 +212,9 @@ impl AnimationState {
     }
 }
 
-pub struct AnimationControllerPlugin;
+pub struct LottiePlayerPlugin;
 
-impl Plugin for AnimationControllerPlugin {
+impl Plugin for LottiePlayerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(
             PostUpdate,

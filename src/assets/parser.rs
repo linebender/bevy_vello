@@ -24,7 +24,6 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
             original: Arc::new(scene_frag),
             first_frame: None,
         },
-        local_transform_bottom_center: compute_local_transform(width, height),
         local_transform_center: compute_local_transform_center(width, height),
         width,
         height,
@@ -55,7 +54,6 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
             rendered_frames: 0.0,
             first_frame: None,
         },
-        local_transform_bottom_center: compute_local_transform(width, height),
         local_transform_center: compute_local_transform_center(width, height),
         width,
         height,
@@ -69,14 +67,6 @@ pub fn load_lottie_from_str(json_str: &str) -> Result<VelloAsset, VectorLoaderEr
     let bytes = json_str.as_bytes();
 
     load_lottie_from_bytes(bytes)
-}
-
-fn compute_local_transform(width: f32, height: f32) -> Transform {
-    let mut transform = Transform::default();
-    transform.translation.x = width / 2.0;
-    transform.translation.y = -height;
-
-    transform
 }
 
 fn compute_local_transform_center(width: f32, height: f32) -> Transform {

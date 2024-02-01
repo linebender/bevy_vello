@@ -1,5 +1,5 @@
 use crate::{
-    font::VelloFont, playback_settings::PlaybackSettings, theme::Theme, CoordinateSpace, Origin,
+    font::VelloFont, playback_settings::PlaybackSettings, theme::Theme, CoordinateSpace,
     VelloAsset, VelloText,
 };
 use bevy::{
@@ -13,7 +13,6 @@ pub struct ExtractedRenderVector {
     pub asset: VelloAsset,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
-    pub origin: Origin,
     pub playback_settings: PlaybackSettings,
     pub color_swaps: Option<Theme>,
     pub ui_node: Option<Node>,
@@ -25,7 +24,6 @@ pub fn vector_instances(
         Query<(
             &Handle<VelloAsset>,
             &CoordinateSpace,
-            Option<&Origin>,
             &GlobalTransform,
             Option<&PlaybackSettings>,
             Option<&Theme>,
@@ -39,7 +37,6 @@ pub fn vector_instances(
     for (
         vello_vector_handle,
         render_mode,
-        origin,
         transform,
         playback,
         color_swaps,
@@ -56,7 +53,6 @@ pub fn vector_instances(
                     color_swaps: color_swaps.cloned(),
                     playback_settings: playback.cloned().unwrap_or_default(),
                     render_mode: *render_mode,
-                    origin: origin.copied().unwrap_or_default(),
                     ui_node: ui_node.cloned(),
                 });
             }

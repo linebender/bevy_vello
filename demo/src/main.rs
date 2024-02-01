@@ -36,7 +36,6 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     });
     commands
         .spawn(VelloAssetBundle {
-            origin: bevy_vello::Origin::Center,
             vector: asset_server.load("../assets/example.json"),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(20.0)),

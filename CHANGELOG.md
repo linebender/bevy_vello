@@ -4,7 +4,7 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
-## Unreleased
+## 0.4.0
 
 ### added
 
@@ -21,6 +21,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### removed
 
+- `Origin` on vector assets
 - `.svg.gz` support - [Since a Gzip plugin is now possble](https://github.com/bevyengine/bevy/issues/10518)
 - `.json.gz` support - [Since a Gzip plugin is now possble](https://github.com/bevyengine/bevy/issues/10518)
 

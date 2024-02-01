@@ -1,5 +1,6 @@
 use crate::{
     font::VelloFont,
+    lottie_player::LottiePlayerPlugin,
     renderer::VelloRenderPlugin,
     rendertarget::{self, SSRT_SHADER_HANDLE},
     VelloAsset, VelloAssetLoader, VelloFontLoader,
@@ -20,6 +21,7 @@ impl Plugin for VelloPlugin {
         app.add_plugins(VelloRenderPlugin)
             .add_plugins((
                 Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(),
+                LottiePlayerPlugin,
                 #[cfg(feature = "debug")]
                 crate::debug::DebugVisualizationsPlugin,
             ))
@@ -35,8 +37,5 @@ impl Plugin for VelloPlugin {
                     rendertarget::clear_when_empty,
                 ),
             );
-
-        #[cfg(feature = "animation-controller")]
-        app.add_plugins(crate::lottie_player::AnimationControllerPlugin);
     }
 }

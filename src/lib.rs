@@ -44,21 +44,11 @@ pub enum CoordinateSpace {
     ScreenSpace = 1,
 }
 
-#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
-#[reflect(Component)]
-pub enum Origin {
-    BottomCenter,
-    #[default]
-    Center,
-}
-
 #[derive(Bundle)]
 pub struct VelloAssetBundle {
     pub vector: Handle<VelloAsset>,
     /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
-    /// This object's transform local origin. Enable debug visualizations to visualize (red X)
-    pub origin: Origin,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     #[cfg(feature = "debug")]
@@ -76,7 +66,6 @@ impl Default for VelloAssetBundle {
         Self {
             vector: Default::default(),
             coordinate_space: CoordinateSpace::WorldSpace,
-            origin: Default::default(),
             transform: Default::default(),
             global_transform: Default::default(),
             #[cfg(feature = "debug")]

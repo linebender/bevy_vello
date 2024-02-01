@@ -31,11 +31,6 @@ pub fn prepare_vector_affines(
 
         let world_transform = render_vector.transform;
 
-        let local_bottom_center_matrix = render_vector
-            .asset
-            .local_transform_bottom_center
-            .compute_matrix()
-            .inverse();
         let local_center_matrix = render_vector
             .asset
             .local_transform_center
@@ -59,10 +54,7 @@ pub fn prepare_vector_affines(
                 model_matrix * local_center_matrix
             }
             CoordinateSpace::WorldSpace => {
-                let local_matrix = match render_vector.origin {
-                    crate::Origin::BottomCenter => local_bottom_center_matrix,
-                    crate::Origin::Center => local_center_matrix,
-                };
+                let local_matrix = local_center_matrix;
 
                 let mut model_matrix = world_transform.compute_matrix() * local_matrix;
                 model_matrix.w_axis.y *= -1.0;

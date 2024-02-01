@@ -1,6 +1,6 @@
-use crate::{metadata::Metadata, AnimationDirection, Origin, PlaybackSettings};
+use crate::{metadata::Metadata, AnimationDirection, PlaybackSettings};
 use bevy::{
-    math::{Vec3A, Vec3Swizzles, Vec4Swizzles},
+    math::{Vec3A, Vec4Swizzles},
     prelude::*,
     reflect::TypePath,
     utils::Instant,
@@ -30,30 +30,20 @@ pub enum VelloAssetData {
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloAsset {
     pub data: VelloAssetData,
-    pub local_transform_bottom_center: Transform,
     pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
 }
 
 impl VelloAsset {
-    pub fn center_in_world(&self, transform: &GlobalTransform, origin: &Origin) -> Vec2 {
+    pub fn center_in_world(&self, transform: &GlobalTransform) -> Vec2 {
         let world_transform = transform.compute_matrix();
-        let local_transform = match origin {
-            Origin::BottomCenter => self
-                .local_transform_bottom_center
-                .compute_matrix()
-                .inverse(),
-            Origin::Center => return transform.translation().xy(),
-        };
-
         let local_center_point = Vec3A::new(self.width / 2.0, -self.height / 2.0, 0.0);
-
-        (world_transform * local_transform * local_center_point.extend(1.0)).xy()
+        (world_transform * local_center_point.extend(1.0)).xy()
     }
 
     /// Returns the 4 corner points of this vector's bounding box in world space
-    pub fn bb_in_world_space(&self, transform: &GlobalTransform, origin: &Origin) -> [Vec2; 4] {
+    pub fn bb_in_world_space(&self, transform: &GlobalTransform) -> [Vec2; 4] {
         let min = Vec3A::ZERO;
         let x_axis = Vec3A::new(self.width, 0.0, 0.0);
 
@@ -61,13 +51,7 @@ impl VelloAsset {
         let y_axis = Vec3A::new(0.0, -self.height, 0.0);
 
         let world_transform = transform.compute_matrix();
-        let local_transform = match origin {
-            Origin::BottomCenter => self
-                .local_transform_bottom_center
-                .compute_matrix()
-                .inverse(),
-            Origin::Center => self.local_transform_center.compute_matrix().inverse(),
-        };
+        let local_transform = self.local_transform_center.compute_matrix().inverse();
 
         let min = (world_transform * local_transform * min.extend(1.0)).xy();
         let x_axis = (world_transform * local_transform * x_axis.extend(1.0)).xy();
