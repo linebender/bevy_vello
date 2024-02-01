@@ -1,4 +1,4 @@
-use crate::{playback_settings::AnimationLoopBehavior, PlaybackSettings, VelloAsset};
+use crate::{playback_settings::AnimationLoopBehavior, PlaybackSettings, Theme, VelloAsset};
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 
 /// A lottie player that closely mirrors the behavior and functionality for dotLottie Interactivity.
@@ -113,16 +113,84 @@ impl LottiePlayer {
     }
 }
 
+impl LottiePlayer {
+    pub fn new(initial_state: &'static str) -> LottiePlayer {
+        LottiePlayer {
+            initial_state,
+            current_state: initial_state,
+            next_state: Some(initial_state),
+            pending_seek_frame: None,
+            pending_intermission: None,
+            pending_loop_behavior: None,
+            pending_speed: None,
+            states: HashMap::new(),
+            started: false,
+            playing: false,
+            stopped: false,
+        }
+    }
+
+    pub fn with_state(mut self, state: AnimationState) -> Self {
+        self.states.insert(state.id, state);
+        self
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct AnimationState {
     pub id: &'static str,
     pub asset: Option<Handle<VelloAsset>>,
+    pub theme: Option<Theme>,
     pub playback_settings: Option<PlaybackSettings>,
     pub transitions: Vec<AnimationTransition>,
     /// Whether to reset the playhead when you transition away from this state
     pub reset_playhead_on_transition: bool,
     /// Whether to reset the playhead when the transition it moved to this state
     pub reset_playhead_on_start: bool,
+}
+
+impl AnimationState {
+    pub fn new(id: &'static str) -> Self {
+        Self {
+            id,
+            asset: Default::default(),
+            playback_settings: None,
+            theme: None,
+            transitions: vec![],
+            reset_playhead_on_transition: false,
+            reset_playhead_on_start: false,
+        }
+    }
+
+    pub fn with_asset(mut self, asset: Handle<VelloAsset>) -> Self {
+        self.asset.replace(asset);
+        self
+    }
+
+    pub fn with_theme(mut self, theme: Theme) -> Self {
+        self.theme.replace(theme);
+        self
+    }
+
+    pub fn with_playback_settings(mut self, playback_settings: PlaybackSettings) -> Self {
+        self.playback_settings.replace(playback_settings);
+        self
+    }
+
+    pub fn with_transition(mut self, transition: AnimationTransition) -> Self {
+        self.transitions.push(transition);
+        self
+    }
+
+    pub fn reset_playhead_on_transition(mut self, reset: bool) -> Self {
+        self.reset_playhead_on_transition = reset;
+        self
+    }
+
+    pub fn reset_playhead_on_start(mut self, reset: bool) -> Self {
+        self.reset_playhead_on_start = reset;
+        self
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -149,67 +217,6 @@ pub enum AnimationTransition {
     OnShow {
         state: &'static str,
     },
-}
-
-impl LottiePlayer {
-    pub fn new(initial_state: &'static str) -> LottiePlayer {
-        LottiePlayer {
-            initial_state,
-            current_state: initial_state,
-            next_state: Some(initial_state),
-            pending_seek_frame: None,
-            pending_intermission: None,
-            pending_loop_behavior: None,
-            pending_speed: None,
-            states: HashMap::new(),
-            started: false,
-            playing: false,
-            stopped: false,
-        }
-    }
-
-    pub fn with_state(mut self, state: AnimationState) -> Self {
-        self.states.insert(state.id, state);
-        self
-    }
-}
-
-impl AnimationState {
-    pub fn new(id: &'static str) -> Self {
-        Self {
-            id,
-            asset: Default::default(),
-            playback_settings: None,
-            transitions: vec![],
-            reset_playhead_on_transition: false,
-            reset_playhead_on_start: false,
-        }
-    }
-
-    pub fn with_asset(mut self, asset: Handle<VelloAsset>) -> Self {
-        self.asset.replace(asset);
-        self
-    }
-
-    pub fn with_playback_settings(mut self, playback_settings: PlaybackSettings) -> Self {
-        self.playback_settings.replace(playback_settings);
-        self
-    }
-
-    pub fn with_transition(mut self, transition: AnimationTransition) -> Self {
-        self.transitions.push(transition);
-        self
-    }
-
-    pub fn reset_playhead_on_transition(mut self, reset: bool) -> Self {
-        self.reset_playhead_on_transition = reset;
-        self
-    }
-
-    pub fn reset_playhead_on_start(mut self, reset: bool) -> Self {
-        self.reset_playhead_on_start = reset;
-        self
-    }
 }
 
 pub struct LottiePlayerPlugin;
@@ -473,6 +480,9 @@ pub mod systems {
                 }
             }
 
+            if let Some(theme) = target_state.theme.clone() {
+                commands.entity(entity).insert(theme);
+            }
             commands
                 .entity(entity)
                 .insert(target_state.playback_settings.clone().unwrap_or_default());
