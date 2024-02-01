@@ -10,7 +10,6 @@ pub struct PlaybackSettings {
     pub speed: f32,
     pub intermission: f32,
     pub looping: AnimationLoopBehavior,
-    pub play_mode: AnimationPlayMode,
     pub segments: Range<f32>,
 }
 
@@ -22,7 +21,6 @@ impl Default for PlaybackSettings {
             speed: 1.0,
             intermission: 0.0,
             looping: AnimationLoopBehavior::default(),
-            play_mode: AnimationPlayMode::default(),
             segments: f32::MIN..f32::MAX,
         }
     }

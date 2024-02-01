@@ -242,11 +242,10 @@ fn ui(
 
         ui.heading("Current State");
         ui.label(format!("Id: {}", player.state().id));
-        ui.label(format!("Autplay: {}", playback_settings.autoplay));
-        ui.label(format!("Duration: {:?}", playback_settings.direction));
+        ui.label(format!("Autoplay: {}", playback_settings.autoplay));
+        ui.label(format!("Direction: {:?}", playback_settings.direction));
         ui.label(format!("Intermission: {}", playback_settings.intermission));
-        ui.label(format!("Loops: {:?}", playback_settings.looping));
-        ui.label(format!("Play mode: {:?}", playback_settings.play_mode));
+        ui.label(format!("Loop Behavior: {:?}", playback_settings.looping));
         ui.label(format!(
             "Segments: {:?}",
             playback_settings
