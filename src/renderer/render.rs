@@ -143,6 +143,7 @@ pub fn render_scene(
             match render_item {
                 RenderItem::Vector(ExtractedRenderVector {
                     render_data: vector_data,
+                    alpha,
                     ..
                 }) => match &vector_data.data {
                     Vector::Static(fragment) => {
@@ -154,7 +155,7 @@ pub fn render_scene(
                             composition,
                             time.elapsed_seconds(),
                             affine,
-                            1.0,
+                            *alpha,
                             &mut builder,
                         );
                     }

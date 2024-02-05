@@ -1,5 +1,6 @@
 use crate::{
-    color_swapping::ColorPaletteSwap, font::VelloFont, Origin, RenderMode, VelloText, VelloVector,
+    color_swapping::ColorPaletteSwap, font::VelloFont, AlphaOverride, Origin, RenderMode,
+    VelloText, VelloVector,
 };
 use bevy::{
     prelude::*,
@@ -15,6 +16,7 @@ pub struct ExtractedRenderVector {
     pub render_mode: RenderMode,
     pub origin: Origin,
     pub color_swaps: Option<ColorPaletteSwap>,
+    pub alpha: f32,
     pub ui_node: Option<Node>,
 }
 
@@ -27,6 +29,7 @@ pub fn vector_instances(
             Option<&Origin>,
             &GlobalTransform,
             Option<&ColorPaletteSwap>,
+            Option<&AlphaOverride>,
             Option<&Node>,
             &ViewVisibility,
             &InheritedVisibility,
@@ -40,6 +43,7 @@ pub fn vector_instances(
         origin,
         transform,
         color_swaps,
+        alpha,
         ui_node,
         view_visibility,
         inherited_visibility,
@@ -53,6 +57,7 @@ pub fn vector_instances(
                     transform: *transform,
                     color_swaps: color_swaps.cloned(),
                     render_mode: *render_mode,
+                    alpha: alpha.map(|a| a.0).unwrap_or(1.0),
                     origin: origin.copied().unwrap_or_default(),
                     ui_node: ui_node.cloned(),
                 });
