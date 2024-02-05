@@ -189,7 +189,7 @@ fn ui(
         ui.separator();
 
         ui.heading("Player Operations");
-        ui.label("Note: Player operations apply to ALL states!");
+        ui.label("Note: Player operations only affect current playback!");
         ui.horizontal(|ui| {
             ui.label("Set Speed");
             let mut speed = playback_settings.speed;
@@ -206,22 +206,6 @@ fn ui(
             {
                 player.set_intermission(intermission);
             };
-        });
-        ui.horizontal(|ui| {
-            ui.label("Set Loop Behavior");
-            let looping = playback_settings.looping;
-            if ui
-                .radio(looping == AnimationLoopBehavior::None, "None")
-                .clicked()
-            {
-                player.set_loop_behavior(AnimationLoopBehavior::None);
-            }
-            if ui
-                .radio(looping == AnimationLoopBehavior::Loop, "Loop")
-                .clicked()
-            {
-                player.set_loop_behavior(AnimationLoopBehavior::Loop);
-            }
         });
 
         ui.separator();

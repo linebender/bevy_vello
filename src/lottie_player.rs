@@ -1,4 +1,4 @@
-use crate::{playback_settings::AnimationLoopBehavior, PlaybackSettings, Theme, VelloAsset};
+use crate::{PlaybackSettings, Theme, VelloAsset};
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 
 /// A lottie player that closely mirrors the behavior and functionality for dotLottie Interactivity.
@@ -18,8 +18,6 @@ pub struct LottiePlayer {
     pending_seek_frame: Option<f32>,
     /// A pending intermission to change to.
     pending_intermission: Option<f32>,
-    /// A pending loop behavior to change to.
-    pending_loop_behavior: Option<AnimationLoopBehavior>,
     /// A pending speed to change to.
     pending_speed: Option<f32>,
     /// Whether the player has started.
@@ -31,19 +29,26 @@ pub struct LottiePlayer {
 }
 
 impl LottiePlayer {
-    /// The current state.
+    /// Retrieve an immutable reference to the current state.
     pub fn state(&self) -> &AnimationState {
         self.states
             .get(self.current_state)
             .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state))
     }
 
-    /// The states in the player
+    /// Retrieve a mutable reference to the current state.
+    pub fn state_mut(&mut self) -> &mut AnimationState {
+        self.states
+            .get_mut(self.current_state)
+            .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state))
+    }
+
+    /// Returns an immutable iterator of the states for this player.
     pub fn states(&self) -> impl Iterator<Item = &AnimationState> {
         self.states.values()
     }
 
-    /// The states in the player
+    /// Returns a mutable iterator of the states for this player.
     pub fn states_mut(&mut self) -> impl Iterator<Item = &mut AnimationState> {
         self.states.values_mut()
     }
@@ -64,17 +69,11 @@ impl LottiePlayer {
         self.pending_seek_frame = Some(frame);
     }
 
-    /// Sets the pause between loops. Applies to all animations.
+    /// Sets the pause between loops. Applies only to the current playback, not any underlying states.
     pub fn set_intermission(&mut self, intermission: f32) {
         self.pending_intermission = Some(intermission);
     }
-
-    /// Sets the loop behavior. Applies to all animations.
-    pub fn set_loop_behavior(&mut self, loop_behavior: AnimationLoopBehavior) {
-        self.pending_loop_behavior = Some(loop_behavior);
-    }
-
-    /// Sets the animation speed. Applies to all animations.
+    /// Sets the animation speed. Applies only to the current playback, not any underlying states.
     pub fn set_speed(&mut self, speed: f32) {
         self.pending_speed = Some(speed);
     }
@@ -121,7 +120,6 @@ impl LottiePlayer {
             next_state: Some(initial_state),
             pending_seek_frame: None,
             pending_intermission: None,
-            pending_loop_behavior: None,
             pending_speed: None,
             states: HashMap::new(),
             started: false,
@@ -266,7 +264,6 @@ pub mod systems {
             };
 
             if let Some(intermission) = player.pending_intermission.take() {
-                debug!("changed intermission: {intermission}");
                 // This math is particularly hairy. Several things are going on:
                 // 1) Preserve the loops completed thus far
                 // 2) Do not jump frames
@@ -285,35 +282,13 @@ pub mod systems {
                     && *rendered_frames >= loops_completed * length
                     && *rendered_frames < loops_completed * length + playback_settings.intermission;
                 if in_intermission {
-                    debug!("in intermission, resetting to {intermission}");
                     *rendered_frames = (loops_completed * (length + intermission)).prev();
                 } else {
-                    debug!("not in intermission, applying delta to {intermission}");
                     let dt_intermission = intermission - playback_settings.intermission;
                     let dt_frames = dt_intermission * loops_completed;
-                    debug!("loops: {loops_completed}, dt_intermission: {dt_intermission}, dt_frames: {dt_frames}");
                     *rendered_frames = (*rendered_frames + dt_frames).max(0.0);
                 }
-                // Apply
-                for playback_settings in player
-                    .states
-                    .values_mut()
-                    .flat_map(|s| s.playback_settings.as_mut())
-                    .chain([playback_settings.as_mut()])
-                {
-                    playback_settings.intermission = intermission;
-                }
-            }
-            if let Some(loop_behavior) = player.pending_loop_behavior.take() {
-                // Apply
-                for playback_settings in player
-                    .states
-                    .values_mut()
-                    .flat_map(|s| s.playback_settings.as_mut())
-                    .chain([playback_settings.as_mut()])
-                {
-                    playback_settings.looping = loop_behavior;
-                }
+                playback_settings.intermission = intermission;
             }
             if let Some(seek_frame) = player.pending_seek_frame.take() {
                 let start_frame = playback_settings
@@ -321,12 +296,10 @@ pub mod systems {
                     .start
                     .max(composition.frames.start);
                 let end_frame = playback_settings.segments.end.min(composition.frames.end);
-                // Bound the seek frame
+                let bounded_frame = seek_frame.clamp(start_frame, end_frame.prev());
                 let seek_frame = match playback_settings.direction {
-                    AnimationDirection::Normal => seek_frame.clamp(start_frame, end_frame),
-                    AnimationDirection::Reverse => {
-                        end_frame - seek_frame.clamp(start_frame, end_frame)
-                    }
+                    AnimationDirection::Normal => bounded_frame,
+                    AnimationDirection::Reverse => end_frame - bounded_frame,
                 };
                 // Preserve the current number of loops when seeking.
                 let length = end_frame - start_frame + playback_settings.intermission;
@@ -334,41 +307,24 @@ pub mod systems {
                 *rendered_frames = loops_completed * length + seek_frame;
             }
             if let Some(speed) = player.pending_speed.take() {
-                // Apply
-                for playback_settings in player
-                    .states
-                    .values_mut()
-                    .flat_map(|s| s.playback_settings.as_mut())
-                    .chain([playback_settings.as_mut()])
-                {
-                    playback_settings.speed = speed;
-                    error!("{}", playback_settings.speed);
-                }
+                playback_settings.speed = speed;
             }
         }
     }
 
     /// Advance all the playheads in the scene
     pub fn advance_playheads(
-        mut query: Query<(&mut LottiePlayer, &PlaybackSettings, &Handle<VelloAsset>)>,
+        mut query: Query<(
+            &Handle<VelloAsset>,
+            Option<&mut LottiePlayer>,
+            Option<&PlaybackSettings>,
+        )>,
         mut assets: ResMut<Assets<VelloAsset>>,
         time: Res<Time>,
     ) {
         let dt = time.delta_seconds();
-        for (mut player, playback_settings, asset_handle) in query.iter_mut() {
-            if player.stopped {
-                continue;
-            }
-            // Auto play
-            if playback_settings.autoplay && !player.started {
-                player.playing = true;
-            }
-            // Return if paused
-            if !player.playing {
-                continue;
-            }
-
-            // Continue, assuming we are currently playing.
+        for (asset_handle, player, playback_settings) in query.iter_mut() {
+            // Get asset
             let Some(VelloAsset {
                 data:
                     VelloAssetData::Lottie {
@@ -382,6 +338,25 @@ pub mod systems {
                 continue;
             };
 
+            let playback_settings = playback_settings.cloned().unwrap_or_default();
+            let Some(mut player) = player else {
+                *rendered_frames += dt * playback_settings.speed * composition.frame_rate;
+                return;
+            };
+
+            if player.stopped {
+                continue;
+            }
+            // Auto play
+            if playback_settings.autoplay && !player.started {
+                player.playing = true;
+            }
+            // Return if paused
+            if !player.playing {
+                continue;
+            }
+
+            // At this point, we are playing
             if first_frame.is_none() {
                 first_frame.replace(Instant::now());
                 player.started = true;
@@ -505,8 +480,12 @@ pub mod systems {
         buttons: Res<Input<MouseButton>>,
         mut hovered: Local<bool>,
     ) {
-        let window = windows.single();
-        let (camera, view) = query_view.single();
+        let Ok(window) = windows.get_single() else {
+            return;
+        };
+        let Ok((camera, view)) = query_view.get_single() else {
+            return;
+        };
 
         let pointer_pos = window
             .cursor_position()

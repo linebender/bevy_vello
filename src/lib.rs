@@ -29,9 +29,7 @@ pub use assets::{
 };
 pub use font::VelloFontLoader;
 pub use lottie_player::{AnimationState, AnimationTransition, LottiePlayer};
-pub use playback_settings::{
-    AnimationDirection, AnimationLoopBehavior, AnimationPlayMode, PlaybackSettings,
-};
+pub use playback_settings::{AnimationDirection, AnimationLoopBehavior, PlaybackSettings};
 pub use plugin::VelloPlugin;
 pub use rendertarget::VelloCanvasMaterial;
 pub use theme::Theme;

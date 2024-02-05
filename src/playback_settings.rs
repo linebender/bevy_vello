@@ -44,11 +44,3 @@ pub enum AnimationLoopBehavior {
     #[default]
     Loop,
 }
-
-/// Play mode. When set to bounce, every other loop switches animation direction.
-#[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
-pub enum AnimationPlayMode {
-    #[default]
-    Normal,
-    Bounce,
-}
