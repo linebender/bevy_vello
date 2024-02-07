@@ -2,6 +2,7 @@
 // #![deny(missing_docs)] - TODO add before 1.0
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
+mod alpha_override;
 mod assets;
 mod font;
 mod lottie_player;
@@ -22,6 +23,7 @@ pub use vellottie;
 #[cfg(feature = "debug")]
 pub mod debug;
 
+pub use alpha_override::AlphaOverride;
 pub use assets::VelloAssetLoader;
 pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str,

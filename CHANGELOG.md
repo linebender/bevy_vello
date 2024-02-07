@@ -18,6 +18,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - `VelloVector`, anywhere mentioned, has changed to `VelloAsset`
 - `DebugVisualizations` are now feature-gated behind the `debug` cargo feature
 - Color swapping now swaps by layer name only and applies to more cases (animated, gradients, etc.)
+- Added `AlphaOverride` component to override alpha
 
 ### removed
 

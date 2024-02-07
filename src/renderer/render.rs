@@ -81,6 +81,7 @@ pub fn render_scene(
                     asset,
                     playback_settings,
                     color_swaps,
+                    alpha,
                     ..
                 }) => match &asset.data {
                     VelloAssetData::Svg {
@@ -106,7 +107,7 @@ pub fn render_scene(
                             },
                             t,
                             affine,
-                            1.0,
+                            *alpha,
                             &mut builder,
                         );
                     }

@@ -1,6 +1,6 @@
 use crate::{
-    font::VelloFont, playback_settings::PlaybackSettings, theme::Theme, CoordinateSpace,
-    VelloAsset, VelloText,
+    font::VelloFont, playback_settings::PlaybackSettings, theme::Theme, AlphaOverride,
+    CoordinateSpace, VelloAsset, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -12,9 +12,10 @@ use bevy::{
 pub struct ExtractedRenderVector {
     pub asset: VelloAsset,
     pub transform: GlobalTransform,
-    pub render_mode: CoordinateSpace,
     pub playback_settings: PlaybackSettings,
     pub color_swaps: Option<Theme>,
+    pub render_mode: CoordinateSpace,
+    pub alpha: f32,
     pub ui_node: Option<Node>,
 }
 
@@ -27,6 +28,7 @@ pub fn vector_instances(
             &GlobalTransform,
             Option<&PlaybackSettings>,
             Option<&Theme>,
+            Option<&AlphaOverride>,
             Option<&Node>,
             &ViewVisibility,
             &InheritedVisibility,
@@ -40,6 +42,7 @@ pub fn vector_instances(
         transform,
         playback,
         color_swaps,
+        alpha,
         ui_node,
         view_visibility,
         inherited_visibility,
@@ -53,6 +56,7 @@ pub fn vector_instances(
                     color_swaps: color_swaps.cloned(),
                     playback_settings: playback.cloned().unwrap_or_default(),
                     render_mode: *render_mode,
+                    alpha: alpha.map(|a| a.0).unwrap_or(1.0),
                     ui_node: ui_node.cloned(),
                 });
             }
