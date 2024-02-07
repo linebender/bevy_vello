@@ -4,10 +4,9 @@ use bevy_egui::{
     EguiContexts, EguiPlugin,
 };
 use bevy_vello::{
-    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, AlphaOverride,
-    AnimationDirection, AnimationLoopBehavior, AnimationState, AnimationTransition, LottiePlayer,
-    PlaybackSettings, Theme, VelloAsset, VelloAssetBundle, VelloAssetData, VelloPlugin, VelloText,
-    VelloTextBundle,
+    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, AnimationDirection,
+    AnimationLoopBehavior, AnimationState, AnimationTransition, LottiePlayer, PlaybackSettings,
+    Theme, VelloAsset, VelloAssetBundle, VelloAssetData, VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
