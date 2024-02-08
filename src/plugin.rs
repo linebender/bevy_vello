@@ -1,6 +1,6 @@
 use crate::{
     font::VelloFont,
-    lottie_player::LottiePlayerPlugin,
+    player::LottiePlayerPlugin,
     renderer::VelloRenderPlugin,
     rendertarget::{self, SSRT_SHADER_HANDLE},
     VelloAsset, VelloAssetLoader, VelloFontLoader,

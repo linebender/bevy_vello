@@ -1,6 +1,6 @@
 use crate::{
-    font::VelloFont, playback_settings::PlaybackSettings, theme::Theme, AlphaOverride,
-    CoordinateSpace, VelloAsset, VelloText,
+    font::VelloFont, player::LottiePlayer, theme::Theme, CoordinateSpace, PlaybackAlphaOverride,
+    PlaybackSettings, VelloAsset, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -12,9 +12,9 @@ use bevy::{
 pub struct ExtractedRenderVector {
     pub asset: VelloAsset,
     pub transform: GlobalTransform,
-    pub playback_settings: PlaybackSettings,
     pub color_swaps: Option<Theme>,
     pub render_mode: CoordinateSpace,
+    pub playhead: f32,
     pub alpha: f32,
     pub ui_node: Option<Node>,
 }
@@ -27,20 +27,23 @@ pub fn vector_instances(
             &CoordinateSpace,
             &GlobalTransform,
             Option<&PlaybackSettings>,
+            Option<&LottiePlayer>,
             Option<&Theme>,
-            Option<&AlphaOverride>,
+            Option<&PlaybackAlphaOverride>,
             Option<&Node>,
             &ViewVisibility,
             &InheritedVisibility,
         )>,
     >,
     assets: Extract<Res<Assets<VelloAsset>>>,
+    time: Res<Time>,
 ) {
     for (
         vello_vector_handle,
         render_mode,
         transform,
-        playback,
+        playback_settings,
+        player,
         color_swaps,
         alpha,
         ui_node,
@@ -54,8 +57,33 @@ pub fn vector_instances(
                     asset: asset.to_owned(),
                     transform: *transform,
                     color_swaps: color_swaps.cloned(),
-                    playback_settings: playback.cloned().unwrap_or_default(),
                     render_mode: *render_mode,
+                    playhead: match (player, playback_settings) {
+                        (Some(player), _) => player.playhead(),
+                        (None, Some(playback_settings)) => match asset.data {
+                            crate::VelloAssetData::Svg { original } => 0.0,
+                            crate::VelloAssetData::Lottie { composition } => {
+                                let start_frame = playback_settings
+                                    .segments
+                                    .start
+                                    .max(composition.frames.start);
+                                if !playback_settings.autoplay {
+                                    start_frame
+                                } else {
+                                    let end_frame =
+                                        playback_settings.segments.end.min(composition.frames.end);
+                                    let length = end_frame - start_frame;
+                                    let frame =
+                                        (time.elapsed_seconds() * playback_settings.speed) % length;
+                                    match playback_settings.direction {
+                                        crate::PlaybackDirection::Normal => start_frame + frame,
+                                        crate::PlaybackDirection::Reverse => end_frame - frame,
+                                    }
+                                }
+                            }
+                        },
+                        (None, None) => time.elapsed_seconds(),
+                    },
                     alpha: alpha.map(|a| a.0).unwrap_or(1.0),
                     ui_node: ui_node.cloned(),
                 });

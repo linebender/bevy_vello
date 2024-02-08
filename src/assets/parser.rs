@@ -22,7 +22,6 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
     let vello_vector = VelloAsset {
         data: VelloAssetData::Svg {
             original: Arc::new(scene_frag),
-            first_frame: None,
         },
         local_transform_center: compute_local_transform_center(width, height),
         width,
@@ -51,8 +50,6 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
     let vello_vector = VelloAsset {
         data: VelloAssetData::Lottie {
             composition: Arc::new(composition),
-            rendered_frames: 0.0,
-            first_frame: None,
         },
         local_transform_center: compute_local_transform_center(width, height),
         width,

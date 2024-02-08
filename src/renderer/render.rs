@@ -79,9 +79,9 @@ pub fn render_scene(
             match render_item {
                 RenderItem::Vector(ExtractedRenderVector {
                     asset,
-                    playback_settings,
                     color_swaps,
                     alpha,
+                    playhead,
                     ..
                 }) => match &asset.data {
                     VelloAssetData::Svg {
@@ -89,14 +89,9 @@ pub fn render_scene(
                     } => {
                         builder.append(fragment, Some(affine));
                     }
-                    VelloAssetData::Lottie {
-                        composition,
-                        rendered_frames,
-                        first_frame: _,
-                    } => {
-                        let playhead = asset.calculate_playhead(playback_settings).unwrap();
+                    VelloAssetData::Lottie { composition } => {
                         let t = playhead / composition.frame_rate;
-                        debug!("rendered_frames: {rendered_frames}, playhead: {playhead}, t: {t}");
+                        debug!("playhead: {playhead}, t: {t}");
                         velottie_renderer.0.render(
                             {
                                 color_swaps

@@ -1,29 +1,21 @@
-use crate::{metadata::Metadata, AnimationDirection, PlaybackSettings};
+use crate::metadata::Metadata;
 use bevy::{
     math::{Vec3A, Vec4Swizzles},
     prelude::*,
     reflect::TypePath,
-    utils::Instant,
 };
 use std::sync::Arc;
 use vello::SceneFragment;
-use vello_svg::usvg::strict_num::Ulps;
 
 #[derive(Clone)]
 pub enum VelloAssetData {
     Svg {
         /// The original image encoding
         original: Arc<SceneFragment>,
-        /// The time we started rendering this asset
-        first_frame: Option<Instant>,
     },
     Lottie {
         /// The original image encoding
         composition: Arc<vellottie::Composition>,
-        /// The time we started rendering this asset
-        first_frame: Option<Instant>,
-        /// The last frame rendered
-        rendered_frames: f32,
     },
 }
 
@@ -90,41 +82,5 @@ impl VelloAsset {
         } else {
             None
         }
-    }
-
-    /// Calculate the playhead. Returns `None` is the Vector is an SVG.
-    pub fn calculate_playhead(&self, playback_settings: &PlaybackSettings) -> Option<f32> {
-        let VelloAssetData::Lottie {
-            composition,
-            first_frame: _,
-            rendered_frames,
-        } = &self.data
-        else {
-            return None;
-        };
-
-        let start_frame = playback_settings
-            .segments
-            .start
-            .max(composition.frames.start);
-        let end_frame = playback_settings.segments.end.min(composition.frames.end);
-        let length = end_frame - start_frame + playback_settings.intermission;
-
-        let loop_frame = match playback_settings.looping {
-            crate::AnimationLoopBehavior::None => rendered_frames.min(length.prev()),
-            crate::AnimationLoopBehavior::Amount(loops) => {
-                rendered_frames.min((loops as f32 * length).prev())
-            }
-            crate::AnimationLoopBehavior::Loop => *rendered_frames,
-        };
-        // Normalize frame
-        let normal_frame = loop_frame % length;
-        debug!("loop frame: {loop_frame}, normal = {normal_frame}");
-        let playhead = match playback_settings.direction {
-            AnimationDirection::Normal => start_frame + normal_frame,
-            AnimationDirection::Reverse => end_frame - normal_frame,
-        }
-        .clamp(start_frame, end_frame.prev());
-        Some(playhead)
     }
 }
