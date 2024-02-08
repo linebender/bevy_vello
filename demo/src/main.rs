@@ -1,21 +1,18 @@
-use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*};
+use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_egui::{
     egui::{self},
     EguiContexts, EguiPlugin,
 };
 use bevy_vello::{
-    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, AnimationDirection,
-    AnimationLoopBehavior, AnimationState, AnimationTransition, LottiePlayer, PlaybackSettings,
-    Theme, VelloAsset, VelloAssetBundle, VelloAssetData, VelloPlugin, VelloText, VelloTextBundle,
+    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, LottiePlayer, PlaybackDirection,
+    PlaybackLoopBehavior, PlaybackSettings, PlayerState, PlayerTransition, Theme, VelloAsset,
+    VelloAssetBundle, VelloAssetData, VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
     App::new()
         .insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins.set(LogPlugin {
-            filter: "wgpu=error,naga=warn,bevy_vello=debug".to_owned(),
-            ..default()
-        }))
+        .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_plugins(VelloPlugin)
         .add_plugins(bevy_pancam::PanCamPlugin)
@@ -46,8 +43,8 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
         .insert(
             LottiePlayer::new("stopped")
                 .with_state({
-                    AnimationState::new("stopped")
-                        .with_transition(AnimationTransition::OnMouseEnter { state: "play" })
+                    PlayerState::new("stopped")
+                        .with_transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .with_playback_settings(PlaybackSettings {
                             autoplay: false,
                             ..default()
@@ -55,21 +52,21 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                         .reset_playhead_on_start(true)
                 })
                 .with_state(
-                    AnimationState::new("play")
-                        .with_transition(AnimationTransition::OnMouseLeave { state: "rev" })
+                    PlayerState::new("play")
+                        .with_transition(PlayerTransition::OnMouseLeave { state: "rev" })
                         .with_playback_settings(PlaybackSettings {
-                            looping: AnimationLoopBehavior::None,
+                            looping: PlaybackLoopBehavior::None,
                             ..default()
                         }),
                 )
                 .with_state(
-                    AnimationState::new("rev")
+                    PlayerState::new("rev")
                         .with_playback_settings(PlaybackSettings {
-                            direction: AnimationDirection::Reverse,
-                            looping: AnimationLoopBehavior::None,
+                            direction: PlaybackDirection::Reverse,
+                            looping: PlaybackLoopBehavior::None,
                             ..default()
                         })
-                        .with_transition(AnimationTransition::OnComplete { state: "stopped" }),
+                        .with_transition(PlayerTransition::OnComplete { state: "stopped" }),
                 ),
         );
 }
@@ -185,26 +182,17 @@ fn ui(
                 player.reset();
             }
         });
-
-        ui.separator();
-
-        ui.heading("Player Operations");
-        ui.label("Note: Player operations only affect current playback!");
         ui.horizontal(|ui| {
             ui.label("Set Speed");
             let mut speed = playback_settings.speed;
             if ui.add(egui::Slider::new(&mut speed, 0.05..=2.0)).changed() {
+                for state in player.states_mut() {
+                    let playback_settings = state
+                        .playback_settings
+                        .get_or_insert(PlaybackSettings::default());
+                    playback_settings.speed = speed;
+                }
                 player.set_speed(speed);
-            };
-        });
-        ui.horizontal(|ui| {
-            ui.label("Set Intermission");
-            let mut intermission = playback_settings.intermission;
-            if ui
-                .add(egui::Slider::new(&mut intermission, 0.0..=24.0))
-                .changed()
-            {
-                player.set_intermission(intermission);
             };
         });
 
