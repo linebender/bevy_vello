@@ -1,13 +1,6 @@
 use bevy::prelude::*;
 use std::ops::Range;
 
-#[derive(PartialEq, Component, Clone, Debug)]
-pub struct Playhead {
-    frame: f32,
-    intermission_frame: f32,
-    loops_completed: usize,
-}
-
 #[derive(PartialEq, Component, Clone, Debug, Reflect)]
 #[reflect(Component)]
 /// Playback settings which adjust the playback of a vello asset.

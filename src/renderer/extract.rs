@@ -1,6 +1,6 @@
 use crate::{
     font::VelloFont, player::LottiePlayer, theme::Theme, CoordinateSpace, PlaybackAlphaOverride,
-    PlaybackSettings, VelloAsset, VelloText,
+    PlaybackSettings, Playhead, VelloAsset, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -26,6 +26,7 @@ pub fn vector_instances(
             &Handle<VelloAsset>,
             &CoordinateSpace,
             &GlobalTransform,
+            Option<&Playhead>,
             Option<&PlaybackSettings>,
             Option<&LottiePlayer>,
             Option<&Theme>,
@@ -42,6 +43,7 @@ pub fn vector_instances(
         vello_vector_handle,
         render_mode,
         transform,
+        playhead,
         playback_settings,
         player,
         color_swaps,
@@ -53,37 +55,39 @@ pub fn vector_instances(
     {
         if let Some(asset) = assets.get(vello_vector_handle) {
             if view_visibility.get() && inherited_visibility.get() {
-                commands.spawn(ExtractedRenderVector {
-                    asset: asset.to_owned(),
-                    transform: *transform,
-                    color_swaps: color_swaps.cloned(),
-                    render_mode: *render_mode,
-                    playhead: match (player, playback_settings) {
-                        (Some(player), _) => player.playhead(),
-                        (None, Some(playback_settings)) => match asset.data {
-                            crate::VelloAssetData::Svg { original } => 0.0,
+                let playhead = playhead
+                    .map(|p| p.playhead())
+                    .or_else(|| {
+                        playback_settings.and_then(|playback_settings| match &asset.data {
+                            crate::VelloAssetData::Svg { original: _ } => None,
                             crate::VelloAssetData::Lottie { composition } => {
                                 let start_frame = playback_settings
                                     .segments
                                     .start
                                     .max(composition.frames.start);
                                 if !playback_settings.autoplay {
-                                    start_frame
+                                    Some(start_frame)
                                 } else {
                                     let end_frame =
                                         playback_settings.segments.end.min(composition.frames.end);
                                     let length = end_frame - start_frame;
                                     let frame =
                                         (time.elapsed_seconds() * playback_settings.speed) % length;
-                                    match playback_settings.direction {
+                                    Some(match playback_settings.direction {
                                         crate::PlaybackDirection::Normal => start_frame + frame,
                                         crate::PlaybackDirection::Reverse => end_frame - frame,
-                                    }
+                                    })
                                 }
                             }
-                        },
-                        (None, None) => time.elapsed_seconds(),
-                    },
+                        })
+                    })
+                    .unwrap_or(time.elapsed_seconds());
+                commands.spawn(ExtractedRenderVector {
+                    asset: asset.to_owned(),
+                    transform: *transform,
+                    color_swaps: color_swaps.cloned(),
+                    render_mode: *render_mode,
+                    playhead,
                     alpha: alpha.map(|a| a.0).unwrap_or(1.0),
                     ui_node: ui_node.cloned(),
                 });
