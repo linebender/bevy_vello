@@ -25,7 +25,7 @@ pub mod debug;
 pub use assets::VelloAssetLoader;
 pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str,
-    VelloAsset, VelloAssetData,
+    VectorFile, VelloAsset,
 };
 pub use font::VelloFontLoader;
 pub use playback::{

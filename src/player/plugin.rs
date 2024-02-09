@@ -5,12 +5,12 @@ pub struct LottiePlayerPlugin;
 impl Plugin for LottiePlayerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(
-            PostUpdate,
+            PreUpdate,
             (
                 systems::spawn_playheads,
                 systems::advance_playheads,
                 systems::run_transitions,
-                systems::set_state,
+                systems::transition_state,
             )
                 .chain(),
         );
@@ -20,19 +20,38 @@ impl Plugin for LottiePlayerPlugin {
 pub mod systems {
     use crate::{
         player::LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackSettings,
-        PlayerTransition, Playhead, VelloAsset, VelloAssetData,
+        PlayerTransition, Playhead, VectorFile, VelloAsset,
     };
     use bevy::prelude::*;
     use vello_svg::usvg::strict_num::Ulps;
 
-    /// Spawn playheads for Lotties
+    /// Spawn playheads for Lotties. Every Lottie gets exactly 1 playhead.
+    /// Only
     pub fn spawn_playheads(
         mut commands: Commands,
-        query: Query<(Entity, &Handle<VelloAsset>), Without<Playhead>>,
+        query: Query<(Entity, &Handle<VelloAsset>, Option<&PlaybackSettings>), Without<Playhead>>,
         assets: Res<Assets<VelloAsset>>,
     ) {
-        for (entity, handle) in query.iter() {
+        for (entity, handle, playback_settings) in query.iter() {
             if let Some(asset) = assets.get(handle) {
+                let VectorFile::Lottie { composition } = &asset.data else {
+                    commands.entity(entity).insert(Playhead::new(0.0));
+                    return;
+                };
+                let frame = match playback_settings {
+                    Some(playback_settings) => match playback_settings.direction {
+                        PlaybackDirection::Normal => playback_settings
+                            .segments
+                            .start
+                            .max(composition.frames.start),
+                        PlaybackDirection::Reverse => playback_settings
+                            .segments
+                            .end
+                            .min(composition.frames.end)
+                            .prev(),
+                    },
+                    None => composition.frames.start,
+                };
                 commands.entity(entity).insert(Playhead::new(frame));
             }
         }
@@ -49,11 +68,10 @@ pub mod systems {
         mut assets: ResMut<Assets<VelloAsset>>,
         time: Res<Time>,
     ) {
-        let dt = time.delta_seconds();
         for (asset_handle, mut playhead, player, playback_settings) in query.iter_mut() {
             // Get asset
             let Some(VelloAsset {
-                data: VelloAssetData::Lottie { composition },
+                data: VectorFile::Lottie { composition },
                 ..
             }) = assets.get_mut(asset_handle.id())
             else {
@@ -70,120 +88,50 @@ pub mod systems {
                 .end
                 .min(composition.frames.end)
                 .prev();
-            let Some(mut player) = player else {
-                return;
-            };
 
-            if player.stopped {
-                continue;
-            }
-            // Auto play
-            if playback_settings.autoplay && !player.started {
-                player.playing = true;
-            }
-            // Return if paused
-            if !player.playing {
-                continue;
+            if let Some(mut player) = player {
+                if player.stopped {
+                    continue;
+                }
+                // Auto play
+                if playback_settings.autoplay && !player.started {
+                    player.playing = true;
+                }
+                // Return if paused
+                if !player.playing {
+                    continue;
+                }
             }
 
             // Advance playhead
-            playhead.frame += dt
+            playhead.frame += time.delta_seconds()
                 * playback_settings.speed
                 * composition.frame_rate
                 * (playback_settings.direction as i32 as f32);
 
             // Keep the playhead bounded between segments
+            let looping = match playback_settings.looping {
+                PlaybackLoopBehavior::Loop => true,
+                PlaybackLoopBehavior::Amount(amt) => amt < playhead.loops_completed,
+                PlaybackLoopBehavior::Once => false,
+            };
             if playhead.frame > end_frame {
-                if let PlaybackLoopBehavior::Loop = playback_settings.looping {
+                if looping {
                     // Wrap around to the beginning of the segment
-                    playhead.frame = segment_range.start + (playhead.frame - segment_range.end);
+                    playhead.frame = start_frame + (playhead.frame - end_frame);
                     playhead.loops_completed += 1;
                 } else {
+                    playhead.frame = end_frame;
                 }
-            } else if playhead.frame < segment_range.start {
-                // Wrap around to the end of the segment
-                playhead.frame = segment_range.end - (segment_range.start - playhead.frame);
-            }
-        }
-    }
-
-    pub fn set_state(
-        mut commands: Commands,
-        mut query_sm: Query<(
-            Entity,
-            &mut LottiePlayer,
-            &mut Playhead,
-            &mut Handle<VelloAsset>,
-        )>,
-        mut assets: ResMut<Assets<VelloAsset>>,
-    ) {
-        for (entity, mut player, mut playhead, mut cur_handle) in query_sm.iter_mut() {
-            let Some(next_state) = player.next_state.take() else {
-                continue;
-            };
-            info!("animation controller transitioning to={next_state}");
-
-            player.started = false;
-            player.playing = false;
-
-            let target_state = player
-                .states
-                .get(&next_state)
-                .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
-            let target_handle = target_state.asset.clone().unwrap_or(cur_handle.clone());
-
-            let Some(asset) = assets.get_mut(target_handle.id()) else {
-                warn!("Asset not ready for transition... re-queue'ing...");
-                player.next_state.replace(next_state);
-                return;
-            };
-
-            // Switch to asset
-            let changed_assets = cur_handle.id() != target_handle.id();
-            *cur_handle = target_handle.clone();
-
-            // Reset playhead state
-            match &mut asset.data {
-                VelloAssetData::Svg { original } => {
-                    // Do nothing
-                }
-                VelloAssetData::Lottie { composition } => {
-                    if player.state().reset_playhead_on_transition
-                        || target_state.reset_playhead_on_start
-                        || changed_assets
-                    {
-                        let playback_settings =
-                            target_state.playback_settings.clone().unwrap_or_default();
-                        match playback_settings.direction {
-                            PlaybackDirection::Normal => {
-                                let start_frame = playback_settings
-                                    .segments
-                                    .start
-                                    .max(composition.frames.start);
-                                playhead.frame = start_frame;
-                            }
-                            PlaybackDirection::Reverse => {
-                                let end_frame = playback_settings
-                                    .segments
-                                    .end
-                                    .min(composition.frames.end)
-                                    .prev();
-                                playhead.frame = end_frame;
-                            }
-                        }
-                    }
+            } else if playhead.frame < start_frame {
+                if looping {
+                    // Wrap around to the beginning of the segment
+                    playhead.frame = end_frame - (start_frame - playhead.frame);
+                    playhead.loops_completed += 1;
+                } else {
+                    playhead.frame = start_frame;
                 }
             }
-            playhead.first_render.take();
-            playhead.
-
-            if let Some(theme) = target_state.theme.clone() {
-                commands.entity(entity).insert(theme);
-            }
-            commands
-                .entity(entity)
-                .insert(target_state.playback_settings.clone().unwrap_or_default());
-            player.current_state = next_state;
         }
     }
 
@@ -255,7 +203,7 @@ pub mod systems {
                         }
                     }
                     PlayerTransition::OnComplete { state } => {
-                        if let VelloAssetData::Lottie { composition } = &current_asset.data {
+                        if let VectorFile::Lottie { composition } = &current_asset.data {
                             match playback_settings.direction {
                                 PlaybackDirection::Normal => {
                                     let end_frame = playback_settings
@@ -312,6 +260,84 @@ pub mod systems {
                     }
                 }
             }
+        }
+    }
+
+    pub fn transition_state(
+        mut commands: Commands,
+        mut query_sm: Query<(
+            Entity,
+            &mut LottiePlayer,
+            &mut Playhead,
+            &mut Handle<VelloAsset>,
+        )>,
+        mut assets: ResMut<Assets<VelloAsset>>,
+    ) {
+        for (entity, mut player, mut playhead, mut cur_handle) in query_sm.iter_mut() {
+            let Some(next_state) = player.next_state.take() else {
+                continue;
+            };
+            info!("animation controller transitioning to={next_state}");
+
+            player.started = false;
+            player.playing = false;
+
+            let target_state = player
+                .states
+                .get(&next_state)
+                .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
+            let target_handle = target_state.asset.clone().unwrap_or(cur_handle.clone());
+
+            let Some(asset) = assets.get_mut(target_handle.id()) else {
+                warn!("Asset not ready for transition... re-queue'ing...");
+                player.next_state.replace(next_state);
+                return;
+            };
+
+            // Switch to asset
+            let changed_assets = cur_handle.id() != target_handle.id();
+            *cur_handle = target_handle.clone();
+
+            // Reset playhead state
+            match &mut asset.data {
+                VectorFile::Svg { original: _ } => {
+                    // Do nothing
+                }
+                VectorFile::Lottie { composition } => {
+                    if player.state().reset_playhead_on_transition
+                        || target_state.reset_playhead_on_start
+                        || changed_assets
+                    {
+                        let playback_settings =
+                            target_state.playback_settings.clone().unwrap_or_default();
+                        match playback_settings.direction {
+                            PlaybackDirection::Normal => {
+                                let start_frame = playback_settings
+                                    .segments
+                                    .start
+                                    .max(composition.frames.start);
+                                playhead.reset_to(start_frame);
+                            }
+                            PlaybackDirection::Reverse => {
+                                let end_frame = playback_settings
+                                    .segments
+                                    .end
+                                    .min(composition.frames.end)
+                                    .prev();
+                                playhead.reset_to(end_frame);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if let Some(theme) = target_state.theme.clone() {
+                commands.entity(entity).insert(theme);
+            }
+            commands
+                .entity(entity)
+                .insert(target_state.playback_settings.clone().unwrap_or_default());
+            player.current_state = next_state;
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::{
-    font::VelloFont, player::LottiePlayer, theme::Theme, CoordinateSpace, PlaybackAlphaOverride,
-    PlaybackSettings, Playhead, VelloAsset, VelloText,
+    font::VelloFont, theme::Theme, CoordinateSpace, PlaybackAlphaOverride, PlaybackSettings,
+    Playhead, VelloAsset, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -28,7 +28,6 @@ pub fn vector_instances(
             &GlobalTransform,
             Option<&Playhead>,
             Option<&PlaybackSettings>,
-            Option<&LottiePlayer>,
             Option<&Theme>,
             Option<&PlaybackAlphaOverride>,
             Option<&Node>,
@@ -45,7 +44,6 @@ pub fn vector_instances(
         transform,
         playhead,
         playback_settings,
-        player,
         color_swaps,
         alpha,
         ui_node,
@@ -56,11 +54,11 @@ pub fn vector_instances(
         if let Some(asset) = assets.get(vello_vector_handle) {
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = playhead
-                    .map(|p| p.playhead())
+                    .map(|p| p.frame())
                     .or_else(|| {
                         playback_settings.and_then(|playback_settings| match &asset.data {
-                            crate::VelloAssetData::Svg { original: _ } => None,
-                            crate::VelloAssetData::Lottie { composition } => {
+                            crate::VectorFile::Svg { original: _ } => None,
+                            crate::VectorFile::Lottie { composition } => {
                                 let start_frame = playback_settings
                                     .segments
                                     .start

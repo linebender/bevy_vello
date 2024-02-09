@@ -3,7 +3,7 @@ use super::{
     prepare::PreparedAffine,
     BevyVelloRenderer, LottieRenderer, SSRenderTarget,
 };
-use crate::{assets::vector::VelloAssetData, font::VelloFont, CoordinateSpace};
+use crate::{assets::vector::VectorFile, font::VelloFont, CoordinateSpace};
 use bevy::{
     prelude::*,
     render::{
@@ -84,12 +84,12 @@ pub fn render_scene(
                     playhead,
                     ..
                 }) => match &asset.data {
-                    VelloAssetData::Svg {
+                    VectorFile::Svg {
                         original: fragment, ..
                     } => {
                         builder.append(fragment, Some(affine));
                     }
-                    VelloAssetData::Lottie { composition } => {
+                    VectorFile::Lottie { composition } => {
                         let t = playhead / composition.frame_rate;
                         debug!("playhead: {playhead}, t: {t}");
                         velottie_renderer.0.render(

@@ -39,7 +39,7 @@ pub enum PlaybackDirection {
 /// How often to loop.
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
 pub enum PlaybackLoopBehavior {
-    None,
+    Once,
     Amount(usize),
     #[default]
     Loop,

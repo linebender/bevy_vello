@@ -2,19 +2,19 @@ use bevy::{prelude::*, utils::Instant};
 
 #[derive(PartialEq, Component, Clone, Debug)]
 pub struct Playhead {
-    first_render: Option<Instant>,
-    frame: f32,
-    intermission_frame: f32,
-    loops_completed: usize,
+    pub(crate) first_render: Option<Instant>,
+    pub(crate) frame: f32,
+    pub(crate) intermission_frame: f32,
+    pub(crate) loops_completed: usize,
 }
 
 impl Playhead {
-    /// Get the current playhead
-    pub fn playhead(&self) -> f32 {
+    /// Get the current playhead frame
+    pub fn frame(&self) -> f32 {
         self.frame
     }
 
-    /// Seek to a frame
+    /// Seek to a given frame
     pub fn seek(&mut self, frame: f32) {
         self.frame = frame;
     }

@@ -5,8 +5,8 @@ use bevy_egui::{
 };
 use bevy_vello::{
     debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, LottiePlayer, PlaybackDirection,
-    PlaybackLoopBehavior, PlaybackSettings, PlayerState, PlayerTransition, Theme, VelloAsset,
-    VelloAssetBundle, VelloAssetData, VelloPlugin, VelloText, VelloTextBundle,
+    PlaybackLoopBehavior, PlaybackSettings, PlayerState, PlayerTransition, Playhead, Theme,
+    VectorFile, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
 };
 
 fn main() {
@@ -55,7 +55,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     PlayerState::new("play")
                         .with_transition(PlayerTransition::OnMouseLeave { state: "rev" })
                         .with_playback_settings(PlaybackSettings {
-                            looping: PlaybackLoopBehavior::None,
+                            looping: PlaybackLoopBehavior::Once,
                             ..default()
                         }),
                 )
@@ -63,7 +63,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     PlayerState::new("rev")
                         .with_playback_settings(PlaybackSettings {
                             direction: PlaybackDirection::Reverse,
-                            looping: PlaybackLoopBehavior::None,
+                            looping: PlaybackLoopBehavior::Once,
                             ..default()
                         })
                         .with_transition(PlayerTransition::OnComplete { state: "stopped" }),
@@ -110,25 +110,22 @@ fn ui(
     mut contexts: EguiContexts,
     mut player: Query<(
         &mut LottiePlayer,
-        &PlaybackSettings,
+        &mut Playhead,
+        &mut PlaybackSettings,
         &mut Theme,
         &Handle<VelloAsset>,
     )>,
     assets: Res<Assets<VelloAsset>>,
 ) {
-    let Ok((mut player, playback_settings, mut color_swaps, handle)) = player.get_single_mut()
+    let Ok((mut player, mut playhead, mut playback_settings, mut color_swaps, handle)) =
+        player.get_single_mut()
     else {
         return;
     };
 
     let asset = assets.get(handle.id()).unwrap();
     let metadata = asset.metadata().unwrap();
-    let VelloAssetData::Lottie {
-        composition,
-        first_frame: _,
-        rendered_frames: _,
-    } = &asset.data
-    else {
+    let VectorFile::Lottie { composition } = &asset.data else {
         return;
     };
 
@@ -139,13 +136,13 @@ fn ui(
     window.show(contexts.ctx_mut(), |ui| {
         ui.heading("Lottie Player");
 
-        let mut playhead = asset.calculate_playhead(playback_settings).unwrap();
         ui.horizontal(|ui| {
+            let mut frame = playhead.frame();
             ui.label("Playhead");
             if ui
                 .add(
                     egui::Slider::new(
-                        &mut playhead,
+                        &mut frame,
                         playback_settings
                             .segments
                             .start
@@ -161,7 +158,7 @@ fn ui(
                 .changed()
             {
                 player.pause();
-                player.seek(playhead);
+                playhead.seek(frame);
             };
         });
 
@@ -178,9 +175,6 @@ fn ui(
             if ui.button("Stop").clicked() {
                 player.stop();
             }
-            if ui.button("Reset").clicked() {
-                player.reset();
-            }
         });
         ui.horizontal(|ui| {
             ui.label("Set Speed");
@@ -192,7 +186,7 @@ fn ui(
                         .get_or_insert(PlaybackSettings::default());
                     playback_settings.speed = speed;
                 }
-                player.set_speed(speed);
+                playback_settings.speed = speed;
             };
         });
 

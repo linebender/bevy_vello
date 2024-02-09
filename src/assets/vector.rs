@@ -8,7 +8,7 @@ use std::sync::Arc;
 use vello::SceneFragment;
 
 #[derive(Clone)]
-pub enum VelloAssetData {
+pub enum VectorFile {
     Svg {
         /// The original image encoding
         original: Arc<SceneFragment>,
@@ -21,7 +21,7 @@ pub enum VelloAssetData {
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloAsset {
-    pub data: VelloAssetData,
+    pub data: VectorFile,
     pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
@@ -75,7 +75,7 @@ impl VelloAsset {
     /// Gets the lottie metadata (if vector is a lottie), an object used for inspecting
     /// this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
-        if let VelloAssetData::Lottie { composition, .. } = &self.data {
+        if let VectorFile::Lottie { composition, .. } = &self.data {
             Some(Metadata {
                 composition: composition.clone(),
             })
