@@ -27,11 +27,4 @@ impl Playhead {
             loops_completed: 0,
         }
     }
-
-    pub(crate) fn reset_to(&mut self, frame: f32) {
-        self.frame = frame;
-        self.intermission_frame = 0.0;
-        self.loops_completed = 0;
-        self.first_render.take();
-    }
 }

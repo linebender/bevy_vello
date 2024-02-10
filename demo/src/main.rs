@@ -55,7 +55,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     PlayerState::new("play")
                         .with_transition(PlayerTransition::OnMouseLeave { state: "rev" })
                         .with_playback_settings(PlaybackSettings {
-                            looping: PlaybackLoopBehavior::Once,
+                            looping: PlaybackLoopBehavior::Amount(3),
                             ..default()
                         }),
                 )
@@ -63,7 +63,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     PlayerState::new("rev")
                         .with_playback_settings(PlaybackSettings {
                             direction: PlaybackDirection::Reverse,
-                            looping: PlaybackLoopBehavior::Once,
+                            looping: PlaybackLoopBehavior::Amount(1),
                             ..default()
                         })
                         .with_transition(PlayerTransition::OnComplete { state: "stopped" }),
@@ -117,7 +117,7 @@ fn ui(
     )>,
     assets: Res<Assets<VelloAsset>>,
 ) {
-    let Ok((mut player, mut playhead, mut playback_settings, mut color_swaps, handle)) =
+    let Ok((mut player, mut playhead, mut playback_settings, mut theme, handle)) =
         player.get_single_mut()
     else {
         return;
@@ -140,21 +140,18 @@ fn ui(
             let mut frame = playhead.frame();
             ui.label("Playhead");
             if ui
-                .add(
-                    egui::Slider::new(
-                        &mut frame,
-                        playback_settings
+                .add(egui::Slider::new(
+                    &mut frame,
+                    playback_settings
+                        .segments
+                        .start
+                        .max(composition.frames.start)
+                        ..=playback_settings
                             .segments
-                            .start
-                            .max(composition.frames.start)
-                            ..=playback_settings
-                                .segments
-                                .end
-                                .min(composition.frames.end)
-                                .prev(),
-                    )
-                    .integer(),
-                )
+                            .end
+                            .min(composition.frames.end)
+                            .prev(),
+                ))
                 .changed()
             {
                 player.pause();
@@ -230,7 +227,7 @@ fn ui(
 
         ui.heading("Theme");
         for layer in metadata.get_layers() {
-            let color = color_swaps.get_mut(layer).cloned().unwrap_or_default();
+            let color = theme.get_mut(layer).cloned().unwrap_or_default();
             let mut color_edit = [color.r(), color.g(), color.b(), color.a()];
             ui.horizontal(|ui| {
                 if ui
@@ -238,7 +235,7 @@ fn ui(
                     .changed()
                 {
                     let [r, g, b, a] = color_edit;
-                    color_swaps.edit(layer, Color::rgba(r, g, b, a));
+                    theme.edit(layer, Color::rgba(r, g, b, a));
                 };
                 ui.label(layer);
             });

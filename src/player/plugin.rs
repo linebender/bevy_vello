@@ -79,16 +79,6 @@ pub mod systems {
             };
 
             let playback_settings = playback_settings.cloned().unwrap_or_default();
-            let start_frame = playback_settings
-                .segments
-                .start
-                .max(composition.frames.start);
-            let end_frame = playback_settings
-                .segments
-                .end
-                .min(composition.frames.end)
-                .prev();
-
             if let Some(mut player) = player {
                 if player.stopped {
                     continue;
@@ -103,6 +93,16 @@ pub mod systems {
                 }
             }
 
+            let start_frame = playback_settings
+                .segments
+                .start
+                .max(composition.frames.start);
+            let end_frame = playback_settings
+                .segments
+                .end
+                .min(composition.frames.end)
+                .prev();
+
             // Advance playhead
             playhead.frame += time.delta_seconds()
                 * playback_settings.speed
@@ -112,22 +112,22 @@ pub mod systems {
             // Keep the playhead bounded between segments
             let looping = match playback_settings.looping {
                 PlaybackLoopBehavior::Loop => true,
-                PlaybackLoopBehavior::Amount(amt) => amt < playhead.loops_completed,
+                PlaybackLoopBehavior::Amount(amt) => playhead.loops_completed < amt,
                 PlaybackLoopBehavior::Once => false,
             };
             if playhead.frame > end_frame {
+                playhead.loops_completed += 1;
                 if looping {
                     // Wrap around to the beginning of the segment
                     playhead.frame = start_frame + (playhead.frame - end_frame);
-                    playhead.loops_completed += 1;
                 } else {
                     playhead.frame = end_frame;
                 }
             } else if playhead.frame < start_frame {
+                playhead.loops_completed += 1;
                 if looping {
                     // Wrap around to the beginning of the segment
                     playhead.frame = end_frame - (start_frame - playhead.frame);
-                    playhead.loops_completed += 1;
                 } else {
                     playhead.frame = start_frame;
                 }
@@ -204,6 +204,11 @@ pub mod systems {
                     }
                     PlayerTransition::OnComplete { state } => {
                         if let VectorFile::Lottie { composition } = &current_asset.data {
+                            let loops_needed = match playback_settings.looping {
+                                PlaybackLoopBehavior::Once => Some(0),
+                                PlaybackLoopBehavior::Amount(amt) => Some(amt),
+                                PlaybackLoopBehavior::Loop => Some(0),
+                            };
                             match playback_settings.direction {
                                 PlaybackDirection::Normal => {
                                     let end_frame = playback_settings
@@ -211,7 +216,11 @@ pub mod systems {
                                         .end
                                         .min(composition.frames.end)
                                         .prev();
-                                    if playhead.frame == end_frame || playhead.loops_completed > 0 {
+                                    if playhead.frame == end_frame
+                                        && loops_needed.is_some_and(|needed| {
+                                            playhead.loops_completed >= needed
+                                        })
+                                    {
                                         player.next_state = Some(state);
                                         break;
                                     }
@@ -221,7 +230,10 @@ pub mod systems {
                                         .segments
                                         .start
                                         .max(composition.frames.start);
-                                    if playhead.frame == start_frame || playhead.loops_completed > 0
+                                    if playhead.frame == start_frame
+                                        && loops_needed.is_some_and(|needed| {
+                                            playhead.loops_completed >= needed
+                                        })
                                     {
                                         player.next_state = Some(state);
                                         break;
@@ -279,9 +291,6 @@ pub mod systems {
             };
             info!("animation controller transitioning to={next_state}");
 
-            player.started = false;
-            player.playing = false;
-
             let target_state = player
                 .states
                 .get(&next_state)
@@ -294,10 +303,6 @@ pub mod systems {
                 return;
             };
 
-            // Switch to asset
-            let changed_assets = cur_handle.id() != target_handle.id();
-            *cur_handle = target_handle.clone();
-
             // Reset playhead state
             match &mut asset.data {
                 VectorFile::Svg { original: _ } => {
@@ -306,37 +311,42 @@ pub mod systems {
                 VectorFile::Lottie { composition } => {
                     if player.state().reset_playhead_on_transition
                         || target_state.reset_playhead_on_start
-                        || changed_assets
+                        || cur_handle.id() != target_handle.id()
                     {
                         let playback_settings =
                             target_state.playback_settings.clone().unwrap_or_default();
-                        match playback_settings.direction {
-                            PlaybackDirection::Normal => {
-                                let start_frame = playback_settings
-                                    .segments
-                                    .start
-                                    .max(composition.frames.start);
-                                playhead.reset_to(start_frame);
-                            }
-                            PlaybackDirection::Reverse => {
-                                let end_frame = playback_settings
-                                    .segments
-                                    .end
-                                    .min(composition.frames.end)
-                                    .prev();
-                                playhead.reset_to(end_frame);
-                            }
-                        }
+                        let frame = match playback_settings.direction {
+                            PlaybackDirection::Normal => playback_settings
+                                .segments
+                                .start
+                                .max(composition.frames.start),
+                            PlaybackDirection::Reverse => playback_settings
+                                .segments
+                                .end
+                                .min(composition.frames.end)
+                                .prev(),
+                        };
+                        // Reset playhead
+                        playhead.frame = frame;
                     }
                 }
             }
 
-            if let Some(theme) = target_state.theme.clone() {
-                commands.entity(entity).insert(theme);
-            }
+            // Swap asset, theme, playback settings
+            *cur_handle = target_handle.clone();
             commands
                 .entity(entity)
-                .insert(target_state.playback_settings.clone().unwrap_or_default());
+                .insert(target_state.playback_settings.clone().unwrap_or_default())
+                .insert(target_state.theme.clone().unwrap_or_default());
+
+            // Reset playhead state
+            playhead.intermission_frame = 0.0;
+            playhead.loops_completed = 0;
+            playhead.first_render.take();
+
+            // Reset player state
+            player.started = false;
+            player.playing = false;
             player.current_state = next_state;
         }
     }

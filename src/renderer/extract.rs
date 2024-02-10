@@ -12,7 +12,7 @@ use bevy::{
 pub struct ExtractedRenderVector {
     pub asset: VelloAsset,
     pub transform: GlobalTransform,
-    pub color_swaps: Option<Theme>,
+    pub theme: Option<Theme>,
     pub render_mode: CoordinateSpace,
     pub playhead: f32,
     pub alpha: f32,
@@ -44,7 +44,7 @@ pub fn vector_instances(
         transform,
         playhead,
         playback_settings,
-        color_swaps,
+        theme,
         alpha,
         ui_node,
         view_visibility,
@@ -83,7 +83,7 @@ pub fn vector_instances(
                 commands.spawn(ExtractedRenderVector {
                     asset: asset.to_owned(),
                     transform: *transform,
-                    color_swaps: color_swaps.cloned(),
+                    theme: theme.cloned(),
                     render_mode: *render_mode,
                     playhead,
                     alpha: alpha.map(|a| a.0).unwrap_or(1.0),

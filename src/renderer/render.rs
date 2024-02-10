@@ -79,7 +79,7 @@ pub fn render_scene(
             match render_item {
                 RenderItem::Vector(ExtractedRenderVector {
                     asset,
-                    color_swaps,
+                    theme,
                     alpha,
                     playhead,
                     ..
@@ -94,7 +94,7 @@ pub fn render_scene(
                         debug!("playhead: {playhead}, t: {t}");
                         velottie_renderer.0.render(
                             {
-                                color_swaps
+                                theme
                                     .as_ref()
                                     .map(|cs| cs.recolor(composition))
                                     .as_ref()
