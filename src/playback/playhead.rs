@@ -4,7 +4,7 @@ use bevy::{prelude::*, utils::Instant};
 pub struct Playhead {
     pub(crate) first_render: Option<Instant>,
     pub(crate) frame: f32,
-    pub(crate) intermission_frame: f32,
+    pub(crate) intermission: Option<Timer>,
     pub(crate) loops_completed: usize,
 }
 
@@ -23,7 +23,7 @@ impl Playhead {
         Self {
             frame,
             first_render: None,
-            intermission_frame: 0.0,
+            intermission: None,
             loops_completed: 0,
         }
     }

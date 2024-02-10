@@ -55,7 +55,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     PlayerState::new("play")
                         .with_transition(PlayerTransition::OnMouseLeave { state: "rev" })
                         .with_playback_settings(PlaybackSettings {
-                            looping: PlaybackLoopBehavior::Amount(3),
+                            looping: PlaybackLoopBehavior::DoNotLoop,
                             ..default()
                         }),
                 )
@@ -207,7 +207,10 @@ fn ui(
         ui.label(format!("Id: {}", player.state().id));
         ui.label(format!("Autoplay: {}", playback_settings.autoplay));
         ui.label(format!("Direction: {:?}", playback_settings.direction));
-        ui.label(format!("Intermission: {}", playback_settings.intermission));
+        ui.label(format!(
+            "Intermission: {:?}",
+            playback_settings.intermission
+        ));
         ui.label(format!("Loop Behavior: {:?}", playback_settings.looping));
         ui.label(format!(
             "Segments: {:?}",

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use std::ops::Range;
+use std::{ops::Range, time::Duration};
 
 #[derive(PartialEq, Component, Clone, Debug, Reflect)]
 #[reflect(Component)]
@@ -13,8 +13,8 @@ pub struct PlaybackSettings {
     pub direction: PlaybackDirection,
     /// The speed of the animation as a multiplier. 1.0 is normal speed. Anything less than 1 is slower, and anything greater than 1 is faster.
     pub speed: f32,
-    /// An amount of frames spent idle between loops.
-    pub intermission: f32,
+    /// A duration of time spent idle between loops.
+    pub intermission: Duration,
     /// Whether to loop, and how many.
     pub looping: PlaybackLoopBehavior,
     /// The segments (frames) of the animation to play. Values out of range will be ignored.
@@ -27,7 +27,7 @@ impl Default for PlaybackSettings {
             autoplay: true,
             direction: PlaybackDirection::default(),
             speed: 1.0,
-            intermission: 0.0,
+            intermission: Duration::ZERO,
             looping: PlaybackLoopBehavior::default(),
             segments: f32::MIN..f32::MAX,
         }
@@ -48,7 +48,7 @@ pub enum PlaybackDirection {
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
 pub enum PlaybackLoopBehavior {
     /// Do not loop. This is equivalent to `PlaybackLoopBehavior::Amount(0)`.
-    Once,
+    DoNotLoop,
     /// Complete a specified number of loops.
     Amount(usize),
     /// Loop continuously.

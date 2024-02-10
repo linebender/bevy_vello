@@ -23,6 +23,7 @@ pub mod systems {
         PlayerTransition, Playhead, VectorFile, VelloAsset,
     };
     use bevy::prelude::*;
+    use std::time::Duration;
     use vello_svg::usvg::strict_num::Ulps;
 
     /// Spawn playheads for Lotties. Every Lottie gets exactly 1 playhead.
@@ -103,6 +104,23 @@ pub mod systems {
                 .min(composition.frames.end)
                 .prev();
 
+            // Handle intermissions
+            if let Some(ref mut intermission) = playhead.intermission {
+                intermission.tick(time.delta());
+                if intermission.finished() {
+                    playhead.intermission.take();
+                    match playback_settings.direction {
+                        PlaybackDirection::Normal => {
+                            playhead.frame = start_frame;
+                        }
+                        PlaybackDirection::Reverse => {
+                            playhead.frame = end_frame;
+                        }
+                    }
+                }
+                return;
+            }
+
             // Advance playhead
             playhead.frame += time.delta_seconds()
                 * playback_settings.speed
@@ -113,21 +131,37 @@ pub mod systems {
             let looping = match playback_settings.looping {
                 PlaybackLoopBehavior::Loop => true,
                 PlaybackLoopBehavior::Amount(amt) => playhead.loops_completed < amt,
-                PlaybackLoopBehavior::Once => false,
+                PlaybackLoopBehavior::DoNotLoop => false,
             };
             if playhead.frame > end_frame {
                 playhead.loops_completed += 1;
                 if looping {
-                    // Wrap around to the beginning of the segment
-                    playhead.frame = start_frame + (playhead.frame - end_frame);
+                    // Trigger intermission, if applicable
+                    if playback_settings.intermission > Duration::ZERO {
+                        playhead
+                            .intermission
+                            .replace(Timer::new(playback_settings.intermission, TimerMode::Once));
+                        playhead.frame = end_frame;
+                    } else {
+                        // Wrap around to the beginning of the segment
+                        playhead.frame = start_frame + (playhead.frame - end_frame);
+                    }
                 } else {
                     playhead.frame = end_frame;
                 }
             } else if playhead.frame < start_frame {
                 playhead.loops_completed += 1;
                 if looping {
-                    // Wrap around to the beginning of the segment
-                    playhead.frame = end_frame - (start_frame - playhead.frame);
+                    // Trigger intermission, if applicable
+                    if playback_settings.intermission > Duration::ZERO {
+                        playhead
+                            .intermission
+                            .replace(Timer::new(playback_settings.intermission, TimerMode::Once));
+                        playhead.frame = start_frame;
+                    } else {
+                        // Wrap around to the beginning of the segment
+                        playhead.frame = end_frame - (start_frame - playhead.frame);
+                    }
                 } else {
                     playhead.frame = start_frame;
                 }
@@ -205,7 +239,7 @@ pub mod systems {
                     PlayerTransition::OnComplete { state } => {
                         if let VectorFile::Lottie { composition } = &current_asset.data {
                             let loops_needed = match playback_settings.looping {
-                                PlaybackLoopBehavior::Once => Some(0),
+                                PlaybackLoopBehavior::DoNotLoop => Some(0),
                                 PlaybackLoopBehavior::Amount(amt) => Some(amt),
                                 PlaybackLoopBehavior::Loop => Some(0),
                             };
@@ -340,7 +374,7 @@ pub mod systems {
                 .insert(target_state.theme.clone().unwrap_or_default());
 
             // Reset playhead state
-            playhead.intermission_frame = 0.0;
+            playhead.intermission.take();
             playhead.loops_completed = 0;
             playhead.first_render.take();
 
