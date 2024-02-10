@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_egui::{
     egui::{self},
@@ -56,16 +58,19 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                         .with_transition(PlayerTransition::OnMouseLeave { state: "rev" })
                         .with_playback_settings(PlaybackSettings {
                             looping: PlaybackLoopBehavior::DoNotLoop,
+                            speed: 0.25,
                             ..default()
                         }),
                 )
                 .with_state(
                     PlayerState::new("rev")
                         .with_playback_settings(PlaybackSettings {
+                            looping: PlaybackLoopBehavior::DoNotLoop,
                             direction: PlaybackDirection::Reverse,
-                            looping: PlaybackLoopBehavior::Amount(1),
+                            speed: 0.25,
                             ..default()
                         })
+                        .with_transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .with_transition(PlayerTransition::OnComplete { state: "stopped" }),
                 ),
         );
@@ -173,19 +178,6 @@ fn ui(
                 player.stop();
             }
         });
-        ui.horizontal(|ui| {
-            ui.label("Set Speed");
-            let mut speed = playback_settings.speed;
-            if ui.add(egui::Slider::new(&mut speed, 0.05..=2.0)).changed() {
-                for state in player.states_mut() {
-                    let playback_settings = state
-                        .playback_settings
-                        .get_or_insert(PlaybackSettings::default());
-                    playback_settings.speed = speed;
-                }
-                playback_settings.speed = speed;
-            };
-        });
 
         ui.separator();
 
@@ -205,28 +197,149 @@ fn ui(
 
         ui.heading("Current State");
         ui.label(format!("Id: {}", player.state().id));
-        ui.label(format!("Autoplay: {}", playback_settings.autoplay));
-        ui.label(format!("Direction: {:?}", playback_settings.direction));
-        ui.label(format!(
-            "Intermission: {:?}",
-            playback_settings.intermission
-        ));
-        ui.label(format!("Loop Behavior: {:?}", playback_settings.looping));
-        ui.label(format!(
-            "Segments: {:?}",
-            playback_settings
-                .segments
-                .start
-                .max(composition.frames.start)
-                ..playback_settings.segments.end.min(composition.frames.end)
-        ));
-        ui.label(format!("Speed: {}", playback_settings.speed));
-        ui.heading(format!("Transitions: {}", player.state().transitions.len()));
-        for transition in player.state().transitions.iter() {
-            ui.label(format!("{transition:?}"));
-        }
+        ui.horizontal(|ui| {
+            ui.label("Autoplay");
+            let autoplaying = playback_settings.autoplay.to_string();
+            if ui
+                .checkbox(&mut playback_settings.autoplay, autoplaying.to_string())
+                .changed()
+            {
+                player.state_mut().playback_settings.autoplay = playback_settings.autoplay;
+            };
+        });
+        ui.vertical(|ui| {
+            ui.label("Direction");
+            ui.horizontal(|ui| {
+                ui.separator();
+                if ui
+                    .radio_value(
+                        &mut playback_settings.direction,
+                        PlaybackDirection::Normal,
+                        "Normal",
+                    )
+                    .changed()
+                {
+                    player.state_mut().playback_settings.direction = playback_settings.direction;
+                }
+            });
+            ui.horizontal(|ui| {
+                ui.separator();
+                if ui
+                    .radio_value(
+                        &mut playback_settings.direction,
+                        PlaybackDirection::Reverse,
+                        "Reverse",
+                    )
+                    .changed()
+                {
+                    player.state_mut().playback_settings.direction = playback_settings.direction;
+                }
+            });
+        });
 
-        ui.separator();
+        ui.horizontal(|ui| {
+            ui.label("Intermission");
+            let mut intermission = playback_settings.intermission.as_secs_f32();
+            if ui
+                .add(egui::Slider::new(&mut intermission, 0.0..=5.0))
+                .changed()
+            {
+                player.state_mut().playback_settings.intermission =
+                    Duration::from_secs_f32(intermission);
+                playback_settings.intermission = Duration::from_secs_f32(intermission);
+            };
+        });
+        ui.vertical(|ui| {
+            ui.label("Looping");
+            ui.horizontal(|ui| {
+                ui.separator();
+                let selected = matches!(playback_settings.looping, PlaybackLoopBehavior::DoNotLoop);
+                if ui.radio(selected, "Do not loop").clicked() {
+                    player.state_mut().playback_settings.looping = PlaybackLoopBehavior::DoNotLoop;
+                    playback_settings.looping = PlaybackLoopBehavior::DoNotLoop;
+                }
+            });
+            ui.horizontal(|ui| {
+                ui.separator();
+                let selected =
+                    matches!(playback_settings.looping, PlaybackLoopBehavior::Amount(..));
+                let mut amt = match playback_settings.looping {
+                    PlaybackLoopBehavior::Amount(amt) => amt,
+                    _ => 0,
+                };
+                let clicked = ui.radio(selected, "Amount").clicked();
+                if ui
+                    .add_enabled(selected, egui::Slider::new(&mut amt, 0..=5))
+                    .changed()
+                    || clicked
+                {
+                    player.state_mut().playback_settings.looping =
+                        PlaybackLoopBehavior::Amount(amt);
+                    playback_settings.looping = PlaybackLoopBehavior::Amount(amt);
+                };
+            });
+            ui.horizontal(|ui| {
+                ui.separator();
+                let selected = matches!(playback_settings.looping, PlaybackLoopBehavior::Loop);
+                if ui.radio(selected, "Loop").clicked() {
+                    player.state_mut().playback_settings.looping = PlaybackLoopBehavior::Loop;
+                    playback_settings.looping = PlaybackLoopBehavior::Loop;
+                }
+            });
+        });
+
+        ui.vertical(|ui| {
+            ui.label("Segments");
+            ui.horizontal(|ui| {
+                ui.separator();
+                ui.label("Start");
+                let mut start = playback_settings.segments.start;
+                if ui
+                    .add(
+                        egui::Slider::new(
+                            &mut start,
+                            composition.frames.start
+                                ..=playback_settings.segments.end.min(composition.frames.end),
+                        )
+                        .integer(),
+                    )
+                    .changed()
+                {
+                    player.state_mut().playback_settings.segments.start = start;
+                    playback_settings.segments.start = start;
+                };
+            });
+            ui.horizontal(|ui| {
+                ui.separator();
+                ui.label("End");
+                let mut end = playback_settings.segments.end;
+                if ui
+                    .add(
+                        egui::Slider::new(
+                            &mut end,
+                            playback_settings
+                                .segments
+                                .start
+                                .max(composition.frames.start)
+                                ..=composition.frames.end,
+                        )
+                        .integer(),
+                    )
+                    .changed()
+                {
+                    player.state_mut().playback_settings.segments.end = end;
+                    playback_settings.segments.end = end;
+                };
+            });
+        });
+        ui.horizontal(|ui| {
+            ui.label("Speed");
+            let mut speed = playback_settings.speed;
+            if ui.add(egui::Slider::new(&mut speed, 0.05..=2.0)).changed() {
+                player.state_mut().playback_settings.speed = speed;
+                playback_settings.speed = speed;
+            };
+        });
 
         ui.heading("Theme");
         for layer in metadata.get_layers() {
@@ -238,10 +351,19 @@ fn ui(
                     .changed()
                 {
                     let [r, g, b, a] = color_edit;
+                    player
+                        .state_mut()
+                        .theme
+                        .edit(layer, Color::rgba(r, g, b, a));
                     theme.edit(layer, Color::rgba(r, g, b, a));
                 };
                 ui.label(layer);
             });
+        }
+
+        ui.heading(format!("Transitions: {}", player.state().transitions.len()));
+        for transition in player.state().transitions.iter() {
+            ui.label(format!("{transition:?}"));
         }
     });
 }

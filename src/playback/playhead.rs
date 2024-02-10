@@ -19,6 +19,11 @@ impl Playhead {
         self.frame = frame;
     }
 
+    /// Reset the amount of loops completed
+    pub fn reset_loops(&mut self) {
+        self.loops_completed = 0;
+    }
+
     pub(crate) fn new(frame: f32) -> Self {
         Self {
             frame,

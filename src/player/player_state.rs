@@ -6,8 +6,8 @@ use bevy::prelude::*;
 pub struct PlayerState {
     pub id: &'static str,
     pub asset: Option<Handle<VelloAsset>>,
-    pub theme: Option<Theme>,
-    pub playback_settings: Option<PlaybackSettings>,
+    pub theme: Theme,
+    pub playback_settings: PlaybackSettings,
     pub transitions: Vec<PlayerTransition>,
     /// Whether to reset the playhead when you transition away from this state
     pub reset_playhead_on_transition: bool,
@@ -20,8 +20,8 @@ impl PlayerState {
         Self {
             id,
             asset: Default::default(),
-            playback_settings: None,
-            theme: None,
+            playback_settings: Default::default(),
+            theme: Default::default(),
             transitions: vec![],
             reset_playhead_on_transition: false,
             reset_playhead_on_start: false,
@@ -34,12 +34,12 @@ impl PlayerState {
     }
 
     pub fn with_theme(mut self, theme: Theme) -> Self {
-        self.theme.replace(theme);
+        self.theme = theme;
         self
     }
 
     pub fn with_playback_settings(mut self, playback_settings: PlaybackSettings) -> Self {
-        self.playback_settings.replace(playback_settings);
+        self.playback_settings = playback_settings;
         self
     }
 

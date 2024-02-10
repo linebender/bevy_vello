@@ -23,7 +23,7 @@ pub mod systems {
         PlayerTransition, Playhead, VectorFile, VelloAsset,
     };
     use bevy::prelude::*;
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
     use vello_svg::usvg::strict_num::Ulps;
 
     /// Spawn playheads for Lotties. Every Lottie gets exactly 1 playhead.
@@ -121,6 +121,9 @@ pub mod systems {
                 return;
             }
 
+            // Set first render
+            playhead.first_render.get_or_insert(Instant::now());
+
             // Advance playhead
             playhead.frame += time.delta_seconds()
                 * playback_settings.speed
@@ -134,8 +137,8 @@ pub mod systems {
                 PlaybackLoopBehavior::DoNotLoop => false,
             };
             if playhead.frame > end_frame {
-                playhead.loops_completed += 1;
                 if looping {
+                    playhead.loops_completed += 1;
                     // Trigger intermission, if applicable
                     if playback_settings.intermission > Duration::ZERO {
                         playhead
@@ -150,8 +153,8 @@ pub mod systems {
                     playhead.frame = end_frame;
                 }
             } else if playhead.frame < start_frame {
-                playhead.loops_completed += 1;
                 if looping {
+                    playhead.loops_completed += 1;
                     // Trigger intermission, if applicable
                     if playback_settings.intermission > Duration::ZERO {
                         playhead
@@ -347,14 +350,14 @@ pub mod systems {
                         || target_state.reset_playhead_on_start
                         || cur_handle.id() != target_handle.id()
                     {
-                        let playback_settings =
-                            target_state.playback_settings.clone().unwrap_or_default();
-                        let frame = match playback_settings.direction {
-                            PlaybackDirection::Normal => playback_settings
+                        let frame = match target_state.playback_settings.direction {
+                            PlaybackDirection::Normal => target_state
+                                .playback_settings
                                 .segments
                                 .start
                                 .max(composition.frames.start),
-                            PlaybackDirection::Reverse => playback_settings
+                            PlaybackDirection::Reverse => target_state
+                                .playback_settings
                                 .segments
                                 .end
                                 .min(composition.frames.end)
@@ -370,8 +373,8 @@ pub mod systems {
             *cur_handle = target_handle.clone();
             commands
                 .entity(entity)
-                .insert(target_state.playback_settings.clone().unwrap_or_default())
-                .insert(target_state.theme.clone().unwrap_or_default());
+                .insert(target_state.playback_settings.clone())
+                .insert(target_state.theme.clone());
 
             // Reset playhead state
             playhead.intermission.take();
