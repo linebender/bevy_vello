@@ -6,7 +6,8 @@ pub enum PlayerTransition {
         state: &'static str,
         secs: f32,
     },
-    /// Transition to a different state after all frames complete. Has no effect on SVGs, use `OnAfter` instead.
+    /// Transition to a different state after all frames complete. Has no
+    /// effect on SVGs, use `OnAfter` instead.
     OnComplete {
         state: &'static str,
     },

@@ -48,7 +48,9 @@ impl AssetLoader for VelloAssetLoader {
             let ext = path
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
-                .ok_or(VectorLoaderError::Parse("Invalid extension".to_string()))?
+                .ok_or(VectorLoaderError::Parse(
+                    "Invalid extension".to_string(),
+                ))?
                 .to_owned();
 
             debug!("parsing {}...", load_context.path().display());
@@ -57,7 +59,10 @@ impl AssetLoader for VelloAssetLoader {
                     let vello_vector = load_svg_from_bytes(&bytes)?;
                     info!(
                         path = format!("{}", load_context.path().display()),
-                        size = format!("{:?}", (vello_vector.width, vello_vector.height)),
+                        size = format!(
+                            "{:?}",
+                            (vello_vector.width, vello_vector.height)
+                        ),
                         "finished parsing svg asset"
                     );
                     Ok(vello_vector)
@@ -66,7 +71,10 @@ impl AssetLoader for VelloAssetLoader {
                     let vello_vector = load_lottie_from_bytes(&bytes)?;
                     info!(
                         path = format!("{}", load_context.path().display()),
-                        size = format!("{:?}", (vello_vector.width, vello_vector.height)),
+                        size = format!(
+                            "{:?}",
+                            (vello_vector.width, vello_vector.height)
+                        ),
                         "finished parsing json asset"
                     );
                     Ok(vello_vector)

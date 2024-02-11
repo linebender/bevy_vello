@@ -20,6 +20,8 @@ bevy = { version = "0.12", default-features = false, features = [
   "x11",
   "tonemapping_luts",
 ] }
+# FIXME: Remove later on, web-sys got angry in v0.3.38.
+web-sys = "=0.3.65"
 
 [package]
 name = "bevy-vello"
@@ -46,6 +48,8 @@ bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "28914d66f675efecf03c53261a0fb1b8ecce4fe9" }
 vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.1" }
 vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.1" }
+# FIXME: Remove later on, web-sys got angry in v0.3.38.
+web-sys = { workspace = true }
 
 # These settings are to get the WASM blob smaller for the demo.
 [profile.release]

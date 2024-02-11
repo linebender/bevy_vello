@@ -4,8 +4,7 @@ mod parser;
 pub(crate) mod vector;
 
 pub use asset_loader::VelloAssetLoader;
-pub use vector::VectorFile;
-pub use vector::VelloAsset;
+pub use vector::{VectorFile, VelloAsset};
 
 pub(crate) use asset_loader::VectorLoaderError;
 pub use parser::*;

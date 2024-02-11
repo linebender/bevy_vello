@@ -5,21 +5,25 @@ use std::{ops::Range, time::Duration};
 #[reflect(Component)]
 /// Playback settings which adjust the playback of a vello asset.
 ///
-/// You can add this component directly to a `VelloAssetBundle` entity to adjust playback settings.
+/// You can add this component directly to a `VelloAssetBundle` entity to adjust
+/// playback settings.
 pub struct PlaybackSettings {
     /// Whether to automatically start the animation.
     pub autoplay: bool,
     /// The direction of the animation.
     pub direction: PlaybackDirection,
-    /// The speed of the animation as a multiplier. 1.0 is normal speed. Anything less than 1 is slower, and anything greater than 1 is faster.
+    /// The speed of the animation as a multiplier. 1.0 is normal speed.
+    /// Anything less than 1 is slower, and anything greater than 1 is faster.
     pub speed: f32,
     /// A duration of time spent idle between loops.
     pub intermission: Duration,
-    /// Whether to reset the playhead every loop (normal) or to reverse directions (bounce).
+    /// Whether to reset the playhead every loop (normal) or to reverse
+    /// directions (bounce).
     pub play_mode: PlaybackPlayMode,
     /// Whether to loop, and how many.
     pub looping: PlaybackLoopBehavior,
-    /// The segments (frames) of the animation to play. Values out of range will be ignored.
+    /// The segments (frames) of the animation to play. Values out of range
+    /// will be ignored.
     pub segments: Range<f32>,
 }
 
@@ -59,7 +63,8 @@ pub enum PlaybackLoopBehavior {
     Loop,
 }
 
-/// Whether to reset (normal) the playhead every loop or to reverse directions (bounce).
+/// Whether to reset (normal) the playhead every loop or to reverse directions
+/// (bounce).
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
 pub enum PlaybackPlayMode {
     /// Reset the playhead every loop.

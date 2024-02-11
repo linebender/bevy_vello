@@ -19,18 +19,22 @@ impl Plugin for LottiePlayerPlugin {
 
 pub mod systems {
     use crate::{
-        playback::PlaybackPlayMode, player::LottiePlayer, PlaybackDirection, PlaybackLoopBehavior,
-        PlaybackSettings, PlayerTransition, Playhead, VectorFile, VelloAsset,
+        playback::PlaybackPlayMode, player::LottiePlayer, PlaybackDirection,
+        PlaybackLoopBehavior, PlaybackSettings, PlayerTransition, Playhead,
+        VectorFile, VelloAsset,
     };
-    use bevy::prelude::*;
-    use std::time::{Duration, Instant};
+    use bevy::{prelude::*, utils::Instant};
+    use std::time::Duration;
     use vello_svg::usvg::strict_num::Ulps;
 
     /// Spawn playheads for Lotties. Every Lottie gets exactly 1 playhead.
     /// Only
     pub fn spawn_playheads(
         mut commands: Commands,
-        query: Query<(Entity, &Handle<VelloAsset>, Option<&PlaybackSettings>), Without<Playhead>>,
+        query: Query<
+            (Entity, &Handle<VelloAsset>, Option<&PlaybackSettings>),
+            Without<Playhead>,
+        >,
         assets: Res<Assets<VelloAsset>>,
     ) {
         for (entity, handle, playback_settings) in query.iter() {
@@ -40,17 +44,19 @@ pub mod systems {
                     return;
                 };
                 let frame = match playback_settings {
-                    Some(playback_settings) => match playback_settings.direction {
-                        PlaybackDirection::Normal => playback_settings
-                            .segments
-                            .start
-                            .max(composition.frames.start),
-                        PlaybackDirection::Reverse => playback_settings
-                            .segments
-                            .end
-                            .min(composition.frames.end)
-                            .prev(),
-                    },
+                    Some(playback_settings) => {
+                        match playback_settings.direction {
+                            PlaybackDirection::Normal => playback_settings
+                                .segments
+                                .start
+                                .max(composition.frames.start),
+                            PlaybackDirection::Reverse => playback_settings
+                                .segments
+                                .end
+                                .min(composition.frames.end)
+                                .prev(),
+                        }
+                    }
                     None => composition.frames.start,
                 };
                 commands.entity(entity).insert(Playhead::new(frame));
@@ -69,7 +75,9 @@ pub mod systems {
         mut assets: ResMut<Assets<VelloAsset>>,
         time: Res<Time>,
     ) {
-        for (asset_handle, mut playhead, player, playback_settings) in query.iter_mut() {
+        for (asset_handle, mut playhead, player, playback_settings) in
+            query.iter_mut()
+        {
             // Get asset
             let Some(VelloAsset {
                 data: VectorFile::Lottie { composition },
@@ -79,7 +87,8 @@ pub mod systems {
                 continue;
             };
 
-            let playback_settings = playback_settings.cloned().unwrap_or_default();
+            let playback_settings =
+                playback_settings.cloned().unwrap_or_default();
             if let Some(mut player) = player {
                 if player.stopped {
                     continue;
@@ -135,24 +144,30 @@ pub mod systems {
             // Keep the playhead bounded between segments
             let looping = match playback_settings.looping {
                 PlaybackLoopBehavior::Loop => true,
-                PlaybackLoopBehavior::Amount(amt) => playhead.loops_completed < amt,
+                PlaybackLoopBehavior::Amount(amt) => {
+                    playhead.loops_completed < amt
+                }
                 PlaybackLoopBehavior::DoNotLoop => false,
             };
             if playhead.frame > end_frame {
                 if looping {
                     playhead.loops_completed += 1;
-                    if let PlaybackPlayMode::Bounce = playback_settings.play_mode {
+                    if let PlaybackPlayMode::Bounce =
+                        playback_settings.play_mode
+                    {
                         playhead.playmode_dir *= -1.0;
                     }
                     // Trigger intermission, if applicable
                     if playback_settings.intermission > Duration::ZERO {
-                        playhead
-                            .intermission
-                            .replace(Timer::new(playback_settings.intermission, TimerMode::Once));
+                        playhead.intermission.replace(Timer::new(
+                            playback_settings.intermission,
+                            TimerMode::Once,
+                        ));
                         playhead.frame = end_frame;
                     } else {
                         // Wrap around to the beginning of the segment
-                        playhead.frame = start_frame + (playhead.frame - end_frame);
+                        playhead.frame =
+                            start_frame + (playhead.frame - end_frame);
                     }
                 } else {
                     playhead.frame = end_frame;
@@ -164,18 +179,22 @@ pub mod systems {
             } else if playhead.frame < start_frame {
                 if looping {
                     playhead.loops_completed += 1;
-                    if let PlaybackPlayMode::Bounce = playback_settings.play_mode {
+                    if let PlaybackPlayMode::Bounce =
+                        playback_settings.play_mode
+                    {
                         playhead.playmode_dir *= -1.0;
                     }
                     // Trigger intermission, if applicable
                     if playback_settings.intermission > Duration::ZERO {
-                        playhead
-                            .intermission
-                            .replace(Timer::new(playback_settings.intermission, TimerMode::Once));
+                        playhead.intermission.replace(Timer::new(
+                            playback_settings.intermission,
+                            TimerMode::Once,
+                        ));
                         playhead.frame = start_frame;
                     } else {
                         // Wrap around to the beginning of the segment
-                        playhead.frame = end_frame - (start_frame - playhead.frame);
+                        playhead.frame =
+                            end_frame - (start_frame - playhead.frame);
                     }
                 } else {
                     playhead.frame = start_frame;
@@ -214,8 +233,13 @@ pub mod systems {
             .and_then(|cursor| camera.viewport_to_world(view, cursor))
             .map(|ray| ray.origin.truncate());
 
-        for (mut player, playhead, playback_settings, gtransform, current_asset_handle) in
-            query_player.iter_mut()
+        for (
+            mut player,
+            playhead,
+            playback_settings,
+            gtransform,
+            current_asset_handle,
+        ) in query_player.iter_mut()
         {
             if player.stopped {
                 continue;
@@ -224,7 +248,9 @@ pub mod systems {
             let current_state_name = player.current_state.to_owned();
             let current_asset = assets
                 .get_mut(current_asset_handle.id())
-                .unwrap_or_else(|| panic!("asset not found for state: '{current_state_name}'"));
+                .unwrap_or_else(|| {
+                    panic!("asset not found for state: '{current_state_name}'")
+                });
 
             let is_inside = {
                 match pointer_pos {
@@ -233,7 +259,8 @@ pub mod systems {
                             .local_transform_center
                             .compute_matrix()
                             .inverse();
-                        let transform = gtransform.compute_matrix() * local_transform;
+                        let transform =
+                            gtransform.compute_matrix() * local_transform;
                         let mouse_local = transform
                             .inverse()
                             .transform_point3(pointer_pos.extend(0.0));
@@ -250,13 +277,17 @@ pub mod systems {
                 match transition {
                     PlayerTransition::OnAfter { state, secs } => {
                         let started = playhead.first_render;
-                        if started.is_some_and(|s| s.elapsed().as_secs_f32() >= *secs) {
+                        if started
+                            .is_some_and(|s| s.elapsed().as_secs_f32() >= *secs)
+                        {
                             player.next_state = Some(state);
                             break;
                         }
                     }
                     PlayerTransition::OnComplete { state } => {
-                        if let VectorFile::Lottie { composition } = &current_asset.data {
+                        if let VectorFile::Lottie { composition } =
+                            &current_asset.data
+                        {
                             let loops_needed = match playback_settings.looping {
                                 PlaybackLoopBehavior::DoNotLoop => Some(0),
                                 PlaybackLoopBehavior::Amount(amt) => Some(amt),
@@ -303,7 +334,8 @@ pub mod systems {
                         }
                     }
                     PlayerTransition::OnMouseClick { state } => {
-                        if is_inside && buttons.just_pressed(MouseButton::Left) {
+                        if is_inside && buttons.just_pressed(MouseButton::Left)
+                        {
                             player.next_state = Some(state);
                             break;
                         }
@@ -338,7 +370,9 @@ pub mod systems {
         )>,
         mut assets: ResMut<Assets<VelloAsset>>,
     ) {
-        for (entity, mut player, mut playhead, mut cur_handle) in query_sm.iter_mut() {
+        for (entity, mut player, mut playhead, mut cur_handle) in
+            query_sm.iter_mut()
+        {
             let Some(next_state) = player.next_state.take() else {
                 continue;
             };
@@ -348,7 +382,8 @@ pub mod systems {
                 .states
                 .get(&next_state)
                 .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
-            let target_handle = target_state.asset.clone().unwrap_or(cur_handle.clone());
+            let target_handle =
+                target_state.asset.clone().unwrap_or(cur_handle.clone());
 
             let Some(asset) = assets.get_mut(target_handle.id()) else {
                 warn!("Asset not ready for transition... re-queue'ing...");
@@ -366,19 +401,20 @@ pub mod systems {
                         || target_state.reset_playhead_on_start
                         || cur_handle.id() != target_handle.id()
                     {
-                        let frame = match target_state.playback_settings.direction {
-                            PlaybackDirection::Normal => target_state
-                                .playback_settings
-                                .segments
-                                .start
-                                .max(composition.frames.start),
-                            PlaybackDirection::Reverse => target_state
-                                .playback_settings
-                                .segments
-                                .end
-                                .min(composition.frames.end)
-                                .prev(),
-                        };
+                        let frame =
+                            match target_state.playback_settings.direction {
+                                PlaybackDirection::Normal => target_state
+                                    .playback_settings
+                                    .segments
+                                    .start
+                                    .max(composition.frames.start),
+                                PlaybackDirection::Reverse => target_state
+                                    .playback_settings
+                                    .segments
+                                    .end
+                                    .min(composition.frames.end)
+                                    .prev(),
+                            };
                         // Reset playhead
                         playhead.frame = frame;
                     }

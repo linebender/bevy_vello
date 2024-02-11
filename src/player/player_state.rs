@@ -11,7 +11,8 @@ pub struct PlayerState {
     pub transitions: Vec<PlayerTransition>,
     /// Whether to reset the playhead when you transition away from this state
     pub reset_playhead_on_transition: bool,
-    /// Whether to reset the playhead when the transition it moved to this state
+    /// Whether to reset the playhead when the transition it moved to this
+    /// state
     pub reset_playhead_on_start: bool,
 }
 
@@ -38,7 +39,10 @@ impl PlayerState {
         self
     }
 
-    pub fn with_playback_settings(mut self, playback_settings: PlaybackSettings) -> Self {
+    pub fn with_playback_settings(
+        mut self,
+        playback_settings: PlaybackSettings,
+    ) -> Self {
         self.playback_settings = playback_settings;
         self
     }

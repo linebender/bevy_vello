@@ -20,7 +20,8 @@ impl Plugin for VelloPlugin {
 
         app.add_plugins(VelloRenderPlugin)
             .add_plugins((
-                Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(),
+                Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(
+                ),
                 LottiePlayerPlugin,
                 #[cfg(feature = "debug")]
                 crate::debug::DebugVisualizationsPlugin,

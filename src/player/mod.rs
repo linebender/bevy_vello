@@ -9,3 +9,5 @@ pub use player_transition::PlayerTransition;
 
 mod plugin;
 pub use plugin::LottiePlayerPlugin;
+
+mod systems;

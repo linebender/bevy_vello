@@ -1,8 +1,9 @@
 use bevy::{
     prelude::*,
     render::{
-        extract_component::ExtractComponentPlugin, render_asset::RenderAssetPlugin,
-        renderer::RenderDevice, Render, RenderApp, RenderSet,
+        extract_component::ExtractComponentPlugin,
+        render_asset::RenderAssetPlugin, renderer::RenderDevice, Render,
+        RenderApp, RenderSet,
     },
 };
 use vello::{AaSupport, Renderer, RendererOptions};
@@ -27,7 +28,8 @@ impl Plugin for VelloRenderPlugin {
             .add_systems(
                 ExtractSchedule,
                 (
-                    extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
+                    extract::extract_pixel_scale
+                        .in_set(RenderSet::ExtractCommands),
                     extract::vector_instances,
                 ),
             )
@@ -39,7 +41,10 @@ impl Plugin for VelloRenderPlugin {
                 )
                     .in_set(RenderSet::Prepare),
             )
-            .add_systems(Render, render::render_scene.in_set(RenderSet::Render));
+            .add_systems(
+                Render,
+                render::render_scene.in_set(RenderSet::Render),
+            );
 
         app.add_plugins((
             ExtractComponentPlugin::<extract::ExtractedRenderText>::default(),

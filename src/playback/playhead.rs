@@ -10,7 +10,8 @@ pub struct Playhead {
     pub(crate) intermission: Option<Timer>,
     /// Used to count loops for loop behavior.
     pub(crate) loops_completed: usize,
-    /// Used by play mode to track current direction. Only set to -1.0 (reverse) or 1.0 (normal).
+    /// Used by play mode to track current direction. Only set to -1.0
+    /// (reverse) or 1.0 (normal).
     pub(crate) playmode_dir: f32,
 }
 

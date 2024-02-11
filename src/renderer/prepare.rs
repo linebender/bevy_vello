@@ -1,4 +1,6 @@
-use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
+use super::extract::{
+    ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector,
+};
 use crate::CoordinateSpace;
 use bevy::{
     prelude::*,
@@ -36,13 +38,16 @@ pub fn prepare_vector_affines(
             .local_transform_center
             .compute_matrix()
             .inverse();
-        let vector_size = Vec2::new(render_vector.asset.width, render_vector.asset.height);
+        let vector_size =
+            Vec2::new(render_vector.asset.width, render_vector.asset.height);
 
         let raw_transform = match render_vector.render_mode {
             CoordinateSpace::ScreenSpace => {
-                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+                let mut model_matrix =
+                    world_transform.compute_matrix().mul_scalar(pixel_scale.0);
 
-                // Make the screen space vector instance sized to fill the entire UI Node box if it's bundled with a Node
+                // Make the screen space vector instance sized to fill the
+                // entire UI Node box if it's bundled with a Node
                 if let Some(node) = &render_vector.ui_node {
                     let fill_scale = node.size() / vector_size;
                     model_matrix.x_axis.x *= fill_scale.x;
@@ -56,7 +61,8 @@ pub fn prepare_vector_affines(
             CoordinateSpace::WorldSpace => {
                 let local_matrix = local_center_matrix;
 
-                let mut model_matrix = world_transform.compute_matrix() * local_matrix;
+                let mut model_matrix =
+                    world_transform.compute_matrix() * local_matrix;
                 model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {

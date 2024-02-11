@@ -22,22 +22,32 @@ pub use vellottie;
 #[cfg(feature = "debug")]
 pub mod debug;
 
-pub use assets::VelloAssetLoader;
 pub use assets::{
-    load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str,
-    VectorFile, VelloAsset,
+    load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes,
+    load_svg_from_str, VectorFile, VelloAsset, VelloAssetLoader,
 };
 pub use font::VelloFontLoader;
 pub use playback::{
-    PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior, PlaybackPlayMode,
-    PlaybackSettings, Playhead,
+    PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior,
+    PlaybackPlayMode, PlaybackSettings, Playhead,
 };
 pub use player::{LottiePlayer, PlayerState, PlayerTransition};
 pub use plugin::VelloPlugin;
 pub use rendertarget::VelloCanvasMaterial;
 pub use theme::Theme;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
+#[derive(
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Component,
+    Default,
+    Copy,
+    Clone,
+    Debug,
+    Reflect,
+)]
 #[reflect(Component)]
 pub enum CoordinateSpace {
     #[default]

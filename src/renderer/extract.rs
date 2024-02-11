@@ -1,6 +1,6 @@
 use crate::{
-    font::VelloFont, theme::Theme, CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset,
-    VelloText,
+    font::VelloFont, theme::Theme, CoordinateSpace, PlaybackAlphaOverride,
+    Playhead, VelloAsset, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -52,7 +52,9 @@ pub fn vector_instances(
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = match asset.data {
                     crate::VectorFile::Svg { .. } => 0.0,
-                    crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
+                    crate::VectorFile::Lottie { .. } => {
+                        playhead.unwrap().frame()
+                    }
                 };
                 commands.spawn(ExtractedRenderVector {
                     asset: asset.to_owned(),

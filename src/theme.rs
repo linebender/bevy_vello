@@ -6,9 +6,10 @@ use vellottie::{
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
-/// Add this component to a `VelloAssetBundle` entity to enable runtime color editing.
-/// This interface allows swapping colors in a lottie composition by selecting the desired layer
-/// and shape and overriding the original color with a new color.
+/// Add this component to a `VelloAssetBundle` entity to enable runtime color
+/// editing. This interface allows swapping colors in a lottie composition by
+/// selecting the desired layer and shape and overriding the original color with
+/// a new color.
 ///
 /// Only works for layer shapes with fill or stroke elements.
 pub struct Theme {
@@ -28,7 +29,8 @@ impl Theme {
         self
     }
 
-    /// Swap a color for the selected layer name. This will overwrite the previous value.
+    /// Swap a color for the selected layer name. This will overwrite the
+    /// previous value.
     pub fn edit(&mut self, layer_name: &str, color: Color) -> &mut Self {
         self.colors.insert(layer_name.to_string(), color);
         self
@@ -103,38 +105,42 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
             vello::peniko::Brush::Image(_) => {}
         },
         vellottie::runtime::model::Brush::Animated(brush) => match brush {
-            vellottie::runtime::model::animated::Brush::Solid(brush) => match brush {
-                vellottie::runtime::model::Value::Fixed(solid) => {
-                    *solid = target_color;
-                }
-                vellottie::runtime::model::Value::Animated(keyframes) => {
-                    for solid in keyframes.values.iter_mut() {
+            vellottie::runtime::model::animated::Brush::Solid(brush) => {
+                match brush {
+                    vellottie::runtime::model::Value::Fixed(solid) => {
                         *solid = target_color;
                     }
-                }
-            },
-            vellottie::runtime::model::animated::Brush::Gradient(gr) => match &mut gr.stops {
-                vellottie::runtime::model::ColorStops::Fixed(stops) => {
-                    for stop in stops.iter_mut() {
-                        stop.color = target_color;
-                    }
-                }
-                vellottie::runtime::model::ColorStops::Animated(stops) => {
-                    for _ in 0..stops.count {
-                        for stop in stops.values.iter_mut() {
-                            let _offset = stop[0];
-                            let r = &mut stop[1];
-                            *r = target_color.r as f32;
-                            let g = &mut stop[2];
-                            *g = target_color.g as f32;
-                            let b = &mut stop[3];
-                            *b = target_color.b as f32;
-                            let a = &mut stop[4];
-                            *a = target_color.a as f32;
+                    vellottie::runtime::model::Value::Animated(keyframes) => {
+                        for solid in keyframes.values.iter_mut() {
+                            *solid = target_color;
                         }
                     }
                 }
-            },
+            }
+            vellottie::runtime::model::animated::Brush::Gradient(gr) => {
+                match &mut gr.stops {
+                    vellottie::runtime::model::ColorStops::Fixed(stops) => {
+                        for stop in stops.iter_mut() {
+                            stop.color = target_color;
+                        }
+                    }
+                    vellottie::runtime::model::ColorStops::Animated(stops) => {
+                        for _ in 0..stops.count {
+                            for stop in stops.values.iter_mut() {
+                                let _offset = stop[0];
+                                let r = &mut stop[1];
+                                *r = target_color.r as f32;
+                                let g = &mut stop[2];
+                                *g = target_color.g as f32;
+                                let b = &mut stop[3];
+                                *b = target_color.b as f32;
+                                let a = &mut stop[4];
+                                *a = target_color.a as f32;
+                            }
+                        }
+                    }
+                }
+            }
         },
     }
 }

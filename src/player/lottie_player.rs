@@ -1,7 +1,8 @@
 use super::PlayerState;
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 
-/// A lottie player that closely mirrors the behavior and functionality for dotLottie Interactivity.
+/// A lottie player that closely mirrors the behavior and functionality for
+/// dotLottie Interactivity.
 ///
 /// See: https://docs.lottiefiles.com/dotlottie-js-external/
 #[derive(Component, Clone, Default, Debug)]
@@ -11,7 +12,8 @@ pub struct LottiePlayer {
     pub(crate) states: HashMap<&'static str, PlayerState>,
     /// Whether the player has started.
     pub(crate) started: bool,
-    /// Whether the player is playing. State machines will continue unless stopped.
+    /// Whether the player is playing. State machines will continue unless
+    /// stopped.
     pub(crate) playing: bool,
     /// Stopped. Doesn't run state machines.
     pub(crate) stopped: bool,
@@ -20,16 +22,16 @@ pub struct LottiePlayer {
 impl LottiePlayer {
     /// Retrieve an immutable reference to the current state.
     pub fn state(&self) -> &PlayerState {
-        self.states
-            .get(self.current_state)
-            .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state))
+        self.states.get(self.current_state).unwrap_or_else(|| {
+            panic!("state not found: '{}'", self.current_state)
+        })
     }
 
     /// Retrieve a mutable reference to the current state.
     pub fn state_mut(&mut self) -> &mut PlayerState {
-        self.states
-            .get_mut(self.current_state)
-            .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state))
+        self.states.get_mut(self.current_state).unwrap_or_else(|| {
+            panic!("state not found: '{}'", self.current_state)
+        })
     }
 
     /// Returns an immutable iterator of the states for this player.

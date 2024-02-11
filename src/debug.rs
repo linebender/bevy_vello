@@ -22,9 +22,15 @@ fn draw_viewbox(
         (&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations),
         Without<Node>,
     >,
-    query_ui: Query<(&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations), With<Node>>,
+    query_ui: Query<
+        (&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations),
+        With<Node>,
+    >,
     vectors: Res<Assets<VelloAsset>>,
-    query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
+    query_cam: Query<
+        (&Camera, &GlobalTransform, &OrthographicProjection),
+        With<Camera2d>,
+    >,
     mut gizmos: Gizmos,
 ) {
     let Ok((camera, view, projection)) = query_cam.get_single() else {
@@ -39,7 +45,8 @@ fn draw_viewbox(
         .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
-            let [min, x_axis, max, y_axis] = vector.bb_in_world_space(transform);
+            let [min, x_axis, max, y_axis] =
+                vector.bb_in_world_space(transform);
 
             gizmos.line_2d(min, x_axis, Color::WHITE);
             gizmos.line_2d(min, y_axis, Color::WHITE);
@@ -47,13 +54,17 @@ fn draw_viewbox(
             gizmos.line_2d(y_axis, max, Color::WHITE);
 
             let red_x_origin = transform.translation().xy();
-            let from = red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-            let to = red_x_origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
+            let from =
+                red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
+            let to = red_x_origin
+                + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 
             gizmos.line_2d(from, to, Color::RED);
 
-            let from = red_x_origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-            let to = red_x_origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
+            let from = red_x_origin
+                + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
+            let to = red_x_origin
+                + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
 
             gizmos.line_2d(from, to, Color::RED);
         }
@@ -80,14 +91,19 @@ fn draw_viewbox(
             gizmos.line_2d(x_axis, max, Color::WHITE);
             gizmos.line_2d(y_axis, max, Color::WHITE);
 
-            let red_x_origin = Vec2::new((y_axis.x + max.x) / 2.0, (y_axis.y + min.y) / 2.0);
-            let from = red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-            let to = red_x_origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
+            let red_x_origin =
+                Vec2::new((y_axis.x + max.x) / 2.0, (y_axis.y + min.y) / 2.0);
+            let from =
+                red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
+            let to = red_x_origin
+                + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 
             gizmos.line_2d(from, to, Color::RED);
 
-            let from = red_x_origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-            let to = red_x_origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
+            let from = red_x_origin
+                + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
+            let to = red_x_origin
+                + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
 
             gizmos.line_2d(from, to, Color::RED);
         }

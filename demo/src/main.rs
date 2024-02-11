@@ -6,9 +6,10 @@ use bevy_egui::{
     EguiContexts, EguiPlugin,
 };
 use bevy_vello::{
-    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, LottiePlayer, PlaybackDirection,
-    PlaybackLoopBehavior, PlaybackPlayMode, PlaybackSettings, PlayerState, PlayerTransition,
-    Playhead, Theme, VectorFile, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText,
+    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps,
+    LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackPlayMode,
+    PlaybackSettings, PlayerState, PlayerTransition, Playhead, Theme,
+    VectorFile, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText,
     VelloTextBundle,
 };
 
@@ -24,7 +25,10 @@ fn main() {
         .run();
 }
 
-fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+fn setup_vector_graphics(
+    mut commands: Commands,
+    asset_server: ResMut<AssetServer>,
+) {
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
@@ -51,7 +55,9 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             ..default()
                         })
                         .with_theme(Theme::new().add("calendar", Color::BLUE))
-                        .with_transition(PlayerTransition::OnMouseEnter { state: "play" })
+                        .with_transition(PlayerTransition::OnMouseEnter {
+                            state: "play",
+                        })
                         .reset_playhead_on_start(true)
                 })
                 .with_state(
@@ -62,7 +68,9 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             ..default()
                         })
                         .with_theme(Theme::new().add("calendar", Color::GREEN))
-                        .with_transition(PlayerTransition::OnMouseLeave { state: "rev" }),
+                        .with_transition(PlayerTransition::OnMouseLeave {
+                            state: "rev",
+                        }),
                 )
                 .with_state(
                     PlayerState::new("rev")
@@ -73,8 +81,12 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             ..default()
                         })
                         .with_theme(Theme::new().add("calendar", Color::RED))
-                        .with_transition(PlayerTransition::OnMouseEnter { state: "play" })
-                        .with_transition(PlayerTransition::OnComplete { state: "stopped" }),
+                        .with_transition(PlayerTransition::OnMouseEnter {
+                            state: "play",
+                        })
+                        .with_transition(PlayerTransition::OnComplete {
+                            state: "stopped",
+                        }),
                 ),
         );
 }
@@ -96,7 +108,8 @@ fn print_metadata(
     }
 }
 
-/// Drag and drop any SVG or Lottie JSON asset into the window and change the displayed asset
+/// Drag and drop any SVG or Lottie JSON asset into the window and change the
+/// displayed asset
 fn drag_and_drop(
     mut query: Query<&mut Handle<VelloAsset>>,
     asset_server: ResMut<AssetServer>,
@@ -125,8 +138,13 @@ fn ui(
     )>,
     assets: Res<Assets<VelloAsset>>,
 ) {
-    let Ok((mut player, mut playhead, mut playback_settings, mut theme, handle)) =
-        player.get_single_mut()
+    let Ok((
+        mut player,
+        mut playhead,
+        mut playback_settings,
+        mut theme,
+        handle,
+    )) = player.get_single_mut()
     else {
         return;
     };
@@ -204,10 +222,14 @@ fn ui(
             ui.label("Autoplay");
             let autoplaying = playback_settings.autoplay.to_string();
             if ui
-                .checkbox(&mut playback_settings.autoplay, autoplaying.to_string())
+                .checkbox(
+                    &mut playback_settings.autoplay,
+                    autoplaying.to_string(),
+                )
                 .changed()
             {
-                player.state_mut().playback_settings.autoplay = playback_settings.autoplay;
+                player.state_mut().playback_settings.autoplay =
+                    playback_settings.autoplay;
             };
         });
         ui.vertical(|ui| {
@@ -222,7 +244,8 @@ fn ui(
                     )
                     .changed()
                 {
-                    player.state_mut().playback_settings.direction = playback_settings.direction;
+                    player.state_mut().playback_settings.direction =
+                        playback_settings.direction;
                 }
             });
             ui.horizontal(|ui| {
@@ -235,7 +258,8 @@ fn ui(
                     )
                     .changed()
                 {
-                    player.state_mut().playback_settings.direction = playback_settings.direction;
+                    player.state_mut().playback_settings.direction =
+                        playback_settings.direction;
                 }
             });
         });
@@ -249,24 +273,33 @@ fn ui(
             {
                 player.state_mut().playback_settings.intermission =
                     Duration::from_secs_f32(intermission);
-                playback_settings.intermission = Duration::from_secs_f32(intermission);
+                playback_settings.intermission =
+                    Duration::from_secs_f32(intermission);
             };
         });
         ui.vertical(|ui| {
             ui.label("Play Mode");
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected = matches!(playback_settings.play_mode, PlaybackPlayMode::Normal);
+                let selected = matches!(
+                    playback_settings.play_mode,
+                    PlaybackPlayMode::Normal
+                );
                 if ui.radio(selected, "Normal").clicked() {
-                    player.state_mut().playback_settings.play_mode = PlaybackPlayMode::Normal;
+                    player.state_mut().playback_settings.play_mode =
+                        PlaybackPlayMode::Normal;
                     playback_settings.play_mode = PlaybackPlayMode::Normal;
                 }
             });
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected = matches!(playback_settings.play_mode, PlaybackPlayMode::Bounce);
+                let selected = matches!(
+                    playback_settings.play_mode,
+                    PlaybackPlayMode::Bounce
+                );
                 if ui.radio(selected, "Bounce").clicked() {
-                    player.state_mut().playback_settings.play_mode = PlaybackPlayMode::Bounce;
+                    player.state_mut().playback_settings.play_mode =
+                        PlaybackPlayMode::Bounce;
                     playback_settings.play_mode = PlaybackPlayMode::Bounce;
                 }
             });
@@ -275,16 +308,22 @@ fn ui(
             ui.label("Looping");
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected = matches!(playback_settings.looping, PlaybackLoopBehavior::DoNotLoop);
+                let selected = matches!(
+                    playback_settings.looping,
+                    PlaybackLoopBehavior::DoNotLoop
+                );
                 if ui.radio(selected, "Do not loop").clicked() {
-                    player.state_mut().playback_settings.looping = PlaybackLoopBehavior::DoNotLoop;
+                    player.state_mut().playback_settings.looping =
+                        PlaybackLoopBehavior::DoNotLoop;
                     playback_settings.looping = PlaybackLoopBehavior::DoNotLoop;
                 }
             });
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected =
-                    matches!(playback_settings.looping, PlaybackLoopBehavior::Amount(..));
+                let selected = matches!(
+                    playback_settings.looping,
+                    PlaybackLoopBehavior::Amount(..)
+                );
                 let mut amt = match playback_settings.looping {
                     PlaybackLoopBehavior::Amount(amt) => amt,
                     _ => 0,
@@ -297,14 +336,19 @@ fn ui(
                 {
                     player.state_mut().playback_settings.looping =
                         PlaybackLoopBehavior::Amount(amt);
-                    playback_settings.looping = PlaybackLoopBehavior::Amount(amt);
+                    playback_settings.looping =
+                        PlaybackLoopBehavior::Amount(amt);
                 };
             });
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected = matches!(playback_settings.looping, PlaybackLoopBehavior::Loop);
+                let selected = matches!(
+                    playback_settings.looping,
+                    PlaybackLoopBehavior::Loop
+                );
                 if ui.radio(selected, "Loop").clicked() {
-                    player.state_mut().playback_settings.looping = PlaybackLoopBehavior::Loop;
+                    player.state_mut().playback_settings.looping =
+                        PlaybackLoopBehavior::Loop;
                     playback_settings.looping = PlaybackLoopBehavior::Loop;
                 }
             });
@@ -321,7 +365,10 @@ fn ui(
                         egui::Slider::new(
                             &mut start,
                             composition.frames.start
-                                ..=playback_settings.segments.end.min(composition.frames.end),
+                                ..=playback_settings
+                                    .segments
+                                    .end
+                                    .min(composition.frames.end),
                         )
                         .integer(),
                     )
@@ -383,7 +430,10 @@ fn ui(
             });
         }
 
-        ui.heading(format!("Transitions: {}", player.state().transitions.len()));
+        ui.heading(format!(
+            "Transitions: {}",
+            player.state().transitions.len()
+        ));
         for transition in player.state().transitions.iter() {
             ui.label(format!("{transition:?}"));
         }

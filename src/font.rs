@@ -23,8 +23,7 @@ use bevy::{
 };
 use std::sync::Arc;
 use vello::{
-    fello::meta::MetadataProvider,
-    fello::raw::FontRef,
+    fello::{meta::MetadataProvider, raw::FontRef},
     glyph::GlyphContext,
     kurbo::Affine,
     peniko::{self, Blob, Brush, Font},
@@ -79,7 +78,8 @@ impl VelloFont {
         transform: Affine,
         text: &str,
     ) {
-        let (glyphs, text_width, _text_height) = self.add(size, None, transform, text);
+        let (glyphs, text_width, _text_height) =
+            self.add(size, None, transform, text);
         for (glyph, xform) in glyphs {
             let xform = xform * Affine::translate((-text_width / 2.0, 0.0));
             builder.append(&glyph, Some(xform));
@@ -93,7 +93,8 @@ impl VelloFont {
         transform: Affine,
         text: &str,
     ) -> (Vec<(SceneFragment, Affine)>, f64, f64) {
-        let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
+        let font = FontRef::new(self.font.data.data())
+            .expect("Vello font creation error");
 
         let mut items = vec![];
         let mut pen_x = 0f64;
@@ -105,7 +106,8 @@ impl VelloFont {
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
         let glyph_metrics = font.glyph_metrics(fello_size, Default::default());
         let vars: [(&str, f32); 0] = [];
-        let mut provider = self.gcx.new_provider(&font, None, size, false, vars);
+        let mut provider =
+            self.gcx.new_provider(&font, None, size, false, vars);
 
         for ch in text.chars() {
             if ch == '\n' {
@@ -114,7 +116,8 @@ impl VelloFont {
                 continue;
             }
             let gid = charmap.map(ch).unwrap_or_default();
-            let advance = glyph_metrics.advance_width(gid).unwrap_or_default() as f64;
+            let advance =
+                glyph_metrics.advance_width(gid).unwrap_or_default() as f64;
 
             if let Some(glyph) = provider.get(gid.to_u16(), brush) {
                 let xform = transform
