@@ -16,7 +16,7 @@ pub struct Theme {
 }
 
 impl Theme {
-    pub fn empty() -> Self {
+    pub fn new() -> Self {
         Self {
             colors: HashMap::default(),
         }

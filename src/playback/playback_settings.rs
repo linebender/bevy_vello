@@ -15,6 +15,8 @@ pub struct PlaybackSettings {
     pub speed: f32,
     /// A duration of time spent idle between loops.
     pub intermission: Duration,
+    /// Whether to reset the playhead every loop (normal) or to reverse directions (bounce).
+    pub play_mode: PlaybackPlayMode,
     /// Whether to loop, and how many.
     pub looping: PlaybackLoopBehavior,
     /// The segments (frames) of the animation to play. Values out of range will be ignored.
@@ -25,10 +27,11 @@ impl Default for PlaybackSettings {
     fn default() -> Self {
         Self {
             autoplay: true,
-            direction: PlaybackDirection::default(),
+            direction: Default::default(),
             speed: 1.0,
             intermission: Duration::ZERO,
-            looping: PlaybackLoopBehavior::default(),
+            play_mode: Default::default(),
+            looping: Default::default(),
             segments: f32::MIN..f32::MAX,
         }
     }
@@ -54,4 +57,14 @@ pub enum PlaybackLoopBehavior {
     /// Loop continuously.
     #[default]
     Loop,
+}
+
+/// Whether to reset (normal) the playhead every loop or to reverse directions (bounce).
+#[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
+pub enum PlaybackPlayMode {
+    /// Reset the playhead every loop.
+    #[default]
+    Normal,
+    /// Reverse the direction every loop.
+    Bounce,
 }

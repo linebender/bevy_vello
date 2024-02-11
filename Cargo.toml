@@ -47,5 +47,7 @@ vello = { git = "https://github.com/linebender/vello", rev = "28914d66f675efecf0
 vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.1" }
 vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.1" }
 
-[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
-wasm-bindgen-test = "0.3"
+# These settings are to get the WASM blob smaller for the demo.
+[profile.release]
+codegen-units = 1
+opt-level = 'z'

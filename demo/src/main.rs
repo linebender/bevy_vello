@@ -7,8 +7,9 @@ use bevy_egui::{
 };
 use bevy_vello::{
     debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps, LottiePlayer, PlaybackDirection,
-    PlaybackLoopBehavior, PlaybackSettings, PlayerState, PlayerTransition, Playhead, Theme,
-    VectorFile, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText, VelloTextBundle,
+    PlaybackLoopBehavior, PlaybackPlayMode, PlaybackSettings, PlayerState, PlayerTransition,
+    Playhead, Theme, VectorFile, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText,
+    VelloTextBundle,
 };
 
 fn main() {
@@ -41,26 +42,27 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             debug_visualizations: DebugVisualizations::Visible,
             ..default()
         })
-        .insert(Theme::empty())
         .insert(
             LottiePlayer::new("stopped")
                 .with_state({
                     PlayerState::new("stopped")
-                        .with_transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .with_playback_settings(PlaybackSettings {
                             autoplay: false,
                             ..default()
                         })
+                        .with_theme(Theme::new().add("calendar", Color::BLUE))
+                        .with_transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .reset_playhead_on_start(true)
                 })
                 .with_state(
                     PlayerState::new("play")
-                        .with_transition(PlayerTransition::OnMouseLeave { state: "rev" })
                         .with_playback_settings(PlaybackSettings {
                             looping: PlaybackLoopBehavior::DoNotLoop,
                             speed: 0.25,
                             ..default()
-                        }),
+                        })
+                        .with_theme(Theme::new().add("calendar", Color::GREEN))
+                        .with_transition(PlayerTransition::OnMouseLeave { state: "rev" }),
                 )
                 .with_state(
                     PlayerState::new("rev")
@@ -70,6 +72,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             speed: 0.25,
                             ..default()
                         })
+                        .with_theme(Theme::new().add("calendar", Color::RED))
                         .with_transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .with_transition(PlayerTransition::OnComplete { state: "stopped" }),
                 ),
@@ -248,6 +251,25 @@ fn ui(
                     Duration::from_secs_f32(intermission);
                 playback_settings.intermission = Duration::from_secs_f32(intermission);
             };
+        });
+        ui.vertical(|ui| {
+            ui.label("Play Mode");
+            ui.horizontal(|ui| {
+                ui.separator();
+                let selected = matches!(playback_settings.play_mode, PlaybackPlayMode::Normal);
+                if ui.radio(selected, "Normal").clicked() {
+                    player.state_mut().playback_settings.play_mode = PlaybackPlayMode::Normal;
+                    playback_settings.play_mode = PlaybackPlayMode::Normal;
+                }
+            });
+            ui.horizontal(|ui| {
+                ui.separator();
+                let selected = matches!(playback_settings.play_mode, PlaybackPlayMode::Bounce);
+                if ui.radio(selected, "Bounce").clicked() {
+                    player.state_mut().playback_settings.play_mode = PlaybackPlayMode::Bounce;
+                    playback_settings.play_mode = PlaybackPlayMode::Bounce;
+                }
+            });
         });
         ui.vertical(|ui| {
             ui.label("Looping");

@@ -29,7 +29,8 @@ pub use assets::{
 };
 pub use font::VelloFontLoader;
 pub use playback::{
-    PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior, PlaybackSettings, Playhead,
+    PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior, PlaybackPlayMode,
+    PlaybackSettings, Playhead,
 };
 pub use player::{LottiePlayer, PlayerState, PlayerTransition};
 pub use plugin::VelloPlugin;

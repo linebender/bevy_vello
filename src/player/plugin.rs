@@ -19,8 +19,8 @@ impl Plugin for LottiePlayerPlugin {
 
 pub mod systems {
     use crate::{
-        player::LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackSettings,
-        PlayerTransition, Playhead, VectorFile, VelloAsset,
+        playback::PlaybackPlayMode, player::LottiePlayer, PlaybackDirection, PlaybackLoopBehavior,
+        PlaybackSettings, PlayerTransition, Playhead, VectorFile, VelloAsset,
     };
     use bevy::prelude::*;
     use std::time::{Duration, Instant};
@@ -85,7 +85,8 @@ pub mod systems {
                     continue;
                 }
                 // Auto play
-                if playback_settings.autoplay && !player.started {
+                if !player.started && playback_settings.autoplay {
+                    player.started = true;
                     player.playing = true;
                 }
                 // Return if paused
@@ -128,7 +129,8 @@ pub mod systems {
             playhead.frame += time.delta_seconds()
                 * playback_settings.speed
                 * composition.frame_rate
-                * (playback_settings.direction as i32 as f32);
+                * (playback_settings.direction as i32 as f32)
+                * playhead.playmode_dir;
 
             // Keep the playhead bounded between segments
             let looping = match playback_settings.looping {
@@ -139,6 +141,9 @@ pub mod systems {
             if playhead.frame > end_frame {
                 if looping {
                     playhead.loops_completed += 1;
+                    if let PlaybackPlayMode::Bounce = playback_settings.play_mode {
+                        playhead.playmode_dir *= -1.0;
+                    }
                     // Trigger intermission, if applicable
                     if playback_settings.intermission > Duration::ZERO {
                         playhead
@@ -152,9 +157,16 @@ pub mod systems {
                 } else {
                     playhead.frame = end_frame;
                 }
+                // Obey play mode
+                if let PlaybackPlayMode::Bounce = playback_settings.play_mode {
+                    playhead.frame = end_frame;
+                }
             } else if playhead.frame < start_frame {
                 if looping {
                     playhead.loops_completed += 1;
+                    if let PlaybackPlayMode::Bounce = playback_settings.play_mode {
+                        playhead.playmode_dir *= -1.0;
+                    }
                     // Trigger intermission, if applicable
                     if playback_settings.intermission > Duration::ZERO {
                         playhead
@@ -166,6 +178,10 @@ pub mod systems {
                         playhead.frame = end_frame - (start_frame - playhead.frame);
                     }
                 } else {
+                    playhead.frame = start_frame;
+                }
+                // Obey play mode
+                if let PlaybackPlayMode::Bounce = playback_settings.play_mode {
                     playhead.frame = start_frame;
                 }
             }
@@ -380,6 +396,7 @@ pub mod systems {
             playhead.intermission.take();
             playhead.loops_completed = 0;
             playhead.first_render.take();
+            playhead.playmode_dir = 1.0;
 
             // Reset player state
             player.started = false;
