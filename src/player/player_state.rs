@@ -1,5 +1,5 @@
 use super::PlayerTransition;
-use crate::{PlaybackSettings, Theme, VelloAsset};
+use crate::{PlaybackOptions, Theme, VelloAsset};
 use bevy::prelude::*;
 
 #[derive(Debug, Clone)]
@@ -7,7 +7,7 @@ pub struct PlayerState {
     pub id: &'static str,
     pub asset: Option<Handle<VelloAsset>>,
     pub theme: Theme,
-    pub playback_settings: PlaybackSettings,
+    pub options: PlaybackOptions,
     pub transitions: Vec<PlayerTransition>,
     /// Whether to reset the playhead when you transition away from this state
     pub reset_playhead_on_transition: bool,
@@ -21,7 +21,7 @@ impl PlayerState {
         Self {
             id,
             asset: Default::default(),
-            playback_settings: Default::default(),
+            options: Default::default(),
             theme: Default::default(),
             transitions: vec![],
             reset_playhead_on_transition: false,
@@ -39,11 +39,8 @@ impl PlayerState {
         self
     }
 
-    pub fn with_playback_settings(
-        mut self,
-        playback_settings: PlaybackSettings,
-    ) -> Self {
-        self.playback_settings = playback_settings;
+    pub fn with_playback_options(mut self, options: PlaybackOptions) -> Self {
+        self.options = options;
         self
     }
 

@@ -19,17 +19,17 @@ use font::VelloFont;
 pub use vello_svg;
 pub use vellottie;
 
-#[cfg(feature = "debug")]
 pub mod debug;
 
 pub use assets::{
     load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes,
     load_svg_from_str, VectorFile, VelloAsset, VelloAssetLoader,
 };
+pub use debug::DebugVisualizations;
 pub use font::VelloFontLoader;
 pub use playback::{
     PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior,
-    PlaybackPlayMode, PlaybackSettings, Playhead,
+    PlaybackOptions, PlaybackPlayMode, Playhead,
 };
 pub use player::{LottiePlayer, PlayerState, PlayerTransition};
 pub use plugin::VelloPlugin;
@@ -60,15 +60,16 @@ pub struct VelloAssetBundle {
     pub vector: Handle<VelloAsset>,
     /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
+    /// A transform to apply to this vector
     pub transform: Transform,
+    /// The global transform managed by Bevy
     pub global_transform: GlobalTransform,
-    #[cfg(feature = "debug")]
-    pub debug_visualizations: debug::DebugVisualizations,
-    /// User indication of whether an entity is visible
-    /// Algorithmically-computed indication of whether an entity is visible
-    //and /// should be extracted for rendering
+    pub debug_visualizations: DebugVisualizations,
+    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
+    /// Whether or not an entity is visible in the hierarchy.
     pub inherited_visibility: InheritedVisibility,
+    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
     pub view_visibility: ViewVisibility,
 }
 
@@ -79,8 +80,7 @@ impl Default for VelloAssetBundle {
             coordinate_space: CoordinateSpace::WorldSpace,
             transform: Default::default(),
             global_transform: Default::default(),
-            #[cfg(feature = "debug")]
-            debug_visualizations: debug::DebugVisualizations::Visible,
+            debug_visualizations: DebugVisualizations::Visible,
             visibility: Visibility::Inherited,
             inherited_visibility: InheritedVisibility::default(),
             view_visibility: ViewVisibility::default(),
@@ -98,6 +98,7 @@ pub struct VelloText {
 pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
+    /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
@@ -114,7 +115,7 @@ impl Default for VelloTextBundle {
         Self {
             font: Default::default(),
             text: Default::default(),
-            coordinate_space: CoordinateSpace::WorldSpace,
+            coordinate_space: Default::default(),
             transform: Default::default(),
             global_transform: Default::default(),
             visibility: Visibility::Inherited,

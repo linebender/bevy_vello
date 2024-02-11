@@ -3,11 +3,11 @@ use std::{ops::Range, time::Duration};
 
 #[derive(PartialEq, Component, Clone, Debug, Reflect)]
 #[reflect(Component)]
-/// Playback settings which adjust the playback of a vello asset.
+/// Playback options which adjust the playback of an asset.
 ///
 /// You can add this component directly to a `VelloAssetBundle` entity to adjust
-/// playback settings.
-pub struct PlaybackSettings {
+/// playback options.
+pub struct PlaybackOptions {
     /// Whether to automatically start the animation.
     pub autoplay: bool,
     /// The direction of the animation.
@@ -27,7 +27,7 @@ pub struct PlaybackSettings {
     pub segments: Range<f32>,
 }
 
-impl Default for PlaybackSettings {
+impl Default for PlaybackOptions {
     fn default() -> Self {
         Self {
             autoplay: true,

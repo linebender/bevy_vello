@@ -19,6 +19,7 @@ bevy = { version = "0.12", default-features = false, features = [
   "multi-threaded",
   "x11",
   "tonemapping_luts",
+  "bevy_gizmos",
 ] }
 # FIXME: Remove later on, web-sys got angry in v0.3.38.
 web-sys = "=0.3.65"
@@ -37,10 +38,6 @@ edition.workspace = true
 repository.workspace = true
 
 [lib]
-
-[features]
-default = ["debug"]
-debug = ["bevy/bevy_gizmos"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]

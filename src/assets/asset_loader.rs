@@ -75,7 +75,7 @@ impl AssetLoader for VelloAssetLoader {
                             "{:?}",
                             (vello_vector.width, vello_vector.height)
                         ),
-                        "finished parsing json asset"
+                        "finished parsing lottie json asset"
                     );
                     Ok(vello_vector)
                 }

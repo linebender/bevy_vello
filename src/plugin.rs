@@ -1,4 +1,5 @@
 use crate::{
+    debug::DebugVisualizationsPlugin,
     font::VelloFont,
     player::LottiePlayerPlugin,
     renderer::VelloRenderPlugin,
@@ -23,8 +24,7 @@ impl Plugin for VelloPlugin {
                 Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(
                 ),
                 LottiePlayerPlugin,
-                #[cfg(feature = "debug")]
-                crate::debug::DebugVisualizationsPlugin,
+                DebugVisualizationsPlugin,
             ))
             .init_asset::<VelloAsset>()
             .init_asset_loader::<VelloAssetLoader>()

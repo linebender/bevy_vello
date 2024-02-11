@@ -1,5 +1,6 @@
 use bevy::{prelude::*, utils::Instant};
 
+/// The playhead for a vello asset. This cannot be constructed by the user, it is created automatically and available on the first frame.
 #[derive(PartialEq, Component, Clone, Debug)]
 pub struct Playhead {
     /// Used to track transitions relating to time.
