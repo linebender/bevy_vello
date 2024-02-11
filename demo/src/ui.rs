@@ -1,17 +1,14 @@
-use std::time::Duration;
-
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::prelude::*;
 use bevy_egui::{
     egui::{self},
-    EguiContexts, EguiPlugin,
+    EguiContexts,
 };
 use bevy_vello::{
-    debug::DebugVisualizations, vello_svg::usvg::strict_num::Ulps,
-    LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
-    PlaybackPlayMode, PlayerState, PlayerTransition, Playhead, Theme,
-    VectorFile, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText,
-    VelloTextBundle,
+    vello_svg::usvg::strict_num::Ulps, LottiePlayer, PlaybackDirection,
+    PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode, Playhead, Theme,
+    VectorFile, VelloAsset, VelloText,
 };
+use std::time::Duration;
 
 pub fn controls_ui(
     mut contexts: EguiContexts,
