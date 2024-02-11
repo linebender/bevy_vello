@@ -1,6 +1,6 @@
 use crate::{
-    font::VelloFont, theme::Theme, CoordinateSpace, PlaybackAlphaOverride, PlaybackSettings,
-    Playhead, VelloAsset, VelloText,
+    font::VelloFont, theme::Theme, CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset,
+    VelloText,
 };
 use bevy::{
     prelude::*,
@@ -27,7 +27,6 @@ pub fn vector_instances(
             &CoordinateSpace,
             &GlobalTransform,
             Option<&Playhead>,
-            Option<&PlaybackSettings>,
             Option<&Theme>,
             Option<&PlaybackAlphaOverride>,
             Option<&Node>,
@@ -36,14 +35,12 @@ pub fn vector_instances(
         )>,
     >,
     assets: Extract<Res<Assets<VelloAsset>>>,
-    time: Res<Time>,
 ) {
     for (
         vello_vector_handle,
         render_mode,
         transform,
         playhead,
-        playback_settings,
         theme,
         alpha,
         ui_node,
@@ -53,33 +50,10 @@ pub fn vector_instances(
     {
         if let Some(asset) = assets.get(vello_vector_handle) {
             if view_visibility.get() && inherited_visibility.get() {
-                let playhead = playhead
-                    .map(|p| p.frame())
-                    .or_else(|| {
-                        playback_settings.and_then(|playback_settings| match &asset.data {
-                            crate::VectorFile::Svg { original: _ } => None,
-                            crate::VectorFile::Lottie { composition } => {
-                                let start_frame = playback_settings
-                                    .segments
-                                    .start
-                                    .max(composition.frames.start);
-                                if !playback_settings.autoplay {
-                                    Some(start_frame)
-                                } else {
-                                    let end_frame =
-                                        playback_settings.segments.end.min(composition.frames.end);
-                                    let length = end_frame - start_frame;
-                                    let frame =
-                                        (time.elapsed_seconds() * playback_settings.speed) % length;
-                                    Some(match playback_settings.direction {
-                                        crate::PlaybackDirection::Normal => start_frame + frame,
-                                        crate::PlaybackDirection::Reverse => end_frame - frame,
-                                    })
-                                }
-                            }
-                        })
-                    })
-                    .unwrap_or(time.elapsed_seconds());
+                let playhead = match asset.data {
+                    crate::VectorFile::Svg { .. } => 0.0,
+                    crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
+                };
                 commands.spawn(ExtractedRenderVector {
                     asset: asset.to_owned(),
                     transform: *transform,
