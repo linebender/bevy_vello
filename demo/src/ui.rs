@@ -3,11 +3,7 @@ use bevy_egui::{
     egui::{self},
     EguiContexts,
 };
-use bevy_vello::{
-    vello_svg::usvg::strict_num::Ulps, LottiePlayer, PlaybackDirection,
-    PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode, Playhead, Theme,
-    VectorFile, VelloAsset, VelloText,
-};
+use bevy_vello::{prelude::*, vello_svg::usvg::strict_num::Ulps};
 use std::time::Duration;
 
 pub fn controls_ui(

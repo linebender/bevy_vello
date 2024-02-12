@@ -3,13 +3,13 @@
 Native:
 
   ```shell
-  cargo run -p demo
+  cargo run -p text
   ```
 
 WASM:
 
   ```shell
-  cd demo
+  cd examples/text
   cargo install trunk
   trunk serve
   ```

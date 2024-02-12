@@ -1,5 +1,5 @@
 use super::asset_loader::VectorLoaderError;
-use crate::{assets::vector::VectorFile, VelloAsset};
+use crate::{assets::asset::VectorFile, VelloAsset};
 use bevy::prelude::*;
 use std::sync::Arc;
 use vello::{SceneBuilder, SceneFragment};
@@ -25,7 +25,12 @@ pub fn load_svg_from_bytes(
         data: VectorFile::Svg {
             original: Arc::new(scene_frag),
         },
-        local_transform_center: compute_local_transform_center(width, height),
+        local_transform_center: {
+            let mut transform = Transform::default();
+            transform.translation.x = width / 2.0;
+            transform.translation.y = -height / 2.0;
+            transform
+        },
         width,
         height,
     };
@@ -61,7 +66,12 @@ pub fn load_lottie_from_bytes(
         data: VectorFile::Lottie {
             composition: Arc::new(composition),
         },
-        local_transform_center: compute_local_transform_center(width, height),
+        local_transform_center: {
+            let mut transform = Transform::default();
+            transform.translation.x = width / 2.0;
+            transform.translation.y = -height / 2.0;
+            transform
+        },
         width,
         height,
     };
@@ -76,12 +86,4 @@ pub fn load_lottie_from_str(
     let bytes = json_str.as_bytes();
 
     load_lottie_from_bytes(bytes)
-}
-
-fn compute_local_transform_center(width: f32, height: f32) -> Transform {
-    let mut transform = Transform::default();
-    transform.translation.x = width / 2.0;
-    transform.translation.y = -height / 2.0;
-
-    transform
 }

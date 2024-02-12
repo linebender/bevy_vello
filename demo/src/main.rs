@@ -2,12 +2,7 @@ mod ui;
 
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_egui::EguiPlugin;
-use bevy_vello::{
-    debug::DebugVisualizations, LottiePlayer, PlaybackDirection,
-    PlaybackLoopBehavior, PlaybackOptions, PlayerState, PlayerTransition,
-    Theme, VelloAsset, VelloAssetBundle, VelloPlugin, VelloText,
-    VelloTextBundle,
-};
+use bevy_vello::prelude::*;
 
 fn main() {
     App::new()
@@ -34,6 +29,7 @@ fn setup_vector_graphics(
         text: VelloText {
             content: "hello vello".to_string(),
             size: 100.0,
+            brush: None,
         },
         ..default()
     });

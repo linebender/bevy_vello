@@ -11,6 +11,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - State machines are now available by adding a `LottiePlayer` and states (e.g. `player.with_state()`) to a vello asset bundle.
 - `PlaybackOptions` can now be bundled with `VelloAssetBundle` to augment playback
 - `Playhead` is now automatically created for all assets and can be queried to inspect and seek frames
+- `DebugVisualizations` now apply to `VelloTextBundle`s to help render debug gizmos. Currently this only works for world space.
 
 ### changed
 
@@ -19,12 +20,11 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - `VelloVector`, anywhere mentioned, has changed to `VelloAsset` (e.g. `VelloVectorBundle` -> `VelloAssetBundle`)
 - `ColorPaletteSwap` renamed to `Theme`
 - `Theme` now swaps by layer name only, no longer shape numbers. In the future we may adopt [LSS](https://github.com/LottieFiles/lottie-styler/blob/main/apps/docs/docs/intro.md) and parse it with a [DSL macro](https://doc.rust-lang.org/rust-by-example/macros/dsl.html).
-- Added `AlphaOverride` component to override playback alpha
+- Added `PlaybackAlphaOverride` component to override playback alpha
 
 ### fixed
 
 - Color swapping (now "themeing") now properly applies to more cases.
-- `DebugVisualizations` in the screen `CoordinateSpace` now render correctly
 
 ### removed
 

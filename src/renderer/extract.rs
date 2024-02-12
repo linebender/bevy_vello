@@ -1,6 +1,6 @@
 use crate::{
-    font::VelloFont, theme::Theme, CoordinateSpace, PlaybackAlphaOverride,
-    Playhead, VelloAsset, VelloText,
+    theme::Theme, CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset,
+    VelloFont, VelloText,
 };
 use bevy::{
     prelude::*,

@@ -3,7 +3,7 @@ use super::{
     prepare::PreparedAffine,
     BevyVelloRenderer, LottieRenderer, SSRenderTarget,
 };
-use crate::{assets::vector::VectorFile, font::VelloFont, CoordinateSpace};
+use crate::{CoordinateSpace, VectorFile, VelloFont};
 use bevy::{
     prelude::*,
     render::{
@@ -118,12 +118,7 @@ pub fn render_scene(
                     font, text, ..
                 }) => {
                     if let Some(font) = font_render_assets.get_mut(font) {
-                        font.render_centered(
-                            &mut builder,
-                            text.size,
-                            affine,
-                            &text.content,
-                        );
+                        font.render(&mut builder, affine, text);
                     }
                 }
             }

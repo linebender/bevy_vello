@@ -2,39 +2,40 @@
 // #![deny(missing_docs)] - TODO add before 1.0
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-mod assets;
-mod font;
-mod metadata;
-mod playback;
-mod player;
 mod plugin;
-mod renderer;
-mod rendertarget;
-mod theme;
 
-use bevy::prelude::*;
-use font::VelloFont;
+pub mod assets;
+pub mod debug;
+pub mod metadata;
+pub mod playback;
+pub mod player;
+pub mod renderer;
+pub mod rendertarget;
+pub mod text;
+pub mod theme;
 
 // Re-exports
+pub use vello;
 pub use vello_svg;
 pub use vellottie;
 
-pub mod debug;
+pub mod prelude {
+    pub use crate::assets::{VectorFile, VelloAsset};
+    pub use crate::debug::DebugVisualizations;
+    pub use crate::playback::{
+        PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior,
+        PlaybackOptions, PlaybackPlayMode, Playhead,
+    };
+    pub use crate::player::{LottiePlayer, PlayerState, PlayerTransition};
+    pub use crate::plugin::VelloPlugin;
+    pub use crate::rendertarget::VelloCanvasMaterial;
+    pub use crate::text::{VelloFont, VelloText};
+    pub use crate::theme::Theme;
+    pub use crate::{CoordinateSpace, VelloAssetBundle, VelloTextBundle};
+}
 
-pub use assets::{
-    load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes,
-    load_svg_from_str, VectorFile, VelloAsset, VelloAssetLoader,
-};
-pub use debug::DebugVisualizations;
-pub use font::VelloFontLoader;
-pub use playback::{
-    PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior,
-    PlaybackOptions, PlaybackPlayMode, Playhead,
-};
-pub use player::{LottiePlayer, PlayerState, PlayerTransition};
-pub use plugin::VelloPlugin;
-pub use rendertarget::VelloCanvasMaterial;
-pub use theme::Theme;
+use crate::prelude::*;
+use bevy::prelude::*;
 
 #[derive(
     PartialEq,
@@ -88,12 +89,6 @@ impl Default for VelloAssetBundle {
     }
 }
 
-#[derive(Component, Default, Clone)]
-pub struct VelloText {
-    pub content: String,
-    pub size: f32,
-}
-
 #[derive(Bundle)]
 pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
@@ -102,6 +97,7 @@ pub struct VelloTextBundle {
     pub coordinate_space: CoordinateSpace,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
+    pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible
     /// Algorithmically-computed indication of whether an entity is visible
     //and /// should be extracted for rendering
@@ -118,6 +114,7 @@ impl Default for VelloTextBundle {
             coordinate_space: Default::default(),
             transform: Default::default(),
             global_transform: Default::default(),
+            debug_visualizations: Default::default(),
             visibility: Visibility::Inherited,
             inherited_visibility: InheritedVisibility::default(),
             view_visibility: ViewVisibility::default(),

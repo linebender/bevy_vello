@@ -1,11 +1,11 @@
-use crate::VelloAsset;
+use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText};
 use bevy::{math::Vec3Swizzles, prelude::*};
 
 pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, draw_viewbox);
+        app.add_systems(Update, (draw_asset_viewbox, draw_text_viewbox));
     }
 }
 
@@ -17,7 +17,7 @@ pub enum DebugVisualizations {
     Visible,
 }
 
-fn draw_viewbox(
+fn draw_asset_viewbox(
     query_world: Query<
         (&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations),
         Without<Node>,
@@ -108,4 +108,90 @@ fn draw_viewbox(
             gizmos.line_2d(from, to, Color::RED);
         }
     }
+}
+
+fn draw_text_viewbox(
+    query_world: Query<
+        (
+            &Handle<VelloFont>,
+            &VelloText,
+            &Transform,
+            &GlobalTransform,
+            &CoordinateSpace,
+            &DebugVisualizations,
+        ),
+        Without<Node>,
+    >,
+    query_cam: Query<
+        (&Camera, &GlobalTransform, &OrthographicProjection),
+        With<Camera2d>,
+    >,
+    fonts: Res<Assets<VelloFont>>,
+    mut gizmos: Gizmos,
+) {
+    let Ok((_camera, _view, projection)) = query_cam.get_single() else {
+        return;
+    };
+
+    // Show world-space vectors
+    for (font, text, transform, gtransform, space, _) in query_world
+        .iter()
+        .filter(|(_, _, _, _, _, d)| **d == DebugVisualizations::Visible)
+    {
+        if let Some(font) = fonts.get(font) {
+            let rect = text.bb_in_space(font, transform, gtransform);
+            let origin = transform.translation.xy();
+            match space {
+                CoordinateSpace::WorldSpace => {
+                    draw_debug(
+                        &mut gizmos,
+                        gtransform,
+                        projection,
+                        origin + rect.size() / 2.0,
+                        rect.size(),
+                    );
+                }
+                CoordinateSpace::ScreenSpace => {
+                    // FIXME: This isn't working.
+                    //let rect = text.bb_in_space(font, transform, gtransform);
+                    //let Some(pos) = camera.viewport_to_world_2d(view, origin)
+                    //else {
+                    //    continue;
+                    //};
+                    //
+                    //draw_debug(
+                    //    &mut gizmos,
+                    //    view,
+                    //    projection,
+                    //    pos + rect.size() / 2.0 * projection.scale,
+                    //    rect.size() * projection.scale,
+                    //);
+                }
+            }
+        }
+    }
+}
+
+fn draw_debug(
+    gizmos: &mut Gizmos,
+    transform: &GlobalTransform,
+    projection: &OrthographicProjection,
+    pos: Vec2,
+    size: Vec2,
+) {
+    gizmos.rect_2d(pos, 0.0, size, Color::WHITE);
+
+    const RED_X_SIZE: f32 = 8.0;
+    let red_x_origin = transform.translation().xy();
+    let from = red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
+    let to = red_x_origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
+
+    gizmos.line_2d(from, to, Color::RED);
+
+    let from =
+        red_x_origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
+    let to =
+        red_x_origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
+
+    gizmos.line_2d(from, to, Color::RED);
 }
