@@ -6,9 +6,10 @@ use bevy::{
     render::{
         mesh::{Indices, MeshVertexBufferLayout},
         render_resource::{
-            AsBindGroup, Extent3d, PrimitiveTopology, RenderPipelineDescriptor, ShaderRef,
-            SpecializedMeshPipelineError, TextureDescriptor, TextureDimension, TextureFormat,
-            TextureUsages, VertexBufferLayout, VertexFormat, VertexStepMode,
+            AsBindGroup, Extent3d, PrimitiveTopology, RenderPipelineDescriptor,
+            ShaderRef, SpecializedMeshPipelineError, TextureDescriptor,
+            TextureDimension, TextureFormat, TextureUsages, VertexBufferLayout,
+            VertexFormat, VertexStepMode,
         },
         view::NoFrustumCulling,
     },
@@ -16,12 +17,16 @@ use bevy::{
     window::{WindowResized, WindowResolution},
 };
 
-use crate::{renderer::SSRenderTarget, RenderMode};
+use crate::{renderer::SSRenderTarget, CoordinateSpace};
 
 /// A handle to the screen space render target shader.
-pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
+pub const SSRT_SHADER_HANDLE: Handle<Shader> =
+    Handle::weak_from_u128(2314894693238056781);
 
-pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
+pub fn setup_image(
+    images: &mut Assets<Image>,
+    window: &WindowResolution,
+) -> Handle<Image> {
     let size = Extent3d {
         width: window.physical_width(),
         height: window.physical_height(),
@@ -88,7 +93,6 @@ pub fn setup_ss_rendertarget(
     mut images: ResMut<Assets<Image>>,
     mut custom_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
-    // query_vectors: Query<Entity, Added<Handle<VelloVector>>>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
 ) {
     let Ok(window) = windows.get_single() else {
@@ -161,8 +165,10 @@ impl Material2d for VelloCanvasMaterial {
             VertexFormat::Float32x2,
         ];
 
-        let vertex_layout =
-            VertexBufferLayout::from_vertex_formats(VertexStepMode::Vertex, formats);
+        let vertex_layout = VertexBufferLayout::from_vertex_formats(
+            VertexStepMode::Vertex,
+            formats,
+        );
 
         descriptor.vertex.buffers = vec![vertex_layout];
 
@@ -173,7 +179,7 @@ impl Material2d for VelloCanvasMaterial {
 /// Hide the RenderTarget canvas if there is nothing to render
 pub fn clear_when_empty(
     mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
-    render_items: Query<(&mut RenderMode, &ViewVisibility)>,
+    render_items: Query<(&mut CoordinateSpace, &ViewVisibility)>,
 ) {
     if let Ok(mut visibility) = query_render_target.get_single_mut() {
         if render_items.is_empty() {

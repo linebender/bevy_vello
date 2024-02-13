@@ -1,8 +1,11 @@
 use crate::{
-    font::VelloFont,
+    assets::VelloAssetLoader,
+    debug::DebugVisualizationsPlugin,
+    player::LottiePlayerPlugin,
     renderer::VelloRenderPlugin,
     rendertarget::{self, SSRT_SHADER_HANDLE},
-    VelloFontLoader, VelloVector, VelloVectorLoader,
+    text::VelloFontLoader,
+    VelloAsset, VelloFont,
 };
 use bevy::{asset::load_internal_asset, prelude::*, sprite::Material2dPlugin};
 
@@ -19,12 +22,13 @@ impl Plugin for VelloPlugin {
 
         app.add_plugins(VelloRenderPlugin)
             .add_plugins((
-                Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(),
-                #[cfg(feature = "debug")]
-                crate::debug::DebugVisualizationsPlugin,
+                Material2dPlugin::<rendertarget::VelloCanvasMaterial>::default(
+                ),
+                LottiePlayerPlugin,
+                DebugVisualizationsPlugin,
             ))
-            .init_asset::<VelloVector>()
-            .init_asset_loader::<VelloVectorLoader>()
+            .init_asset::<VelloAsset>()
+            .init_asset_loader::<VelloAssetLoader>()
             .init_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>()
             .add_systems(Startup, rendertarget::setup_ss_rendertarget)

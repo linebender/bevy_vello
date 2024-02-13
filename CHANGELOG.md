@@ -4,16 +4,33 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
-## Unreleased
+## 0.4.0
+
+### added
+
+- A `prelude` module
+- State machines are now available by adding a `LottiePlayer` and states (e.g. `player.with_state()`) to a vello asset bundle.
+- `PlaybackOptions` can now be bundled with `VelloAssetBundle` to augment playback
+- `Playhead` is now automatically created for all assets and can be queried to inspect and seek frames
+- `DebugVisualizations` now apply to `VelloTextBundle`s to help render debug gizmos. Currently this only works for world space.
 
 ### changed
 
-- `DebugVisualizations` are now feature-gated behind the `debug` cargo feature
-- Color swapping now swaps by layer name only and applies to more cases (animated, gradients, etc.)
-- Added `AlphaOverride` component to override alpha
+- `RenderMode` changed to `CoordinateSpace`
+- `Vector` has been renamed to `VectorFile`
+- `VelloVector`, anywhere mentioned, has changed to `VelloAsset` (e.g. `VelloVectorBundle` -> `VelloAssetBundle`)
+- `ColorPaletteSwap` renamed to `Theme`
+- `Theme` now swaps by layer name only, no longer shape numbers. In the future we may adopt [LSS](https://github.com/LottieFiles/lottie-styler/blob/main/apps/docs/docs/intro.md) and parse it with a [DSL macro](https://doc.rust-lang.org/rust-by-example/macros/dsl.html).
+- Added `PlaybackAlphaOverride` component to override playback alpha
+- The default behavior for `VelloText` is now to render up and to the right, instead of centered. In the future this may be modified with `TextAlignment`, but currently is a TODO.
+
+### fixed
+
+- Color swapping (now "themeing") now properly applies to more cases.
 
 ### removed
 
+- `Origin` on vector assets
 - `.svg.gz` support - [Since a Gzip plugin is now possble](https://github.com/bevyengine/bevy/issues/10518)
 - `.json.gz` support - [Since a Gzip plugin is now possble](https://github.com/bevyengine/bevy/issues/10518)
 

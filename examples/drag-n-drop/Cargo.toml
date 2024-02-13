@@ -1,6 +1,5 @@
 [package]
-name = "demo"
-description = "The vellottie demo"
+name = "drag-n-drop"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -9,9 +8,7 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy-vello = { path = "../" }
+bevy-vello = { path = "../../" }
 bevy = { workspace = true }
-bevy_pancam = { version = "0.10", features = ["bevy_egui"] }
-bevy_egui = "0.23"
 # FIXME: Remove later on, web-sys got angry in v0.3.38.
 web-sys = { workspace = true }

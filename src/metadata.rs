@@ -1,3 +1,4 @@
+use bevy::utils::hashbrown::HashSet;
 use std::sync::Arc;
 use vellottie::Composition;
 
@@ -7,11 +8,14 @@ pub struct Metadata {
 }
 
 impl Metadata {
-    pub fn get_layers(&self) -> Vec<String> {
+    pub fn get_layers(&self) -> impl Iterator<Item = &str> {
         self.composition
             .layers
             .iter()
-            .map(|l| l.name.clone())
-            .collect()
+            .fold(HashSet::new(), move |mut acc, l| {
+                acc.insert(l.name.as_str());
+                acc
+            })
+            .into_iter()
     }
 }

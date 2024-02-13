@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
-members = ["demo"]
+members = ["demo", "examples/*"]
 
 [workspace.package]
 edition = "2021"
-version = "0.3.16"
+version = "0.4.0"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
@@ -19,7 +19,10 @@ bevy = { version = "0.12", default-features = false, features = [
   "multi-threaded",
   "x11",
   "tonemapping_luts",
+  "bevy_gizmos",
 ] }
+# FIXME: Remove later on, web-sys got angry in v0.3.38.
+web-sys = ">=0.3, <0.3.68"
 
 [package]
 name = "bevy-vello"
@@ -36,22 +39,19 @@ repository.workspace = true
 
 [lib]
 
-[features]
-default = []
-debug = ["bevy/bevy_gizmos"]
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { workspace = true }
 vello = { git = "https://github.com/linebender/vello", rev = "28914d66f675efecf03c53261a0fb1b8ecce4fe9" }
 vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.1" }
 vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.1" }
-flate2 = "1.0"
+# FIXME: Remove later on, web-sys got angry in v0.3.38.
+web-sys = { workspace = true }
 
-[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+[dev-dependencies]
 wasm-bindgen-test = "0.3"
 
 # These settings are to get the WASM blob smaller for the demo.
-[profile.release.package."demo"]
+[profile.release]
 codegen-units = 1
 opt-level = 'z'

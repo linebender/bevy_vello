@@ -2,81 +2,86 @@
 // #![deny(missing_docs)] - TODO add before 1.0
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-mod alpha_override;
-mod assets;
-mod color_swapping;
-mod font;
-mod metadata;
 mod plugin;
-mod renderer;
-mod rendertarget;
 
-use bevy::prelude::*;
-use font::VelloFont;
+pub mod assets;
+pub mod debug;
+pub mod metadata;
+pub mod playback;
+pub mod player;
+pub mod renderer;
+pub mod rendertarget;
+pub mod text;
+pub mod theme;
 
 // Re-exports
+pub use vello;
 pub use vello_svg;
 pub use vellottie;
 
-#[cfg(feature = "debug")]
-pub mod debug;
+pub mod prelude {
+    pub use crate::assets::{VectorFile, VelloAsset};
+    pub use crate::debug::DebugVisualizations;
+    pub use crate::playback::{
+        PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior,
+        PlaybackOptions, PlaybackPlayMode, Playhead,
+    };
+    pub use crate::player::{LottiePlayer, PlayerState, PlayerTransition};
+    pub use crate::plugin::VelloPlugin;
+    pub use crate::rendertarget::VelloCanvasMaterial;
+    pub use crate::text::{VelloFont, VelloText};
+    pub use crate::theme::Theme;
+    pub use crate::{CoordinateSpace, VelloAssetBundle, VelloTextBundle};
+}
 
-pub use alpha_override::AlphaOverride;
-pub use assets::VelloVectorLoader;
-pub use assets::{
-    load_lottie_from_bytes, load_lottie_from_str, load_svg_from_bytes, load_svg_from_str, Vector,
-    VelloVector,
-};
-pub use color_swapping::ColorPaletteSwap;
-pub use font::VelloFontLoader;
-pub use plugin::VelloPlugin;
-pub use rendertarget::VelloCanvasMaterial;
+use crate::prelude::*;
+use bevy::prelude::*;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
+#[derive(
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Component,
+    Default,
+    Copy,
+    Clone,
+    Debug,
+    Reflect,
+)]
 #[reflect(Component)]
-pub enum RenderMode {
+pub enum CoordinateSpace {
     #[default]
     WorldSpace = 0,
     ScreenSpace = 1,
 }
 
-#[derive(PartialEq, Component, Default, Copy, Clone, Debug, Reflect)]
-#[reflect(Component)]
-pub enum Origin {
-    #[default]
-    BottomCenter,
-    Center,
-}
-
 #[derive(Bundle)]
-pub struct VelloVectorBundle {
-    pub vector: Handle<VelloVector>,
+pub struct VelloAssetBundle {
+    pub vector: Handle<VelloAsset>,
     /// The coordinate space in which this vector should be rendered.
-    pub render_mode: RenderMode,
-    /// This object's transform local origin. Enable debug visualizations to visualize (red X)
-    pub origin: Origin,
+    pub coordinate_space: CoordinateSpace,
+    /// A transform to apply to this vector
     pub transform: Transform,
+    /// The global transform managed by Bevy
     pub global_transform: GlobalTransform,
-    #[cfg(feature = "debug")]
-    pub debug_visualizations: debug::DebugVisualizations,
-    /// User indication of whether an entity is visible
-    /// Algorithmically-computed indication of whether an entity is visible
-    //and /// should be extracted for rendering
+    pub debug_visualizations: DebugVisualizations,
+    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
+    /// Whether or not an entity is visible in the hierarchy.
     pub inherited_visibility: InheritedVisibility,
+    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
     pub view_visibility: ViewVisibility,
 }
 
-impl Default for VelloVectorBundle {
+impl Default for VelloAssetBundle {
     fn default() -> Self {
         Self {
             vector: Default::default(),
-            render_mode: RenderMode::WorldSpace,
-            origin: Default::default(),
+            coordinate_space: CoordinateSpace::WorldSpace,
             transform: Default::default(),
             global_transform: Default::default(),
-            #[cfg(feature = "debug")]
-            debug_visualizations: debug::DebugVisualizations::Visible,
+            debug_visualizations: DebugVisualizations::Visible,
             visibility: Visibility::Inherited,
             inherited_visibility: InheritedVisibility::default(),
             view_visibility: ViewVisibility::default(),
@@ -84,19 +89,15 @@ impl Default for VelloVectorBundle {
     }
 }
 
-#[derive(Component, Default, Clone)]
-pub struct VelloText {
-    pub content: String,
-    pub size: f32,
-}
-
 #[derive(Bundle)]
 pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
-    pub render_mode: RenderMode,
+    /// The coordinate space in which this vector should be rendered.
+    pub coordinate_space: CoordinateSpace,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
+    pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible
     /// Algorithmically-computed indication of whether an entity is visible
     //and /// should be extracted for rendering
@@ -110,9 +111,10 @@ impl Default for VelloTextBundle {
         Self {
             font: Default::default(),
             text: Default::default(),
-            render_mode: RenderMode::WorldSpace,
+            coordinate_space: Default::default(),
             transform: Default::default(),
             global_transform: Default::default(),
+            debug_visualizations: Default::default(),
             visibility: Visibility::Inherited,
             inherited_visibility: InheritedVisibility::default(),
             view_visibility: ViewVisibility::default(),

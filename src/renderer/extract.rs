@@ -1,6 +1,6 @@
 use crate::{
-    color_swapping::ColorPaletteSwap, font::VelloFont, AlphaOverride, Origin, RenderMode,
-    VelloText, VelloVector,
+    theme::Theme, CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset,
+    VelloFont, VelloText,
 };
 use bevy::{
     prelude::*,
@@ -10,12 +10,11 @@ use bevy::{
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
-    pub vector_handle: Handle<VelloVector>,
-    pub render_data: VelloVector,
+    pub asset: VelloAsset,
     pub transform: GlobalTransform,
-    pub render_mode: RenderMode,
-    pub origin: Origin,
-    pub color_swaps: Option<ColorPaletteSwap>,
+    pub theme: Option<Theme>,
+    pub render_mode: CoordinateSpace,
+    pub playhead: f32,
     pub alpha: f32,
     pub ui_node: Option<Node>,
 }
@@ -24,41 +23,46 @@ pub fn vector_instances(
     mut commands: Commands,
     query_vectors: Extract<
         Query<(
-            &Handle<VelloVector>,
-            &RenderMode,
-            Option<&Origin>,
+            &Handle<VelloAsset>,
+            &CoordinateSpace,
             &GlobalTransform,
-            Option<&ColorPaletteSwap>,
-            Option<&AlphaOverride>,
+            Option<&Playhead>,
+            Option<&Theme>,
+            Option<&PlaybackAlphaOverride>,
             Option<&Node>,
             &ViewVisibility,
             &InheritedVisibility,
         )>,
     >,
-    assets: Extract<Res<Assets<VelloVector>>>,
+    assets: Extract<Res<Assets<VelloAsset>>>,
 ) {
     for (
         vello_vector_handle,
         render_mode,
-        origin,
         transform,
-        color_swaps,
+        playhead,
+        theme,
         alpha,
         ui_node,
         view_visibility,
         inherited_visibility,
     ) in query_vectors.iter()
     {
-        if let Some(asset_data) = assets.get(vello_vector_handle) {
+        if let Some(asset) = assets.get(vello_vector_handle) {
             if view_visibility.get() && inherited_visibility.get() {
+                let playhead = match asset.data {
+                    crate::VectorFile::Svg { .. } => 0.0,
+                    crate::VectorFile::Lottie { .. } => {
+                        playhead.unwrap().frame()
+                    }
+                };
                 commands.spawn(ExtractedRenderVector {
-                    vector_handle: vello_vector_handle.clone(),
-                    render_data: asset_data.to_owned(),
+                    asset: asset.to_owned(),
                     transform: *transform,
-                    color_swaps: color_swaps.cloned(),
+                    theme: theme.cloned(),
                     render_mode: *render_mode,
+                    playhead,
                     alpha: alpha.map(|a| a.0).unwrap_or(1.0),
-                    origin: origin.copied().unwrap_or_default(),
                     ui_node: ui_node.cloned(),
                 });
             }
@@ -71,7 +75,7 @@ pub struct ExtractedRenderText {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
     pub transform: GlobalTransform,
-    pub render_mode: RenderMode,
+    pub render_mode: CoordinateSpace,
 }
 
 impl ExtractComponent for ExtractedRenderText {
@@ -79,7 +83,7 @@ impl ExtractComponent for ExtractedRenderText {
         &'static Handle<VelloFont>,
         &'static VelloText,
         &'static GlobalTransform,
-        &'static RenderMode,
+        &'static CoordinateSpace,
     );
 
     type Filter = ();
