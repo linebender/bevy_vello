@@ -3,6 +3,7 @@
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 mod plugin;
+pub use plugin::VelloPlugin;
 
 pub mod assets;
 pub mod debug;
