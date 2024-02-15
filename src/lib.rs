@@ -53,11 +53,11 @@ use bevy::prelude::*;
 #[reflect(Component)]
 pub enum CoordinateSpace {
     #[default]
-    WorldSpace = 0,
-    ScreenSpace = 1,
+    WorldSpace,
+    ScreenSpace,
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub struct VelloAssetBundle {
     pub vector: Handle<VelloAsset>,
     /// The coordinate space in which this vector should be rendered.
@@ -73,21 +73,6 @@ pub struct VelloAssetBundle {
     pub inherited_visibility: InheritedVisibility,
     /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
     pub view_visibility: ViewVisibility,
-}
-
-impl Default for VelloAssetBundle {
-    fn default() -> Self {
-        Self {
-            vector: Default::default(),
-            coordinate_space: CoordinateSpace::WorldSpace,
-            transform: Default::default(),
-            global_transform: Default::default(),
-            debug_visualizations: DebugVisualizations::Visible,
-            visibility: Visibility::Inherited,
-            inherited_visibility: InheritedVisibility::default(),
-            view_visibility: ViewVisibility::default(),
-        }
-    }
 }
 
 #[derive(Bundle)]
