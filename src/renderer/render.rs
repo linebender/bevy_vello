@@ -97,8 +97,7 @@ pub fn render_scene(
                         builder.append(fragment, Some(affine));
                     }
                     VectorFile::Lottie { composition } => {
-                        let t = playhead / composition.frame_rate;
-                        debug!("playhead: {playhead}, t: {t}");
+                        debug!("playhead: {playhead}");
                         velottie_renderer.0.render(
                             {
                                 theme
@@ -107,7 +106,7 @@ pub fn render_scene(
                                     .as_ref()
                                     .unwrap_or(composition)
                             },
-                            t,
+                            *playhead,
                             affine,
                             *alpha,
                             &mut builder,
