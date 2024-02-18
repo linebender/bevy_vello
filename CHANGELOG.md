@@ -4,6 +4,12 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
+## 0.4.4
+
+### fixed
+
+- A panic that can occur with `player.state()` or `player.state_mut()`
+
 ## 0.4.3
 
 ### fixed

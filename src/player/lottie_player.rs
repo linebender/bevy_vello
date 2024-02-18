@@ -23,7 +23,11 @@ impl LottiePlayer {
     /// Retrieve an immutable reference to the current state.
     pub fn state(&self) -> &PlayerState {
         self.states
-            .get(self.current_state.unwrap())
+            .get(
+                self.current_state
+                    .or(self.next_state)
+                    .expect("expected state"),
+            )
             .unwrap_or_else(|| {
                 panic!("state not found: '{}'", self.current_state.unwrap())
             })
@@ -32,7 +36,11 @@ impl LottiePlayer {
     /// Retrieve a mutable reference to the current state.
     pub fn state_mut(&mut self) -> &mut PlayerState {
         self.states
-            .get_mut(self.current_state.unwrap())
+            .get_mut(
+                self.current_state
+                    .or(self.next_state)
+                    .expect("expected state"),
+            )
             .unwrap_or_else(|| {
                 panic!("state not found: '{}'", self.current_state.unwrap())
             })

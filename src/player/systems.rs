@@ -334,12 +334,7 @@ pub fn transition_state(
         if Some(next_state) == player.current_state {
             continue;
         }
-        if player.current_state.is_none() {
-            info!("animation controller initializing to={next_state}");
-            player.current_state.replace(next_state);
-        } else {
-            info!("animation controller transitioning to={next_state}");
-        }
+        info!("animation controller transitioning to={next_state}");
 
         let target_state = player
             .states
