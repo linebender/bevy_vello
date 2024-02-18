@@ -4,6 +4,25 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
+## 0.4.3
+
+### fixed
+
+- Player (state machine) transitions are ignored when the target state is the current state.
+- An issue where the playhead can become unbounded when requested segments are smaller than an update's delta time.
+
+## 0.4.2
+
+### fixed
+
+- An issue where playheads can not exist, causing a panic, when transitioning states in the `Update` set.
+
+## 0.4.1
+
+### fixed
+
+- the default for `DebugVisualizations` is now `Hidden`, as was intended
+
 ## 0.4.0
 
 ### added

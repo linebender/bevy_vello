@@ -7,7 +7,7 @@ use bevy::{prelude::*, utils::hashbrown::HashMap};
 /// See: https://docs.lottiefiles.com/dotlottie-js-external/
 #[derive(Component, Clone, Default, Debug)]
 pub struct LottiePlayer {
-    pub(crate) current_state: &'static str,
+    pub(crate) current_state: Option<&'static str>,
     pub(crate) next_state: Option<&'static str>,
     pub(crate) states: HashMap<&'static str, PlayerState>,
     /// Whether the player has started.
@@ -22,16 +22,20 @@ pub struct LottiePlayer {
 impl LottiePlayer {
     /// Retrieve an immutable reference to the current state.
     pub fn state(&self) -> &PlayerState {
-        self.states.get(self.current_state).unwrap_or_else(|| {
-            panic!("state not found: '{}'", self.current_state)
-        })
+        self.states
+            .get(self.current_state.unwrap())
+            .unwrap_or_else(|| {
+                panic!("state not found: '{}'", self.current_state.unwrap())
+            })
     }
 
     /// Retrieve a mutable reference to the current state.
     pub fn state_mut(&mut self) -> &mut PlayerState {
-        self.states.get_mut(self.current_state).unwrap_or_else(|| {
-            panic!("state not found: '{}'", self.current_state)
-        })
+        self.states
+            .get_mut(self.current_state.unwrap())
+            .unwrap_or_else(|| {
+                panic!("state not found: '{}'", self.current_state.unwrap())
+            })
     }
 
     /// Returns an immutable iterator of the states for this player.
@@ -86,7 +90,7 @@ impl LottiePlayer {
 impl LottiePlayer {
     pub fn new(initial_state: &'static str) -> LottiePlayer {
         LottiePlayer {
-            current_state: initial_state,
+            current_state: None,
             next_state: Some(initial_state),
             states: HashMap::new(),
             started: false,

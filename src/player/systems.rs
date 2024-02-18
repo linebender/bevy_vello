@@ -78,6 +78,7 @@ pub fn advance_playheads(
 
         let start_frame = options.segments.start.max(composition.frames.start);
         let end_frame = options.segments.end.min(composition.frames.end).prev();
+        let length = end_frame - start_frame;
 
         // Handle intermissions
         if let Some(ref mut intermission) = playhead.intermission {
@@ -100,11 +101,12 @@ pub fn advance_playheads(
         playhead.first_render.get_or_insert(Instant::now());
 
         // Advance playhead
-        playhead.frame += time.delta_seconds()
+        playhead.frame += (time.delta_seconds()
             * options.speed
             * composition.frame_rate
             * (options.direction as i32 as f32)
-            * playhead.playmode_dir;
+            * playhead.playmode_dir)
+            % length;
 
         // Keep the playhead bounded between segments
         let looping = match options.looping {
@@ -197,11 +199,13 @@ pub fn run_transitions(
             continue;
         }
 
-        let current_state_name = player.current_state.to_owned();
         let current_asset = assets
             .get_mut(current_asset_handle.id())
             .unwrap_or_else(|| {
-                panic!("asset not found for state: '{current_state_name}'")
+                panic!(
+                    "asset not found for state: '{}'",
+                    player.current_state.unwrap()
+                )
             });
 
         let is_inside = {
@@ -327,7 +331,15 @@ pub fn transition_state(
         let Some(next_state) = player.next_state.take() else {
             continue;
         };
-        info!("animation controller transitioning to={next_state}");
+        if Some(next_state) == player.current_state {
+            continue;
+        }
+        if player.current_state.is_none() {
+            info!("animation controller initializing to={next_state}");
+            player.current_state.replace(next_state);
+        } else {
+            info!("animation controller transitioning to={next_state}");
+        }
 
         let target_state = player
             .states
@@ -387,6 +399,6 @@ pub fn transition_state(
         // Reset player state
         player.started = false;
         player.playing = false;
-        player.current_state = next_state;
+        player.current_state.replace(next_state);
     }
 }
