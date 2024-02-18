@@ -328,10 +328,12 @@ pub fn transition_state(
     for (entity, mut player, mut playhead, mut cur_handle) in
         query_sm.iter_mut()
     {
-        let Some(next_state) = player.next_state.take() else {
+        let Some(next_state) = player.next_state else {
             continue;
         };
         if Some(next_state) == player.current_state {
+            // Already in expected state, ignoring...
+            player.next_state.take();
             continue;
         }
         info!("animation controller transitioning to={next_state}");
@@ -344,9 +346,8 @@ pub fn transition_state(
             target_state.asset.clone().unwrap_or(cur_handle.clone());
 
         let Some(asset) = assets.get_mut(target_handle.id()) else {
-            warn!("Asset not ready for transition... re-queue'ing...");
-            player.next_state.replace(next_state);
-            return;
+            warn!("Asset not ready for transition, waiting...");
+            continue;
         };
 
         // Reset playhead state
