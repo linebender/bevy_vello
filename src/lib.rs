@@ -7,11 +7,9 @@ pub use plugin::VelloPlugin;
 
 pub mod assets;
 pub mod debug;
-pub mod metadata;
 pub mod playback;
 pub mod player;
-pub mod renderer;
-pub mod rendertarget;
+pub mod render;
 pub mod text;
 pub mod theme;
 
@@ -29,7 +27,8 @@ pub mod prelude {
     };
     pub use crate::player::{LottiePlayer, PlayerState, PlayerTransition};
     pub use crate::plugin::VelloPlugin;
-    pub use crate::rendertarget::VelloCanvasMaterial;
+    pub use crate::render::VelloCanvasMaterial;
+    pub use crate::render::ZFunction;
     pub use crate::text::{VelloFont, VelloText};
     pub use crate::theme::Theme;
     pub use crate::{CoordinateSpace, VelloAssetBundle, VelloTextBundle};
@@ -66,6 +65,9 @@ pub struct VelloAssetBundle {
     pub transform: Transform,
     /// The global transform managed by Bevy
     pub global_transform: GlobalTransform,
+    /// Use a depth-sorting function for this asset, used when rendering. By default, all assets use the transform's Z-coordinate for depth sorting in the renderer's painter's algorithm (see [`ZFunction::Inherited`]).
+    pub z_function: ZFunction,
+    /// Whether to render debug visualizations
     pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,

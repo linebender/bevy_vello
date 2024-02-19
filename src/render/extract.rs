@@ -1,3 +1,4 @@
+use super::z_function::ZFunction;
 use crate::{
     theme::Theme, CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset,
     VelloFont, VelloText,
@@ -12,6 +13,7 @@ use bevy::{
 pub struct ExtractedRenderVector {
     pub asset: VelloAsset,
     pub transform: GlobalTransform,
+    pub z_index: f32,
     pub theme: Option<Theme>,
     pub render_mode: CoordinateSpace,
     pub playhead: f32,
@@ -25,6 +27,7 @@ pub fn vector_instances(
         Query<(
             &Handle<VelloAsset>,
             &CoordinateSpace,
+            &ZFunction,
             &GlobalTransform,
             Option<&Playhead>,
             Option<&Theme>,
@@ -38,7 +41,8 @@ pub fn vector_instances(
 ) {
     for (
         vello_vector_handle,
-        render_mode,
+        coord_space,
+        z_function,
         transform,
         playhead,
         theme,
@@ -59,8 +63,9 @@ pub fn vector_instances(
                 commands.spawn(ExtractedRenderVector {
                     asset: asset.to_owned(),
                     transform: *transform,
+                    z_index: z_function.compute(asset, transform),
                     theme: theme.cloned(),
-                    render_mode: *render_mode,
+                    render_mode: *coord_space,
                     playhead,
                     alpha: alpha.map(|a| a.0).unwrap_or(1.0),
                     ui_node: ui_node.cloned(),

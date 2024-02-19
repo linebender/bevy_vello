@@ -1,23 +1,31 @@
+use super::{
+    extract::{self, ExtractedPixelScale, ExtractedRenderText, SSRenderTarget},
+    prepare, systems, BevyVelloRenderer, LottieRenderer,
+};
+use crate::{render::SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloFont};
 use bevy::{
+    asset::load_internal_asset,
     prelude::*,
     render::{
         extract_component::ExtractComponentPlugin,
         render_asset::RenderAssetPlugin, renderer::RenderDevice, Render,
         RenderApp, RenderSet,
     },
+    sprite::Material2dPlugin,
 };
 use vello::{AaSupport, Renderer, RendererOptions};
-
-use super::{
-    extract::{self, ExtractedPixelScale},
-    prepare, render, BevyVelloRenderer, LottieRenderer,
-};
-use crate::VelloFont;
 
 pub struct VelloRenderPlugin;
 
 impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
+        load_internal_asset!(
+            app,
+            SSRT_SHADER_HANDLE,
+            "../../shaders/vello_ss_rendertarget.wgsl",
+            Shader::from_wgsl
+        );
+
         let Ok(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
@@ -43,14 +51,20 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 Render,
-                render::render_scene.in_set(RenderSet::Render),
+                systems::render_scene.in_set(RenderSet::Render),
             );
 
         app.add_plugins((
-            ExtractComponentPlugin::<extract::ExtractedRenderText>::default(),
-            ExtractComponentPlugin::<extract::SSRenderTarget>::default(),
+            Material2dPlugin::<VelloCanvasMaterial>::default(),
+            ExtractComponentPlugin::<ExtractedRenderText>::default(),
+            ExtractComponentPlugin::<SSRenderTarget>::default(),
             RenderAssetPlugin::<VelloFont>::default(),
-        ));
+        ))
+        .add_systems(Startup, systems::setup_ss_rendertarget)
+        .add_systems(
+            Update,
+            (systems::resize_rendertargets, systems::clear_when_empty),
+        );
     }
 
     fn finish(&self, app: &mut App) {

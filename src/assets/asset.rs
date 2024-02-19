@@ -1,4 +1,4 @@
-use crate::metadata::Metadata;
+use super::Metadata;
 use bevy::{
     math::{Vec3A, Vec4Swizzles},
     prelude::*,

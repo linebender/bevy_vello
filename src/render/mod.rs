@@ -1,0 +1,101 @@
+use bevy::{
+    prelude::*,
+    reflect::TypeUuid,
+    render::{
+        mesh::MeshVertexBufferLayout,
+        render_resource::{
+            AsBindGroup, RenderPipelineDescriptor, ShaderRef,
+            SpecializedMeshPipelineError, VertexBufferLayout, VertexFormat,
+            VertexStepMode,
+        },
+        renderer::RenderDevice,
+    },
+    sprite::{Material2d, Material2dKey},
+};
+use vello::{Renderer, RendererOptions};
+
+mod extract;
+mod plugin;
+mod prepare;
+mod systems;
+mod z_function;
+
+pub use plugin::VelloRenderPlugin;
+pub use z_function::ZFunction;
+
+/// A handle to the screen space render target shader.
+pub const SSRT_SHADER_HANDLE: Handle<Shader> =
+    Handle::weak_from_u128(2314894693238056781);
+
+/// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
+#[derive(AsBindGroup, TypeUuid, TypePath, Asset, Clone)]
+#[uuid = "b62bb455-a72c-4b56-87bb-81e0554e234f"]
+pub struct VelloCanvasMaterial {
+    #[texture(0)]
+    #[sampler(1)]
+    pub texture: Handle<Image>,
+}
+
+impl Material2d for VelloCanvasMaterial {
+    fn vertex_shader() -> ShaderRef {
+        SSRT_SHADER_HANDLE.into()
+    }
+
+    fn fragment_shader() -> ShaderRef {
+        SSRT_SHADER_HANDLE.into()
+    }
+
+    fn specialize(
+        descriptor: &mut RenderPipelineDescriptor,
+        _layout: &MeshVertexBufferLayout,
+        _key: Material2dKey<Self>,
+    ) -> Result<(), SpecializedMeshPipelineError> {
+        let formats = vec![
+            // Position
+            VertexFormat::Float32x3,
+            VertexFormat::Float32x2,
+        ];
+
+        let vertex_layout = VertexBufferLayout::from_vertex_formats(
+            VertexStepMode::Vertex,
+            formats,
+        );
+
+        descriptor.vertex.buffers = vec![vertex_layout];
+
+        Ok(())
+    }
+}
+
+pub struct BevyVelloRenderer(Renderer);
+
+impl FromWorld for BevyVelloRenderer {
+    fn from_world(world: &mut World) -> Self {
+        let device = world.get_resource::<RenderDevice>().unwrap();
+        BevyVelloRenderer(
+            Renderer::new(
+                device.wgpu_device(),
+                RendererOptions {
+                    surface_format: None,
+                    timestamp_period: 0.0,
+                    use_cpu: false,
+                    antialiasing_support: vello::AaSupport {
+                        area: true,
+                        msaa8: false,
+                        msaa16: false,
+                    },
+                },
+            )
+            .expect("no gpu device"),
+        )
+    }
+}
+
+#[derive(Resource)]
+pub struct LottieRenderer(vellottie::Renderer);
+
+impl Default for LottieRenderer {
+    fn default() -> Self {
+        Self(vellottie::Renderer::new())
+    }
+}

@@ -4,6 +4,12 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
+## 0.5
+
+### added
+
+- `VelloAssetBundle` now has a field `z_function` used for depth-sorting vector assets.
+
 ## 0.4.4
 
 ### fixed
