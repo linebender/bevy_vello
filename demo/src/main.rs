@@ -45,41 +45,41 @@ fn setup_vector_graphics(
             LottiePlayer::new("stopped")
                 .with_state({
                     PlayerState::new("stopped")
-                        .with_playback_options(PlaybackOptions {
+                        .playback_options(PlaybackOptions {
                             autoplay: false,
                             ..default()
                         })
-                        .with_theme(Theme::new().add("calendar", Color::BLUE))
-                        .with_transition(PlayerTransition::OnMouseEnter {
+                        .theme(Theme::new().add("calendar", Color::BLUE))
+                        .transition(PlayerTransition::OnMouseEnter {
                             state: "play",
                         })
-                        .reset_playhead_on_start(true)
+                        .reset_playhead_on_start()
                 })
                 .with_state(
                     PlayerState::new("play")
-                        .with_playback_options(PlaybackOptions {
+                        .playback_options(PlaybackOptions {
                             looping: PlaybackLoopBehavior::DoNotLoop,
                             speed: 0.25,
                             ..default()
                         })
-                        .with_theme(Theme::new().add("calendar", Color::GREEN))
-                        .with_transition(PlayerTransition::OnMouseLeave {
+                        .theme(Theme::new().add("calendar", Color::GREEN))
+                        .transition(PlayerTransition::OnMouseLeave {
                             state: "rev",
                         }),
                 )
                 .with_state(
                     PlayerState::new("rev")
-                        .with_playback_options(PlaybackOptions {
+                        .playback_options(PlaybackOptions {
                             looping: PlaybackLoopBehavior::DoNotLoop,
                             direction: PlaybackDirection::Reverse,
                             speed: 0.25,
                             ..default()
                         })
-                        .with_theme(Theme::new().add("calendar", Color::RED))
-                        .with_transition(PlayerTransition::OnMouseEnter {
+                        .theme(Theme::new().add("calendar", Color::RED))
+                        .transition(PlayerTransition::OnMouseEnter {
                             state: "play",
                         })
-                        .with_transition(PlayerTransition::OnComplete {
+                        .transition(PlayerTransition::OnComplete {
                             state: "stopped",
                         }),
                 ),

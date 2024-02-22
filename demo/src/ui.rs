@@ -96,7 +96,8 @@ pub fn controls_ui(
                 .checkbox(&mut options.autoplay, autoplaying.to_string())
                 .changed()
             {
-                player.state_mut().options.autoplay = options.autoplay;
+                player.state_mut().options.as_mut().unwrap().autoplay =
+                    options.autoplay;
             };
         });
         ui.vertical(|ui| {
@@ -111,7 +112,8 @@ pub fn controls_ui(
                     )
                     .changed()
                 {
-                    player.state_mut().options.direction = options.direction;
+                    player.state_mut().options.as_mut().unwrap().direction =
+                        options.direction;
                 }
             });
             ui.horizontal(|ui| {
@@ -124,7 +126,8 @@ pub fn controls_ui(
                     )
                     .changed()
                 {
-                    player.state_mut().options.direction = options.direction;
+                    player.state_mut().options.as_mut().unwrap().direction =
+                        options.direction;
                 }
             });
         });
@@ -136,7 +139,7 @@ pub fn controls_ui(
                 .add(egui::Slider::new(&mut intermission, 0.0..=5.0))
                 .changed()
             {
-                player.state_mut().options.intermission =
+                player.state_mut().options.as_mut().unwrap().intermission =
                     Duration::from_secs_f32(intermission);
                 options.intermission = Duration::from_secs_f32(intermission);
             };
@@ -148,7 +151,7 @@ pub fn controls_ui(
                 let selected =
                     matches!(options.play_mode, PlaybackPlayMode::Normal);
                 if ui.radio(selected, "Normal").clicked() {
-                    player.state_mut().options.play_mode =
+                    player.state_mut().options.as_mut().unwrap().play_mode =
                         PlaybackPlayMode::Normal;
                     options.play_mode = PlaybackPlayMode::Normal;
                 }
@@ -158,7 +161,7 @@ pub fn controls_ui(
                 let selected =
                     matches!(options.play_mode, PlaybackPlayMode::Bounce);
                 if ui.radio(selected, "Bounce").clicked() {
-                    player.state_mut().options.play_mode =
+                    player.state_mut().options.as_mut().unwrap().play_mode =
                         PlaybackPlayMode::Bounce;
                     options.play_mode = PlaybackPlayMode::Bounce;
                 }
@@ -171,7 +174,7 @@ pub fn controls_ui(
                 let selected =
                     matches!(options.looping, PlaybackLoopBehavior::DoNotLoop);
                 if ui.radio(selected, "Do not loop").clicked() {
-                    player.state_mut().options.looping =
+                    player.state_mut().options.as_mut().unwrap().looping =
                         PlaybackLoopBehavior::DoNotLoop;
                     options.looping = PlaybackLoopBehavior::DoNotLoop;
                 }
@@ -190,7 +193,7 @@ pub fn controls_ui(
                     .changed()
                     || clicked
                 {
-                    player.state_mut().options.looping =
+                    player.state_mut().options.as_mut().unwrap().looping =
                         PlaybackLoopBehavior::Amount(amt);
                     options.looping = PlaybackLoopBehavior::Amount(amt);
                 };
@@ -200,7 +203,7 @@ pub fn controls_ui(
                 let selected =
                     matches!(options.looping, PlaybackLoopBehavior::Loop);
                 if ui.radio(selected, "Loop").clicked() {
-                    player.state_mut().options.looping =
+                    player.state_mut().options.as_mut().unwrap().looping =
                         PlaybackLoopBehavior::Loop;
                     options.looping = PlaybackLoopBehavior::Loop;
                 }
@@ -227,7 +230,13 @@ pub fn controls_ui(
                     )
                     .changed()
                 {
-                    player.state_mut().options.segments.start = start;
+                    player
+                        .state_mut()
+                        .options
+                        .as_mut()
+                        .unwrap()
+                        .segments
+                        .start = start;
                     options.segments.start = start;
                 };
             });
@@ -246,7 +255,8 @@ pub fn controls_ui(
                     )
                     .changed()
                 {
-                    player.state_mut().options.segments.end = end;
+                    player.state_mut().options.as_mut().unwrap().segments.end =
+                        end;
                     options.segments.end = end;
                 };
             });
@@ -255,7 +265,7 @@ pub fn controls_ui(
             ui.label("Speed");
             let mut speed = options.speed;
             if ui.add(egui::Slider::new(&mut speed, 0.05..=2.0)).changed() {
-                player.state_mut().options.speed = speed;
+                player.state_mut().options.as_mut().unwrap().speed = speed;
                 options.speed = speed;
             };
         });
@@ -273,6 +283,8 @@ pub fn controls_ui(
                     player
                         .state_mut()
                         .theme
+                        .as_mut()
+                        .unwrap()
                         .edit(layer, Color::rgba(r, g, b, a));
                     theme.edit(layer, Color::rgba(r, g, b, a));
                 };

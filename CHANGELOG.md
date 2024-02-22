@@ -10,6 +10,17 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - `VelloAssetBundle` now has a field `z_function` used for depth-sorting vector assets.
 
+### changed
+
+- Changed API to PlayerState to a builder pattern. Methods now follow the patterns `set_item`, `get_item`, `item`.
+- Playheads are now advanced in the `First` schedule in Bevy.
+- PlayerState's `reset_playhead_on_transition` was renamed to `reset_playhead_on_exit`
+
+### fixed
+
+- If no theme is provided to a state, it will no longer overwrite with an empty (default) theme.
+- If no playback options are provided to a state, it will no longer overwrite with default playback options.
+
 ## 0.4.4
 
 ### fixed

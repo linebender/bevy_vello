@@ -323,7 +323,7 @@ pub fn transition_state(
         &mut Playhead,
         &mut Handle<VelloAsset>,
     )>,
-    mut assets: ResMut<Assets<VelloAsset>>,
+    assets: Res<Assets<VelloAsset>>,
 ) {
     for (entity, mut player, mut playhead, mut cur_handle) in
         query_sm.iter_mut()
@@ -342,49 +342,72 @@ pub fn transition_state(
             .states
             .get(&next_state)
             .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
-        let target_handle =
-            target_state.asset.clone().unwrap_or(cur_handle.clone());
+        let target_options = target_state
+            .options
+            .as_ref()
+            .or(player.state().options.as_ref())
+            .cloned()
+            .unwrap_or_default();
 
-        let Some(asset) = assets.get_mut(target_handle.id()) else {
-            warn!("Asset not ready for transition, waiting...");
-            continue;
-        };
-
-        // Reset playhead state
-        match &mut asset.data {
-            VectorFile::Svg { original: _ } => {
-                // Do nothing
-            }
-            VectorFile::Lottie { composition } => {
-                if player.state().reset_playhead_on_transition
-                    || target_state.reset_playhead_on_start
-                    || cur_handle.id() != target_handle.id()
-                {
-                    let frame = match target_state.options.direction {
-                        PlaybackDirection::Normal => target_state
-                            .options
-                            .segments
-                            .start
-                            .max(composition.frames.start),
-                        PlaybackDirection::Reverse => target_state
-                            .options
-                            .segments
-                            .end
-                            .min(composition.frames.end)
-                            .prev(),
-                    };
-                    // Reset playhead
-                    playhead.frame = frame;
-                }
+        // Swap assets
+        if let Some(target_handle) = target_state.asset.as_ref() {
+            let Some(asset) = assets.get(target_handle.id()) else {
+                warn!("Asset not ready for transition, waiting...");
+                continue;
+            };
+            *cur_handle = target_handle.clone();
+            // Keep playhead bounded
+            if let VelloAsset {
+                data: VectorFile::Lottie { composition },
+                ..
+            } = asset
+            {
+                let start_frame =
+                    target_options.segments.start.max(composition.frames.start);
+                let end_frame = target_options
+                    .segments
+                    .end
+                    .min(composition.frames.end)
+                    .prev();
+                playhead.frame = playhead.frame.clamp(start_frame, end_frame);
             }
         }
-
-        // Swap asset, theme, playback options
-        *cur_handle = target_handle.clone();
-        commands
-            .entity(entity)
-            .insert(target_state.options.clone())
-            .insert(target_state.theme.clone());
+        // Swap theme
+        if let Some(theme) = target_state.theme.as_ref() {
+            commands.entity(entity).insert(theme.clone());
+        }
+        // Reset playheads if requested
+        if player.state().reset_playhead_on_exit
+            || target_state.reset_playhead_on_start
+        {
+            // SAFETY: Asset check happens earlier
+            let asset = assets
+                .get(target_state.asset.as_ref().unwrap_or(&cur_handle))
+                .unwrap();
+            if let VelloAsset {
+                data: VectorFile::Lottie { composition },
+                ..
+            } = asset
+            {
+                let frame = match target_options.direction {
+                    PlaybackDirection::Normal => target_options
+                        .segments
+                        .start
+                        .max(composition.frames.start),
+                    PlaybackDirection::Reverse => target_options
+                        .segments
+                        .end
+                        .min(composition.frames.end)
+                        .prev(),
+                };
+                // Reset playhead
+                playhead.frame = frame;
+            }
+        }
+        // Swap playback options
+        if target_state.options.is_some() {
+            commands.entity(entity).insert(target_options);
+        }
 
         // Reset playhead state
         playhead.intermission.take();
