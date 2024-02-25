@@ -4,6 +4,13 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
+
+## 0.5.1
+
+### fixed
+
+- `DebugVisualizations` for assets were erroneously rotated 90 degrees.
+
 ## 0.5
 
 ### added

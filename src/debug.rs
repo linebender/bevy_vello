@@ -179,8 +179,8 @@ fn draw_asset_debug(
     origin: Vec2,
     size: Vec2,
 ) {
-    let half_height = size.x / 2.0;
-    let half_width = size.y / 2.0;
+    let half_width = size.x / 2.0;
+    let half_height = size.y / 2.0;
 
     // 4 sides
     // Left
