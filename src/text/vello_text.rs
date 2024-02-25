@@ -1,7 +1,6 @@
-use bevy::{math::Vec3A, prelude::*};
-use vello::peniko::Brush;
-
 use crate::VelloFont;
+use bevy::prelude::*;
+use vello::peniko::Brush;
 
 #[derive(Component, Default, Clone)]
 pub struct VelloText {

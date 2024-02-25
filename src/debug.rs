@@ -1,5 +1,3 @@
-use std::vec;
-
 use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText, ZFunction};
 use bevy::{math::Vec3Swizzles, prelude::*};
 
