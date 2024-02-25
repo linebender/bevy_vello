@@ -26,8 +26,8 @@ pub enum ZFunction {
     BbRight,
     /// Use a computation to yield Z.
     Computed(fn(&VelloAsset, &GlobalTransform) -> f32),
-    /// Use a constant value for Z.
-    Const(f32),
+    /// Use a given value for Z.
+    Value(f32),
 }
 
 impl ZFunction {
@@ -50,32 +50,12 @@ impl ZFunction {
             ZFunction::TransformYOffset(offset) => {
                 transform.translation().y + offset
             }
-            ZFunction::BbTop => -asset
-                .bb_in_world_space(transform)
-                .into_iter()
-                .map(|p| p.y)
-                .reduce(f32::max)
-                .unwrap(),
-            ZFunction::BbBottom => -asset
-                .bb_in_world_space(transform)
-                .into_iter()
-                .map(|p| p.y)
-                .reduce(f32::min)
-                .unwrap(),
-            ZFunction::BbLeft => asset
-                .bb_in_world_space(transform)
-                .into_iter()
-                .map(|p| p.x)
-                .reduce(f32::min)
-                .unwrap(),
-            ZFunction::BbRight => asset
-                .bb_in_world_space(transform)
-                .into_iter()
-                .map(|p| p.x)
-                .reduce(f32::max)
-                .unwrap(),
+            ZFunction::BbTop => asset.bb_in_world_space(transform).min.y,
+            ZFunction::BbBottom => -asset.bb_in_world_space(transform).max.y,
+            ZFunction::BbLeft => -asset.bb_in_world_space(transform).min.x,
+            ZFunction::BbRight => asset.bb_in_world_space(transform).max.x,
             ZFunction::Computed(compute_fn) => compute_fn(asset, transform),
-            ZFunction::Const(v) => *v,
+            ZFunction::Value(v) => *v,
         }
     }
 }

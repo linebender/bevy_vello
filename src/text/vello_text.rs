@@ -11,25 +11,39 @@ pub struct VelloText {
 }
 
 impl VelloText {
-    /// Returns the position and size relative to the given transform's space (world or screen)
-    pub fn bb_in_space(
+    /// Returns the bounding box in world space
+    pub fn bb_in_world_space(
         &self,
         font: &VelloFont,
-        transform: &Transform,
         gtransform: &GlobalTransform,
     ) -> Rect {
-        let font_bb = font.sizeof(self);
+        let size = font.sizeof(self);
 
-        let min = Vec3A::ZERO;
+        // Convert local coordinates to world coordinates
+        let local_min = Vec3::new(0.0, 0.0, 0.0).extend(1.0);
+        let local_max = Vec3::new(size.x, size.y, 0.0).extend(1.0);
 
-        let max = Vec3A::new(font_bb.x, font_bb.y, 0.0);
+        let min_world = gtransform.compute_matrix() * local_min;
+        let max_world = gtransform.compute_matrix() * local_max;
 
-        let world_transform = gtransform.compute_matrix();
-        let local_transform = transform.compute_matrix().inverse();
-
-        let min = (world_transform * local_transform * min.extend(1.0)).xy();
-        let max = (world_transform * local_transform * max.extend(1.0)).xy();
-
+        // Calculate the distance between the vertices to get the size in world space
+        let min = Vec2::new(min_world.x, min_world.y);
+        let max = Vec2::new(max_world.x, max_world.y);
         Rect { min, max }
+    }
+
+    /// Returns the bounding box in screen space
+    pub fn bb_in_screen_space(
+        &self,
+        font: &VelloFont,
+        gtransform: &GlobalTransform,
+        camera: &Camera,
+        camera_transform: &GlobalTransform,
+    ) -> Option<Rect> {
+        let Rect { min, max } = self.bb_in_world_space(font, gtransform);
+        camera
+            .viewport_to_world_2d(camera_transform, min)
+            .zip(camera.viewport_to_world_2d(camera_transform, max))
+            .map(|(min, max)| Rect { min, max })
     }
 }

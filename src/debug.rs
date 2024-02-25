@@ -1,11 +1,18 @@
-use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText};
+use std::vec;
+
+use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText, ZFunction};
 use bevy::{math::Vec3Swizzles, prelude::*};
+
+const RED_X_SIZE: f32 = 8.0;
 
 pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (draw_asset_viewbox, draw_text_viewbox));
+        app.add_systems(
+            Update,
+            (render_velloasset_debug, render_vellotext_debug),
+        );
     }
 }
 
@@ -17,14 +24,17 @@ pub enum DebugVisualizations {
     Visible,
 }
 
-fn draw_asset_viewbox(
-    query_world: Query<
-        (&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations),
+/// A system to render debug visualizations for `VelloAsset`.
+fn render_velloasset_debug(
+    query_vectors: Query<
+        (
+            &Handle<VelloAsset>,
+            &GlobalTransform,
+            &CoordinateSpace,
+            &ZFunction,
+            &DebugVisualizations,
+        ),
         Without<Node>,
-    >,
-    query_ui: Query<
-        (&Handle<VelloAsset>, &GlobalTransform, &DebugVisualizations),
-        With<Node>,
     >,
     vectors: Res<Assets<VelloAsset>>,
     query_cam: Query<
@@ -37,85 +47,54 @@ fn draw_asset_viewbox(
         return;
     };
 
-    const RED_X_SIZE: f32 = 8.0;
-
-    // Show world-space vectors
-    for (vector, transform, _) in query_world
+    // Show vectors
+    for (vector, gtransform, space, z_fn, _) in query_vectors
         .iter()
-        .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
-            let [min, x_axis, max, y_axis] =
-                vector.bb_in_world_space(transform);
-
-            gizmos.line_2d(min, x_axis, Color::WHITE);
-            gizmos.line_2d(min, y_axis, Color::WHITE);
-            gizmos.line_2d(x_axis, max, Color::WHITE);
-            gizmos.line_2d(y_axis, max, Color::WHITE);
-
-            let red_x_origin = transform.translation().xy();
-            let from =
-                red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-            let to = red_x_origin
-                + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
-
-            gizmos.line_2d(from, to, Color::RED);
-
-            let from = red_x_origin
-                + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-            let to = red_x_origin
-                + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
-
-            gizmos.line_2d(from, to, Color::RED);
-        }
-    }
-
-    // Show screen-space vectors
-    for (vector, transform, _) in query_ui
-        .iter()
-        .filter(|(_, _, d)| **d == DebugVisualizations::Visible)
-    {
-        if let Some(vector) = vectors.get(vector) {
-            let &[Some(min), Some(x_axis), Some(max), Some(y_axis)] = vector
-                .bb_in_screen_space(transform)
-                .iter()
-                .map(|&v| camera.viewport_to_world_2d(view, v))
-                .collect::<Vec<Option<Vec2>>>()
-                .as_slice()
-            else {
-                continue;
-            };
-
-            gizmos.line_2d(min, x_axis, Color::WHITE);
-            gizmos.line_2d(min, y_axis, Color::WHITE);
-            gizmos.line_2d(x_axis, max, Color::WHITE);
-            gizmos.line_2d(y_axis, max, Color::WHITE);
-
-            let red_x_origin =
-                Vec2::new((y_axis.x + max.x) / 2.0, (y_axis.y + min.y) / 2.0);
-            let from =
-                red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-            let to = red_x_origin
-                + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
-
-            gizmos.line_2d(from, to, Color::RED);
-
-            let from = red_x_origin
-                + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-            let to = red_x_origin
-                + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
-
-            gizmos.line_2d(from, to, Color::RED);
+            match space {
+                CoordinateSpace::WorldSpace => {
+                    let rect = vector.bb_in_world_space(gtransform);
+                    draw_asset_debug(
+                        &mut gizmos,
+                        projection,
+                        z_fn,
+                        gtransform.translation().xy(),
+                        rect.size(),
+                    );
+                }
+                CoordinateSpace::ScreenSpace => {
+                    let Some(rect) =
+                        vector.bb_in_screen_space(gtransform, camera, view)
+                    else {
+                        continue;
+                    };
+                    let Some(origin) = camera.viewport_to_world_2d(
+                        view,
+                        gtransform.translation().xy(),
+                    ) else {
+                        continue;
+                    };
+                    draw_asset_debug(
+                        &mut gizmos,
+                        projection,
+                        z_fn,
+                        origin,
+                        rect.size(),
+                    );
+                }
+            }
         }
     }
 }
 
-fn draw_text_viewbox(
+/// A system to render debug visualizations for `VelloText`.
+fn render_vellotext_debug(
     query_world: Query<
         (
             &Handle<VelloFont>,
             &VelloText,
-            &Transform,
             &GlobalTransform,
             &CoordinateSpace,
             &DebugVisualizations,
@@ -129,69 +108,165 @@ fn draw_text_viewbox(
     fonts: Res<Assets<VelloFont>>,
     mut gizmos: Gizmos,
 ) {
-    let Ok((_camera, _view, projection)) = query_cam.get_single() else {
+    let Ok((camera, view, projection)) = query_cam.get_single() else {
         return;
     };
 
     // Show world-space vectors
-    for (font, text, transform, gtransform, space, _) in query_world
+    for (font, text, gtransform, space, _) in query_world
         .iter()
-        .filter(|(_, _, _, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(font) = fonts.get(font) {
-            let rect = text.bb_in_space(font, transform, gtransform);
-            let origin = transform.translation.xy();
+            let rect = text.bb_in_world_space(font, gtransform);
+            let origin = gtransform.translation().xy();
             match space {
                 CoordinateSpace::WorldSpace => {
-                    draw_debug(
+                    draw_text_debug(
                         &mut gizmos,
-                        gtransform,
                         projection,
-                        origin + rect.size() / 2.0,
+                        origin,
                         rect.size(),
                     );
                 }
                 CoordinateSpace::ScreenSpace => {
-                    // FIXME: This isn't working.
-                    //let rect = text.bb_in_space(font, transform, gtransform);
-                    //let Some(pos) = camera.viewport_to_world_2d(view, origin)
-                    //else {
-                    //    continue;
-                    //};
-                    //
-                    //draw_debug(
-                    //    &mut gizmos,
-                    //    view,
-                    //    projection,
-                    //    pos + rect.size() / 2.0 * projection.scale,
-                    //    rect.size() * projection.scale,
-                    //);
+                    let Some(rect) =
+                        text.bb_in_screen_space(font, gtransform, camera, view)
+                    else {
+                        continue;
+                    };
+                    let Some(origin) = camera.viewport_to_world_2d(
+                        view,
+                        gtransform.translation().xy(),
+                    ) else {
+                        continue;
+                    };
+                    draw_text_debug(
+                        &mut gizmos,
+                        projection,
+                        origin,
+                        rect.size() * Vec2::new(1.0, -1.0), // Flip Y
+                    );
                 }
             }
         }
     }
 }
 
-fn draw_debug(
+/// A helper method to draw text gizmos.
+fn draw_text_debug(
     gizmos: &mut Gizmos,
-    transform: &GlobalTransform,
     projection: &OrthographicProjection,
-    pos: Vec2,
+    origin: Vec2,
     size: Vec2,
 ) {
-    gizmos.rect_2d(pos, 0.0, size, Color::WHITE);
+    gizmos.rect_2d(origin + size / 2.0, 0.0, size, Color::WHITE);
 
-    const RED_X_SIZE: f32 = 8.0;
-    let red_x_origin = transform.translation().xy();
-    let from = red_x_origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-    let to = red_x_origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
+    let from = origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
+    let to = origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 
     gizmos.line_2d(from, to, Color::RED);
 
-    let from =
-        red_x_origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-    let to =
-        red_x_origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
+    let from = origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
+    let to = origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
 
     gizmos.line_2d(from, to, Color::RED);
+}
+
+/// A helper method to draw asset gizmos.
+fn draw_asset_debug(
+    gizmos: &mut Gizmos,
+    projection: &OrthographicProjection,
+    z_fn: &ZFunction,
+    origin: Vec2,
+    size: Vec2,
+) {
+    let half_height = size.x / 2.0;
+    let half_width = size.y / 2.0;
+
+    // 4 sides
+    // Left
+    gizmos.line_2d(
+        origin + Vec2::new(-half_width, -half_height),
+        origin + Vec2::new(-half_width, half_height),
+        Color::WHITE,
+    );
+    // Top
+    gizmos.line_2d(
+        origin + Vec2::new(-half_width, -half_height),
+        origin + Vec2::new(half_width, -half_height),
+        Color::WHITE,
+    );
+    // Right
+    gizmos.line_2d(
+        origin + Vec2::new(half_width, -half_height),
+        origin + Vec2::new(half_width, half_height),
+        Color::WHITE,
+    );
+    // Bottom
+    gizmos.line_2d(
+        origin + Vec2::new(-half_width, half_height),
+        origin + Vec2::new(half_width, half_height),
+        Color::WHITE,
+    );
+
+    let from = origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
+    let to = origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
+
+    gizmos.line_2d(from, to, Color::RED);
+
+    let from = origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
+    let to = origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
+
+    gizmos.line_2d(from, to, Color::RED);
+
+    const Z_COLOR: Color = Color::GREEN;
+    match z_fn {
+        ZFunction::TransformX => gizmos.line_2d(
+            origin + Vec2::new(0.0, -half_height),
+            origin + Vec2::new(0.0, half_height),
+            Z_COLOR,
+        ),
+        ZFunction::TransformY => gizmos.line_2d(
+            origin + Vec2::new(-half_width, 0.0),
+            origin + Vec2::new(half_width, 0.0),
+            Z_COLOR,
+        ),
+        ZFunction::TransformXOffset(offset) => gizmos.line_2d(
+            origin + Vec2::new(*offset, -half_height),
+            origin + Vec2::new(*offset, half_height),
+            Z_COLOR,
+        ),
+        ZFunction::TransformYOffset(offset) => gizmos.line_2d(
+            origin + Vec2::new(-half_width, *offset),
+            origin + Vec2::new(half_width, *offset),
+            Z_COLOR,
+        ),
+        ZFunction::BbTop => gizmos.line_2d(
+            origin + Vec2::new(-half_width, half_height),
+            origin + Vec2::new(half_width, half_height),
+            Z_COLOR,
+        ),
+        ZFunction::BbBottom => gizmos.line_2d(
+            origin + Vec2::new(-half_width, -half_height),
+            origin + Vec2::new(half_width, -half_height),
+            Z_COLOR,
+        ),
+        ZFunction::BbLeft => gizmos.line_2d(
+            origin + Vec2::new(-half_width, -half_height),
+            origin + Vec2::new(-half_width, half_height),
+            Z_COLOR,
+        ),
+        ZFunction::BbRight => gizmos.line_2d(
+            origin + Vec2::new(half_width, -half_height),
+            origin + Vec2::new(half_width, half_height),
+            Z_COLOR,
+        ),
+        ZFunction::TransformZ
+        | ZFunction::TransformZOffset(_)
+        | ZFunction::Computed(_)
+        | ZFunction::Value(_) => {
+            // No way to display this
+        }
+    }
 }
