@@ -1,8 +1,5 @@
 use bevy::{asset::AssetMetaCheck, prelude::*};
-use bevy_vello::{
-    prelude::*,
-    vello::peniko::{self},
-};
+use bevy_vello::{prelude::*, vello::peniko};
 
 fn main() {
     App::new()
