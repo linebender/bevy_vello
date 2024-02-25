@@ -9,6 +9,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ### added
 
 - `VelloAssetBundle` now has a field `z_function` used for depth-sorting vector assets.
+- `ZFunction` is now visually represented in some debug visualizations.
 
 ### changed
 
@@ -20,6 +21,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - If no theme is provided to a state, it will no longer overwrite with an empty (default) theme.
 - If no playback options are provided to a state, it will no longer overwrite with default playback options.
+- `DebugVisualizations` now correctly render for assets in screen-space or world-space when not bundled with a UI Node.
 
 ## 0.4.4
 
