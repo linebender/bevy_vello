@@ -10,6 +10,6 @@ publish = false
 [dependencies]
 bevy-vello = { path = "../../" }
 bevy = { workspace = true }
-bevy_pancam = { version = "0.10", features = ["bevy_egui"] }
+bevy_pancam = { version = "0.11", features = ["bevy_egui"] }
 # FIXME: Remove later on, web-sys got angry in v0.3.38.
 web-sys = { workspace = true }
