@@ -56,9 +56,7 @@ impl Plugin for VelloRenderPlugin {
 
         app.add_plugins((
             Material2dPlugin::<VelloCanvasMaterial>::default(),
-            ExtractComponentPlugin::<ExtractedRenderText>::default(),
             ExtractComponentPlugin::<SSRenderTarget>::default(),
-            RenderAssetPlugin::<VelloFont>::default(),
         ))
         .add_systems(Startup, systems::setup_ss_rendertarget)
         .add_systems(

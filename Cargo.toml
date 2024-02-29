@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/vectorgameexperts/bevy-vello"
 
 [workspace.dependencies]
-bevy = { version = "0.12", default-features = false, features = [
+bevy = { version = "0.13", default-features = false, features = [
   "bevy_asset",
   "bevy_winit",
   "bevy_core_pipeline",
@@ -42,7 +42,7 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { workspace = true }
-vello = { git = "https://github.com/linebender/vello", rev = "28914d66f675efecf03c53261a0fb1b8ecce4fe9" }
+vello = { git = "https://github.com/linebender/vello", rev = "f164ffc01710a996ee6e3c0e0783635b3aaef209" }
 vello-svg = { git = "https://github.com/vectorgameexperts/vello-svg", version = "0.2" }
 vellottie = { git = "https://github.com/vectorgameexperts/vellottie", version = "0.2" }
 # FIXME: Remove later on, web-sys got angry in v0.3.38.

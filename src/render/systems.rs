@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     render::{
         mesh::Indices,
-        render_asset::RenderAssets,
+        render_asset::{RenderAssetUsages, RenderAssets},
         render_resource::{
             Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension,
             TextureFormat, TextureUsages,
@@ -61,7 +61,6 @@ pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
-    mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
@@ -153,9 +152,7 @@ pub fn render_scene(
                 RenderItem::Text(ExtractedRenderText {
                     font, text, ..
                 }) => {
-                    if let Some(font) = font_render_assets.get_mut(font) {
-                        font.render(&mut builder, affine, text);
-                    }
+                    font.render(&mut builder, affine, text);
                 }
             }
         }
@@ -226,7 +223,10 @@ pub fn setup_ss_rendertarget(
     };
 
     let mesh_handle = render_target_mesh_handle.get_or_insert_with(|| {
-        let mut rendertarget_quad = Mesh::new(PrimitiveTopology::TriangleList);
+        let mut rendertarget_quad = Mesh::new(
+            PrimitiveTopology::TriangleList,
+            RenderAssetUsages::default(),
+        );
 
         // Rectangle of the screen
         let verts = vec![
@@ -241,7 +241,7 @@ pub fn setup_ss_rendertarget(
         rendertarget_quad.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv_pos);
 
         let indices = vec![0, 1, 2, 0, 2, 3];
-        rendertarget_quad.set_indices(Some(Indices::U32(indices)));
+        rendertarget_quad.insert_indices(Indices::U32(indices));
 
         meshes.add(rendertarget_quad)
     });

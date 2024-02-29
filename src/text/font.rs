@@ -18,42 +18,15 @@ use super::vello_text::VelloText;
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use std::sync::Arc;
 use vello::{
-    fello::{meta::MetadataProvider, raw::FontRef},
-    glyph::GlyphContext,
+    glyph::{skrifa::FontRef, GlyphContext},
     kurbo::Affine,
     peniko::{self, Blob, Brush, Font},
-    SceneBuilder, SceneFragment,
 };
 
 #[derive(Asset, TypePath)]
 pub struct VelloFont {
     gcx: GlyphContext,
     pub font: peniko::Font,
-}
-
-impl RenderAsset for VelloFont {
-    type ExtractedAsset = VelloFont;
-
-    type PreparedAsset = VelloFont;
-
-    type Param = ();
-
-    fn extract_asset(&self) -> Self::ExtractedAsset {
-        VelloFont {
-            font: self.font.clone(),
-            gcx: GlyphContext::default(),
-        }
-    }
-
-    fn prepare_asset(
-        data: Self::ExtractedAsset,
-        _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
-    ) -> Result<
-        Self::PreparedAsset,
-        bevy::render::render_asset::PrepareAssetError<Self::ExtractedAsset>,
-    > {
-        Ok(data)
-    }
 }
 
 impl VelloFont {
@@ -68,11 +41,11 @@ impl VelloFont {
         let font = FontRef::new(self.font.data.data())
             .expect("Vello font creation error");
 
-        let fello_size = vello::fello::Size::new(text.size);
+        let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
-        let metrics = font.metrics(fello_size, Default::default());
+        let metrics = font.metrics(font_size, Default::default());
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
-        let glyph_metrics = font.glyph_metrics(fello_size, Default::default());
+        let glyph_metrics = font.glyph_metrics(font_size, Default::default());
 
         let mut pen_x = 0.0;
         let mut pen_y: f32 = 0.0;
@@ -122,11 +95,11 @@ impl VelloFont {
 
         let mut items = vec![];
 
-        let fello_size = vello::fello::Size::new(size);
+        let font_size = vello::skrifa::instance::Size::new(size);
         let charmap = font.charmap();
-        let metrics = font.metrics(fello_size, Default::default());
+        let metrics = font.metrics(font_size, Default::default());
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
-        let glyph_metrics = font.glyph_metrics(fello_size, Default::default());
+        let glyph_metrics = font.glyph_metrics(font_size, Default::default());
         let vars: [(&str, f32); 0] = [];
         let mut provider =
             self.gcx.new_provider(&font, None, size, false, vars);
