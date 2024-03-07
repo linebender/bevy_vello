@@ -15,12 +15,16 @@
 // Also licensed under MIT license, at your choice.
 
 use super::vello_text::VelloText;
-use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
+use bevy::{prelude::*, reflect::TypePath};
 use std::sync::Arc;
 use vello::{
-    glyph::{skrifa::FontRef, GlyphContext},
+    glyph::{
+        skrifa::{FontRef, MetadataProvider},
+        Glyph, GlyphContext,
+    },
     kurbo::Affine,
-    peniko::{self, Blob, Brush, Font},
+    peniko::{self, Blob, Font},
+    Scene,
 };
 
 #[derive(Asset, TypePath)]
@@ -40,12 +44,14 @@ impl VelloFont {
     pub fn sizeof(&self, text: &VelloText) -> Vec2 {
         let font = FontRef::new(self.font.data.data())
             .expect("Vello font creation error");
-
         let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
-        let metrics = font.metrics(font_size, Default::default());
+        let axes = font.axes();
+        let variations: &[(&str, f32)] = &[];
+        let var_loc = axes.location(variations);
+        let metrics = font.metrics(font_size, &var_loc);
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
-        let glyph_metrics = font.glyph_metrics(font_size, Default::default());
+        let glyph_metrics = font.glyph_metrics(font_size, &var_loc);
 
         let mut pen_x = 0.0;
         let mut pen_y: f32 = 0.0;
@@ -66,70 +72,51 @@ impl VelloFont {
         Vec2::new(width, height)
     }
 
-    pub fn render(
-        &mut self,
-        builder: &mut SceneBuilder,
+    pub(crate) fn render(
+        &self,
+        scene: &mut Scene,
         transform: Affine,
         text: &VelloText,
     ) {
-        let frags = self.render_fragments(
-            text.size,
-            text.brush.as_ref(),
-            transform,
-            &text.content,
-        );
-        for (glyph, transform) in frags {
-            builder.append(&glyph, Some(transform));
-        }
-    }
-
-    pub(crate) fn render_fragments(
-        &mut self,
-        size: f32,
-        brush: Option<&Brush>,
-        transform: Affine,
-        text: &str,
-    ) -> Vec<(SceneFragment, Affine)> {
         let font = FontRef::new(self.font.data.data())
             .expect("Vello font creation error");
 
-        let mut items = vec![];
-
-        let font_size = vello::skrifa::instance::Size::new(size);
+        let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
-        let metrics = font.metrics(font_size, Default::default());
+        let axes = font.axes();
+        let variations: &[(&str, f32)] = &[];
+        let var_loc = axes.location(variations);
+        let metrics = font.metrics(font_size, &var_loc);
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
-        let glyph_metrics = font.glyph_metrics(font_size, Default::default());
-        let vars: [(&str, f32); 0] = [];
-        let mut provider =
-            self.gcx.new_provider(&font, None, size, false, vars);
+        let glyph_metrics = font.glyph_metrics(font_size, &var_loc);
 
-        let mut pen_x: f64 = 0.0;
-        let mut pen_y: f64 = 0.0;
-
-        for ch in text.chars() {
-            if ch == '\n' {
-                pen_y += line_height as f64;
-                pen_x = 0.0;
-                continue;
-            }
-            let gid = charmap.map(ch).unwrap_or_default();
-            let advance =
-                glyph_metrics.advance_width(gid).unwrap_or_default() as f64;
-
-            if let Some(glyph) = provider.get(gid.to_u16(), brush) {
-                let xform = transform
-                    * Affine::translate((pen_x, pen_y))
-                    * Affine::scale_non_uniform(1.0, -1.0);
-                // builder.append(&glyph, Some(xform));
-                items.push((glyph, xform));
-            }
-            pen_x += advance;
-        }
-        items
-            .into_iter()
-            // Push all lines up to account for new lines
-            .map(|(f, a)| (f, a * Affine::translate((0.0, pen_y))))
-            .collect()
+        let mut pen_x = 0f32;
+        let mut pen_y = 0f32;
+        scene
+            .draw_glyphs(&self.font)
+            .font_size(text.size)
+            .transform(transform)
+            .normalized_coords(var_loc.coords())
+            .brush(&text.brush.clone().unwrap_or_default())
+            .draw(
+                &vello::kurbo::Stroke::new(1.0),
+                text.content.chars().filter_map(|ch| {
+                    if ch == '\n' {
+                        pen_y += line_height;
+                        pen_x = 0.0;
+                        return None;
+                    }
+                    let gid = charmap.map(ch).unwrap_or_default();
+                    let advance =
+                        glyph_metrics.advance_width(gid).unwrap_or_default();
+                    let x = pen_x;
+                    pen_x += advance;
+                    Some(Glyph {
+                        id: gid.to_u16() as u32,
+                        x,
+                        y: pen_y,
+                    })
+                }),
+            )
     }
 }

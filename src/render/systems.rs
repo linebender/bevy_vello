@@ -1,4 +1,4 @@
-use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
+use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial};
 use bevy::{
     prelude::*,
     render::{
@@ -14,7 +14,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
-use vello::{RenderParams, Scene, SceneBuilder};
+use vello::{RenderParams, Scene};
 
 use super::{
     extract::{ExtractedRenderText, ExtractedRenderVector, SSRenderTarget},
@@ -77,8 +77,7 @@ pub fn render_scene(
         ss_render_target.get_single()
     {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
-        let mut scene = Scene::default();
-        let mut builder = SceneBuilder::for_scene(&mut scene);
+        let mut scene = Scene::new();
 
         enum RenderItem<'a> {
             Vector(&'a ExtractedRenderVector),
@@ -127,10 +126,8 @@ pub fn render_scene(
                     playhead,
                     ..
                 }) => match &asset.data {
-                    VectorFile::Svg {
-                        original: fragment, ..
-                    } => {
-                        builder.append(fragment, Some(affine));
+                    VectorFile::Svg { scene: svg, .. } => {
+                        scene.append(svg, Some(affine));
                     }
                     VectorFile::Lottie { composition } => {
                         debug!("playhead: {playhead}");
@@ -145,14 +142,14 @@ pub fn render_scene(
                             *playhead,
                             affine,
                             *alpha,
-                            &mut builder,
+                            &mut scene,
                         );
                     }
                 },
                 RenderItem::Text(ExtractedRenderText {
                     font, text, ..
                 }) => {
-                    font.render(&mut builder, affine, text);
+                    font.render(&mut scene, affine, text);
                 }
             }
         }
