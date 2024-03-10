@@ -21,7 +21,6 @@ bevy = { version = "0.13", default-features = false, features = [
   "tonemapping_luts",
   "bevy_gizmos",
 ] }
-web-sys = "0.3.67"
 
 [package]
 name = "bevy-vello"

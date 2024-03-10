@@ -10,5 +10,3 @@ publish = false
 [dependencies]
 bevy-vello = { path = "../../" }
 bevy = { workspace = true }
-# FIXME: Remove later on, web-sys got angry in v0.3.38.
-web-sys = { workspace = true }

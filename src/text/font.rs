@@ -1,43 +1,45 @@
-// Copyright 2022 The vello authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Also licensed under MIT license, at your choice.
-
 use super::vello_text::VelloText;
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use std::sync::Arc;
 use vello::{
     glyph::{
         skrifa::{FontRef, MetadataProvider},
-        Glyph, GlyphContext,
+        Glyph,
     },
     kurbo::Affine,
     peniko::{self, Blob, Font},
     Scene,
 };
 
-#[derive(Asset, TypePath)]
+#[derive(Asset, TypePath, Clone)]
 pub struct VelloFont {
-    gcx: GlyphContext,
-    pub font: peniko::Font,
+    pub font: Arc<peniko::Font>,
+}
+
+impl RenderAsset for VelloFont {
+    type PreparedAsset = VelloFont;
+
+    type Param = ();
+
+    fn asset_usage(&self) -> bevy::render::render_asset::RenderAssetUsages {
+        Default::default()
+    }
+
+    fn prepare_asset(
+        self,
+        _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
+    ) -> Result<
+        Self::PreparedAsset,
+        bevy::render::render_asset::PrepareAssetError<Self>,
+    > {
+        Ok(self)
+    }
 }
 
 impl VelloFont {
     pub fn new(font_data: Vec<u8>) -> Self {
         Self {
-            gcx: GlyphContext::new(),
-            font: Font::new(Blob::new(Arc::new(font_data)), 0),
+            font: Arc::new(Font::new(Blob::new(Arc::new(font_data)), 0)),
         }
     }
 
@@ -47,8 +49,8 @@ impl VelloFont {
         let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
         let axes = font.axes();
-        let variations: &[(&str, f32)] = &[];
-        let var_loc = axes.location(variations);
+        const VARIATIONS: &[(&str, f32)] = &[];
+        let var_loc = axes.location(VARIATIONS);
         let metrics = font.metrics(font_size, &var_loc);
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
         let glyph_metrics = font.glyph_metrics(font_size, &var_loc);
@@ -84,8 +86,8 @@ impl VelloFont {
         let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
         let axes = font.axes();
-        let variations: &[(&str, f32)] = &[];
-        let var_loc = axes.location(variations);
+        const VARIATIONS: &[(&str, f32)] = &[];
+        let var_loc = axes.location(VARIATIONS);
         let metrics = font.metrics(font_size, &var_loc);
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
         let glyph_metrics = font.glyph_metrics(font_size, &var_loc);

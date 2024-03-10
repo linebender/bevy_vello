@@ -2,13 +2,17 @@ use super::{
     extract::{self, ExtractedPixelScale, SSRenderTarget},
     prepare, systems, BevyVelloRenderer, LottieRenderer,
 };
-use crate::{render::SSRT_SHADER_HANDLE, VelloCanvasMaterial};
+use crate::{
+    render::{extract::ExtractedRenderText, SSRT_SHADER_HANDLE},
+    VelloCanvasMaterial, VelloFont,
+};
 use bevy::{
     asset::load_internal_asset,
     prelude::*,
     render::{
-        extract_component::ExtractComponentPlugin, renderer::RenderDevice,
-        Render, RenderApp, RenderSet,
+        extract_component::ExtractComponentPlugin,
+        render_asset::RenderAssetPlugin, renderer::RenderDevice, Render,
+        RenderApp, RenderSet,
     },
     sprite::Material2dPlugin,
 };
@@ -55,7 +59,9 @@ impl Plugin for VelloRenderPlugin {
 
         app.add_plugins((
             Material2dPlugin::<VelloCanvasMaterial>::default(),
+            ExtractComponentPlugin::<ExtractedRenderText>::default(),
             ExtractComponentPlugin::<SSRenderTarget>::default(),
+            RenderAssetPlugin::<VelloFont>::default(),
         ))
         .add_systems(Startup, systems::setup_ss_rendertarget)
         .add_systems(

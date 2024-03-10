@@ -75,37 +75,38 @@ pub fn vector_instances(
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct ExtractedRenderText {
-    pub font: VelloFont,
+    pub font: Handle<VelloFont>,
     pub text: VelloText,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
 }
 
-pub fn text_instances(
-    mut commands: Commands,
-    query_vectors: Extract<
-        Query<(
-            &Handle<VelloFont>,
-            &VelloText,
-            &GlobalTransform,
-            &CoordinateSpace,
-        )>,
-    >,
-    assets: Extract<Res<Assets<VelloFont>>>,
-) {
-    for (vello_font_handle, vello_text, transform, coordinate_space) in
-        query_vectors.iter()
-    {
-        if let Some(asset) = assets.get(vello_font_handle) {
-            commands.spawn(ExtractedRenderText {
-                font: *asset.to_owned(),
-                text: *vello_text,
-                transform: *transform,
-                render_mode: *coordinate_space,
-            });
-        }
+impl ExtractComponent for ExtractedRenderText {
+    type QueryData = (
+        &'static Handle<VelloFont>,
+        &'static VelloText,
+        &'static GlobalTransform,
+        &'static CoordinateSpace,
+    );
+
+    type QueryFilter = ();
+
+    type Out = Self;
+
+    fn extract_component(
+        (vello_font_handle, text, transform, render_mode): bevy::ecs::query::QueryItem<
+            '_,
+            Self::QueryData,
+        >,
+    ) -> Option<Self> {
+        Some(Self {
+            font: vello_font_handle.clone(),
+            text: text.clone(),
+            transform: *transform,
+            render_mode: *render_mode,
+        })
     }
 }
 
@@ -135,7 +136,7 @@ pub fn extract_pixel_scale(
 ) {
     let scale_factor = windows
         .get_single()
-        .map(|window| window.resolution.scale_factor() as f32)
+        .map(|window| window.resolution.scale_factor())
         .unwrap_or(1.0);
 
     pixel_scale.0 = scale_factor;

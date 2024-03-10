@@ -1,4 +1,4 @@
-use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial};
+use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
 use bevy::{
     prelude::*,
     render::{
@@ -61,6 +61,7 @@ pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
     render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
+    mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
@@ -131,6 +132,7 @@ pub fn render_scene(
                     }
                     VectorFile::Lottie { composition } => {
                         debug!("playhead: {playhead}");
+
                         velottie_renderer.0.render(
                             {
                                 theme
@@ -149,7 +151,9 @@ pub fn render_scene(
                 RenderItem::Text(ExtractedRenderText {
                     font, text, ..
                 }) => {
-                    font.render(&mut scene, affine, text);
+                    if let Some(font) = font_render_assets.get_mut(font) {
+                        font.render(&mut scene, affine, text);
+                    }
                 }
             }
         }
