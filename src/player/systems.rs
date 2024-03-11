@@ -177,7 +177,7 @@ pub fn run_transitions(
     mut assets: ResMut<Assets<VelloAsset>>,
     windows: Query<&Window>,
     query_view: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
-    buttons: Res<Input<MouseButton>>,
+    buttons: Res<ButtonInput<MouseButton>>,
     mut hovered: Local<bool>,
 ) {
     let Ok(window) = windows.get_single() else {

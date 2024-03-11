@@ -1,6 +1,5 @@
 use bevy::{
     prelude::*,
-    reflect::TypeUuid,
     render::{
         mesh::MeshVertexBufferLayout,
         render_resource::{
@@ -28,8 +27,7 @@ pub const SSRT_SHADER_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(2314894693238056781);
 
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
-#[derive(AsBindGroup, TypeUuid, TypePath, Asset, Clone)]
-#[uuid = "b62bb455-a72c-4b56-87bb-81e0554e234f"]
+#[derive(AsBindGroup, TypePath, Asset, Clone)]
 pub struct VelloCanvasMaterial {
     #[texture(0)]
     #[sampler(1)]
@@ -77,13 +75,13 @@ impl FromWorld for BevyVelloRenderer {
                 device.wgpu_device(),
                 RendererOptions {
                     surface_format: None,
-                    timestamp_period: 0.0,
                     use_cpu: false,
                     antialiasing_support: vello::AaSupport {
                         area: true,
                         msaa8: false,
                         msaa16: false,
                     },
+                    num_init_threads: None,
                 },
             )
             .expect("no gpu device"),

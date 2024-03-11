@@ -81,6 +81,6 @@ fn setup_screenspace_text(
             left: Val::Px(100.0),
             ..default()
         })
-        .with_text_alignment(TextAlignment::Left),
+        .with_text_justify(JustifyText::Left),
     );
 }

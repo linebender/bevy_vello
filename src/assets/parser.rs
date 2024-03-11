@@ -2,7 +2,7 @@ use super::asset_loader::VectorLoaderError;
 use crate::{assets::asset::VectorFile, VelloAsset};
 use bevy::prelude::*;
 use std::sync::Arc;
-use vello::{SceneBuilder, SceneFragment};
+use vello::Scene;
 use vello_svg::usvg::{self, TreeParsing};
 
 /// Deserialize an SVG file from bytes.
@@ -14,16 +14,15 @@ pub fn load_svg_from_bytes(
     let usvg = usvg::Tree::from_str(svg_str, &usvg::Options::default())?;
 
     // Process the loaded SVG into Vello-compatible data
-    let mut scene_frag = SceneFragment::new();
-    let mut builder = SceneBuilder::for_fragment(&mut scene_frag);
-    vello_svg::render_tree(&mut builder, &usvg);
+    let mut scene = Scene::new();
+    vello_svg::render_tree(&mut scene, &usvg);
 
     let width = usvg.size.width();
     let height = usvg.size.height();
 
     let vello_vector = VelloAsset {
         data: VectorFile::Svg {
-            original: Arc::new(scene_frag),
+            scene: Arc::new(scene),
         },
         local_transform_center: {
             let mut transform = Transform::default();

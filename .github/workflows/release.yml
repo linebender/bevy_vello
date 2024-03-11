@@ -1,9 +1,9 @@
 name: Release
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    branches:
+      - main
+
 
 jobs:
   release-web:

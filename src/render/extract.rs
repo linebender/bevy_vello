@@ -84,20 +84,21 @@ pub struct ExtractedRenderText {
 }
 
 impl ExtractComponent for ExtractedRenderText {
-    type Query = (
+    type QueryData = (
         &'static Handle<VelloFont>,
         &'static VelloText,
         &'static GlobalTransform,
         &'static CoordinateSpace,
     );
 
-    type Filter = ();
+    type QueryFilter = ();
+
     type Out = Self;
 
     fn extract_component(
         (vello_font_handle, text, transform, render_mode): bevy::ecs::query::QueryItem<
             '_,
-            Self::Query,
+            Self::QueryData,
         >,
     ) -> Option<Self> {
         Some(Self {
@@ -113,14 +114,14 @@ impl ExtractComponent for ExtractedRenderText {
 pub struct SSRenderTarget(pub Handle<Image>);
 
 impl ExtractComponent for SSRenderTarget {
-    type Query = &'static SSRenderTarget;
+    type QueryData = &'static SSRenderTarget;
 
-    type Filter = ();
+    type QueryFilter = ();
 
     type Out = Self;
 
     fn extract_component(
-        ss_render_target: bevy::ecs::query::QueryItem<'_, Self::Query>,
+        ss_render_target: bevy::ecs::query::QueryItem<'_, Self::QueryData>,
     ) -> Option<Self> {
         Some(Self(ss_render_target.0.clone()))
     }
@@ -135,7 +136,7 @@ pub fn extract_pixel_scale(
 ) {
     let scale_factor = windows
         .get_single()
-        .map(|window| window.resolution.scale_factor() as f32)
+        .map(|window| window.resolution.scale_factor())
         .unwrap_or(1.0);
 
     pixel_scale.0 = scale_factor;

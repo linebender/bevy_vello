@@ -1,13 +1,13 @@
 use super::Metadata;
 use bevy::{prelude::*, reflect::TypePath};
 use std::sync::Arc;
-use vello::SceneFragment;
+use vello::Scene;
 
 #[derive(Clone)]
 pub enum VectorFile {
     Svg {
-        /// The original image encoding
-        original: Arc<SceneFragment>,
+        /// A static scene
+        scene: Arc<Scene>,
     },
     Lottie {
         /// The original image encoding

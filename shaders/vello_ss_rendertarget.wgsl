@@ -2,9 +2,9 @@
 
 @group(0) @binding(0)
 var<uniform> view: View;
-@group(1) @binding(0)
+@group(2) @binding(0)
 var texture: texture_2d<f32>;
-@group(1) @binding(1)
+@group(2) @binding(1)
 var texture_sampler: sampler;
 
 // returns the (0-1, 0-1) position within the given viewport for the current buffer coords .

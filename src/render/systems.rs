@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     render::{
         mesh::Indices,
-        render_asset::RenderAssets,
+        render_asset::{RenderAssetUsages, RenderAssets},
         render_resource::{
             Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension,
             TextureFormat, TextureUsages,
@@ -14,7 +14,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
-use vello::{RenderParams, Scene, SceneBuilder};
+use vello::{RenderParams, Scene};
 
 use super::{
     extract::{ExtractedRenderText, ExtractedRenderVector, SSRenderTarget},
@@ -78,8 +78,7 @@ pub fn render_scene(
         ss_render_target.get_single()
     {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
-        let mut scene = Scene::default();
-        let mut builder = SceneBuilder::for_scene(&mut scene);
+        let mut scene = Scene::new();
 
         enum RenderItem<'a> {
             Vector(&'a ExtractedRenderVector),
@@ -128,13 +127,12 @@ pub fn render_scene(
                     playhead,
                     ..
                 }) => match &asset.data {
-                    VectorFile::Svg {
-                        original: fragment, ..
-                    } => {
-                        builder.append(fragment, Some(affine));
+                    VectorFile::Svg { scene: svg, .. } => {
+                        scene.append(svg, Some(affine));
                     }
                     VectorFile::Lottie { composition } => {
                         debug!("playhead: {playhead}");
+
                         velottie_renderer.0.render(
                             {
                                 theme
@@ -146,7 +144,7 @@ pub fn render_scene(
                             *playhead,
                             affine,
                             *alpha,
-                            &mut builder,
+                            &mut scene,
                         );
                     }
                 },
@@ -154,7 +152,7 @@ pub fn render_scene(
                     font, text, ..
                 }) => {
                     if let Some(font) = font_render_assets.get_mut(font) {
-                        font.render(&mut builder, affine, text);
+                        font.render(&mut scene, affine, text);
                     }
                 }
             }
@@ -226,7 +224,10 @@ pub fn setup_ss_rendertarget(
     };
 
     let mesh_handle = render_target_mesh_handle.get_or_insert_with(|| {
-        let mut rendertarget_quad = Mesh::new(PrimitiveTopology::TriangleList);
+        let mut rendertarget_quad = Mesh::new(
+            PrimitiveTopology::TriangleList,
+            RenderAssetUsages::default(),
+        );
 
         // Rectangle of the screen
         let verts = vec![
@@ -241,7 +242,7 @@ pub fn setup_ss_rendertarget(
         rendertarget_quad.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv_pos);
 
         let indices = vec![0, 1, 2, 0, 2, 3];
-        rendertarget_quad.set_indices(Some(Indices::U32(indices)));
+        rendertarget_quad.insert_indices(Indices::U32(indices));
 
         meshes.add(rendertarget_quad)
     });

@@ -1,8 +1,11 @@
 use super::{
-    extract::{self, ExtractedPixelScale, ExtractedRenderText, SSRenderTarget},
+    extract::{self, ExtractedPixelScale, SSRenderTarget},
     prepare, systems, BevyVelloRenderer, LottieRenderer,
 };
-use crate::{render::SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloFont};
+use crate::{
+    render::{extract::ExtractedRenderText, SSRT_SHADER_HANDLE},
+    VelloCanvasMaterial, VelloFont,
+};
 use bevy::{
     asset::load_internal_asset,
     prelude::*,
@@ -83,13 +86,13 @@ impl Plugin for VelloRenderPlugin {
                 device.wgpu_device(),
                 RendererOptions {
                     surface_format: None,
-                    timestamp_period: 0.0,
                     use_cpu: false,
                     antialiasing_support: AaSupport {
                         area: true,
                         msaa8: false,
                         msaa16: false,
                     },
+                    num_init_threads: None,
                 },
             )
             .unwrap(),
