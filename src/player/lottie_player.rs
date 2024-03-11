@@ -1,5 +1,6 @@
 use super::PlayerState;
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy::prelude::*;
+use bevy::utils::hashbrown::HashMap;
 
 /// A lottie player that closely mirrors the behavior and functionality for
 /// dotLottie Interactivity.
@@ -28,9 +29,7 @@ impl LottiePlayer {
                     .or(self.next_state)
                     .expect("expected state"),
             )
-            .unwrap_or_else(|| {
-                panic!("state not found: '{}'", self.current_state.unwrap())
-            })
+            .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state.unwrap()))
     }
 
     /// Retrieve a mutable reference to the current state.
@@ -41,9 +40,7 @@ impl LottiePlayer {
                     .or(self.next_state)
                     .expect("expected state"),
             )
-            .unwrap_or_else(|| {
-                panic!("state not found: '{}'", self.current_state.unwrap())
-            })
+            .unwrap_or_else(|| panic!("state not found: '{}'", self.current_state.unwrap()))
     }
 
     /// Returns an immutable iterator of the states for this player.

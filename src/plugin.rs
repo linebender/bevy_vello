@@ -1,8 +1,9 @@
-use crate::{
-    assets::VelloAssetLoader, debug::DebugVisualizationsPlugin,
-    player::LottiePlayerPlugin, render::VelloRenderPlugin,
-    text::VelloFontLoader, VelloAsset, VelloFont,
-};
+use crate::assets::VelloAssetLoader;
+use crate::debug::DebugVisualizationsPlugin;
+use crate::player::LottiePlayerPlugin;
+use crate::render::VelloRenderPlugin;
+use crate::text::VelloFontLoader;
+use crate::{VelloAsset, VelloFont};
 use bevy::prelude::*;
 
 pub struct VelloPlugin;

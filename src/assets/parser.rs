@@ -1,14 +1,13 @@
 use super::asset_loader::VectorLoaderError;
-use crate::{assets::asset::VectorFile, VelloAsset};
+use crate::assets::asset::VectorFile;
+use crate::VelloAsset;
 use bevy::prelude::*;
 use std::sync::Arc;
 use vello::Scene;
 use vello_svg::usvg::{self, TreeParsing};
 
 /// Deserialize an SVG file from bytes.
-pub fn load_svg_from_bytes(
-    bytes: &[u8],
-) -> Result<VelloAsset, VectorLoaderError> {
+pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError> {
     let svg_str = std::str::from_utf8(bytes)?;
 
     let usvg = usvg::Tree::from_str(svg_str, &usvg::Options::default())?;
@@ -38,25 +37,17 @@ pub fn load_svg_from_bytes(
 }
 
 /// Deserialize an SVG file from a string slice.
-pub fn load_svg_from_str(
-    svg_str: &str,
-) -> Result<VelloAsset, VectorLoaderError> {
+pub fn load_svg_from_str(svg_str: &str) -> Result<VelloAsset, VectorLoaderError> {
     let bytes = svg_str.as_bytes();
 
     load_svg_from_bytes(bytes)
 }
 
 /// Deserialize a Lottie file from bytes.
-pub fn load_lottie_from_bytes(
-    bytes: &[u8],
-) -> Result<VelloAsset, VectorLoaderError> {
+pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError> {
     // Load Lottie JSON bytes with the Velato (bodymovin) parser
-    let composition =
-        vellottie::Composition::from_bytes(bytes).map_err(|err| {
-            VectorLoaderError::Parse(format!(
-                "Unable to parse lottie JSON: {err:?}"
-            ))
-        })?;
+    let composition = vellottie::Composition::from_bytes(bytes)
+        .map_err(|err| VectorLoaderError::Parse(format!("Unable to parse lottie JSON: {err:?}")))?;
 
     let width = composition.width as f32;
     let height = composition.height as f32;
@@ -79,9 +70,7 @@ pub fn load_lottie_from_bytes(
 }
 
 /// Deserialize a Lottie file from a string slice.
-pub fn load_lottie_from_str(
-    json_str: &str,
-) -> Result<VelloAsset, VectorLoaderError> {
+pub fn load_lottie_from_str(json_str: &str) -> Result<VelloAsset, VectorLoaderError> {
     let bytes = json_str.as_bytes();
 
     load_lottie_from_bytes(bytes)

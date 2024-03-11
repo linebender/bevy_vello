@@ -1,31 +1,21 @@
 use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
-use bevy::{
-    prelude::*,
-    render::{
-        mesh::Indices,
-        render_asset::{RenderAssetUsages, RenderAssets},
-        render_resource::{
-            Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension,
-            TextureFormat, TextureUsages,
-        },
-        renderer::{RenderDevice, RenderQueue},
-        view::NoFrustumCulling,
-    },
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-    window::{WindowResized, WindowResolution},
+use bevy::prelude::*;
+use bevy::render::mesh::Indices;
+use bevy::render::render_asset::{RenderAssetUsages, RenderAssets};
+use bevy::render::render_resource::{
+    Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
 };
+use bevy::render::renderer::{RenderDevice, RenderQueue};
+use bevy::render::view::NoFrustumCulling;
+use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
+use bevy::window::{WindowResized, WindowResolution};
 use vello::{RenderParams, Scene};
 
-use super::{
-    extract::{ExtractedRenderText, ExtractedRenderVector, SSRenderTarget},
-    prepare::PreparedAffine,
-    BevyVelloRenderer, LottieRenderer,
-};
+use super::extract::{ExtractedRenderText, ExtractedRenderVector, SSRenderTarget};
+use super::prepare::PreparedAffine;
+use super::{BevyVelloRenderer, LottieRenderer};
 
-pub fn setup_image(
-    images: &mut Assets<Image>,
-    window: &WindowResolution,
-) -> Handle<Image> {
+pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
         width: window.physical_width(),
         height: window.physical_height(),
@@ -74,9 +64,7 @@ pub fn render_scene(
         return;
     };
 
-    if let Ok(SSRenderTarget(render_target_image)) =
-        ss_render_target.get_single()
-    {
+    if let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
         let mut scene = Scene::new();
 
@@ -84,16 +72,11 @@ pub fn render_scene(
             Vector(&'a ExtractedRenderVector),
             Text(&'a ExtractedRenderText),
         }
-        let mut render_queue: Vec<(
-            f32,
-            CoordinateSpace,
-            (&PreparedAffine, RenderItem),
-        )> = render_vectors
-            .iter()
-            .map(|(a, b)| {
-                (b.z_index, b.render_mode, (a, RenderItem::Vector(b)))
-            })
-            .collect();
+        let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
+            render_vectors
+                .iter()
+                .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Vector(b))))
+                .collect();
         render_queue.extend(query_render_texts.iter().map(|(a, b)| {
             (
                 b.transform.translation().z,
@@ -116,9 +99,7 @@ pub fn render_scene(
 
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
-        for (_, _, (&PreparedAffine(affine), render_item)) in
-            render_queue.iter_mut()
-        {
+        for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter_mut() {
             match render_item {
                 RenderItem::Vector(ExtractedRenderVector {
                     asset,
@@ -148,9 +129,7 @@ pub fn render_scene(
                         );
                     }
                 },
-                RenderItem::Text(ExtractedRenderText {
-                    font, text, ..
-                }) => {
+                RenderItem::Text(ExtractedRenderText { font, text, .. }) => {
                     if let Some(font) = font_render_assets.get_mut(font) {
                         font.render(&mut scene, affine, text);
                     }
@@ -167,8 +146,7 @@ pub fn render_scene(
                     &scene,
                     &gpu_image.texture_view,
                     &RenderParams {
-                        base_color: vello::peniko::Color::BLACK
-                            .with_alpha_factor(0.0),
+                        base_color: vello::peniko::Color::BLACK.with_alpha_factor(0.0),
                         width: gpu_image.size.x as u32,
                         height: gpu_image.size.y as u32,
                         antialiasing_method: vello::AaConfig::Area,

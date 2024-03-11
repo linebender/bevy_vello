@@ -1,5 +1,6 @@
 use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText, ZFunction};
-use bevy::{math::Vec3Swizzles, prelude::*};
+use bevy::math::Vec3Swizzles;
+use bevy::prelude::*;
 
 const RED_X_SIZE: f32 = 8.0;
 
@@ -7,10 +8,7 @@ pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (render_velloasset_debug, render_vellotext_debug),
-        );
+        app.add_systems(Update, (render_velloasset_debug, render_vellotext_debug));
     }
 }
 
@@ -35,10 +33,7 @@ fn render_velloasset_debug(
         Without<Node>,
     >,
     vectors: Res<Assets<VelloAsset>>,
-    query_cam: Query<
-        (&Camera, &GlobalTransform, &OrthographicProjection),
-        With<Camera2d>,
-    >,
+    query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
     mut gizmos: Gizmos,
 ) {
     let Ok((camera, view, projection)) = query_cam.get_single() else {
@@ -63,24 +58,15 @@ fn render_velloasset_debug(
                     );
                 }
                 CoordinateSpace::ScreenSpace => {
-                    let Some(rect) =
-                        vector.bb_in_screen_space(gtransform, camera, view)
+                    let Some(rect) = vector.bb_in_screen_space(gtransform, camera, view) else {
+                        continue;
+                    };
+                    let Some(origin) =
+                        camera.viewport_to_world_2d(view, gtransform.translation().xy())
                     else {
                         continue;
                     };
-                    let Some(origin) = camera.viewport_to_world_2d(
-                        view,
-                        gtransform.translation().xy(),
-                    ) else {
-                        continue;
-                    };
-                    draw_asset_debug(
-                        &mut gizmos,
-                        projection,
-                        z_fn,
-                        origin,
-                        rect.size(),
-                    );
+                    draw_asset_debug(&mut gizmos, projection, z_fn, origin, rect.size());
                 }
             }
         }
@@ -99,10 +85,7 @@ fn render_vellotext_debug(
         ),
         Without<Node>,
     >,
-    query_cam: Query<
-        (&Camera, &GlobalTransform, &OrthographicProjection),
-        With<Camera2d>,
-    >,
+    query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
     fonts: Res<Assets<VelloFont>>,
     mut gizmos: Gizmos,
 ) {
@@ -120,23 +103,15 @@ fn render_vellotext_debug(
             let origin = gtransform.translation().xy();
             match space {
                 CoordinateSpace::WorldSpace => {
-                    draw_text_debug(
-                        &mut gizmos,
-                        projection,
-                        origin,
-                        rect.size(),
-                    );
+                    draw_text_debug(&mut gizmos, projection, origin, rect.size());
                 }
                 CoordinateSpace::ScreenSpace => {
-                    let Some(rect) =
-                        text.bb_in_screen_space(font, gtransform, camera, view)
-                    else {
+                    let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, view) else {
                         continue;
                     };
-                    let Some(origin) = camera.viewport_to_world_2d(
-                        view,
-                        gtransform.translation().xy(),
-                    ) else {
+                    let Some(origin) =
+                        camera.viewport_to_world_2d(view, gtransform.translation().xy())
+                    else {
                         continue;
                     };
                     draw_text_debug(

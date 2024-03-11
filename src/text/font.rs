@@ -1,15 +1,13 @@
 use super::vello_text::VelloText;
-use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
+use bevy::prelude::*;
+use bevy::reflect::TypePath;
+use bevy::render::render_asset::RenderAsset;
 use std::sync::Arc;
-use vello::{
-    glyph::{
-        skrifa::{FontRef, MetadataProvider},
-        Glyph,
-    },
-    kurbo::Affine,
-    peniko::{self, Blob, Font},
-    Scene,
-};
+use vello::glyph::skrifa::{FontRef, MetadataProvider};
+use vello::glyph::Glyph;
+use vello::kurbo::Affine;
+use vello::peniko::{self, Blob, Font};
+use vello::Scene;
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloFont {
@@ -28,10 +26,7 @@ impl RenderAsset for VelloFont {
     fn prepare_asset(
         self,
         _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
-    ) -> Result<
-        Self::PreparedAsset,
-        bevy::render::render_asset::PrepareAssetError<Self>,
-    > {
+    ) -> Result<Self::PreparedAsset, bevy::render::render_asset::PrepareAssetError<Self>> {
         Ok(self)
     }
 }
@@ -44,8 +39,7 @@ impl VelloFont {
     }
 
     pub fn sizeof(&self, text: &VelloText) -> Vec2 {
-        let font = FontRef::new(self.font.data.data())
-            .expect("Vello font creation error");
+        let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
         let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
         let axes = font.axes();
@@ -74,14 +68,8 @@ impl VelloFont {
         Vec2::new(width, height)
     }
 
-    pub(crate) fn render(
-        &self,
-        scene: &mut Scene,
-        transform: Affine,
-        text: &VelloText,
-    ) {
-        let font = FontRef::new(self.font.data.data())
-            .expect("Vello font creation error");
+    pub(crate) fn render(&self, scene: &mut Scene, transform: Affine, text: &VelloText) {
+        let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
 
         let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
@@ -109,8 +97,7 @@ impl VelloFont {
                         return None;
                     }
                     let gid = charmap.map(ch).unwrap_or_default();
-                    let advance =
-                        glyph_metrics.advance_width(gid).unwrap_or_default();
+                    let advance = glyph_metrics.advance_width(gid).unwrap_or_default();
                     let x = pen_x;
                     pen_x += advance;
                     Some(Glyph {

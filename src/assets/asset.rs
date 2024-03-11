@@ -1,5 +1,6 @@
 use super::Metadata;
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::prelude::*;
+use bevy::reflect::TypePath;
 use std::sync::Arc;
 use vello::Scene;
 
@@ -27,10 +28,8 @@ impl VelloAsset {
     /// Returns the bounding box in world space
     pub fn bb_in_world_space(&self, gtransform: &GlobalTransform) -> Rect {
         // Convert local coordinates to world coordinates
-        let local_min =
-            Vec3::new(-self.width / 2.0, -self.height / 2.0, 0.0).extend(1.0);
-        let local_max =
-            Vec3::new(self.width / 2.0, self.height / 2.0, 0.0).extend(1.0);
+        let local_min = Vec3::new(-self.width / 2.0, -self.height / 2.0, 0.0).extend(1.0);
+        let local_max = Vec3::new(self.width / 2.0, self.height / 2.0, 0.0).extend(1.0);
 
         let min_world = gtransform.compute_matrix() * local_min;
         let max_world = gtransform.compute_matrix() * local_max;

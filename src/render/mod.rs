@@ -1,16 +1,11 @@
-use bevy::{
-    prelude::*,
-    render::{
-        mesh::MeshVertexBufferLayout,
-        render_resource::{
-            AsBindGroup, RenderPipelineDescriptor, ShaderRef,
-            SpecializedMeshPipelineError, VertexBufferLayout, VertexFormat,
-            VertexStepMode,
-        },
-        renderer::RenderDevice,
-    },
-    sprite::{Material2d, Material2dKey},
+use bevy::prelude::*;
+use bevy::render::mesh::MeshVertexBufferLayout;
+use bevy::render::render_resource::{
+    AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
+    VertexBufferLayout, VertexFormat, VertexStepMode,
 };
+use bevy::render::renderer::RenderDevice;
+use bevy::sprite::{Material2d, Material2dKey};
 use vello::{Renderer, RendererOptions};
 
 mod extract;
@@ -23,8 +18,7 @@ pub use plugin::VelloRenderPlugin;
 pub use z_function::ZFunction;
 
 /// A handle to the screen space render target shader.
-pub const SSRT_SHADER_HANDLE: Handle<Shader> =
-    Handle::weak_from_u128(2314894693238056781);
+pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
 
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
 #[derive(AsBindGroup, TypePath, Asset, Clone)]
@@ -54,10 +48,8 @@ impl Material2d for VelloCanvasMaterial {
             VertexFormat::Float32x2,
         ];
 
-        let vertex_layout = VertexBufferLayout::from_vertex_formats(
-            VertexStepMode::Vertex,
-            formats,
-        );
+        let vertex_layout =
+            VertexBufferLayout::from_vertex_formats(VertexStepMode::Vertex, formats);
 
         descriptor.vertex.buffers = vec![vertex_layout];
 

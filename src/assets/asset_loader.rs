@@ -1,15 +1,10 @@
-use crate::{
-    assets::parser::{load_lottie_from_bytes, load_svg_from_bytes},
-    VelloAsset,
-};
-use bevy::{
-    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
-    prelude::*,
-    utils::{
-        thiserror::{self, Error},
-        BoxedFuture,
-    },
-};
+use crate::assets::parser::{load_lottie_from_bytes, load_svg_from_bytes};
+use crate::VelloAsset;
+use bevy::asset::io::Reader;
+use bevy::asset::{AssetLoader, AsyncReadExt, LoadContext};
+use bevy::prelude::*;
+use bevy::utils::thiserror::{self, Error};
+use bevy::utils::BoxedFuture;
 #[derive(Default)]
 pub struct VelloAssetLoader;
 
@@ -48,9 +43,7 @@ impl AssetLoader for VelloAssetLoader {
             let ext = path
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
-                .ok_or(VectorLoaderError::Parse(
-                    "Invalid extension".to_string(),
-                ))?
+                .ok_or(VectorLoaderError::Parse("Invalid extension".to_string()))?
                 .to_owned();
 
             debug!("parsing {}...", load_context.path().display());
@@ -59,10 +52,7 @@ impl AssetLoader for VelloAssetLoader {
                     let vello_vector = load_svg_from_bytes(&bytes)?;
                     info!(
                         path = format!("{}", load_context.path().display()),
-                        size = format!(
-                            "{:?}",
-                            (vello_vector.width, vello_vector.height)
-                        ),
+                        size = format!("{:?}", (vello_vector.width, vello_vector.height)),
                         "finished parsing svg asset"
                     );
                     Ok(vello_vector)
@@ -71,10 +61,7 @@ impl AssetLoader for VelloAssetLoader {
                     let vello_vector = load_lottie_from_bytes(&bytes)?;
                     info!(
                         path = format!("{}", load_context.path().display()),
-                        size = format!(
-                            "{:?}",
-                            (vello_vector.width, vello_vector.height)
-                        ),
+                        size = format!("{:?}", (vello_vector.width, vello_vector.height)),
                         "finished parsing lottie json asset"
                     );
                     Ok(vello_vector)

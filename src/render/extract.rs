@@ -1,13 +1,10 @@
 use super::z_function::ZFunction;
-use crate::{
-    theme::Theme, CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset,
-    VelloFont, VelloText,
-};
-use bevy::{
-    prelude::*,
-    render::{extract_component::ExtractComponent, Extract},
-    window::PrimaryWindow,
-};
+use crate::theme::Theme;
+use crate::{CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloFont, VelloText};
+use bevy::prelude::*;
+use bevy::render::extract_component::ExtractComponent;
+use bevy::render::Extract;
+use bevy::window::PrimaryWindow;
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderVector {
@@ -56,9 +53,7 @@ pub fn vector_instances(
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = match asset.data {
                     crate::VectorFile::Svg { .. } => 0.0,
-                    crate::VectorFile::Lottie { .. } => {
-                        playhead.unwrap().frame()
-                    }
+                    crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
                 };
                 commands.spawn(ExtractedRenderVector {
                     asset: asset.to_owned(),

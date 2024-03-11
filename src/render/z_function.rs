@@ -32,24 +32,14 @@ pub enum ZFunction {
 
 impl ZFunction {
     /// Compute the rendering Z-index using this Z-function.
-    pub fn compute(
-        &self,
-        asset: &VelloAsset,
-        transform: &GlobalTransform,
-    ) -> f32 {
+    pub fn compute(&self, asset: &VelloAsset, transform: &GlobalTransform) -> f32 {
         match self {
             ZFunction::TransformZ => transform.translation().z,
             ZFunction::TransformX => transform.translation().x,
             ZFunction::TransformY => transform.translation().y,
-            ZFunction::TransformZOffset(offset) => {
-                transform.translation().z + offset
-            }
-            ZFunction::TransformXOffset(offset) => {
-                transform.translation().x + offset
-            }
-            ZFunction::TransformYOffset(offset) => {
-                transform.translation().y + offset
-            }
+            ZFunction::TransformZOffset(offset) => transform.translation().z + offset,
+            ZFunction::TransformXOffset(offset) => transform.translation().x + offset,
+            ZFunction::TransformYOffset(offset) => transform.translation().y + offset,
             ZFunction::BbTop => asset.bb_in_world_space(transform).min.y,
             ZFunction::BbBottom => -asset.bb_in_world_space(transform).max.y,
             ZFunction::BbLeft => -asset.bb_in_world_space(transform).min.x,

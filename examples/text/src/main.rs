@@ -1,5 +1,7 @@
-use bevy::{asset::AssetMetaCheck, prelude::*};
-use bevy_vello::{prelude::*, vello::peniko};
+use bevy::asset::AssetMetaCheck;
+use bevy::prelude::*;
+use bevy_vello::prelude::*;
+use bevy_vello::vello::peniko;
 
 fn main() {
     App::new()
@@ -18,10 +20,7 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
 }
 
-fn setup_worldspace_text(
-    mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
-) {
+fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
         text: VelloText {
@@ -47,10 +46,7 @@ fn setup_worldspace_text(
     });
 }
 
-fn setup_screenspace_text(
-    mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
-) {
+fn setup_screenspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     // Vello text
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),

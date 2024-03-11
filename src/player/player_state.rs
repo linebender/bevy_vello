@@ -68,18 +68,12 @@ impl PlayerState {
         self
     }
 
-    pub fn set_playback_options(
-        mut self,
-        options: Option<PlaybackOptions>,
-    ) -> Self {
+    pub fn set_playback_options(mut self, options: Option<PlaybackOptions>) -> Self {
         self.options = options;
         self
     }
 
-    pub fn set_transitions(
-        mut self,
-        transitions: Vec<PlayerTransition>,
-    ) -> Self {
+    pub fn set_transitions(mut self, transitions: Vec<PlayerTransition>) -> Self {
         self.transitions = transitions;
         self
     }

@@ -14,21 +14,18 @@ pub mod text;
 pub mod theme;
 
 // Re-exports
-pub use vello;
-pub use vello_svg;
-pub use vellottie;
+pub use {vello, vello_svg, vellottie};
 
 pub mod prelude {
     pub use crate::assets::{VectorFile, VelloAsset};
     pub use crate::debug::DebugVisualizations;
     pub use crate::playback::{
-        PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior,
-        PlaybackOptions, PlaybackPlayMode, Playhead,
+        PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
+        PlaybackPlayMode, Playhead,
     };
     pub use crate::player::{LottiePlayer, PlayerState, PlayerTransition};
     pub use crate::plugin::VelloPlugin;
-    pub use crate::render::VelloCanvasMaterial;
-    pub use crate::render::ZFunction;
+    pub use crate::render::{VelloCanvasMaterial, ZFunction};
     pub use crate::text::{VelloFont, VelloText};
     pub use crate::theme::Theme;
     pub use crate::{CoordinateSpace, VelloAssetBundle, VelloTextBundle};
@@ -37,18 +34,7 @@ pub mod prelude {
 use crate::prelude::*;
 use bevy::prelude::*;
 
-#[derive(
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Component,
-    Default,
-    Copy,
-    Clone,
-    Debug,
-    Reflect,
-)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
 pub enum CoordinateSpace {
     #[default]

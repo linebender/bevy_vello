@@ -1,4 +1,5 @@
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::asset::AssetMetaCheck;
+use bevy::prelude::*;
 use bevy_vello::prelude::*;
 
 fn main() {
@@ -11,10 +12,7 @@ fn main() {
         .run();
 }
 
-fn setup_vector_graphics(
-    mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
-) {
+fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
     commands.spawn(VelloAssetBundle {
         vector: asset_server.load("../assets/squid.json"),

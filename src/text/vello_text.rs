@@ -11,11 +11,7 @@ pub struct VelloText {
 
 impl VelloText {
     /// Returns the bounding box in world space
-    pub fn bb_in_world_space(
-        &self,
-        font: &VelloFont,
-        gtransform: &GlobalTransform,
-    ) -> Rect {
+    pub fn bb_in_world_space(&self, font: &VelloFont, gtransform: &GlobalTransform) -> Rect {
         let size = font.sizeof(self);
 
         // Convert local coordinates to world coordinates

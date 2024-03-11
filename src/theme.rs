@@ -1,8 +1,7 @@
-use bevy::{prelude::*, utils::HashMap};
-use vellottie::{
-    runtime::model::{Brush, Shape},
-    Composition,
-};
+use bevy::prelude::*;
+use bevy::utils::HashMap;
+use vellottie::runtime::model::{Brush, Shape};
+use vellottie::Composition;
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
@@ -105,42 +104,38 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
             vello::peniko::Brush::Image(_) => {}
         },
         vellottie::runtime::model::Brush::Animated(brush) => match brush {
-            vellottie::runtime::model::animated::Brush::Solid(brush) => {
-                match brush {
-                    vellottie::runtime::model::Value::Fixed(solid) => {
+            vellottie::runtime::model::animated::Brush::Solid(brush) => match brush {
+                vellottie::runtime::model::Value::Fixed(solid) => {
+                    *solid = target_color;
+                }
+                vellottie::runtime::model::Value::Animated(keyframes) => {
+                    for solid in keyframes.values.iter_mut() {
                         *solid = target_color;
                     }
-                    vellottie::runtime::model::Value::Animated(keyframes) => {
-                        for solid in keyframes.values.iter_mut() {
-                            *solid = target_color;
+                }
+            },
+            vellottie::runtime::model::animated::Brush::Gradient(gr) => match &mut gr.stops {
+                vellottie::runtime::model::ColorStops::Fixed(stops) => {
+                    for stop in stops.iter_mut() {
+                        stop.color = target_color;
+                    }
+                }
+                vellottie::runtime::model::ColorStops::Animated(stops) => {
+                    for _ in 0..stops.count {
+                        for stop in stops.values.iter_mut() {
+                            let _offset = stop[0];
+                            let r = &mut stop[1];
+                            *r = target_color.r as f32;
+                            let g = &mut stop[2];
+                            *g = target_color.g as f32;
+                            let b = &mut stop[3];
+                            *b = target_color.b as f32;
+                            let a = &mut stop[4];
+                            *a = target_color.a as f32;
                         }
                     }
                 }
-            }
-            vellottie::runtime::model::animated::Brush::Gradient(gr) => {
-                match &mut gr.stops {
-                    vellottie::runtime::model::ColorStops::Fixed(stops) => {
-                        for stop in stops.iter_mut() {
-                            stop.color = target_color;
-                        }
-                    }
-                    vellottie::runtime::model::ColorStops::Animated(stops) => {
-                        for _ in 0..stops.count {
-                            for stop in stops.values.iter_mut() {
-                                let _offset = stop[0];
-                                let r = &mut stop[1];
-                                *r = target_color.r as f32;
-                                let g = &mut stop[2];
-                                *g = target_color.g as f32;
-                                let b = &mut stop[3];
-                                *b = target_color.b as f32;
-                                let a = &mut stop[4];
-                                *a = target_color.a as f32;
-                            }
-                        }
-                    }
-                }
-            }
+            },
         },
     }
 }

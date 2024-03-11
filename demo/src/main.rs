@@ -1,6 +1,7 @@
 mod ui;
 
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::asset::AssetMetaCheck;
+use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_vello::prelude::*;
 
@@ -19,10 +20,7 @@ fn main() {
         .run();
 }
 
-fn setup_vector_graphics(
-    mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
-) {
+fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands.spawn(VelloTextBundle {
         font: asset_server.load("../assets/Rubik-Medium.vttf"),
@@ -50,9 +48,7 @@ fn setup_vector_graphics(
                             ..default()
                         })
                         .theme(Theme::new().add("calendar", Color::BLUE))
-                        .transition(PlayerTransition::OnMouseEnter {
-                            state: "play",
-                        })
+                        .transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .reset_playhead_on_start()
                 })
                 .with_state(
@@ -63,9 +59,7 @@ fn setup_vector_graphics(
                             ..default()
                         })
                         .theme(Theme::new().add("calendar", Color::GREEN))
-                        .transition(PlayerTransition::OnMouseLeave {
-                            state: "rev",
-                        }),
+                        .transition(PlayerTransition::OnMouseLeave { state: "rev" }),
                 )
                 .with_state(
                     PlayerState::new("rev")
@@ -76,12 +70,8 @@ fn setup_vector_graphics(
                             ..default()
                         })
                         .theme(Theme::new().add("calendar", Color::RED))
-                        .transition(PlayerTransition::OnMouseEnter {
-                            state: "play",
-                        })
-                        .transition(PlayerTransition::OnComplete {
-                            state: "stopped",
-                        }),
+                        .transition(PlayerTransition::OnMouseEnter { state: "play" })
+                        .transition(PlayerTransition::OnComplete { state: "stopped" }),
                 ),
         );
 }

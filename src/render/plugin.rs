@@ -1,21 +1,15 @@
-use super::{
-    extract::{self, ExtractedPixelScale, SSRenderTarget},
-    prepare, systems, BevyVelloRenderer, LottieRenderer,
-};
-use crate::{
-    render::{extract::ExtractedRenderText, SSRT_SHADER_HANDLE},
-    VelloCanvasMaterial, VelloFont,
-};
-use bevy::{
-    asset::load_internal_asset,
-    prelude::*,
-    render::{
-        extract_component::ExtractComponentPlugin,
-        render_asset::RenderAssetPlugin, renderer::RenderDevice, Render,
-        RenderApp, RenderSet,
-    },
-    sprite::Material2dPlugin,
-};
+use super::extract::{self, ExtractedPixelScale, SSRenderTarget};
+use super::{prepare, systems, BevyVelloRenderer, LottieRenderer};
+use crate::render::extract::ExtractedRenderText;
+use crate::render::SSRT_SHADER_HANDLE;
+use crate::{VelloCanvasMaterial, VelloFont};
+use bevy::asset::load_internal_asset;
+use bevy::prelude::*;
+use bevy::render::extract_component::ExtractComponentPlugin;
+use bevy::render::render_asset::RenderAssetPlugin;
+use bevy::render::renderer::RenderDevice;
+use bevy::render::{Render, RenderApp, RenderSet};
+use bevy::sprite::Material2dPlugin;
 use vello::{AaSupport, Renderer, RendererOptions};
 
 pub struct VelloRenderPlugin;
@@ -39,8 +33,7 @@ impl Plugin for VelloRenderPlugin {
             .add_systems(
                 ExtractSchedule,
                 (
-                    extract::extract_pixel_scale
-                        .in_set(RenderSet::ExtractCommands),
+                    extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
                     extract::vector_instances,
                 ),
             )
@@ -52,10 +45,7 @@ impl Plugin for VelloRenderPlugin {
                 )
                     .in_set(RenderSet::Prepare),
             )
-            .add_systems(
-                Render,
-                systems::render_scene.in_set(RenderSet::Render),
-            );
+            .add_systems(Render, systems::render_scene.in_set(RenderSet::Render));
 
         app.add_plugins((
             Material2dPlugin::<VelloCanvasMaterial>::default(),

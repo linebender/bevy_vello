@@ -1,9 +1,11 @@
+use crate::playback::PlaybackPlayMode;
+use crate::player::LottiePlayer;
 use crate::{
-    playback::PlaybackPlayMode, player::LottiePlayer, PlaybackDirection,
-    PlaybackLoopBehavior, PlaybackOptions, PlayerTransition, Playhead,
+    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlayerTransition, Playhead,
     VectorFile, VelloAsset,
 };
-use bevy::{prelude::*, utils::Instant};
+use bevy::prelude::*;
+use bevy::utils::Instant;
 use std::time::Duration;
 use vello_svg::usvg::strict_num::Ulps;
 
@@ -11,10 +13,7 @@ use vello_svg::usvg::strict_num::Ulps;
 /// Only
 pub fn spawn_playheads(
     mut commands: Commands,
-    query: Query<
-        (Entity, &Handle<VelloAsset>, Option<&PlaybackOptions>),
-        Without<Playhead>,
-    >,
+    query: Query<(Entity, &Handle<VelloAsset>, Option<&PlaybackOptions>), Without<Playhead>>,
     assets: Res<Assets<VelloAsset>>,
 ) {
     for (entity, handle, options) in query.iter() {
@@ -122,10 +121,9 @@ pub fn advance_playheads(
                 }
                 // Trigger intermission, if applicable
                 if options.intermission > Duration::ZERO {
-                    playhead.intermission.replace(Timer::new(
-                        options.intermission,
-                        TimerMode::Once,
-                    ));
+                    playhead
+                        .intermission
+                        .replace(Timer::new(options.intermission, TimerMode::Once));
                     playhead.frame = end_frame;
                 } else {
                     // Wrap around to the beginning of the segment
@@ -146,10 +144,9 @@ pub fn advance_playheads(
                 }
                 // Trigger intermission, if applicable
                 if options.intermission > Duration::ZERO {
-                    playhead.intermission.replace(Timer::new(
-                        options.intermission,
-                        TimerMode::Once,
-                    ));
+                    playhead
+                        .intermission
+                        .replace(Timer::new(options.intermission, TimerMode::Once));
                     playhead.frame = start_frame;
                 } else {
                     // Wrap around to the beginning of the segment
@@ -192,8 +189,7 @@ pub fn run_transitions(
         .and_then(|cursor| camera.viewport_to_world(view, cursor))
         .map(|ray| ray.origin.truncate());
 
-    for (mut player, playhead, options, gtransform, current_asset_handle) in
-        query_player.iter_mut()
+    for (mut player, playhead, options, gtransform, current_asset_handle) in query_player.iter_mut()
     {
         if player.stopped {
             continue;
@@ -215,8 +211,7 @@ pub fn run_transitions(
                         .local_transform_center
                         .compute_matrix()
                         .inverse();
-                    let transform =
-                        gtransform.compute_matrix() * local_transform;
+                    let transform = gtransform.compute_matrix() * local_transform;
                     let mouse_local = transform
                         .inverse()
                         .transform_point3(pointer_pos.extend(0.0));
@@ -233,17 +228,13 @@ pub fn run_transitions(
             match transition {
                 PlayerTransition::OnAfter { state, secs } => {
                     let started = playhead.first_render;
-                    if started
-                        .is_some_and(|s| s.elapsed().as_secs_f32() >= *secs)
-                    {
+                    if started.is_some_and(|s| s.elapsed().as_secs_f32() >= *secs) {
                         player.next_state = Some(state);
                         break;
                     }
                 }
                 PlayerTransition::OnComplete { state } => {
-                    if let VectorFile::Lottie { composition } =
-                        &current_asset.data
-                    {
+                    if let VectorFile::Lottie { composition } = &current_asset.data {
                         let loops_needed = match options.looping {
                             PlaybackLoopBehavior::DoNotLoop => Some(0),
                             PlaybackLoopBehavior::Amount(amt) => Some(amt),
@@ -251,29 +242,22 @@ pub fn run_transitions(
                         };
                         match options.direction {
                             PlaybackDirection::Normal => {
-                                let end_frame = options
-                                    .segments
-                                    .end
-                                    .min(composition.frames.end)
-                                    .prev();
+                                let end_frame =
+                                    options.segments.end.min(composition.frames.end).prev();
                                 if playhead.frame == end_frame
-                                    && loops_needed.is_some_and(|needed| {
-                                        playhead.loops_completed >= needed
-                                    })
+                                    && loops_needed
+                                        .is_some_and(|needed| playhead.loops_completed >= needed)
                                 {
                                     player.next_state = Some(state);
                                     break;
                                 }
                             }
                             PlaybackDirection::Reverse => {
-                                let start_frame = options
-                                    .segments
-                                    .start
-                                    .max(composition.frames.start);
+                                let start_frame =
+                                    options.segments.start.max(composition.frames.start);
                                 if playhead.frame == start_frame
-                                    && loops_needed.is_some_and(|needed| {
-                                        playhead.loops_completed >= needed
-                                    })
+                                    && loops_needed
+                                        .is_some_and(|needed| playhead.loops_completed >= needed)
                                 {
                                     player.next_state = Some(state);
                                     break;
@@ -325,9 +309,7 @@ pub fn transition_state(
     )>,
     assets: Res<Assets<VelloAsset>>,
 ) {
-    for (entity, mut player, mut playhead, mut cur_handle) in
-        query_sm.iter_mut()
-    {
+    for (entity, mut player, mut playhead, mut cur_handle) in query_sm.iter_mut() {
         let Some(next_state) = player.next_state else {
             continue;
         };
@@ -362,8 +344,7 @@ pub fn transition_state(
                 ..
             } = asset
             {
-                let start_frame =
-                    target_options.segments.start.max(composition.frames.start);
+                let start_frame = target_options.segments.start.max(composition.frames.start);
                 let end_frame = target_options
                     .segments
                     .end
@@ -377,9 +358,7 @@ pub fn transition_state(
             commands.entity(entity).insert(theme.clone());
         }
         // Reset playheads if requested
-        if player.state().reset_playhead_on_exit
-            || target_state.reset_playhead_on_start
-        {
+        if player.state().reset_playhead_on_exit || target_state.reset_playhead_on_start {
             // SAFETY: Asset check happens earlier
             let asset = assets
                 .get(target_state.asset.as_ref().unwrap_or(&cur_handle))
@@ -390,10 +369,9 @@ pub fn transition_state(
             } = asset
             {
                 let frame = match target_options.direction {
-                    PlaybackDirection::Normal => target_options
-                        .segments
-                        .start
-                        .max(composition.frames.start),
+                    PlaybackDirection::Normal => {
+                        target_options.segments.start.max(composition.frames.start)
+                    }
                     PlaybackDirection::Reverse => target_options
                         .segments
                         .end

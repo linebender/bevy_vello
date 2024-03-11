@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use std::{ops::Range, time::Duration};
+use std::ops::Range;
+use std::time::Duration;
 
 #[derive(PartialEq, Component, Clone, Debug, Reflect)]
 #[reflect(Component)]

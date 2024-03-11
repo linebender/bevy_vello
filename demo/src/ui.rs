@@ -1,9 +1,8 @@
 use bevy::prelude::*;
-use bevy_egui::{
-    egui::{self},
-    EguiContexts,
-};
-use bevy_vello::{prelude::*, vello_svg::usvg::strict_num::Ulps};
+use bevy_egui::egui::{self};
+use bevy_egui::EguiContexts;
+use bevy_vello::prelude::*;
+use bevy_vello::vello_svg::usvg::strict_num::Ulps;
 use std::time::Duration;
 
 pub fn controls_ui(
@@ -17,8 +16,7 @@ pub fn controls_ui(
     )>,
     assets: Res<Assets<VelloAsset>>,
 ) {
-    let Ok((mut player, mut playhead, mut options, mut theme, handle)) =
-        player.get_single_mut()
+    let Ok((mut player, mut playhead, mut options, mut theme, handle)) = player.get_single_mut()
     else {
         return;
     };
@@ -43,11 +41,7 @@ pub fn controls_ui(
                 .add(egui::Slider::new(
                     &mut frame,
                     options.segments.start.max(composition.frames.start)
-                        ..=options
-                            .segments
-                            .end
-                            .min(composition.frames.end)
-                            .prev(),
+                        ..=options.segments.end.min(composition.frames.end).prev(),
                 ))
                 .changed()
             {
@@ -96,8 +90,7 @@ pub fn controls_ui(
                 .checkbox(&mut options.autoplay, autoplaying.to_string())
                 .changed()
             {
-                player.state_mut().options.as_mut().unwrap().autoplay =
-                    options.autoplay;
+                player.state_mut().options.as_mut().unwrap().autoplay = options.autoplay;
             };
         });
         ui.vertical(|ui| {
@@ -105,15 +98,10 @@ pub fn controls_ui(
             ui.horizontal(|ui| {
                 ui.separator();
                 if ui
-                    .radio_value(
-                        &mut options.direction,
-                        PlaybackDirection::Normal,
-                        "Normal",
-                    )
+                    .radio_value(&mut options.direction, PlaybackDirection::Normal, "Normal")
                     .changed()
                 {
-                    player.state_mut().options.as_mut().unwrap().direction =
-                        options.direction;
+                    player.state_mut().options.as_mut().unwrap().direction = options.direction;
                 }
             });
             ui.horizontal(|ui| {
@@ -126,8 +114,7 @@ pub fn controls_ui(
                     )
                     .changed()
                 {
-                    player.state_mut().options.as_mut().unwrap().direction =
-                        options.direction;
+                    player.state_mut().options.as_mut().unwrap().direction = options.direction;
                 }
             });
         });
@@ -148,8 +135,7 @@ pub fn controls_ui(
             ui.label("Play Mode");
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected =
-                    matches!(options.play_mode, PlaybackPlayMode::Normal);
+                let selected = matches!(options.play_mode, PlaybackPlayMode::Normal);
                 if ui.radio(selected, "Normal").clicked() {
                     player.state_mut().options.as_mut().unwrap().play_mode =
                         PlaybackPlayMode::Normal;
@@ -158,8 +144,7 @@ pub fn controls_ui(
             });
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected =
-                    matches!(options.play_mode, PlaybackPlayMode::Bounce);
+                let selected = matches!(options.play_mode, PlaybackPlayMode::Bounce);
                 if ui.radio(selected, "Bounce").clicked() {
                     player.state_mut().options.as_mut().unwrap().play_mode =
                         PlaybackPlayMode::Bounce;
@@ -171,8 +156,7 @@ pub fn controls_ui(
             ui.label("Looping");
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected =
-                    matches!(options.looping, PlaybackLoopBehavior::DoNotLoop);
+                let selected = matches!(options.looping, PlaybackLoopBehavior::DoNotLoop);
                 if ui.radio(selected, "Do not loop").clicked() {
                     player.state_mut().options.as_mut().unwrap().looping =
                         PlaybackLoopBehavior::DoNotLoop;
@@ -181,8 +165,7 @@ pub fn controls_ui(
             });
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected =
-                    matches!(options.looping, PlaybackLoopBehavior::Amount(..));
+                let selected = matches!(options.looping, PlaybackLoopBehavior::Amount(..));
                 let mut amt = match options.looping {
                     PlaybackLoopBehavior::Amount(amt) => amt,
                     _ => 0,
@@ -200,8 +183,7 @@ pub fn controls_ui(
             });
             ui.horizontal(|ui| {
                 ui.separator();
-                let selected =
-                    matches!(options.looping, PlaybackLoopBehavior::Loop);
+                let selected = matches!(options.looping, PlaybackLoopBehavior::Loop);
                 if ui.radio(selected, "Loop").clicked() {
                     player.state_mut().options.as_mut().unwrap().looping =
                         PlaybackLoopBehavior::Loop;
@@ -221,22 +203,13 @@ pub fn controls_ui(
                         egui::Slider::new(
                             &mut start,
                             composition.frames.start
-                                ..=options
-                                    .segments
-                                    .end
-                                    .min(composition.frames.end),
+                                ..=options.segments.end.min(composition.frames.end),
                         )
                         .integer(),
                     )
                     .changed()
                 {
-                    player
-                        .state_mut()
-                        .options
-                        .as_mut()
-                        .unwrap()
-                        .segments
-                        .start = start;
+                    player.state_mut().options.as_mut().unwrap().segments.start = start;
                     options.segments.start = start;
                 };
             });
@@ -255,8 +228,7 @@ pub fn controls_ui(
                     )
                     .changed()
                 {
-                    player.state_mut().options.as_mut().unwrap().segments.end =
-                        end;
+                    player.state_mut().options.as_mut().unwrap().segments.end = end;
                     options.segments.end = end;
                 };
             });
@@ -292,10 +264,7 @@ pub fn controls_ui(
             });
         }
 
-        ui.heading(format!(
-            "Transitions: {}",
-            player.state().transitions.len()
-        ));
+        ui.heading(format!("Transitions: {}", player.state().transitions.len()));
         for transition in player.state().transitions.iter() {
             ui.label(format!("{transition:?}"));
         }
