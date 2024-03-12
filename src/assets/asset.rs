@@ -12,7 +12,7 @@ pub enum VectorFile {
     },
     Lottie {
         /// The original image encoding
-        composition: Arc<vellottie::Composition>,
+        composition: Arc<velato::Composition>,
     },
 }
 

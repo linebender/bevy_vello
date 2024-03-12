@@ -14,7 +14,7 @@ pub mod text;
 pub mod theme;
 
 // Re-exports
-pub use {vello, vello_svg, vellottie};
+pub use {velato, vello, vello_svg};
 
 pub mod prelude {
     pub use crate::assets::{VectorFile, VelloAsset};

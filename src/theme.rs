@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use vellottie::runtime::model::{Brush, Shape};
-use vellottie::Composition;
+use velato::runtime::model::{Brush, Shape};
+use velato::Composition;
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
@@ -53,9 +53,9 @@ impl Theme {
                 continue 'layers;
             };
             let shapes = match &mut layer.content {
-                vellottie::runtime::model::Content::Shape(shapes) => shapes,
-                vellottie::runtime::model::Content::None
-                | vellottie::runtime::model::Content::Instance { .. } => {
+                velato::runtime::model::Content::Shape(shapes) => shapes,
+                velato::runtime::model::Content::None
+                | velato::runtime::model::Content::Instance { .. } => {
                     continue 'layers;
                 }
             };
@@ -76,23 +76,23 @@ impl Theme {
 /// A helper method to recolor a shape with a target color.
 fn recolor_shape(shape: &mut Shape, target_color: vello::peniko::Color) {
     match shape {
-        vellottie::runtime::model::Shape::Group(shapes, _) => {
+        velato::runtime::model::Shape::Group(shapes, _) => {
             for shape in shapes.iter_mut() {
                 recolor_shape(shape, target_color);
             }
         }
-        vellottie::runtime::model::Shape::Draw(draw) => {
+        velato::runtime::model::Shape::Draw(draw) => {
             recolor_brush(&mut draw.brush, target_color);
         }
-        vellottie::runtime::model::Shape::Repeater(_)
-        | vellottie::runtime::model::Shape::Geometry(_) => {}
+        velato::runtime::model::Shape::Repeater(_) | velato::runtime::model::Shape::Geometry(_) => {
+        }
     }
 }
 
 /// A helper method to recolor a brush with a target color.
 fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
     match brush {
-        vellottie::runtime::model::Brush::Fixed(brush) => match brush {
+        velato::runtime::model::Brush::Fixed(brush) => match brush {
             vello::peniko::Brush::Solid(solid) => {
                 *solid = target_color;
             }
@@ -103,24 +103,24 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
             }
             vello::peniko::Brush::Image(_) => {}
         },
-        vellottie::runtime::model::Brush::Animated(brush) => match brush {
-            vellottie::runtime::model::animated::Brush::Solid(brush) => match brush {
-                vellottie::runtime::model::Value::Fixed(solid) => {
+        velato::runtime::model::Brush::Animated(brush) => match brush {
+            velato::runtime::model::animated::Brush::Solid(brush) => match brush {
+                velato::runtime::model::Value::Fixed(solid) => {
                     *solid = target_color;
                 }
-                vellottie::runtime::model::Value::Animated(keyframes) => {
+                velato::runtime::model::Value::Animated(keyframes) => {
                     for solid in keyframes.values.iter_mut() {
                         *solid = target_color;
                     }
                 }
             },
-            vellottie::runtime::model::animated::Brush::Gradient(gr) => match &mut gr.stops {
-                vellottie::runtime::model::ColorStops::Fixed(stops) => {
+            velato::runtime::model::animated::Brush::Gradient(gr) => match &mut gr.stops {
+                velato::runtime::model::ColorStops::Fixed(stops) => {
                     for stop in stops.iter_mut() {
                         stop.color = target_color;
                     }
                 }
-                vellottie::runtime::model::ColorStops::Animated(stops) => {
+                velato::runtime::model::ColorStops::Animated(stops) => {
                     for _ in 0..stops.count {
                         for stop in stops.values.iter_mut() {
                             let _offset = stop[0];

@@ -1,6 +1,6 @@
 use bevy::utils::hashbrown::HashSet;
 use std::sync::Arc;
-use vellottie::Composition;
+use velato::Composition;
 
 /// Metadata used for introspection and color swapping.
 pub struct Metadata {

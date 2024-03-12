@@ -46,7 +46,7 @@ pub fn load_svg_from_str(svg_str: &str) -> Result<VelloAsset, VectorLoaderError>
 /// Deserialize a Lottie file from bytes.
 pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError> {
     // Load Lottie JSON bytes with the Velato (bodymovin) parser
-    let composition = vellottie::Composition::from_bytes(bytes)
+    let composition = velato::Composition::from_bytes(bytes)
         .map_err(|err| VectorLoaderError::Parse(format!("Unable to parse lottie JSON: {err:?}")))?;
 
     let width = composition.width as f32;

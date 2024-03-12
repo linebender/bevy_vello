@@ -1,6 +1,5 @@
 [package]
 name = "demo"
-description = "The vellottie demo"
 version.workspace = true
 license.workspace = true
 edition.workspace = true

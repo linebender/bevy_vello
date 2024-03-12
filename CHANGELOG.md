@@ -101,7 +101,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ### changed
 
 - updated to bevy 0.12
-- switched to `vellottie` for rendering lotties
+- switched to `velato` for rendering lotties
 - switched to `vello-svg` for rendering svgs
 
 ## 0.2

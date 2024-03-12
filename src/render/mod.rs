@@ -82,10 +82,10 @@ impl FromWorld for BevyVelloRenderer {
 }
 
 #[derive(Resource)]
-pub struct LottieRenderer(vellottie::Renderer);
+pub struct LottieRenderer(velato::Renderer);
 
 impl Default for LottieRenderer {
     fn default() -> Self {
-        Self(vellottie::Renderer::new())
+        Self(velato::Renderer::new())
     }
 }
