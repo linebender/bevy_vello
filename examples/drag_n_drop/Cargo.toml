@@ -1,5 +1,5 @@
 [package]
-name = "drag-n-drop"
+name = "drag_n_drop"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -8,5 +8,5 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy-vello = { path = "../../" }
+bevy_vello = { path = "../../" }
 bevy = { workspace = true }

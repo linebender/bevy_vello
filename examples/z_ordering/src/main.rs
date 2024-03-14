@@ -32,7 +32,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
     for i in 1..=AMOUNT {
         commands
             .spawn(VelloAssetBundle {
-                vector: asset_server.load("../assets/squid.json"),
+                vector: asset_server.load("../../assets/squid.json"),
                 transform: Transform::from_scale(Vec3::splat(SIZE))
                     .with_translation(Vec3::splat(i as f32 * SPACING)),
                 debug_visualizations: DebugVisualizations::Visible,
@@ -51,7 +51,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
     for i in 1..=AMOUNT {
         commands
             .spawn(VelloAssetBundle {
-                vector: asset_server.load("../assets/squid.json"),
+                vector: asset_server.load("../../assets/squid.json"),
                 transform: Transform::from_scale(Vec3::splat(SIZE))
                     .with_translation(Vec3::splat(-i as f32 * SPACING)),
                 debug_visualizations: DebugVisualizations::Visible,
@@ -70,7 +70,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
     for i in 1..=AMOUNT {
         commands
             .spawn(VelloAssetBundle {
-                vector: asset_server.load("../assets/squid.json"),
+                vector: asset_server.load("../../assets/squid.json"),
                 transform: Transform::from_scale(Vec3::splat(SIZE)).with_translation(
                     (Vec3::X * Vec3::splat(-i as f32)) * SPACING
                         + (Vec3::Y * Vec3::splat(i as f32)) * SPACING,
@@ -91,7 +91,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
     for i in 1..=AMOUNT {
         commands
             .spawn(VelloAssetBundle {
-                vector: asset_server.load("../assets/squid.json"),
+                vector: asset_server.load("../../assets/squid.json"),
                 transform: Transform::from_scale(Vec3::splat(SIZE)).with_translation(
                     (Vec3::X * Vec3::splat(i as f32)) * SPACING
                         + (Vec3::Y * Vec3::splat(-i as f32)) * SPACING,
@@ -112,7 +112,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
 fn setup_screenspace_vectors(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     for i in 1..=10 {
         commands.spawn(VelloAssetBundle {
-            vector: asset_server.load("../assets/squid.json"),
+            vector: asset_server.load("../../assets/squid.json"),
             transform: Transform::from_scale(Vec3::splat(0.03))
                 .with_translation(Vec3::splat(i as f32 * 20.0)),
             debug_visualizations: DebugVisualizations::Visible,

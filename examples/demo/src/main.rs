@@ -23,7 +23,7 @@ fn main() {
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("../assets/Rubik-Medium.vttf"),
+        font: asset_server.load("../../assets/Rubik-Medium.vttf"),
         text: VelloText {
             content: "hello vello".to_string(),
             size: 100.0,
@@ -33,7 +33,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     });
     commands
         .spawn(VelloAssetBundle {
-            vector: asset_server.load("../assets/example.json"),
+            vector: asset_server.load("../../assets/example.json"),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(20.0)),
             debug_visualizations: DebugVisualizations::Visible,

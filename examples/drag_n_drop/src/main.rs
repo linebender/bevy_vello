@@ -15,7 +15,7 @@ fn main() {
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
     commands.spawn(VelloAssetBundle {
-        vector: asset_server.load("../assets/squid.json"),
+        vector: asset_server.load("../../assets/squid.json"),
         debug_visualizations: DebugVisualizations::Visible,
         ..default()
     });

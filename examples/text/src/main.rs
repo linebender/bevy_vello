@@ -22,7 +22,10 @@ fn setup_camera(mut commands: Commands) {
 
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("../assets/Rubik-Medium.vttf"),
+        font: asset_server.load(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../assets/Rubik-Medium.vttf"
+        )),
         text: VelloText {
             content: "WHello vello\nwith multi-line support".to_string(),
             size: 50.0,
@@ -34,7 +37,10 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
     });
 
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("../assets/Rubik-Medium.vttf"),
+        font: asset_server.load(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../assets/Rubik-Medium.vttf"
+        )),
         text: VelloText {
             content: "WXYZ".to_string(),
             size: 100.0,
@@ -49,7 +55,10 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 fn setup_screenspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     // Vello text
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("../assets/Rubik-Medium.vttf"),
+        font: asset_server.load(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../assets/Rubik-Medium.vttf"
+        )),
         text: VelloText {
             content: "Text rendered by Vello!".to_string(),
             size: 15.0,
@@ -66,7 +75,10 @@ fn setup_screenspace_text(mut commands: Commands, asset_server: ResMut<AssetServ
         TextBundle::from_section(
             "Text rendered by Bevy!",
             TextStyle {
-                font: asset_server.load("../assets/Rubik-Medium.ttf"),
+                font: asset_server.load(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../assets/Rubik-Medium.ttf"
+                )),
                 font_size: 15.0,
                 ..default()
             },

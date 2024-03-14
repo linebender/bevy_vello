@@ -1,5 +1,5 @@
 [package]
-name = "z-ordering"
+name = "z_ordering"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -8,6 +8,6 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy-vello = { path = "../../" }
+bevy_vello = { path = "../../" }
 bevy = { workspace = true }
 bevy_pancam = { version = "0.11", features = ["bevy_egui"] }

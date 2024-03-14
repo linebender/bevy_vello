@@ -2,22 +2,25 @@ use super::asset_loader::VectorLoaderError;
 use crate::assets::asset::VectorFile;
 use crate::VelloAsset;
 use bevy::prelude::*;
+use once_cell::sync::Lazy;
 use std::sync::Arc;
 use vello::Scene;
-use vello_svg::usvg::{self, TreeParsing};
+use vello_svg::usvg::{self, fontdb::Database};
+
+pub static FONT_DB: Lazy<Database> = Lazy::new(usvg::fontdb::Database::default);
 
 /// Deserialize an SVG file from bytes.
 pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError> {
     let svg_str = std::str::from_utf8(bytes)?;
 
-    let usvg = usvg::Tree::from_str(svg_str, &usvg::Options::default())?;
+    let usvg = usvg::Tree::from_str(svg_str, &usvg::Options::default(), &FONT_DB)?;
 
     // Process the loaded SVG into Vello-compatible data
     let mut scene = Scene::new();
     vello_svg::render_tree(&mut scene, &usvg);
 
-    let width = usvg.size.width();
-    let height = usvg.size.height();
+    let width = usvg.size().width();
+    let height = usvg.size().height();
 
     let vello_vector = VelloAsset {
         data: VectorFile::Svg {
