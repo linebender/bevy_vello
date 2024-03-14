@@ -36,18 +36,31 @@ It uses several support backends for assets:
 
 Visual inconsistencies discovered should be reported to the respective backend.
 
+## Bevy version support
+
+**NOTE**: You must use a git rev for now, but we are planning a publish. See [issue #3](https://github.com/vectorgameexperts/bevy_vello/issues/3).
+
+|bevy|bevy_vello|
+|---|---|
+|0.13|0.1, main|
+|< 0.13| unsupported |
+
+## Features
+
+- Spawn vector graphics rendering in screen-space or world-space coordinates.
+- Runtime color swapping of Lottie files with a `Theme` component.
+- Augment playback options with a `PlaybackOptions` component.
+- Limited state machine support with a `LottiePlayer` component.
+- Text
+  - NOTE: To avoid conflict with bevy's built-in font loader, rename fonts used by `bevy_vello` to end with `*.vtff`. This is a limitation of the bevy game engine, and can probably be an improvement in the future.
+- Debug drawing for bounding boxes and origin
+
 ## Examples
 
-### Cross platform (Winit)
+### Cross platform (Bevy)
 
 ```shell
-cargo run -p with_winit
-```
-
-You can also load an entire folder or individual files.
-
-```shell
-cargo run -p with_winit -- examples/assets
+cargo run -p <demo name>
 ```
 
 ### Web platform
@@ -62,17 +75,17 @@ This uses [`cargo-run-wasm`](https://github.com/rukai/cargo-run-wasm) to build t
 rustup target add wasm32-unknown-unknown
 
 # The binary name must also be explicitly provided as it differs from the package name
-cargo run_wasm -p with_winit --bin with_winit_bin
+cargo run_wasm -p text
 ```
 
-There is also a web demo [available here](https://linebender.github.io/vello_svg) on supporting web browsers.
+There is also a web demo [available here](https://vectorgameexperts.github.io/bevy_vello) on supporting web browsers.
 
 > [!WARNING]
 > The web is not currently a primary target for Vello, and WebGPU implementations are incomplete, so you might run into issues running this example.
 
 ## Community
 
-Discussion of Velato development happens in the [Linebender Zulip](https://xi.zulipchat.com/), specifically the [#gpu stream](https://xi.zulipchat.com/#narrow/stream/197075-gpu). All public content can be read without logging in.
+Discussion of bevy_vello development happens in the [Linebender Zulip](https://discord.gg/zrjnQzdjCB), specifically the [#gpu stream](https://xi.zulipchat.com/#narrow/stream/197075-gpu). All public content can be read without logging in.
 
 Contributions are welcome by pull request. The [Rust code of conduct](https://www.rust-lang.org/policies/code-of-conduct) applies.
 
@@ -85,10 +98,7 @@ Licensed under either of
 - MIT license
    ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
-at your option, in addition to
-
-- Mozilla Public License 2.0
-   ([LICENSE-MPL](LICENSE-MPL) or <https://www.mozilla.org/en-US/MPL/2.0/>).
+at your option
 
 The files in subdirectories of the [`examples/assets`](/examples/assets) directory are licensed solely under
 their respective licenses, available in the `LICENSE` file in their directories.
@@ -98,52 +108,3 @@ their respective licenses, available in the `LICENSE` file in their directories.
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed as above, without any additional terms or conditions.
-
-
-A bevy plugin which provides rendering support for [lottie](https://lottiefiles.com/what-is-lottie) animations and SVGs on [Bevy](https://bevyengine.org/) using [Vello](https://github.com/linebender/vello.git) and [Velato](https://github.com/linebender/velato). Supports **wasm** and **native**. Untested on Android/iOS (help needed).
-
-![Alt text](image.png)
-
-## Bevy version support
-
-**NOTE**: You must use a git rev for now, and match our version of vello. We cannot publish to crates.io. See [issue #3](https://github.com/vectorgameexperts/bevy_vello/issues/3).
-
-|bevy|bevy_vello|
-|---|---|
-|0.12|0.6, main|
-|0.12|0.3-0.5|
-|0.11|0.2|
-|<= 0.10|0.1|
-
-## Features
-
-- Spawn vector graphics rendering either in screen-space or world-space coordinates.
-- Runtime color swapping of Lottie files `Theme` component.
-- Augment playback options with the `PlaybackOptions` component.
-- Limited state machine support with the `LottiePlayer` component.
-- Rudimentary support for text
-  - NOTE: To avoid conflict with bevy's built-in font loader, rename fonts used by `bevy_vello` to end with `*.vtff`. This is a limitation of the bevy game engine, and can probably be an improvement in the future.
-- Debug draw gizmos for the objects local origin (red X) and canvas size (white bounding box)
-
-## Run Demo
-
-- Native
-
-  ```shell
-  cargo run -p demo
-  ```
-
-- WASM (requires `cargo install trunk`)
-
-  ```shell
-  cd demo
-  trunk serve
-  ```
-
-## Attributions
-
-The animated vector graphic in the README and demo is a lottie file available from Google Fonts' [Noto Animated Emojis](https://googlefonts.github.io/noto-emoji-animation/documentation).
-
-## License
-
-This project is dual-licensed under both [Apache 2.0](LICENSE-APACHE) and [MIT](LICENSE-MIT) licenses.
