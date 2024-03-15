@@ -37,7 +37,7 @@ jobs:
           wasm-bindgen --target web --out-dir public target/wasm32-unknown-unknown/release/demo.wasm --no-typescript
           cat << EOF > public/index.html
             <html>
-              <title>Vello Web Demo</title>
+              <title>bevy_vello Web Demo</title>
               <meta content=no-cache http-equiv=Cache-control>
               <meta content=-1 http-equiv=Expires>
               <script type=module>import initSync from"/bevy_vello/demo.js";initSync(`/bevy_vello/demo_bg.wasm`);</script>
