@@ -1,3 +1,5 @@
+//! Components and text logic.
+
 mod font;
 mod font_loader;
 mod vello_text;

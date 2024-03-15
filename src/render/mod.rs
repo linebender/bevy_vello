@@ -1,3 +1,5 @@
+//! Components and logic for rendering.
+
 use bevy::prelude::*;
 use bevy::render::mesh::MeshVertexBufferLayout;
 use bevy::render::render_resource::{

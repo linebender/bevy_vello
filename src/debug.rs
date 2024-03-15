@@ -1,3 +1,5 @@
+//! Logic for rendering debug visualizations
+
 use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText, ZFunction};
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;

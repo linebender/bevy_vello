@@ -1,3 +1,7 @@
+//! A component to augment playback colors.
+//!
+//! A long-term vision here is a selector-styled language, but now is just color swapping by layer name.
+
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use velato::runtime::model::{Brush, Shape};

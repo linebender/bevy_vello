@@ -1,3 +1,5 @@
+//! Augmenting and controls for lottie playback behavior.
+
 mod alpha_override;
 pub use alpha_override::PlaybackAlphaOverride;
 

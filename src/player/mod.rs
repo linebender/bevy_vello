@@ -1,3 +1,5 @@
+//! Contains logic for the [`LottiePlayer`], a component used to control Lottie playback settings idiomatically with code.
+
 mod lottie_player;
 pub use lottie_player::LottiePlayer;
 

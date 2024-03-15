@@ -1,5 +1,5 @@
 #![allow(clippy::type_complexity)]
-// #![deny(missing_docs)] - TODO add before 1.0
+// #![deny(missing_docs)] -- This would be great! But we are far away.
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 mod plugin;

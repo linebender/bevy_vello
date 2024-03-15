@@ -1,3 +1,5 @@
+//! Parsing, loading, and asset type definitions.
+
 mod asset;
 pub use asset::{VectorFile, VelloAsset};
 
