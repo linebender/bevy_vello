@@ -1,39 +1,30 @@
 mod ui;
 
-use bevy::asset::AssetMetaCheck;
+use bevy::asset::io::embedded::EmbeddedAssetRegistry;
+use bevy::asset::{embedded_asset, AssetMetaCheck};
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use bevy_vello::prelude::*;
 
 fn main() {
-    App::new()
-        .insert_resource(AssetMetaCheck::Never)
+    let mut app = App::new();
+    app.insert_resource(AssetMetaCheck::Never)
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_plugins(VelloPlugin)
+        .init_resource::<EmbeddedAssetRegistry>()
         .add_plugins(bevy_pancam::PanCamPlugin)
         .add_systems(Startup, setup_vector_graphics)
-        .add_systems(
-            Update,
-            (drag_and_drop, print_metadata, ui::controls_ui, ui::text_ui),
-        )
-        .run();
+        .add_systems(Update, (print_metadata, ui::controls_ui));
+    embedded_asset!(app, "src", "calendar.json");
+    app.run();
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
-    commands.spawn(VelloTextBundle {
-        font: asset_server.load("../../assets/Rubik-Medium.vttf"),
-        text: VelloText {
-            content: "hello vello".to_string(),
-            size: 100.0,
-            brush: None,
-        },
-        ..default()
-    });
     commands
         .spawn(VelloAssetBundle {
-            vector: asset_server.load("../../assets/example.json"),
+            vector: asset_server.load::<VelloAsset>("embedded://demo/calendar.json"),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(20.0)),
             debug_visualizations: DebugVisualizations::Visible,
@@ -90,24 +81,5 @@ fn print_metadata(
                 );
             }
         }
-    }
-}
-
-/// Drag and drop any SVG or Lottie JSON asset into the window and change the
-/// displayed asset
-fn drag_and_drop(
-    mut query: Query<&mut Handle<VelloAsset>>,
-    asset_server: ResMut<AssetServer>,
-    mut dnd_evr: EventReader<FileDragAndDrop>,
-) {
-    let Ok(mut vector) = query.get_single_mut() else {
-        return;
-    };
-    for ev in dnd_evr.read() {
-        let FileDragAndDrop::DroppedFile { path_buf, .. } = ev else {
-            continue;
-        };
-        let new_handle = asset_server.load(path_buf.clone());
-        *vector = new_handle;
     }
 }

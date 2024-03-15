@@ -270,24 +270,3 @@ pub fn controls_ui(
         }
     });
 }
-
-pub fn text_ui(mut contexts: EguiContexts, mut texts: Query<&mut VelloText>) {
-    let Ok(mut text) = texts.get_single_mut() else {
-        return;
-    };
-
-    let window = egui::Window::new("Text")
-        .resizable(false)
-        .title_bar(true)
-        .collapsible(true);
-    window.show(contexts.ctx_mut(), |ui| {
-        ui.horizontal(|ui| {
-            ui.label("Content");
-            ui.text_edit_singleline(&mut text.content);
-        });
-        ui.horizontal(|ui| {
-            ui.label("Size");
-            ui.add(egui::Slider::new(&mut text.size, 5.0..=200.0));
-        });
-    });
-}
