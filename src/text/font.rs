@@ -1,9 +1,8 @@
 use super::vello_text::VelloText;
+use bevy::prelude::*;
 use bevy::reflect::TypePath;
 use bevy::render::render_asset::RenderAsset;
-use bevy::{prelude::*, time};
 use std::sync::Arc;
-use std::time::Instant;
 use vello::glyph::skrifa::{FontRef, MetadataProvider};
 use vello::glyph::Glyph;
 use vello::kurbo::Affine;
