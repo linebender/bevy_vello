@@ -9,7 +9,7 @@
 [![Vello](https://img.shields.io/badge/vello-v0.1.0-purple.svg)](https://crates.io/crates/vello)
 [![Build status](https://github.com/vectorgameexperts/bevy_vello/workflows/CI/badge.svg)](https://github.com/vectorgameexperts/bevy_vello/actions)
 <!-- Enable after publish
-[![dependency status](https://deps.rs/repo/github/linebender/vello_svg/status.svg)](https://deps.rs/repo/github/linebender/vello_svg)
+[![dependency status](https://deps.rs/repo/github/vectorgameexperts/bevy_vello/status.svg)](https://deps.rs/repo/github/vectorgameexperts/bevy_vello)
 [![Crates.io](https://img.shields.io/crates/v/bevy_vello.svg)](https://crates.io/crates/bevy_vello)
 [![Docs](https://img.shields.io/docsrs/bevy_vello)](https://docs.rs/bevy_vello)
 -->
@@ -85,7 +85,7 @@ There is also a web demo [available here](https://vectorgameexperts.github.io/be
 
 ## Community
 
-Discussion of bevy_vello development happens in the [Linebender Zulip](https://discord.gg/zrjnQzdjCB), specifically the [#gpu stream](https://xi.zulipchat.com/#narrow/stream/197075-gpu). All public content can be read without logging in.
+All VGX projects and development happens in the [VGX Discord](https://discord.gg/zrjnQzdjCB). The discord is open to the public.
 
 Contributions are welcome by pull request. The [Rust code of conduct](https://www.rust-lang.org/policies/code-of-conduct) applies.
 
