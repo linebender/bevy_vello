@@ -15,7 +15,7 @@ pub struct PlaybackOptions {
     pub direction: PlaybackDirection,
     /// The speed of the animation as a multiplier. 1.0 is normal speed.
     /// Anything less than 1 is slower, and anything greater than 1 is faster.
-    pub speed: f32,
+    pub speed: f64,
     /// A duration of time spent idle between loops.
     pub intermission: Duration,
     /// Whether to reset the playhead every loop (normal) or to reverse
@@ -25,7 +25,7 @@ pub struct PlaybackOptions {
     pub looping: PlaybackLoopBehavior,
     /// The segments (frames) of the animation to play. Values out of range
     /// will be ignored.
-    pub segments: Range<f32>,
+    pub segments: Range<f64>,
 }
 
 impl Default for PlaybackOptions {
@@ -37,7 +37,7 @@ impl Default for PlaybackOptions {
             intermission: Duration::ZERO,
             play_mode: Default::default(),
             looping: Default::default(),
-            segments: f32::MIN..f32::MAX,
+            segments: f64::MIN..f64::MAX,
         }
     }
 }

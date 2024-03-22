@@ -122,9 +122,9 @@ pub fn render_scene(
                                     .as_ref()
                                     .unwrap_or(composition)
                             },
-                            *playhead,
+                            *playhead as f64,
                             affine,
-                            *alpha,
+                            *alpha as f64,
                             &mut scene,
                         );
                     }

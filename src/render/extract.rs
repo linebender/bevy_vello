@@ -13,7 +13,7 @@ pub struct ExtractedRenderVector {
     pub z_index: f32,
     pub theme: Option<Theme>,
     pub render_mode: CoordinateSpace,
-    pub playhead: f32,
+    pub playhead: f64,
     pub alpha: f32,
     pub ui_node: Option<Node>,
 }

@@ -100,10 +100,10 @@ pub fn advance_playheads(
         playhead.first_render.get_or_insert(Instant::now());
 
         // Advance playhead
-        playhead.frame += (time.delta_seconds()
+        playhead.frame += (time.delta_seconds_f64()
             * options.speed
             * composition.frame_rate
-            * (options.direction as i32 as f32)
+            * (options.direction as i32 as f64)
             * playhead.playmode_dir)
             % length;
 

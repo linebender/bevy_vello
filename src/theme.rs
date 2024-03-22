@@ -4,7 +4,7 @@
 
 use bevy::prelude::*;
 use bevy::utils::HashMap;
-use velato::runtime::model::{Brush, Shape};
+use velato::model::{Brush, Shape};
 use velato::Composition;
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
@@ -57,9 +57,8 @@ impl Theme {
                 continue 'layers;
             };
             let shapes = match &mut layer.content {
-                velato::runtime::model::Content::Shape(shapes) => shapes,
-                velato::runtime::model::Content::None
-                | velato::runtime::model::Content::Instance { .. } => {
+                velato::model::Content::Shape(shapes) => shapes,
+                velato::model::Content::None | velato::model::Content::Instance { .. } => {
                     continue 'layers;
                 }
             };
@@ -80,23 +79,22 @@ impl Theme {
 /// A helper method to recolor a shape with a target color.
 fn recolor_shape(shape: &mut Shape, target_color: vello::peniko::Color) {
     match shape {
-        velato::runtime::model::Shape::Group(shapes, _) => {
+        velato::model::Shape::Group(shapes, _) => {
             for shape in shapes.iter_mut() {
                 recolor_shape(shape, target_color);
             }
         }
-        velato::runtime::model::Shape::Draw(draw) => {
+        velato::model::Shape::Draw(draw) => {
             recolor_brush(&mut draw.brush, target_color);
         }
-        velato::runtime::model::Shape::Repeater(_) | velato::runtime::model::Shape::Geometry(_) => {
-        }
+        velato::model::Shape::Repeater(_) | velato::model::Shape::Geometry(_) => {}
     }
 }
 
 /// A helper method to recolor a brush with a target color.
 fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
     match brush {
-        velato::runtime::model::Brush::Fixed(brush) => match brush {
+        velato::model::Brush::Fixed(brush) => match brush {
             vello::peniko::Brush::Solid(solid) => {
                 *solid = target_color;
             }
@@ -107,35 +105,35 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
             }
             vello::peniko::Brush::Image(_) => {}
         },
-        velato::runtime::model::Brush::Animated(brush) => match brush {
-            velato::runtime::model::animated::Brush::Solid(brush) => match brush {
-                velato::runtime::model::Value::Fixed(solid) => {
+        velato::model::Brush::Animated(brush) => match brush {
+            velato::model::animated::Brush::Solid(brush) => match brush {
+                velato::model::Value::Fixed(solid) => {
                     *solid = target_color;
                 }
-                velato::runtime::model::Value::Animated(keyframes) => {
+                velato::model::Value::Animated(keyframes) => {
                     for solid in keyframes.values.iter_mut() {
                         *solid = target_color;
                     }
                 }
             },
-            velato::runtime::model::animated::Brush::Gradient(gr) => match &mut gr.stops {
-                velato::runtime::model::ColorStops::Fixed(stops) => {
+            velato::model::animated::Brush::Gradient(gr) => match &mut gr.stops {
+                velato::model::ColorStops::Fixed(stops) => {
                     for stop in stops.iter_mut() {
                         stop.color = target_color;
                     }
                 }
-                velato::runtime::model::ColorStops::Animated(stops) => {
+                velato::model::ColorStops::Animated(stops) => {
                     for _ in 0..stops.count {
                         for stop in stops.values.iter_mut() {
                             let _offset = stop[0];
                             let r = &mut stop[1];
-                            *r = target_color.r as f32;
+                            *r = target_color.r as f64;
                             let g = &mut stop[2];
-                            *g = target_color.g as f32;
+                            *g = target_color.g as f64;
                             let b = &mut stop[3];
-                            *b = target_color.b as f32;
+                            *b = target_color.b as f64;
                             let a = &mut stop[4];
-                            *a = target_color.a as f32;
+                            *a = target_color.a as f64;
                         }
                     }
                 }
