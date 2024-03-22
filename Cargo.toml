@@ -6,6 +6,7 @@ members = [
   "examples/drag_n_drop",
   "examples/text",
   "examples/z_ordering",
+  "examples/scene",
 ]
 
 [workspace.package]

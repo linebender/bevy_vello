@@ -1,13 +1,15 @@
 use super::z_function::ZFunction;
 use crate::theme::Theme;
-use crate::{CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloFont, VelloText};
+use crate::{
+    CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloFont, VelloScene, VelloText,
+};
 use bevy::prelude::*;
 use bevy::render::extract_component::ExtractComponent;
 use bevy::render::Extract;
 use bevy::window::PrimaryWindow;
 
 #[derive(Component, Clone)]
-pub struct ExtractedRenderVector {
+pub struct ExtractedRenderAsset {
     pub asset: VelloAsset,
     pub transform: GlobalTransform,
     pub z_index: f32,
@@ -18,7 +20,7 @@ pub struct ExtractedRenderVector {
     pub ui_node: Option<Node>,
 }
 
-pub fn vector_instances(
+pub fn asset_instances(
     mut commands: Commands,
     query_vectors: Extract<
         Query<(
@@ -55,7 +57,7 @@ pub fn vector_instances(
                     crate::VectorFile::Svg { .. } => 0.0,
                     crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
                 };
-                commands.spawn(ExtractedRenderVector {
+                commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
                     transform: *transform,
                     z_index: z_function.compute(asset, transform),
@@ -66,6 +68,38 @@ pub fn vector_instances(
                     ui_node: ui_node.cloned(),
                 });
             }
+        }
+    }
+}
+
+#[derive(Component, Clone)]
+pub struct ExtractedRenderScene {
+    pub scene: VelloScene,
+    pub transform: GlobalTransform,
+    pub render_mode: CoordinateSpace,
+}
+
+pub fn scene_instances(
+    mut commands: Commands,
+    query_scenes: Extract<
+        Query<(
+            &VelloScene,
+            &CoordinateSpace,
+            &GlobalTransform,
+            &ViewVisibility,
+            &InheritedVisibility,
+        )>,
+    >,
+) {
+    for (scene, coord_space, transform, view_visibility, inherited_visibility) in
+        query_scenes.iter()
+    {
+        if view_visibility.get() && inherited_visibility.get() {
+            commands.spawn(ExtractedRenderScene {
+                transform: *transform,
+                render_mode: *coord_space,
+                scene: scene.clone(),
+            });
         }
     }
 }
