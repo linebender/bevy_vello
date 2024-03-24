@@ -85,7 +85,7 @@ There is also a web demo [available here](https://vectorgameexperts.github.io/be
 
 ## Community
 
-All VGX projects and development happens in the [VGX Discord](https://discord.gg/zrjnQzdjCB). The discord is open to the public.
+All Loopy projects and development happens in the [Loopy Discord](https://discord.gg/zrjnQzdjCB). The discord is open to the public.
 
 Contributions are welcome by pull request. The [Rust code of conduct](https://www.rust-lang.org/policies/code-of-conduct) applies.
 
