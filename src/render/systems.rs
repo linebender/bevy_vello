@@ -1,3 +1,4 @@
+use crate::render::extract::ExtractedRenderScene;
 use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;
@@ -11,7 +12,7 @@ use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy::window::{WindowResized, WindowResolution};
 use vello::{RenderParams, Scene};
 
-use super::extract::{ExtractedRenderText, ExtractedRenderVector, SSRenderTarget};
+use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
 use super::prepare::PreparedAffine;
 use super::{BevyVelloRenderer, LottieRenderer};
 
@@ -49,8 +50,9 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 #[allow(clippy::complexity)]
 pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
-    render_vectors: Query<(&PreparedAffine, &ExtractedRenderVector)>,
+    render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
+    query_render_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
@@ -69,19 +71,27 @@ pub fn render_scene(
         let mut scene = Scene::new();
 
         enum RenderItem<'a> {
-            Vector(&'a ExtractedRenderVector),
+            Asset(&'a ExtractedRenderAsset),
+            Scene(&'a ExtractedRenderScene),
             Text(&'a ExtractedRenderText),
         }
         let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
             render_vectors
                 .iter()
-                .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Vector(b))))
+                .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Asset(b))))
                 .collect();
         render_queue.extend(query_render_texts.iter().map(|(a, b)| {
             (
                 b.transform.translation().z,
                 b.render_mode,
                 (a, RenderItem::Text(b)),
+            )
+        }));
+        render_queue.extend(query_render_scenes.iter().map(|(a, b)| {
+            (
+                b.transform.translation().z,
+                b.render_mode,
+                (a, RenderItem::Scene(b)),
             )
         }));
 
@@ -101,7 +111,7 @@ pub fn render_scene(
         // scene to be rendered
         for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter_mut() {
             match render_item {
-                RenderItem::Vector(ExtractedRenderVector {
+                RenderItem::Asset(ExtractedRenderAsset {
                     asset,
                     theme,
                     alpha,
@@ -129,6 +139,9 @@ pub fn render_scene(
                         );
                     }
                 },
+                RenderItem::Scene(ExtractedRenderScene { scene: scn, .. }) => {
+                    scene.append(scn, Some(affine));
+                }
                 RenderItem::Text(ExtractedRenderText { font, text, .. }) => {
                     if let Some(font) = font_render_assets.get_mut(font) {
                         font.render(&mut scene, affine, text);
@@ -137,7 +150,22 @@ pub fn render_scene(
             }
         }
 
-        if !render_queue.is_empty() {
+        // TODO: Vello should be ignoring 0-sized buffers in the future, so this could go away.
+        // Prevent a panic in the vello renderer if all the items contain empty encoding data
+        let empty_encodings = render_queue
+            .iter()
+            .filter(|(_, _, (_, item))| match item {
+                RenderItem::Asset(a) => match &a.asset.data {
+                    VectorFile::Svg { scene: svg, .. } => svg.encoding().is_empty(),
+                    VectorFile::Lottie { composition } => composition.layers.is_empty(),
+                },
+                RenderItem::Scene(s) => s.scene.encoding().is_empty(),
+                RenderItem::Text(t) => t.text.content.is_empty(),
+            })
+            .count()
+            == render_queue.len();
+
+        if !render_queue.is_empty() && !empty_encodings {
             renderer
                 .0
                 .render_to_texture(
@@ -146,7 +174,7 @@ pub fn render_scene(
                     &scene,
                     &gpu_image.texture_view,
                     &RenderParams {
-                        base_color: vello::peniko::Color::BLACK.with_alpha_factor(0.0),
+                        base_color: vello::peniko::Color::TRANSPARENT,
                         width: gpu_image.size.x as u32,
                         height: gpu_image.size.y as u32,
                         antialiasing_method: vello::AaConfig::Area,

@@ -34,13 +34,15 @@ impl Plugin for VelloRenderPlugin {
                 ExtractSchedule,
                 (
                     extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
-                    extract::vector_instances,
+                    extract::asset_instances,
+                    extract::scene_instances,
                 ),
             )
             .add_systems(
                 Render,
                 (
                     prepare::prepare_vector_affines,
+                    prepare::prepare_scene_affines,
                     prepare::prepare_text_affines,
                 )
                     .in_set(RenderSet::Prepare),

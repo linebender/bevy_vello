@@ -2,6 +2,9 @@
 // #![deny(missing_docs)] -- This would be great! But we are far away.
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
+use crate::prelude::*;
+use bevy::prelude::*;
+
 mod plugin;
 pub use plugin::VelloPlugin;
 
@@ -28,11 +31,10 @@ pub mod prelude {
     pub use crate::render::{VelloCanvasMaterial, ZFunction};
     pub use crate::text::{VelloFont, VelloText};
     pub use crate::theme::Theme;
-    pub use crate::{CoordinateSpace, VelloAssetBundle, VelloTextBundle};
+    pub use crate::{
+        CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
+    };
 }
-
-use crate::prelude::*;
-use bevy::prelude::*;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
@@ -44,6 +46,7 @@ pub enum CoordinateSpace {
 
 #[derive(Bundle, Default)]
 pub struct VelloAssetBundle {
+    /// Asset data to render
     pub vector: Handle<VelloAsset>,
     /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
@@ -63,35 +66,71 @@ pub struct VelloAssetBundle {
     pub view_visibility: ViewVisibility,
 }
 
-#[derive(Bundle)]
-pub struct VelloTextBundle {
-    pub font: Handle<VelloFont>,
-    pub text: VelloText,
-    /// The coordinate space in which this vector should be rendered.
+#[derive(Bundle, Default)]
+pub struct VelloSceneBundle {
+    /// Scene to render
+    pub scene: VelloScene,
+    /// The coordinate space in which this scene should be rendered.
     pub coordinate_space: CoordinateSpace,
+    /// A transform to apply to this scene
     pub transform: Transform,
+    /// The global transform managed by Bevy
     pub global_transform: GlobalTransform,
-    pub debug_visualizations: DebugVisualizations,
-    /// User indication of whether an entity is visible
-    /// Algorithmically-computed indication of whether an entity is visible
-    //and /// should be extracted for rendering
+    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
+    /// Whether or not an entity is visible in the hierarchy.
     pub inherited_visibility: InheritedVisibility,
+    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
     pub view_visibility: ViewVisibility,
 }
 
-impl Default for VelloTextBundle {
-    fn default() -> Self {
-        Self {
-            font: Default::default(),
-            text: Default::default(),
-            coordinate_space: Default::default(),
-            transform: Default::default(),
-            global_transform: Default::default(),
-            debug_visualizations: Default::default(),
-            visibility: Visibility::Inherited,
-            inherited_visibility: InheritedVisibility::default(),
-            view_visibility: ViewVisibility::default(),
-        }
+#[derive(Bundle, Default)]
+pub struct VelloTextBundle {
+    /// Font to render
+    pub font: Handle<VelloFont>,
+    /// Text to render
+    pub text: VelloText,
+    /// The coordinate space in which this text should be rendered.
+    pub coordinate_space: CoordinateSpace,
+    /// A transform to apply to this text
+    pub transform: Transform,
+    /// The global transform managed by Bevy
+    pub global_transform: GlobalTransform,
+    /// Whether to render debug visualizations
+    pub debug_visualizations: DebugVisualizations,
+    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
+    pub visibility: Visibility,
+    /// Whether or not an entity is visible in the hierarchy.
+    pub inherited_visibility: InheritedVisibility,
+    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
+    pub view_visibility: ViewVisibility,
+}
+
+#[derive(Component, Default, Clone)]
+pub struct VelloScene(vello::Scene);
+
+impl std::ops::Deref for VelloScene {
+    type Target = vello::Scene;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for VelloScene {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl VelloScene {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl From<vello::Scene> for VelloScene {
+    fn from(scene: vello::Scene) -> Self {
+        Self(scene)
     }
 }

@@ -1,4 +1,6 @@
-use super::extract::{ExtractedPixelScale, ExtractedRenderText, ExtractedRenderVector};
+use super::extract::{
+    ExtractedPixelScale, ExtractedRenderAsset, ExtractedRenderScene, ExtractedRenderText,
+};
 use crate::CoordinateSpace;
 use bevy::prelude::*;
 use bevy::render::camera::ExtractedCamera;
@@ -11,7 +13,7 @@ pub struct PreparedAffine(pub Affine);
 pub fn prepare_vector_affines(
     mut commands: Commands,
     camera: Query<(&ExtractedCamera, &ExtractedView)>,
-    mut render_vectors: Query<(Entity, &ExtractedRenderVector)>,
+    mut render_vectors: Query<(Entity, &ExtractedRenderAsset)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let Ok((camera, view)) = camera.get_single() else {
@@ -57,6 +59,71 @@ pub fn prepare_vector_affines(
                 let local_matrix = local_center_matrix;
 
                 let mut model_matrix = world_transform.compute_matrix() * local_matrix;
+                model_matrix.w_axis.y *= -1.0;
+
+                let (projection_mat, view_mat) = {
+                    let mut view_mat = view.transform.compute_matrix();
+                    view_mat.w_axis.y *= -1.0;
+
+                    (view.projection, view_mat)
+                };
+
+                let view_proj_matrix = projection_mat * view_mat.inverse();
+
+                ndc_to_pixels_matrix * view_proj_matrix * model_matrix
+            }
+        };
+
+        let transform: [f32; 16] = raw_transform.to_cols_array();
+
+        // | a c e |
+        // | b d f |
+        // | 0 0 1 |
+        let transform: [f64; 6] = [
+            transform[0] as f64,  // a
+            -transform[1] as f64, // b
+            -transform[4] as f64, // c
+            transform[5] as f64,  // d
+            transform[12] as f64, // e
+            transform[13] as f64, // f
+        ];
+
+        commands
+            .entity(entity)
+            .insert(PreparedAffine(Affine::new(transform)));
+    }
+}
+
+pub fn prepare_scene_affines(
+    mut commands: Commands,
+    camera: Query<(&ExtractedCamera, &ExtractedView)>,
+    mut render_vectors: Query<(Entity, &ExtractedRenderScene)>,
+    pixel_scale: Res<ExtractedPixelScale>,
+) {
+    let Ok((camera, view)) = camera.get_single() else {
+        return;
+    };
+    let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
+    let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
+    for (entity, render_vector) in render_vectors.iter_mut() {
+        let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
+            [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
+            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ])
+        .transpose();
+
+        let world_transform = render_vector.transform;
+
+        let raw_transform = match render_vector.render_mode {
+            CoordinateSpace::ScreenSpace => {
+                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+                model_matrix.w_axis.y *= -1.0;
+                model_matrix
+            }
+            CoordinateSpace::WorldSpace => {
+                let mut model_matrix = world_transform.compute_matrix();
                 model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {
