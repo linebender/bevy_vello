@@ -2,7 +2,7 @@
 
 # Bevy Vello
 
-**An integration to parse and render SVG and Lottie assets with [Vello](https://vello.dev) using [Bevy game engine](https://bevyengine.org).**
+**A vector graphics rendering integration for [Bevy game engine](https://bevyengine.org) using [Vello](https://vello.dev).**
 
 [![Discord](https://img.shields.io/discord/913957940560531456.svg?label=Loopy&logo=discord&logoColor=ffffff&color=ffffff&labelColor=000000)](https://discord.gg/zrjnQzdjCB)
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
