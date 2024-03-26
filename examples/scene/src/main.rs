@@ -4,30 +4,24 @@ use bevy_vello::prelude::*;
 use bevy_vello::vello::{kurbo, peniko};
 
 fn main() {
-    let mut app = App::new();
-    app.insert_resource(AssetMetaCheck::Never)
+    App::new()
+        .insert_resource(AssetMetaCheck::Never)
         .add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
-        .add_systems(Update, simple_animation);
-    app.run();
+        .add_systems(Update, simple_animation)
+        .run()
 }
 
 fn setup_vector_graphics(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
-    commands.spawn(VelloSceneBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-        ..default()
-    });
+    commands.spawn(VelloSceneBundle::default());
 }
 
-fn simple_animation(
-    mut q_transforms: Query<(&mut Transform, &mut VelloScene), With<VelloScene>>,
-    time: Res<Time>,
-) {
+fn simple_animation(mut query_scene: Query<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
     let sin_time = time.elapsed_seconds().sin().mul_add(0.5, 0.5);
 
-    for (mut transform, mut scene) in q_transforms.iter_mut() {
+    for (mut transform, mut scene) in query_scene.iter_mut() {
         *scene = VelloScene::default();
 
         // Animate color green to blue
