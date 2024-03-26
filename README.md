@@ -17,7 +17,7 @@
 > [!WARNING]
 > The support of SVG and Lottie is limited. If there is an SVG-related issue, please file the issue in [`vello_svg`](https://github.com/linebender/vello_svg). If there is a Lottie-related issue, please file the issue in [`velato`](https://github.com/linebender/velato). Please see the respective backends for for more information about limitations.
 
-bevy_vello is a rendering integration which enables the loading and rendering of assets such as SVG and Lottie within the bevy game engine.
+bevy_vello is a rendering integration for rendering vector graphics in the Bevy game engine. Currently it renders standard vello `Scene`s, as well as SVG and Lottie files.
 
 Quickstart to run the demo:
 
