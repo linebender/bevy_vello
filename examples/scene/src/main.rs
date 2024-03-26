@@ -1,6 +1,5 @@
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
-use bevy_egui::EguiPlugin;
 use bevy_vello::prelude::*;
 use bevy_vello::vello::{kurbo, peniko};
 
@@ -8,16 +7,14 @@ fn main() {
     let mut app = App::new();
     app.insert_resource(AssetMetaCheck::Never)
         .add_plugins(DefaultPlugins)
-        .add_plugins(EguiPlugin)
         .add_plugins(VelloPlugin)
-        .add_plugins(bevy_pancam::PanCamPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, simple_animation);
     app.run();
 }
 
 fn setup_vector_graphics(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
+    commands.spawn(Camera2dBundle::default());
     commands.spawn(VelloSceneBundle {
         transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
         ..default()

@@ -10,6 +10,3 @@ publish = false
 [dependencies]
 bevy_vello = { path = "../../" }
 bevy = { workspace = true }
-bevy_pancam = { version = "0.11", features = ["bevy_egui"] }
-bevy_egui = "0.25"
-console_error_panic_hook = "0.1"

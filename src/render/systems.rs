@@ -71,14 +71,14 @@ pub fn render_scene(
         let mut scene = Scene::new();
 
         enum RenderItem<'a> {
-            Vector(&'a ExtractedRenderAsset),
+            Asset(&'a ExtractedRenderAsset),
             Scene(&'a ExtractedRenderScene),
             Text(&'a ExtractedRenderText),
         }
         let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
             render_vectors
                 .iter()
-                .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Vector(b))))
+                .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Asset(b))))
                 .collect();
         render_queue.extend(query_render_texts.iter().map(|(a, b)| {
             (
@@ -111,7 +111,7 @@ pub fn render_scene(
         // scene to be rendered
         for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter_mut() {
             match render_item {
-                RenderItem::Vector(ExtractedRenderAsset {
+                RenderItem::Asset(ExtractedRenderAsset {
                     asset,
                     theme,
                     alpha,
@@ -150,11 +150,12 @@ pub fn render_scene(
             }
         }
 
+        // TODO: Vello should be ignoring 0-sized buffers in the future, so this could go away.
         // Prevent a panic in the vello renderer if all the items contain empty encoding data
         let empty_encodings = render_queue
             .iter()
-            .filter(|(_, _, (_, it))| match it {
-                RenderItem::Vector(a) => match &a.asset.data {
+            .filter(|(_, _, (_, item))| match item {
+                RenderItem::Asset(a) => match &a.asset.data {
                     VectorFile::Svg { scene: svg, .. } => svg.encoding().is_empty(),
                     VectorFile::Lottie { composition } => composition.layers.is_empty(),
                 },
@@ -173,7 +174,7 @@ pub fn render_scene(
                     &scene,
                     &gpu_image.texture_view,
                     &RenderParams {
-                        base_color: vello::peniko::Color::BLACK.with_alpha_factor(0.0),
+                        base_color: vello::peniko::Color::TRANSPARENT,
                         width: gpu_image.size.x as u32,
                         height: gpu_image.size.y as u32,
                         antialiasing_method: vello::AaConfig::Area,
