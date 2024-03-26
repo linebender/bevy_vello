@@ -1,4 +1,3 @@
-use bevy::asset::io::embedded::EmbeddedAssetRegistry;
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
@@ -11,7 +10,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_plugins(VelloPlugin)
-        .init_resource::<EmbeddedAssetRegistry>()
         .add_plugins(bevy_pancam::PanCamPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, simple_animation);
@@ -46,7 +44,7 @@ fn simple_animation(
         scene.fill(
             peniko::Fill::NonZero,
             kurbo::Affine::default(),
-            &peniko::Color::rgb(c.x as f64, c.y as f64, c.z as f64),
+            peniko::Color::rgb(c.x as f64, c.y as f64, c.z as f64),
             None,
             &kurbo::RoundedRect::new(-50.0, -50.0, 50.0, 50.0, (sin_time as f64) * 50.0),
         );

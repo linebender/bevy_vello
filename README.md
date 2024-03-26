@@ -54,6 +54,7 @@ Visual inconsistencies discovered should be reported to the respective backend.
 - Text
   - NOTE: To avoid conflict with bevy's built-in font loader, rename fonts used by `bevy_vello` to end with `*.vtff`. This is a limitation of the bevy game engine, and can probably be an improvement in the future.
 - Debug drawing for bounding boxes and origin
+- Render immediate-mode vello `Scene`s
 
 ## Examples
 
