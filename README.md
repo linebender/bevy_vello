@@ -36,7 +36,7 @@ Visual inconsistencies discovered should be reported to the respective backend.
 
 ## Bevy version support
 
-**NOTE**: You must use a git rev for now, but we are planning a publish. See [issue #3](https://github.com/vectorgameexperts/bevy_vello/issues/3).
+**NOTE**: You must use a git rev for now, but we are planning a publish. See [issue #3](https://github.com/loopystudios/bevy_vello/issues/3).
 
 |bevy|bevy_vello|
 |---|---|
@@ -77,7 +77,7 @@ rustup target add wasm32-unknown-unknown
 cargo run_wasm -p text
 ```
 
-There is also a web demo [available here](https://vectorgameexperts.github.io/bevy_vello) on supporting web browsers.
+There is also a web demo [available here](https://loopystudios.github.io/bevy_vello) on supporting web browsers.
 
 > [!WARNING]
 > The web is not currently a primary target for Vello, and WebGPU implementations are incomplete, so you might run into issues running this example.
