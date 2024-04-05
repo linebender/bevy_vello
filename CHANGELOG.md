@@ -10,6 +10,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.1.1 (2024-04-04)
+
+### fixed
+
+- fixed panic on Windows when window is minimized
+
 ## 0.1.0 (2024-03-26)
 
 - Initial release
+
