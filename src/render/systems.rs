@@ -201,6 +201,9 @@ pub fn resize_rendertargets(
             height: window.resolution.physical_height(),
             ..default()
         };
+        if size.width == 0 || size.height == 0 {
+            return;
+        }
         for (mut target, target_mat_handle) in query.iter_mut() {
             let image = setup_image(&mut images, &window.resolution);
             if let Some(mat) = target_materials.get_mut(target_mat_handle) {
