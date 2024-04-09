@@ -47,7 +47,12 @@ impl Plugin for VelloRenderPlugin {
                 )
                     .in_set(RenderSet::Prepare),
             )
-            .add_systems(Render, systems::render_scene.in_set(RenderSet::Render));
+            .add_systems(
+                Render,
+                systems::render_scene
+                    .in_set(RenderSet::Render)
+                    .run_if(resource_exists::<RenderDevice>),
+            );
 
         app.add_plugins((
             Material2dPlugin::<VelloCanvasMaterial>::default(),
