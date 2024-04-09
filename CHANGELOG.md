@@ -10,6 +10,10 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.1.2 (2024-04-08)
+
+- Fixes a window hang issue in bevy on native platforms
+
 ## 0.1.1 (2024-04-04)
 
 ### fixed
