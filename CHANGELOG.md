@@ -12,6 +12,8 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## 0.1.2 (2024-04-08)
 
+### fixed
+
 - Fixes a window hang issue in bevy on native platforms
 
 ## 0.1.1 (2024-04-04)
