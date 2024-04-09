@@ -16,7 +16,7 @@ fn main() {
                 setup_worldspace_vectors,
             ),
         );
-    embedded_asset!(app, "src", "assets/squid.json");
+    embedded_asset!(app, "assets/squid.json");
     app.run();
 }
 

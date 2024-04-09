@@ -13,8 +13,8 @@ fn main() {
             Startup,
             (setup_camera, setup_screenspace_text, setup_worldspace_text),
         );
-    embedded_asset!(app, "src", "assets/Rubik-Medium.ttf");
-    embedded_asset!(app, "src", "assets/Rubik-Medium.vttf");
+    embedded_asset!(app, "assets/Rubik-Medium.ttf");
+    embedded_asset!(app, "assets/Rubik-Medium.vttf");
     app.run();
 }
 

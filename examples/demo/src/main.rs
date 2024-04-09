@@ -16,7 +16,7 @@ fn main() {
         .add_plugins(bevy_pancam::PanCamPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, (print_metadata, ui::controls_ui));
-    embedded_asset!(app, "src", "assets/calendar.json");
+    embedded_asset!(app, "assets/calendar.json");
     app.run();
 }
 

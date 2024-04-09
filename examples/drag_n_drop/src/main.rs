@@ -9,7 +9,7 @@ fn main() {
         .add_plugins(VelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, drag_and_drop);
-    embedded_asset!(app, "src", "assets/fountain.svg");
+    embedded_asset!(app, "assets/fountain.svg");
     app.run();
 }
 
