@@ -10,7 +10,7 @@ use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::view::NoFrustumCulling;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy::window::{WindowResized, WindowResolution};
-use vello::{RenderParams, Scene};
+use vello::{AaSupport, RenderParams, Renderer, RendererOptions, Scene};
 
 use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
 use super::prepare::PreparedAffine;
@@ -57,14 +57,27 @@ pub fn render_scene(
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
-    vello_renderer: Option<NonSendMut<BevyVelloRenderer>>,
+    mut vello_renderer: Local<Option<BevyVelloRenderer>>,
     mut velottie_renderer: ResMut<LottieRenderer>,
 ) {
-    let mut renderer = if let Some(renderer) = vello_renderer {
-        renderer
-    } else {
-        return;
-    };
+    let renderer = vello_renderer.get_or_insert_with(|| {
+        BevyVelloRenderer(
+            Renderer::new(
+                device.wgpu_device(),
+                RendererOptions {
+                    surface_format: None,
+                    use_cpu: false,
+                    antialiasing_support: AaSupport {
+                        area: true,
+                        msaa8: false,
+                        msaa16: false,
+                    },
+                    num_init_threads: None,
+                },
+            )
+            .unwrap(),
+        )
+    });
 
     if let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
