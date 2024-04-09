@@ -9,7 +9,6 @@ use bevy::render::render_resource::{
 use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::view::NoFrustumCulling;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
-use bevy::transform::commands;
 use bevy::window::{WindowResized, WindowResolution};
 use vello::{AaSupport, RenderParams, Renderer, RendererOptions, Scene};
 
@@ -61,8 +60,8 @@ pub fn render_scene(
     mut vello_renderer: Local<Option<BevyVelloRenderer>>,
     mut velottie_renderer: ResMut<LottieRenderer>,
 ) {
-    let Some(renderer) = vello_renderer.as_mut() else {
-        vello_renderer.replace(BevyVelloRenderer(
+    let renderer = vello_renderer.get_or_insert_with(|| {
+        BevyVelloRenderer(
             Renderer::new(
                 device.wgpu_device(),
                 RendererOptions {
@@ -77,9 +76,8 @@ pub fn render_scene(
                 },
             )
             .unwrap(),
-        ));
-        return;
-    };
+        )
+    });
 
     if let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() {
         let gpu_image = gpu_images.get(render_target_image).unwrap();
