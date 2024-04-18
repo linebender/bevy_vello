@@ -1,6 +1,7 @@
 use bevy::asset::{embedded_asset, AssetMetaCheck};
 use bevy::prelude::*;
 use bevy_vello::prelude::*;
+use bevy_vello::text::VelloTextAlignment;
 use bevy_vello::vello::peniko;
 
 fn main() {
@@ -26,10 +27,11 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
     commands.spawn(VelloTextBundle {
         font: asset_server.load("embedded://text/assets/Rubik-Medium.vttf"),
         text: VelloText {
-            content: "WHello vello\nwith multi-line support".to_string(),
+            content: "This text is centered\non x and y axes".to_string(),
             size: 50.0,
             brush: None,
         },
+        alignment: VelloTextAlignment::Center,
         transform: Transform::from_xyz(100.0, 100.0, 0.0),
         debug_visualizations: DebugVisualizations::Visible,
         ..default()
@@ -57,6 +59,7 @@ fn setup_screenspace_text(mut commands: Commands, asset_server: ResMut<AssetServ
             size: 15.0,
             brush: Some(peniko::Brush::Solid(peniko::Color::RED)),
         },
+        alignment: bevy_vello::text::VelloTextAlignment::TopLeft,
         transform: Transform::from_xyz(100.0, 85.0, 0.0),
         coordinate_space: CoordinateSpace::ScreenSpace,
         debug_visualizations: DebugVisualizations::Visible,

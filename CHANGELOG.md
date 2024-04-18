@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.2.0 (2024-04-17)
+
+### added
+
+- Added the `VelloTextAlignment` component to `VelloTextBundle`, which now helps control the alignment of text.
+
 ## 0.1.2 (2024-04-08)
 
 ### fixed

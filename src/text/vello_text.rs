@@ -2,6 +2,32 @@ use crate::VelloFont;
 use bevy::prelude::*;
 use vello::peniko::Brush;
 
+/// Describes how to position text on the Y-axis
+#[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
+pub enum VelloTextAlignment {
+    /// Bounds start from the render position and advance up and to the right.
+    #[default]
+    BottomLeft,
+    /// Bounds start from the render position and advance up.
+    Bottom,
+    /// Bounds start from the render position and advance up and to the left.
+    BottomRight,
+
+    /// Bounds start from the render position and advance right.
+    Left,
+    /// Bounds start from the render position and advance equally on both axes.
+    Center,
+    /// Bounds start from the render position and advance left.
+    Right,
+
+    /// Bounds start from the render position and advance down and to the right.
+    TopLeft,
+    /// Bounds start from the render position and advance down.
+    Top,
+    /// Bounds start from the render position and advance down and to the left.
+    TopRight,
+}
+
 #[derive(Component, Default, Clone)]
 pub struct VelloText {
     pub content: String,

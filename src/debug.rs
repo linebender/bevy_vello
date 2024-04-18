@@ -1,5 +1,5 @@
 //! Logic for rendering debug visualizations
-
+use crate::text::VelloTextAlignment;
 use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText, ZFunction};
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -81,6 +81,7 @@ fn render_vellotext_debug(
         (
             &Handle<VelloFont>,
             &VelloText,
+            &VelloTextAlignment,
             &GlobalTransform,
             &CoordinateSpace,
             &DebugVisualizations,
@@ -96,29 +97,96 @@ fn render_vellotext_debug(
     };
 
     // Show world-space vectors
-    for (font, text, gtransform, space, _) in query_world
+    for (font, text, alignment, gtransform, space, _) in query_world
         .iter()
-        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(font) = fonts.get(font) {
             let rect = text.bb_in_world_space(font, gtransform);
-            let origin = gtransform.translation().xy();
+            let mut origin = gtransform.translation().xy();
             match space {
                 CoordinateSpace::WorldSpace => {
-                    draw_text_debug(&mut gizmos, projection, origin, rect.size());
+                    draw_origin(&mut gizmos, projection, origin);
+                    let size = rect.size();
+                    let (width, height) = size.into();
+                    match alignment {
+                        VelloTextAlignment::BottomLeft => {}
+                        VelloTextAlignment::Bottom => {
+                            origin.x += -width / 2.0;
+                        }
+                        VelloTextAlignment::BottomRight => {
+                            origin.x += -width;
+                        }
+                        VelloTextAlignment::TopLeft => {
+                            origin.y += -height;
+                        }
+                        VelloTextAlignment::Left => {
+                            origin.y += -height / 2.0;
+                        }
+                        VelloTextAlignment::Top => {
+                            origin.x += -width / 2.0;
+                            origin.y += -height;
+                        }
+                        VelloTextAlignment::Center => {
+                            origin.x += -width / 2.0;
+                            origin.y += -height / 2.0;
+                        }
+                        VelloTextAlignment::TopRight => {
+                            origin.x += -width;
+                            origin.y += -height;
+                        }
+                        VelloTextAlignment::Right => {
+                            origin.x += -width;
+                            origin.y += -height / 2.0;
+                        }
+                    };
+                    draw_rect(&mut gizmos, origin, rect.size());
                 }
                 CoordinateSpace::ScreenSpace => {
                     let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, view) else {
                         continue;
                     };
-                    let Some(origin) =
+                    let Some(mut origin) =
                         camera.viewport_to_world_2d(view, gtransform.translation().xy())
                     else {
                         continue;
                     };
-                    draw_text_debug(
+                    draw_origin(&mut gizmos, projection, origin);
+                    let size = rect.size();
+                    let (width, height) = size.into();
+                    match alignment {
+                        VelloTextAlignment::BottomLeft => {}
+                        VelloTextAlignment::Bottom => {
+                            origin.x += -width / 2.0;
+                        }
+                        VelloTextAlignment::BottomRight => {
+                            origin.x += -width;
+                        }
+                        VelloTextAlignment::TopLeft => {
+                            origin.y += height;
+                        }
+                        VelloTextAlignment::Left => {
+                            origin.y += height / 2.0;
+                        }
+                        VelloTextAlignment::Top => {
+                            origin.x += -width / 2.0;
+                            origin.y += height;
+                        }
+                        VelloTextAlignment::Center => {
+                            origin.x += -width / 2.0;
+                            origin.y += height / 2.0;
+                        }
+                        VelloTextAlignment::TopRight => {
+                            origin.x += -width;
+                            origin.y += height;
+                        }
+                        VelloTextAlignment::Right => {
+                            origin.x += -width;
+                            origin.y += height / 2.0;
+                        }
+                    };
+                    draw_rect(
                         &mut gizmos,
-                        projection,
                         origin,
                         rect.size() * Vec2::new(1.0, -1.0), // Flip Y
                     );
@@ -129,14 +197,7 @@ fn render_vellotext_debug(
 }
 
 /// A helper method to draw text gizmos.
-fn draw_text_debug(
-    gizmos: &mut Gizmos,
-    projection: &OrthographicProjection,
-    origin: Vec2,
-    size: Vec2,
-) {
-    gizmos.rect_2d(origin + size / 2.0, 0.0, size, Color::WHITE);
-
+fn draw_origin(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin: Vec2) {
     let from = origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
     let to = origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 
@@ -146,6 +207,11 @@ fn draw_text_debug(
     let to = origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
 
     gizmos.line_2d(from, to, Color::RED);
+}
+
+/// A helper method to draw a rectangle
+fn draw_rect(gizmos: &mut Gizmos, origin: Vec2, size: Vec2) {
+    gizmos.rect_2d(origin + size / 2.0, 0.0, size, Color::WHITE);
 }
 
 /// A helper method to draw asset gizmos.

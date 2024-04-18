@@ -155,9 +155,14 @@ pub fn render_scene(
                 RenderItem::Scene(ExtractedRenderScene { scene: scn, .. }) => {
                     scene.append(scn, Some(affine));
                 }
-                RenderItem::Text(ExtractedRenderText { font, text, .. }) => {
+                RenderItem::Text(ExtractedRenderText {
+                    font,
+                    text,
+                    alignment,
+                    ..
+                }) => {
                     if let Some(font) = font_render_assets.get_mut(font) {
-                        font.render(&mut scene, affine, text);
+                        font.render(&mut scene, affine, text, *alignment);
                     }
                 }
             }
