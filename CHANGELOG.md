@@ -16,6 +16,10 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - Added the `VelloTextAlignment` component to `VelloTextBundle`, which now helps control the alignment of text.
 
+### fixed
+
+- Text bounding boxes are now tighter as they are capped by the baseline.
+
 ## 0.1.2 (2024-04-08)
 
 ### fixed
