@@ -42,7 +42,7 @@ Visual inconsistencies discovered should be reported to the respective backend.
 
 |bevy|bevy_vello|
 |---|---|
-|0.13|0.1, main|
+|0.13|0.1-0.2, main|
 |< 0.13| unsupported |
 
 ## Features
