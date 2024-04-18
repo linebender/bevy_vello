@@ -1,4 +1,5 @@
 use super::z_function::ZFunction;
+use crate::text::VelloTextAlignment;
 use crate::theme::Theme;
 use crate::{
     CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloFont, VelloScene, VelloText,
@@ -108,6 +109,7 @@ pub fn scene_instances(
 pub struct ExtractedRenderText {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
+    pub alignment: VelloTextAlignment,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
 }
@@ -116,6 +118,7 @@ impl ExtractComponent for ExtractedRenderText {
     type QueryData = (
         &'static Handle<VelloFont>,
         &'static VelloText,
+        &'static VelloTextAlignment,
         &'static GlobalTransform,
         &'static CoordinateSpace,
     );
@@ -125,7 +128,7 @@ impl ExtractComponent for ExtractedRenderText {
     type Out = Self;
 
     fn extract_component(
-        (vello_font_handle, text, transform, render_mode): bevy::ecs::query::QueryItem<
+        (vello_font_handle, text, alignment, transform, render_mode): bevy::ecs::query::QueryItem<
             '_,
             Self::QueryData,
         >,
@@ -133,6 +136,7 @@ impl ExtractComponent for ExtractedRenderText {
         Some(Self {
             font: vello_font_handle.clone(),
             text: text.clone(),
+            alignment: *alignment,
             transform: *transform,
             render_mode: *render_mode,
         })

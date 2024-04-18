@@ -7,6 +7,7 @@ use bevy::prelude::*;
 
 mod plugin;
 pub use plugin::VelloPlugin;
+use text::VelloTextAlignment;
 
 pub mod assets;
 pub mod debug;
@@ -90,6 +91,7 @@ pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     /// Text to render
     pub text: VelloText,
+    pub alignment: VelloTextAlignment,
     /// The coordinate space in which this text should be rendered.
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this text

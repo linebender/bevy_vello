@@ -1,4 +1,5 @@
 use super::vello_text::VelloText;
+use super::VelloTextAlignment;
 use bevy::prelude::*;
 use bevy::reflect::TypePath;
 use bevy::render::render_asset::RenderAsset;
@@ -53,7 +54,6 @@ impl VelloFont {
         let mut pen_x = 0.0;
         let mut pen_y: f32 = 0.0;
         let mut width: f32 = 0.0;
-        let mut height: f32 = line_height;
         for ch in text.content.chars() {
             if ch == '\n' {
                 pen_y += line_height;
@@ -66,11 +66,17 @@ impl VelloFont {
             pen_x += advance;
             width = width.max(pen_x);
         }
-        height += pen_y;
+        let height: f32 = metrics.cap_height.unwrap_or(line_height) + pen_y;
         Vec2::new(width, height)
     }
 
-    pub(crate) fn render(&self, scene: &mut Scene, transform: Affine, text: &VelloText) {
+    pub(crate) fn render(
+        &self,
+        scene: &mut Scene,
+        mut transform: Affine,
+        text: &VelloText,
+        alignment: VelloTextAlignment,
+    ) {
         let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
 
         let font_size = vello::skrifa::instance::Size::new(text.size);
@@ -83,7 +89,8 @@ impl VelloFont {
 
         let mut pen_x = 0f32;
         let mut pen_y = 0f32;
-        let mut glyphs: Vec<Glyph> = text
+        let mut width = 0f32;
+        let glyphs: Vec<Glyph> = text
             .content
             .chars()
             .filter_map(|ch| {
@@ -96,6 +103,7 @@ impl VelloFont {
                 let advance = glyph_metrics.advance_width(gid).unwrap_or_default();
                 let x = pen_x;
                 pen_x += advance;
+                width = width.max(pen_x);
                 Some(Glyph {
                     id: gid.to_u16() as u32,
                     x,
@@ -103,10 +111,42 @@ impl VelloFont {
                 })
             })
             .collect();
-        // Push text up
-        glyphs.iter_mut().for_each(|g| {
-            g.y -= pen_y;
-        });
+        // Push up from pen_y
+        transform *= vello::kurbo::Affine::translate((0.0, -pen_y as f64));
+
+        // Alignment settings
+        let width = width as f64;
+        let height = (metrics.cap_height.unwrap_or(line_height) + pen_y) as f64;
+        match alignment {
+            VelloTextAlignment::TopLeft => {
+                transform *= vello::kurbo::Affine::translate((0.0, height))
+            }
+            VelloTextAlignment::Left => {
+                transform *= vello::kurbo::Affine::translate((0.0, height / 2.0))
+            }
+            VelloTextAlignment::BottomLeft => {
+                transform *= vello::kurbo::Affine::translate((0.0, 0.0))
+            }
+            VelloTextAlignment::Top => {
+                transform *= vello::kurbo::Affine::translate((-width / 2.0, height))
+            }
+            VelloTextAlignment::Center => {
+                transform *= vello::kurbo::Affine::translate((-width / 2.0, height / 2.0))
+            }
+            VelloTextAlignment::Bottom => {
+                transform *= vello::kurbo::Affine::translate((-width / 2.0, 0.0))
+            }
+            VelloTextAlignment::TopRight => {
+                transform *= vello::kurbo::Affine::translate((-width, height))
+            }
+            VelloTextAlignment::Right => {
+                transform *= vello::kurbo::Affine::translate((-width, height / 2.0))
+            }
+            VelloTextAlignment::BottomRight => {
+                transform *= vello::kurbo::Affine::translate((-width, 0.0))
+            }
+        }
+
         scene
             .draw_glyphs(&self.font)
             .font_size(text.size)
