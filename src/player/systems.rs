@@ -60,6 +60,12 @@ pub fn advance_playheads(
         };
 
         let options = options.cloned().unwrap_or_default();
+
+        // Keep playhead bounded
+        let start_frame = options.segments.start.max(composition.frames.start);
+        let end_frame = options.segments.end.min(composition.frames.end).prev();
+        playhead.frame = playhead.frame.clamp(start_frame, end_frame);
+
         if let Some(mut player) = player {
             if player.stopped {
                 continue;
@@ -301,15 +307,10 @@ pub fn run_transitions(
 
 pub fn transition_state(
     mut commands: Commands,
-    mut query_sm: Query<(
-        Entity,
-        &mut LottiePlayer,
-        &mut Playhead,
-        &mut Handle<VelloAsset>,
-    )>,
+    mut query_sm: Query<(Entity, &mut LottiePlayer, &mut Playhead)>,
     assets: Res<Assets<VelloAsset>>,
 ) {
-    for (entity, mut player, mut playhead, mut cur_handle) in query_sm.iter_mut() {
+    for (entity, mut player, mut playhead) in query_sm.iter_mut() {
         let Some(next_state) = player.next_state else {
             continue;
         };
@@ -331,42 +332,17 @@ pub fn transition_state(
             .cloned()
             .unwrap_or_default();
 
-        // Swap assets
+        // Swap asset
         if let Some(target_handle) = target_state.asset.as_ref() {
-            let Some(asset) = assets.get(target_handle.id()) else {
-                warn!("Asset not ready for transition, waiting...");
-                continue;
-            };
-            *cur_handle = target_handle.clone();
-            // Keep playhead bounded
-            if let VelloAsset {
-                data: VectorFile::Lottie { composition },
-                ..
-            } = asset
-            {
-                let start_frame = target_options.segments.start.max(composition.frames.start);
-                let end_frame = target_options
-                    .segments
-                    .end
-                    .min(composition.frames.end)
-                    .prev();
-                playhead.frame = playhead.frame.clamp(start_frame, end_frame);
-            }
-        }
-        // Swap theme
-        if let Some(theme) = target_state.theme.as_ref() {
-            commands.entity(entity).insert(theme.clone());
+            commands.entity(entity).insert(target_handle.clone());
         }
         // Reset playheads if requested
         if player.state().reset_playhead_on_exit || target_state.reset_playhead_on_start {
-            // SAFETY: Asset check happens earlier
-            let asset = assets
-                .get(target_state.asset.as_ref().unwrap_or(&cur_handle))
-                .unwrap();
-            if let VelloAsset {
+            let asset = target_state.asset.as_ref();
+            if let Some(VelloAsset {
                 data: VectorFile::Lottie { composition },
                 ..
-            } = asset
+            }) = asset.and_then(|a| assets.get(a))
             {
                 let frame = match target_options.direction {
                     PlaybackDirection::Normal => {
@@ -382,6 +358,12 @@ pub fn transition_state(
                 playhead.frame = frame;
             }
         }
+
+        // Swap theme
+        if let Some(theme) = target_state.theme.as_ref() {
+            commands.entity(entity).insert(theme.clone());
+        }
+
         // Swap playback options
         if target_state.options.is_some() {
             commands.entity(entity).insert(target_options);

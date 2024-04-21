@@ -10,9 +10,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.2.1 (2024-04-21)
+
 ### fixed
 
 - `VelloTextAlignment` is now in the `bevy_vello::prelude`.
+- The playhead now will now always be bounded
+- A rare issue where, if an asset was not available, parts of a state would not transition properly.
 
 ## 0.2.0 (2024-04-17)
 
