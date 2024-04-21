@@ -10,11 +10,16 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### fixed
+
+- `VelloTextAlignment` is now in the `bevy_vello::prelude`.
+
 ## 0.2.0 (2024-04-17)
 
 ### added
 
 - Added the `VelloTextAlignment` component to `VelloTextBundle`, which now helps control the alignment of text.
+- Added the `VelloTextAlignment` to the `bevy_vello::prelude`.
 
 ### fixed
 
@@ -35,4 +40,3 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ## 0.1.0 (2024-03-26)
 
 - Initial release
-

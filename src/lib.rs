@@ -30,7 +30,7 @@ pub mod prelude {
     pub use crate::player::{LottiePlayer, PlayerState, PlayerTransition};
     pub use crate::plugin::VelloPlugin;
     pub use crate::render::{VelloCanvasMaterial, ZFunction};
-    pub use crate::text::{VelloFont, VelloText};
+    pub use crate::text::{VelloFont, VelloText, VelloTextAlignment};
     pub use crate::theme::Theme;
     pub use crate::{
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
