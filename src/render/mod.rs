@@ -6,9 +6,7 @@ use bevy::render::render_resource::{
     AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
     VertexBufferLayout, VertexFormat, VertexStepMode,
 };
-use bevy::render::renderer::RenderDevice;
 use bevy::sprite::{Material2d, Material2dKey};
-use vello::{Renderer, RendererOptions};
 
 mod extract;
 mod plugin;
@@ -59,35 +57,15 @@ impl Material2d for VelloCanvasMaterial {
     }
 }
 
-pub struct BevyVelloRenderer(Renderer);
+#[derive(Deref, DerefMut)]
+pub struct VelloRenderer(vello::Renderer);
 
-impl FromWorld for BevyVelloRenderer {
-    fn from_world(world: &mut World) -> Self {
-        let device = world.get_resource::<RenderDevice>().unwrap();
-        BevyVelloRenderer(
-            Renderer::new(
-                device.wgpu_device(),
-                RendererOptions {
-                    surface_format: None,
-                    use_cpu: false,
-                    antialiasing_support: vello::AaSupport {
-                        area: true,
-                        msaa8: false,
-                        msaa16: false,
-                    },
-                    num_init_threads: None,
-                },
-            )
-            .expect("no gpu device"),
-        )
-    }
-}
+#[derive(Resource, Deref, DerefMut)]
+pub struct VelatoRenderer(velato::Renderer);
 
-#[derive(Resource)]
-pub struct LottieRenderer(velato::Renderer);
-
-impl Default for LottieRenderer {
+impl Default for VelatoRenderer {
     fn default() -> Self {
+        // TODO: Velato should have a ::default()
         Self(velato::Renderer::new())
     }
 }

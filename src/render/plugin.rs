@@ -1,5 +1,5 @@
 use super::extract::{self, ExtractedPixelScale, SSRenderTarget};
-use super::{prepare, systems, LottieRenderer};
+use super::{prepare, systems, VelatoRenderer};
 use crate::render::extract::ExtractedRenderText;
 use crate::render::SSRT_SHADER_HANDLE;
 use crate::{VelloCanvasMaterial, VelloFont};
@@ -27,7 +27,7 @@ impl Plugin for VelloRenderPlugin {
         };
 
         render_app
-            .insert_resource(LottieRenderer::default())
+            .insert_resource(VelatoRenderer::default())
             .insert_resource(ExtractedPixelScale(1.0))
             .add_systems(
                 ExtractSchedule,

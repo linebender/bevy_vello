@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.2.2 (2024-04-22)
+
+### fixed
+
+- Now when a `VelloScene` and `VelloText` have the same Z-Index, text will be rendered above the scene.
+
 ## 0.2.1 (2024-04-21)
 
 ### fixed
