@@ -23,7 +23,7 @@ pub fn controls_ui(
 
     let asset = assets.get(handle.id()).unwrap();
     let metadata = asset.metadata().unwrap();
-    let VectorFile::Lottie { composition } = &asset.data else {
+    let VectorFile::Lottie(composition) = &asset.data else {
         return;
     };
 
