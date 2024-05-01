@@ -2,7 +2,8 @@ use super::z_function::ZFunction;
 use crate::text::VelloTextAlignment;
 use crate::theme::Theme;
 use crate::{
-    CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloFont, VelloScene, VelloText,
+    CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloAssetAlignment, VelloFont,
+    VelloScene, VelloText,
 };
 use bevy::prelude::*;
 use bevy::render::extract_component::ExtractComponent;
@@ -12,6 +13,7 @@ use bevy::window::PrimaryWindow;
 #[derive(Component, Clone)]
 pub struct ExtractedRenderAsset {
     pub asset: VelloAsset,
+    pub alignment: VelloAssetAlignment,
     pub transform: GlobalTransform,
     pub z_index: f32,
     pub theme: Option<Theme>,
@@ -26,6 +28,7 @@ pub fn asset_instances(
     query_vectors: Extract<
         Query<(
             &Handle<VelloAsset>,
+            &VelloAssetAlignment,
             &CoordinateSpace,
             &ZFunction,
             &GlobalTransform,
@@ -41,6 +44,7 @@ pub fn asset_instances(
 ) {
     for (
         vello_vector_handle,
+        alignment,
         coord_space,
         z_function,
         transform,
@@ -58,10 +62,41 @@ pub fn asset_instances(
                     crate::VectorFile::Svg { .. } => 0.0,
                     crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
                 };
+
+                // let bb = asset.bb_in_world_space(transform);
+                // let width = bb.width();
+                // let height = bb.height();
+                let width = asset.width;
+                let height = asset.height;
+
+                let (scale, rotation, _translation) = transform.to_scale_rotation_translation();
+
+                let adjustment = match alignment {
+                    VelloAssetAlignment::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+                    VelloAssetAlignment::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+                    VelloAssetAlignment::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+                    VelloAssetAlignment::Top => Vec3::new(0.0, -height / 2.0, 0.0),
+                    VelloAssetAlignment::Center => Vec3::new(0.0, 0.0, 0.0),
+                    VelloAssetAlignment::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
+                    VelloAssetAlignment::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+                    VelloAssetAlignment::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+                    VelloAssetAlignment::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+                };
+
+                let new_translation: Vec3 =
+                    (transform.compute_matrix() * adjustment.extend(1.0)).xyz();
+
+                let transform = Transform::from_scale(scale)
+                    .with_rotation(rotation)
+                    .with_translation(new_translation);
+
+                let transform = GlobalTransform::from(transform);
+
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
-                    transform: *transform,
-                    z_index: z_function.compute(asset, transform),
+                    transform,
+                    alignment: *alignment,
+                    z_index: z_function.compute(asset, &transform),
                     theme: theme.cloned(),
                     render_mode: *coord_space,
                     playhead,

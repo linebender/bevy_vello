@@ -1,7 +1,7 @@
 //! Parsing, loading, and asset type definitions.
 
 mod asset;
-pub use asset::{VectorFile, VelloAsset};
+pub use asset::{VectorFile, VelloAsset, VelloAssetAlignment};
 
 mod parser;
 pub use parser::{

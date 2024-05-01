@@ -1,6 +1,6 @@
 use bevy::asset::{embedded_asset, AssetMetaCheck};
 use bevy::prelude::*;
-use bevy_vello::prelude::*;
+use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
@@ -53,6 +53,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
         commands
             .spawn(VelloAssetBundle {
                 vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+                alignment: VelloAssetAlignment::Bottom,
                 transform: Transform::from_scale(Vec3::splat(SIZE))
                     .with_translation(Vec3::splat(-i as f32 * SPACING)),
                 debug_visualizations: DebugVisualizations::Visible,

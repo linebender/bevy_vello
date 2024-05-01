@@ -59,3 +59,29 @@ impl VelloAsset {
         }
     }
 }
+
+/// Describes how to position the asset from the origin
+#[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
+pub enum VelloAssetAlignment {
+    /// Bounds start from the render position and advance up and to the right.
+    BottomLeft,
+    /// Bounds start from the render position and advance up.
+    Bottom,
+    /// Bounds start from the render position and advance up and to the left.
+    BottomRight,
+
+    /// Bounds start from the render position and advance right.
+    Left,
+    /// Bounds start from the render position and advance equally on both axes.
+    #[default]
+    Center,
+    /// Bounds start from the render position and advance left.
+    Right,
+
+    /// Bounds start from the render position and advance down and to the right.
+    TopLeft,
+    /// Bounds start from the render position and advance down.
+    Top,
+    /// Bounds start from the render position and advance down and to the left.
+    TopRight,
+}

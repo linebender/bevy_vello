@@ -1,5 +1,5 @@
 use crate::render::extract::ExtractedRenderScene;
-use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
+use crate::{CoordinateSpace, VectorFile, VelloAssetAlignment, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;
 use bevy::render::render_asset::{RenderAssetUsages, RenderAssets};
@@ -50,9 +50,9 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 #[allow(clippy::complexity)]
 pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
-    render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
-    query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
+    query_render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
     query_render_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
+    query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
@@ -84,7 +84,7 @@ pub fn render_scene(
             Text(&'a ExtractedRenderText),
         }
         let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
-            render_vectors
+            query_render_vectors
                 .iter()
                 .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Asset(b))))
                 .collect();
@@ -121,6 +121,7 @@ pub fn render_scene(
             match render_item {
                 RenderItem::Asset(ExtractedRenderAsset {
                     asset,
+                    alignment,
                     theme,
                     alpha,
                     playhead,

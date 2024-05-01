@@ -7,7 +7,6 @@ use bevy::prelude::*;
 
 mod plugin;
 pub use plugin::VelloPlugin;
-use text::VelloTextAlignment;
 
 pub mod assets;
 pub mod debug;
@@ -21,20 +20,20 @@ pub mod theme;
 pub use {velato, vello, vello_svg};
 
 pub mod prelude {
-    pub use crate::assets::{VectorFile, VelloAsset};
+    pub use crate::assets::{VectorFile, VelloAsset, VelloAssetAlignment};
     pub use crate::debug::DebugVisualizations;
     pub use crate::playback::{
         PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
         PlaybackPlayMode, Playhead,
     };
     pub use crate::player::{LottiePlayer, PlayerState, PlayerTransition};
-    pub use crate::plugin::VelloPlugin;
     pub use crate::render::{VelloCanvasMaterial, ZFunction};
     pub use crate::text::{VelloFont, VelloText, VelloTextAlignment};
     pub use crate::theme::Theme;
     pub use crate::{
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
+    pub use {vello::kurbo, vello::peniko, vello::skrifa, vello::Scene};
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
@@ -49,6 +48,8 @@ pub enum CoordinateSpace {
 pub struct VelloAssetBundle {
     /// Asset data to render
     pub vector: Handle<VelloAsset>,
+    /// How the bounding asset is aligned, respective to the transform.
+    pub alignment: VelloAssetAlignment,
     /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this vector
@@ -91,6 +92,7 @@ pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     /// Text to render
     pub text: VelloText,
+    /// How the bounding text is aligned, respective to the transform.
     pub alignment: VelloTextAlignment,
     /// The coordinate space in which this text should be rendered.
     pub coordinate_space: CoordinateSpace,
