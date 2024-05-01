@@ -126,10 +126,10 @@ pub fn render_scene(
                     playhead,
                     ..
                 }) => match &asset.data {
-                    VectorFile::Svg { scene, .. } => {
+                    VectorFile::Svg(scene) => {
                         scene_buffer.append(scene, Some(affine));
                     }
-                    VectorFile::Lottie { composition } => {
+                    VectorFile::Lottie(composition) => {
                         debug!("playhead: {playhead}");
                         velato_renderer.render(
                             {
@@ -168,8 +168,8 @@ pub fn render_scene(
             .iter()
             .filter(|(_, _, (_, item))| match item {
                 RenderItem::Asset(a) => match &a.asset.data {
-                    VectorFile::Svg { scene: svg, .. } => svg.encoding().is_empty(),
-                    VectorFile::Lottie { composition } => composition.layers.is_empty(),
+                    VectorFile::Svg(scene) => scene.encoding().is_empty(),
+                    VectorFile::Lottie(composition) => composition.layers.is_empty(),
                 },
                 RenderItem::Scene(s) => s.scene.encoding().is_empty(),
                 RenderItem::Text(t) => t.text.content.is_empty(),

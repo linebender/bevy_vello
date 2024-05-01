@@ -2,18 +2,11 @@ use super::Metadata;
 use bevy::prelude::*;
 use bevy::reflect::TypePath;
 use std::sync::Arc;
-use vello::Scene;
 
 #[derive(Clone)]
 pub enum VectorFile {
-    Svg {
-        /// A static scene
-        scene: Arc<Scene>,
-    },
-    Lottie {
-        /// The original image encoding
-        composition: Arc<velato::Composition>,
-    },
+    Svg(Arc<vello::Scene>),
+    Lottie(Arc<velato::Composition>),
 }
 
 #[derive(Asset, TypePath, Clone)]
@@ -57,7 +50,7 @@ impl VelloAsset {
     /// Gets the lottie metadata (if vector is a lottie), an object used for
     /// inspecting this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
-        if let VectorFile::Lottie { composition, .. } = &self.data {
+        if let VectorFile::Lottie(composition) = &self.data {
             Some(Metadata {
                 composition: composition.clone(),
             })
