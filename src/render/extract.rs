@@ -15,7 +15,7 @@ pub struct ExtractedRenderAsset {
     pub asset: VelloAsset,
     pub alignment: VelloAssetAlignment,
     pub transform: GlobalTransform,
-    pub z_index: f32,
+    pub z_function: ZFunction,
     pub theme: Option<Theme>,
     pub render_mode: CoordinateSpace,
     pub playhead: f64,
@@ -62,12 +62,11 @@ pub fn asset_instances(
                     crate::VectorFile::Svg { .. } => 0.0,
                     crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
                 };
-                let transform = alignment.compute(asset, transform);
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
-                    transform,
+                    transform: *transform,
                     alignment: *alignment,
-                    z_index: z_function.compute(asset, &transform),
+                    z_function: *z_function,
                     theme: theme.cloned(),
                     render_mode: *coord_space,
                     playhead,

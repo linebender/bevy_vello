@@ -30,7 +30,9 @@ pub fn prepare_vector_affines(
         ])
         .transpose();
 
-        let world_transform = render_vector.transform;
+        let world_transform = render_vector
+            .alignment
+            .compute(&render_vector.asset, &render_vector.transform);
 
         let local_center_matrix = render_vector
             .asset

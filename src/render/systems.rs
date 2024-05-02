@@ -85,7 +85,13 @@ pub fn render_scene(
         let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
             query_render_vectors
                 .iter()
-                .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Asset(b))))
+                .map(|(a, b)| {
+                    (
+                        b.z_function.compute(&b.asset, &b.transform),
+                        b.render_mode,
+                        (a, RenderItem::Asset(b)),
+                    )
+                })
                 .collect();
         render_queue.extend(query_render_scenes.iter().map(|(a, b)| {
             (
