@@ -18,7 +18,7 @@ pub fn spawn_playheads(
 ) {
     for (entity, handle, options) in query.iter() {
         if let Some(asset) = assets.get(handle) {
-            let VectorFile::Lottie { composition } = &asset.data else {
+            let VectorFile::Lottie(composition) = &asset.data else {
                 commands.entity(entity).insert(Playhead::new(0.0));
                 return;
             };
@@ -52,7 +52,7 @@ pub fn advance_playheads(
     for (asset_handle, mut playhead, player, options) in query.iter_mut() {
         // Get asset
         let Some(VelloAsset {
-            data: VectorFile::Lottie { composition },
+            data: VectorFile::Lottie(composition),
             ..
         }) = assets.get_mut(asset_handle.id())
         else {
@@ -240,7 +240,7 @@ pub fn run_transitions(
                     }
                 }
                 PlayerTransition::OnComplete { state } => {
-                    if let VectorFile::Lottie { composition } = &current_asset.data {
+                    if let VectorFile::Lottie(composition) = &current_asset.data {
                         let loops_needed = match options.looping {
                             PlaybackLoopBehavior::DoNotLoop => Some(0),
                             PlaybackLoopBehavior::Amount(amt) => Some(amt),
@@ -340,7 +340,7 @@ pub fn transition_state(
         if player.state().reset_playhead_on_exit || target_state.reset_playhead_on_start {
             let asset = target_state.asset.as_ref();
             if let Some(VelloAsset {
-                data: VectorFile::Lottie { composition },
+                data: VectorFile::Lottie(composition),
                 ..
             }) = asset.and_then(|a| assets.get(a))
             {

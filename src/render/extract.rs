@@ -2,7 +2,8 @@ use super::z_function::ZFunction;
 use crate::text::VelloTextAlignment;
 use crate::theme::Theme;
 use crate::{
-    CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloFont, VelloScene, VelloText,
+    CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloAssetAlignment, VelloFont,
+    VelloScene, VelloText,
 };
 use bevy::prelude::*;
 use bevy::render::extract_component::ExtractComponent;
@@ -12,8 +13,9 @@ use bevy::window::PrimaryWindow;
 #[derive(Component, Clone)]
 pub struct ExtractedRenderAsset {
     pub asset: VelloAsset,
+    pub alignment: VelloAssetAlignment,
     pub transform: GlobalTransform,
-    pub z_index: f32,
+    pub z_function: ZFunction,
     pub theme: Option<Theme>,
     pub render_mode: CoordinateSpace,
     pub playhead: f64,
@@ -26,6 +28,7 @@ pub fn asset_instances(
     query_vectors: Extract<
         Query<(
             &Handle<VelloAsset>,
+            &VelloAssetAlignment,
             &CoordinateSpace,
             &ZFunction,
             &GlobalTransform,
@@ -41,6 +44,7 @@ pub fn asset_instances(
 ) {
     for (
         vello_vector_handle,
+        alignment,
         coord_space,
         z_function,
         transform,
@@ -61,7 +65,8 @@ pub fn asset_instances(
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
                     transform: *transform,
-                    z_index: z_function.compute(asset, transform),
+                    alignment: *alignment,
+                    z_function: *z_function,
                     theme: theme.cloned(),
                     render_mode: *coord_space,
                     playhead,

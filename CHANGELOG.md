@@ -10,6 +10,20 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.3.0 (2024-05-01)
+
+### added
+
+- `VelloAssetAlignment` was added to the `VelloAssetBundle`.
+
+### changed
+
+- `VectorFile` enum variants were flattened into tuple structs.
+
+### removed
+
+- `bevy_vello::VelloPlugin` was removed from the prelude.
+
 ## 0.2.2 (2024-04-22)
 
 ### fixed

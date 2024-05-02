@@ -8,18 +8,15 @@ use bevy::utils::BoxedFuture;
 #[derive(Default)]
 pub struct VelloAssetLoader;
 
-#[non_exhaustive]
 #[derive(Debug, Error)]
 pub enum VectorLoaderError {
-    #[error("Could not load vector: {0}")]
+    #[error("Could not load file: {0}")]
     Io(#[from] std::io::Error),
-    #[error("Could not parse vector: {0}")]
+    #[error("Could not parse file: {0}")]
     Parse(String),
-    #[error("Could not parse shader: {0}")]
-    FromUtf8(#[from] std::string::FromUtf8Error),
-    #[error("Could not parse shader: {0}")]
+    #[error("Could not parse utf-8: {0}")]
     FromStrUtf8(#[from] std::str::Utf8Error),
-    #[error("Could not parse shader: {0}")]
+    #[error("Could not parse svg: {0}")]
     Usvg(#[from] vello_svg::usvg::Error),
 }
 
@@ -43,7 +40,9 @@ impl AssetLoader for VelloAssetLoader {
             let ext = path
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
-                .ok_or(VectorLoaderError::Parse("Invalid extension".to_string()))?
+                .ok_or(VectorLoaderError::Parse(
+                    "Invalid file extension".to_string(),
+                ))?
                 .to_owned();
 
             debug!("parsing {}...", load_context.path().display());
@@ -66,9 +65,9 @@ impl AssetLoader for VelloAssetLoader {
                     );
                     Ok(vello_vector)
                 }
-                _ => Err(VectorLoaderError::Parse(
-                    "Unknown file extension".to_string(),
-                )),
+                ext => Err(VectorLoaderError::Parse(format!(
+                    "Unknown file extension: {ext}"
+                ))),
             }
         })
     }

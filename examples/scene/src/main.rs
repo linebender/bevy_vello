@@ -1,7 +1,7 @@
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
-use bevy_vello::prelude::*;
 use bevy_vello::vello::{kurbo, peniko};
+use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {
     App::new()

@@ -1,6 +1,6 @@
 use bevy::asset::{embedded_asset, AssetMetaCheck};
 use bevy::prelude::*;
-use bevy_vello::prelude::*;
+use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {
     let mut app = App::new();

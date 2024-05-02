@@ -23,9 +23,7 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
     let height = usvg.size().height();
 
     let vello_vector = VelloAsset {
-        data: VectorFile::Svg {
-            scene: Arc::new(scene),
-        },
+        data: VectorFile::Svg(Arc::new(scene)),
         local_transform_center: {
             let mut transform = Transform::default();
             transform.translation.x = width / 2.0;
@@ -56,9 +54,7 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
     let height = composition.height as f32;
 
     let vello_vector = VelloAsset {
-        data: VectorFile::Lottie {
-            composition: Arc::new(composition),
-        },
+        data: VectorFile::Lottie(Arc::new(composition)),
         local_transform_center: {
             let mut transform = Transform::default();
             transform.translation.x = width / 2.0;

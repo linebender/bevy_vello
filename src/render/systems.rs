@@ -1,3 +1,6 @@
+use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
+use super::prepare::PreparedAffine;
+use super::{VelatoRenderer, VelloRenderer};
 use crate::render::extract::ExtractedRenderScene;
 use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
@@ -11,10 +14,6 @@ use bevy::render::view::NoFrustumCulling;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy::window::{WindowResized, WindowResolution};
 use vello::{AaSupport, RenderParams, Renderer, RendererOptions, Scene};
-
-use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
-use super::prepare::PreparedAffine;
-use super::{VelatoRenderer, VelloRenderer};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -50,9 +49,9 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 #[allow(clippy::complexity)]
 pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
-    render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
-    query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
+    query_render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
     query_render_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
+    query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<Image>>,
     device: Res<RenderDevice>,
@@ -84,9 +83,15 @@ pub fn render_scene(
             Text(&'a ExtractedRenderText),
         }
         let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
-            render_vectors
+            query_render_vectors
                 .iter()
-                .map(|(a, b)| (b.z_index, b.render_mode, (a, RenderItem::Asset(b))))
+                .map(|(a, b)| {
+                    (
+                        b.z_function.compute(&b.asset, &b.transform),
+                        b.render_mode,
+                        (a, RenderItem::Asset(b)),
+                    )
+                })
                 .collect();
         render_queue.extend(query_render_scenes.iter().map(|(a, b)| {
             (
@@ -126,10 +131,10 @@ pub fn render_scene(
                     playhead,
                     ..
                 }) => match &asset.data {
-                    VectorFile::Svg { scene, .. } => {
+                    VectorFile::Svg(scene) => {
                         scene_buffer.append(scene, Some(affine));
                     }
-                    VectorFile::Lottie { composition } => {
+                    VectorFile::Lottie(composition) => {
                         debug!("playhead: {playhead}");
                         velato_renderer.render(
                             {
@@ -168,8 +173,8 @@ pub fn render_scene(
             .iter()
             .filter(|(_, _, (_, item))| match item {
                 RenderItem::Asset(a) => match &a.asset.data {
-                    VectorFile::Svg { scene: svg, .. } => svg.encoding().is_empty(),
-                    VectorFile::Lottie { composition } => composition.layers.is_empty(),
+                    VectorFile::Svg(scene) => scene.encoding().is_empty(),
+                    VectorFile::Lottie(composition) => composition.layers.is_empty(),
                 },
                 RenderItem::Scene(s) => s.scene.encoding().is_empty(),
                 RenderItem::Text(t) => t.text.content.is_empty(),

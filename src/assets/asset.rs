@@ -2,18 +2,11 @@ use super::Metadata;
 use bevy::prelude::*;
 use bevy::reflect::TypePath;
 use std::sync::Arc;
-use vello::Scene;
 
 #[derive(Clone)]
 pub enum VectorFile {
-    Svg {
-        /// A static scene
-        scene: Arc<Scene>,
-    },
-    Lottie {
-        /// The original image encoding
-        composition: Arc<velato::Composition>,
-    },
+    Svg(Arc<vello::Scene>),
+    Lottie(Arc<velato::Composition>),
 }
 
 #[derive(Asset, TypePath, Clone)]
@@ -40,7 +33,7 @@ impl VelloAsset {
         Rect { min, max }
     }
 
-    /// Returns the bounding box in space space
+    /// Returns the bounding box in screen space
     pub fn bb_in_screen_space(
         &self,
         gtransform: &GlobalTransform,
@@ -57,12 +50,67 @@ impl VelloAsset {
     /// Gets the lottie metadata (if vector is a lottie), an object used for
     /// inspecting this vector's layers and shapes
     pub fn metadata(&self) -> Option<Metadata> {
-        if let VectorFile::Lottie { composition, .. } = &self.data {
+        if let VectorFile::Lottie(composition) = &self.data {
             Some(Metadata {
                 composition: composition.clone(),
             })
         } else {
             None
         }
+    }
+}
+
+/// Describes how to position the asset from the origin
+#[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
+pub enum VelloAssetAlignment {
+    /// Bounds start from the render position and advance up and to the right.
+    BottomLeft,
+    /// Bounds start from the render position and advance up.
+    Bottom,
+    /// Bounds start from the render position and advance up and to the left.
+    BottomRight,
+
+    /// Bounds start from the render position and advance right.
+    Left,
+    /// Bounds start from the render position and advance equally on both axes.
+    #[default]
+    Center,
+    /// Bounds start from the render position and advance left.
+    Right,
+
+    /// Bounds start from the render position and advance down and to the right.
+    TopLeft,
+    /// Bounds start from the render position and advance down.
+    Top,
+    /// Bounds start from the render position and advance down and to the left.
+    TopRight,
+}
+
+impl VelloAssetAlignment {
+    pub(crate) fn compute(
+        &self,
+        asset: &VelloAsset,
+        transform: &GlobalTransform,
+    ) -> GlobalTransform {
+        let (width, height) = (asset.width, asset.height);
+        // Apply alignment
+        let (scale, rotation, _translation) = transform.to_scale_rotation_translation();
+        let adjustment = match self {
+            VelloAssetAlignment::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+            VelloAssetAlignment::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+            VelloAssetAlignment::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+            VelloAssetAlignment::Top => Vec3::new(0.0, -height / 2.0, 0.0),
+            VelloAssetAlignment::Center => Vec3::new(0.0, 0.0, 0.0),
+            VelloAssetAlignment::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
+            VelloAssetAlignment::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+            VelloAssetAlignment::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+            VelloAssetAlignment::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+        };
+        let new_translation: Vec3 = (transform.compute_matrix() * adjustment.extend(1.0)).xyz();
+        GlobalTransform::from(
+            Transform::from_scale(scale)
+                .with_rotation(rotation)
+                .with_translation(new_translation),
+        )
     }
 }

@@ -2,7 +2,7 @@ use crate::VelloFont;
 use bevy::prelude::*;
 use vello::peniko::Brush;
 
-/// Describes how to position text on the Y-axis
+/// Describes how to position text from the origin
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
 pub enum VelloTextAlignment {
     /// Bounds start from the render position and advance up and to the right.
