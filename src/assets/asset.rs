@@ -33,7 +33,7 @@ impl VelloAsset {
         Rect { min, max }
     }
 
-    /// Returns the bounding box in space space
+    /// Returns the bounding box in screen space
     pub fn bb_in_screen_space(
         &self,
         gtransform: &GlobalTransform,

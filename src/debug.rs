@@ -61,12 +61,13 @@ fn render_asset_debug(
                     draw_bounding_box(&mut gizmos, z_fn, rect_center, rect.size());
                 }
                 CoordinateSpace::ScreenSpace => {
+                    // Origin
                     let origin = gtransform.translation().xy();
                     let Some(origin) = camera.viewport_to_world_2d(view, origin) else {
                         continue;
                     };
                     draw_origin(&mut gizmos, projection, origin);
-                    // Align BB
+                    // Bounding box
                     let gtransform = &alignment.compute(vector, gtransform);
                     let rect_center = gtransform.translation().xy();
                     let Some(rect_center) = camera.viewport_to_world_2d(view, rect_center) else {
