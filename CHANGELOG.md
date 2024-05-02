@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.3.1 (2024-05-01)
+
+### fixed
+
+- `bevy_vello::prelude::Scene` was removed, since it conflicts with `bevy::prelude::Scene`.
+
 ## 0.3.0 (2024-05-01)
 
 ### added

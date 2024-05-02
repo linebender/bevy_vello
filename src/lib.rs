@@ -33,7 +33,7 @@ pub mod prelude {
     pub use crate::{
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
-    pub use {vello::kurbo, vello::peniko, vello::skrifa, vello::Scene};
+    pub use {vello, vello::kurbo, vello::peniko, vello::skrifa};
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
