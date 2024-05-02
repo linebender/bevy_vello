@@ -256,16 +256,6 @@ fn draw_bounding_box(
         Color::WHITE,
     );
 
-    let from = position + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-    let to = position + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
-
-    gizmos.line_2d(from, to, Color::RED);
-
-    let from = position + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-    let to = position + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
-
-    gizmos.line_2d(from, to, Color::RED);
-
     // TODO: When bevy_gizmos get text, I'd *much rather* just show the Z value with text.
     // See: https://github.com/bevyengine/bevy/issues/9400
     //
