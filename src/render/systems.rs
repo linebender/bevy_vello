@@ -1,3 +1,6 @@
+use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
+use super::prepare::PreparedAffine;
+use super::{VelatoRenderer, VelloRenderer};
 use crate::render::extract::ExtractedRenderScene;
 use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
@@ -11,10 +14,6 @@ use bevy::render::view::NoFrustumCulling;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy::window::{WindowResized, WindowResolution};
 use vello::{AaSupport, RenderParams, Renderer, RendererOptions, Scene};
-
-use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
-use super::prepare::PreparedAffine;
-use super::{VelatoRenderer, VelloRenderer};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
