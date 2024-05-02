@@ -58,7 +58,7 @@ fn render_asset_debug(
                     let gtransform = &alignment.compute(vector, gtransform);
                     let rect_center = gtransform.translation().xy();
                     let rect = vector.bb_in_world_space(gtransform);
-                    draw_bounding_box(&mut gizmos, projection, z_fn, rect_center, rect.size());
+                    draw_bounding_box(&mut gizmos, z_fn, rect_center, rect.size());
                 }
                 CoordinateSpace::ScreenSpace => {
                     let origin = gtransform.translation().xy();
@@ -75,7 +75,7 @@ fn render_asset_debug(
                     let Some(rect) = vector.bb_in_screen_space(gtransform, camera, view) else {
                         continue;
                     };
-                    draw_bounding_box(&mut gizmos, projection, z_fn, rect_center, rect.size());
+                    draw_bounding_box(&mut gizmos, z_fn, rect_center, rect.size());
                 }
             }
         }
@@ -220,13 +220,7 @@ fn draw_origin(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin:
 }
 
 /// A helper method to draw the bounding box
-fn draw_bounding_box(
-    gizmos: &mut Gizmos,
-    projection: &OrthographicProjection,
-    z_fn: &ZFunction,
-    position: Vec2,
-    size: Vec2,
-) {
+fn draw_bounding_box(gizmos: &mut Gizmos, z_fn: &ZFunction, position: Vec2, size: Vec2) {
     let half_width = size.x / 2.0;
     let half_height = size.y / 2.0;
 

@@ -126,7 +126,6 @@ pub fn render_scene(
             match render_item {
                 RenderItem::Asset(ExtractedRenderAsset {
                     asset,
-                    alignment,
                     theme,
                     alpha,
                     playhead,
