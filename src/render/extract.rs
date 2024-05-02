@@ -62,36 +62,7 @@ pub fn asset_instances(
                     crate::VectorFile::Svg { .. } => 0.0,
                     crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
                 };
-
-                // let bb = asset.bb_in_world_space(transform);
-                // let width = bb.width();
-                // let height = bb.height();
-                let width = asset.width;
-                let height = asset.height;
-
-                let (scale, rotation, _translation) = transform.to_scale_rotation_translation();
-
-                let adjustment = match alignment {
-                    VelloAssetAlignment::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-                    VelloAssetAlignment::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-                    VelloAssetAlignment::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-                    VelloAssetAlignment::Top => Vec3::new(0.0, -height / 2.0, 0.0),
-                    VelloAssetAlignment::Center => Vec3::new(0.0, 0.0, 0.0),
-                    VelloAssetAlignment::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
-                    VelloAssetAlignment::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-                    VelloAssetAlignment::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-                    VelloAssetAlignment::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
-                };
-
-                let new_translation: Vec3 =
-                    (transform.compute_matrix() * adjustment.extend(1.0)).xyz();
-
-                let transform = Transform::from_scale(scale)
-                    .with_rotation(rotation)
-                    .with_translation(new_translation);
-
-                let transform = GlobalTransform::from(transform);
-
+                let transform = alignment.compute(asset, transform);
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
                     transform,

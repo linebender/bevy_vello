@@ -1,6 +1,6 @@
 //! Logic for rendering debug visualizations
 use crate::text::VelloTextAlignment;
-use crate::{CoordinateSpace, VelloAsset, VelloFont, VelloText, ZFunction};
+use crate::{CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont, VelloText, ZFunction};
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 
@@ -10,7 +10,7 @@ pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (render_velloasset_debug, render_vellotext_debug));
+        app.add_systems(Update, (render_asset_debug, render_text_debug));
     }
 }
 
@@ -23,10 +23,11 @@ pub enum DebugVisualizations {
 }
 
 /// A system to render debug visualizations for `VelloAsset`.
-fn render_velloasset_debug(
+fn render_asset_debug(
     query_vectors: Query<
         (
             &Handle<VelloAsset>,
+            &VelloAssetAlignment,
             &GlobalTransform,
             &CoordinateSpace,
             &ZFunction,
@@ -43,32 +44,38 @@ fn render_velloasset_debug(
     };
 
     // Show vectors
-    for (vector, gtransform, space, z_fn, _) in query_vectors
+    for (vector, alignment, gtransform, space, z_fn, _) in query_vectors
         .iter()
-        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(vector) = vectors.get(vector) {
             match space {
                 CoordinateSpace::WorldSpace => {
+                    // Origin
+                    let origin = gtransform.translation().xy();
+                    draw_origin(&mut gizmos, projection, origin);
+                    // Bounding box
+                    let gtransform = &alignment.compute(vector, gtransform);
+                    let rect_center = gtransform.translation().xy();
                     let rect = vector.bb_in_world_space(gtransform);
-                    draw_asset_debug(
-                        &mut gizmos,
-                        projection,
-                        z_fn,
-                        gtransform.translation().xy(),
-                        rect.size(),
-                    );
+                    draw_bounding_box(&mut gizmos, projection, z_fn, rect_center, rect.size());
                 }
                 CoordinateSpace::ScreenSpace => {
+                    let origin = gtransform.translation().xy();
+                    let Some(origin) = camera.viewport_to_world_2d(view, origin) else {
+                        continue;
+                    };
+                    draw_origin(&mut gizmos, projection, origin);
+                    // Align BB
+                    let gtransform = &alignment.compute(vector, gtransform);
+                    let rect_center = gtransform.translation().xy();
+                    let Some(rect_center) = camera.viewport_to_world_2d(view, rect_center) else {
+                        continue;
+                    };
                     let Some(rect) = vector.bb_in_screen_space(gtransform, camera, view) else {
                         continue;
                     };
-                    let Some(origin) =
-                        camera.viewport_to_world_2d(view, gtransform.translation().xy())
-                    else {
-                        continue;
-                    };
-                    draw_asset_debug(&mut gizmos, projection, z_fn, origin, rect.size());
+                    draw_bounding_box(&mut gizmos, projection, z_fn, rect_center, rect.size());
                 }
             }
         }
@@ -76,7 +83,7 @@ fn render_velloasset_debug(
 }
 
 /// A system to render debug visualizations for `VelloText`.
-fn render_vellotext_debug(
+fn render_text_debug(
     query_world: Query<
         (
             &Handle<VelloFont>,
@@ -140,7 +147,8 @@ fn render_vellotext_debug(
                             origin.y += -height / 2.0;
                         }
                     };
-                    draw_rect(&mut gizmos, origin, rect.size());
+                    let rect_center = origin + rect.size() / 2.0;
+                    gizmos.rect_2d(rect_center, 0.0, rect.size(), Color::WHITE);
                 }
                 CoordinateSpace::ScreenSpace => {
                     let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, view) else {
@@ -185,10 +193,12 @@ fn render_vellotext_debug(
                             origin.y += height / 2.0;
                         }
                     };
-                    draw_rect(
-                        &mut gizmos,
-                        origin,
-                        rect.size() * Vec2::new(1.0, -1.0), // Flip Y
+                    let rect_center = origin + Vec2::new(rect.width() / 2.0, -rect.height() / 2.0);
+                    gizmos.rect_2d(
+                        rect_center,
+                        0.0,
+                        rect.size() * Vec2::new(1.0, 1.0),
+                        Color::WHITE,
                     );
                 }
             }
@@ -209,17 +219,12 @@ fn draw_origin(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin:
     gizmos.line_2d(from, to, Color::RED);
 }
 
-/// A helper method to draw a rectangle
-fn draw_rect(gizmos: &mut Gizmos, origin: Vec2, size: Vec2) {
-    gizmos.rect_2d(origin + size / 2.0, 0.0, size, Color::WHITE);
-}
-
-/// A helper method to draw asset gizmos.
-fn draw_asset_debug(
+/// A helper method to draw the bounding box
+fn draw_bounding_box(
     gizmos: &mut Gizmos,
     projection: &OrthographicProjection,
     z_fn: &ZFunction,
-    origin: Vec2,
+    position: Vec2,
     size: Vec2,
 ) {
     let half_width = size.x / 2.0;
@@ -228,79 +233,91 @@ fn draw_asset_debug(
     // 4 sides
     // Left
     gizmos.line_2d(
-        origin + Vec2::new(-half_width, -half_height),
-        origin + Vec2::new(-half_width, half_height),
+        position + Vec2::new(-half_width, -half_height),
+        position + Vec2::new(-half_width, half_height),
         Color::WHITE,
     );
     // Top
     gizmos.line_2d(
-        origin + Vec2::new(-half_width, -half_height),
-        origin + Vec2::new(half_width, -half_height),
+        position + Vec2::new(-half_width, -half_height),
+        position + Vec2::new(half_width, -half_height),
         Color::WHITE,
     );
     // Right
     gizmos.line_2d(
-        origin + Vec2::new(half_width, -half_height),
-        origin + Vec2::new(half_width, half_height),
+        position + Vec2::new(half_width, -half_height),
+        position + Vec2::new(half_width, half_height),
         Color::WHITE,
     );
     // Bottom
     gizmos.line_2d(
-        origin + Vec2::new(-half_width, half_height),
-        origin + Vec2::new(half_width, half_height),
+        position + Vec2::new(-half_width, half_height),
+        position + Vec2::new(half_width, half_height),
         Color::WHITE,
     );
 
-    let from = origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-    let to = origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
+    let from = position + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
+    let to = position + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 
     gizmos.line_2d(from, to, Color::RED);
 
-    let from = origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-    let to = origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
+    let from = position + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
+    let to = position + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
 
     gizmos.line_2d(from, to, Color::RED);
 
+    // TODO: When bevy_gizmos get text, I'd *much rather* just show the Z value with text.
+    // See: https://github.com/bevyengine/bevy/issues/9400
+    //
+    // In addition, everything above should change to:
+    // ```rust
+    //  gizmos.rect_2d(
+    //     position,
+    //     0.0,
+    //     size,
+    //     Color::WHITE,
+    // );
+    // ```
     const Z_COLOR: Color = Color::GREEN;
     match z_fn {
         ZFunction::TransformX => gizmos.line_2d(
-            origin + Vec2::new(0.0, -half_height),
-            origin + Vec2::new(0.0, half_height),
+            position + Vec2::new(0.0, -half_height),
+            position + Vec2::new(0.0, half_height),
             Z_COLOR,
         ),
         ZFunction::TransformY => gizmos.line_2d(
-            origin + Vec2::new(-half_width, 0.0),
-            origin + Vec2::new(half_width, 0.0),
+            position + Vec2::new(-half_width, 0.0),
+            position + Vec2::new(half_width, 0.0),
             Z_COLOR,
         ),
         ZFunction::TransformXOffset(offset) => gizmos.line_2d(
-            origin + Vec2::new(*offset, -half_height),
-            origin + Vec2::new(*offset, half_height),
+            position + Vec2::new(*offset, -half_height),
+            position + Vec2::new(*offset, half_height),
             Z_COLOR,
         ),
         ZFunction::TransformYOffset(offset) => gizmos.line_2d(
-            origin + Vec2::new(-half_width, *offset),
-            origin + Vec2::new(half_width, *offset),
+            position + Vec2::new(-half_width, *offset),
+            position + Vec2::new(half_width, *offset),
             Z_COLOR,
         ),
         ZFunction::BbTop => gizmos.line_2d(
-            origin + Vec2::new(-half_width, half_height),
-            origin + Vec2::new(half_width, half_height),
+            position + Vec2::new(-half_width, half_height),
+            position + Vec2::new(half_width, half_height),
             Z_COLOR,
         ),
         ZFunction::BbBottom => gizmos.line_2d(
-            origin + Vec2::new(-half_width, -half_height),
-            origin + Vec2::new(half_width, -half_height),
+            position + Vec2::new(-half_width, -half_height),
+            position + Vec2::new(half_width, -half_height),
             Z_COLOR,
         ),
         ZFunction::BbLeft => gizmos.line_2d(
-            origin + Vec2::new(-half_width, -half_height),
-            origin + Vec2::new(-half_width, half_height),
+            position + Vec2::new(-half_width, -half_height),
+            position + Vec2::new(-half_width, half_height),
             Z_COLOR,
         ),
         ZFunction::BbRight => gizmos.line_2d(
-            origin + Vec2::new(half_width, -half_height),
-            origin + Vec2::new(half_width, half_height),
+            position + Vec2::new(half_width, -half_height),
+            position + Vec2::new(half_width, half_height),
             Z_COLOR,
         ),
         ZFunction::TransformZ

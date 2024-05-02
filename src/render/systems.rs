@@ -1,5 +1,5 @@
 use crate::render::extract::ExtractedRenderScene;
-use crate::{CoordinateSpace, VectorFile, VelloAssetAlignment, VelloCanvasMaterial, VelloFont};
+use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;
 use bevy::render::render_asset::{RenderAssetUsages, RenderAssets};

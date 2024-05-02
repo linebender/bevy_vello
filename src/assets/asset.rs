@@ -85,3 +85,32 @@ pub enum VelloAssetAlignment {
     /// Bounds start from the render position and advance down and to the left.
     TopRight,
 }
+
+impl VelloAssetAlignment {
+    pub(crate) fn compute(
+        &self,
+        asset: &VelloAsset,
+        transform: &GlobalTransform,
+    ) -> GlobalTransform {
+        let (width, height) = (asset.width, asset.height);
+        // Apply alignment
+        let (scale, rotation, _translation) = transform.to_scale_rotation_translation();
+        let adjustment = match self {
+            VelloAssetAlignment::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+            VelloAssetAlignment::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+            VelloAssetAlignment::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+            VelloAssetAlignment::Top => Vec3::new(0.0, -height / 2.0, 0.0),
+            VelloAssetAlignment::Center => Vec3::new(0.0, 0.0, 0.0),
+            VelloAssetAlignment::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
+            VelloAssetAlignment::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+            VelloAssetAlignment::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+            VelloAssetAlignment::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+        };
+        let new_translation: Vec3 = (transform.compute_matrix() * adjustment.extend(1.0)).xyz();
+        GlobalTransform::from(
+            Transform::from_scale(scale)
+                .with_rotation(rotation)
+                .with_translation(new_translation),
+        )
+    }
+}
