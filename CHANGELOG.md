@@ -10,6 +10,10 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### fixed
+
+- A panic that can happen in the extract schedule of lottie files
+
 ## 0.3.1 (2024-05-01)
 
 ### fixed
