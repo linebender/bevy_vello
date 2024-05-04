@@ -60,7 +60,13 @@ pub fn asset_instances(
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = match asset.data {
                     crate::VectorFile::Svg { .. } => 0.0,
-                    crate::VectorFile::Lottie { .. } => playhead.unwrap().frame(),
+                    crate::VectorFile::Lottie { .. } => {
+                        if let Some(playhead) = playhead {
+                            playhead.frame()
+                        } else {
+                            continue;
+                        }
+                    }
                 };
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
