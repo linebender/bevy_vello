@@ -109,6 +109,32 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
                     .add("suckers Flip", Color::BLUE),
             );
     }
+
+    // Far Right
+    for i in 1..=AMOUNT {
+        commands.spawn(VelloAssetBundle {
+            vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+            alignment: VelloAssetAlignment::Center,
+            transform: Transform::from_scale(Vec3::splat(i as f32 * 0.1 * SIZE))
+                .with_translation(Vec3::new(400.0, 0.0, 0.0)),
+            debug_visualizations: DebugVisualizations::Visible,
+            coordinate_space: CoordinateSpace::WorldSpace,
+            z_function: ZFunction::BbBottom,
+            ..default()
+        });
+    }
+    for i in 1..=AMOUNT {
+        commands.spawn(VelloAssetBundle {
+            vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+            alignment: VelloAssetAlignment::Bottom,
+            transform: Transform::from_scale(Vec3::splat(i as f32 * 0.1 * SIZE))
+                .with_translation(Vec3::new(475.0, -1024.0 / 4.0 * SIZE, 0.0)),
+            debug_visualizations: DebugVisualizations::Visible,
+            coordinate_space: CoordinateSpace::WorldSpace,
+            z_function: ZFunction::BbBottom,
+            ..default()
+        });
+    }
 }
 
 fn setup_screenspace_vectors(mut commands: Commands, asset_server: ResMut<AssetServer>) {
