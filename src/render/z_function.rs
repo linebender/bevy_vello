@@ -64,7 +64,6 @@ impl ZFunction {
                 let bb = asset.bb_in_world_space(transform);
                 bb.center().x + bb.half_size().x
             }
-
             ZFunction::BbTopInverse => {
                 let bb = asset.bb_in_world_space(transform);
                 -(bb.center().y + bb.half_size().y)

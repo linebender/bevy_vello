@@ -1,10 +1,8 @@
-use std::ops::Deref;
-
 use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
 use super::prepare::PreparedAffine;
 use super::{VelatoRenderer, VelloRenderer};
 use crate::render::extract::ExtractedRenderScene;
-use crate::render::prepare::{PrepareRenderInstance, PreparedZIndex};
+use crate::render::prepare::PreparedZIndex;
 use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;

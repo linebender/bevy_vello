@@ -1,7 +1,7 @@
 use super::extract::{
     ExtractedPixelScale, ExtractedRenderAsset, ExtractedRenderScene, ExtractedRenderText,
 };
-use crate::{CoordinateSpace, VelloAsset};
+use crate::CoordinateSpace;
 use bevy::prelude::*;
 use bevy::render::camera::ExtractedCamera;
 use bevy::render::view::ExtractedView;
