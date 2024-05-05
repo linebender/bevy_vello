@@ -24,6 +24,14 @@ pub enum ZFunction {
     BbLeft,
     /// Use the asset's bounding box right axis value for Z.
     BbRight,
+    /// Use the asset's bounding box top axis value for Z
+    BbTopInverse,
+    /// Use the asset's bounding box bottom axis value for Z, then flip the sign.
+    BbBottomInverse,
+    /// Use the asset's bounding box left axis value for Z, then flip the sign.
+    BbLeftInverse,
+    /// Use the asset's bounding box right axis value for Z, then flip the sign.
+    BbRightInverse,
     /// Use a computation to yield Z.
     Computed(fn(&VelloAsset, &GlobalTransform) -> f32),
     /// Use a given value for Z.
@@ -55,6 +63,23 @@ impl ZFunction {
             ZFunction::BbRight => {
                 let bb = asset.bb_in_world_space(transform);
                 bb.center().x + bb.half_size().x
+            }
+
+            ZFunction::BbTopInverse => {
+                let bb = asset.bb_in_world_space(transform);
+                -(bb.center().y + bb.half_size().y)
+            }
+            ZFunction::BbBottomInverse => {
+                let bb = asset.bb_in_world_space(transform);
+                -(bb.center().y - bb.half_size().y)
+            }
+            ZFunction::BbLeftInverse => {
+                let bb = asset.bb_in_world_space(transform);
+                -(bb.center().x - bb.half_size().x)
+            }
+            ZFunction::BbRightInverse => {
+                let bb = asset.bb_in_world_space(transform);
+                -(bb.center().x + bb.half_size().x)
             }
             ZFunction::Computed(compute_fn) => compute_fn(asset, transform),
             ZFunction::Value(v) => *v,
