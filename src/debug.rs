@@ -219,6 +219,18 @@ fn draw_origin(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin:
 
     gizmos.line_2d(from, to, Color::RED);
 }
+/// A helper method to draw text gizmos.
+fn draw_origin_blue(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin: Vec2) {
+    let from = origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
+    let to = origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
+
+    gizmos.line_2d(from, to, Color::CYAN);
+
+    let from = origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
+    let to = origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
+
+    gizmos.line_2d(from, to, Color::CYAN);
+}
 
 /// A helper method to draw the bounding box
 fn draw_bounding_box(gizmos: &mut Gizmos, z_fn: &ZFunction, position: Vec2, size: Vec2) {

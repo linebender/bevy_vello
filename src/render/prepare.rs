@@ -1,53 +1,61 @@
 use super::extract::{
     ExtractedPixelScale, ExtractedRenderAsset, ExtractedRenderScene, ExtractedRenderText,
 };
-use crate::CoordinateSpace;
+use crate::{CoordinateSpace, VelloAsset};
 use bevy::prelude::*;
 use bevy::render::camera::ExtractedCamera;
 use bevy::render::view::ExtractedView;
 use vello::kurbo::Affine;
 
-#[derive(Component, Copy, Clone)]
-pub struct PreparedAffine(pub Affine);
+#[derive(Component, Copy, Clone, Deref, DerefMut)]
+pub struct PreparedAffine(Affine);
 
-pub fn prepare_vector_affines(
-    mut commands: Commands,
-    camera: Query<(&ExtractedCamera, &ExtractedView)>,
-    mut render_vectors: Query<(Entity, &ExtractedRenderAsset)>,
-    pixel_scale: Res<ExtractedPixelScale>,
-) {
-    let Ok((camera, view)) = camera.get_single() else {
-        return;
-    };
-    let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
-    let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-    for (entity, render_vector) in render_vectors.iter_mut() {
-        let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
-            [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ])
-        .transpose();
+#[derive(Component, Copy, Clone, Deref, DerefMut)]
+pub struct PreparedTransform(GlobalTransform);
 
-        let world_transform = render_vector
-            .alignment
-            .compute(&render_vector.asset, &render_vector.transform);
+#[derive(Component, Copy, Clone, Deref, DerefMut)]
+pub struct PreparedZIndex(f32);
 
-        let local_center_matrix = render_vector
-            .asset
-            .local_transform_center
-            .compute_matrix()
-            .inverse();
-        let vector_size = Vec2::new(render_vector.asset.width, render_vector.asset.height);
+// All extracted bevy_vello render instance types should implement this (RenderAsset, RenderScene, RenderText, etc...)
+pub trait PrepareRenderInstance {
+    fn z_index(&self, transform: GlobalTransform) -> PreparedZIndex;
+    fn final_transform(&self) -> PreparedTransform;
+    fn scene_affine(
+        &self,
+        view: &ExtractedView,
+        world_transform: GlobalTransform,
+        pixel_scale: f32,
+        viewport_size: UVec2,
+    ) -> PreparedAffine;
+}
 
-        let raw_transform = match render_vector.render_mode {
+impl PrepareRenderInstance for ExtractedRenderAsset {
+    fn z_index(&self, prepared_transform: GlobalTransform) -> PreparedZIndex {
+        PreparedZIndex(self.z_function.compute(&self.asset, &prepared_transform))
+    }
+
+    fn final_transform(&self) -> PreparedTransform {
+        PreparedTransform(self.alignment.compute(&self.asset, &self.transform))
+    }
+
+    fn scene_affine(
+        &self,
+        view: &ExtractedView,
+        world_transform: GlobalTransform,
+        pixel_scale: f32,
+        viewport_size: UVec2,
+    ) -> PreparedAffine {
+        let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
+
+        let raw_transform = match self.render_mode {
             CoordinateSpace::ScreenSpace => {
-                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale);
+
+                let vector_size = Vec2::new(self.asset.width, self.asset.height);
 
                 // Make the screen space vector instance sized to fill the
                 // entire UI Node box if it's bundled with a Node
-                if let Some(node) = &render_vector.ui_node {
+                if let Some(node) = &self.ui_node {
                     let fill_scale = node.size() / vector_size;
                     model_matrix.x_axis.x *= fill_scale.x;
                     model_matrix.y_axis.y *= fill_scale.y;
@@ -59,6 +67,15 @@ pub fn prepare_vector_affines(
             }
             CoordinateSpace::WorldSpace => {
                 let local_matrix = local_center_matrix;
+
+                let (pixels_x, pixels_y) = (viewport_size.x as f32, viewport_size.y as f32);
+                let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
+                    [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
+                    [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                ])
+                .transpose();
 
                 let mut model_matrix = world_transform.compute_matrix() * local_matrix;
                 model_matrix.w_axis.y *= -1.0;
@@ -90,9 +107,30 @@ pub fn prepare_vector_affines(
             transform[13] as f64, // f
         ];
 
+        PreparedAffine(Affine::new(transform))
+    }
+}
+
+pub fn prepare_vector_affines(
+    mut commands: Commands,
+    camera: Query<(&ExtractedCamera, &ExtractedView)>,
+    mut render_vectors: Query<(Entity, &ExtractedRenderAsset)>,
+    pixel_scale: Res<ExtractedPixelScale>,
+) {
+    let Ok((camera, view)) = camera.get_single() else {
+        return;
+    };
+    let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
+    for (entity, render_vector) in render_vectors.iter_mut() {
+        // Prepare render data needed for the subsequent render system
+        let final_transform = render_vector.final_transform();
+        let affine =
+            render_vector.scene_affine(view, *final_transform, pixel_scale.0, viewport_size);
+        let z_index = render_vector.z_index(*final_transform);
+
         commands
             .entity(entity)
-            .insert(PreparedAffine(Affine::new(transform)));
+            .insert((affine, final_transform, z_index));
     }
 }
 

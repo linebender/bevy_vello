@@ -1,7 +1,10 @@
+use std::ops::Deref;
+
 use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
 use super::prepare::PreparedAffine;
 use super::{VelatoRenderer, VelloRenderer};
 use crate::render::extract::ExtractedRenderScene;
+use crate::render::prepare::{PrepareRenderInstance, PreparedZIndex};
 use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;
@@ -13,6 +16,7 @@ use bevy::render::renderer::{RenderDevice, RenderQueue};
 use bevy::render::view::NoFrustumCulling;
 use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
 use bevy::window::{WindowResized, WindowResolution};
+use vello::kurbo::Affine;
 use vello::{AaSupport, RenderParams, Renderer, RendererOptions, Scene};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
@@ -49,7 +53,7 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 #[allow(clippy::complexity)]
 pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
-    query_render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
+    query_render_vectors: Query<(&PreparedAffine, &PreparedZIndex, &ExtractedRenderAsset)>,
     query_render_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
@@ -82,29 +86,23 @@ pub fn render_scene(
             Scene(&'a ExtractedRenderScene),
             Text(&'a ExtractedRenderText),
         }
-        let mut render_queue: Vec<(f32, CoordinateSpace, (&PreparedAffine, RenderItem))> =
+        let mut render_queue: Vec<(f32, CoordinateSpace, (Affine, RenderItem))> =
             query_render_vectors
                 .iter()
-                .map(|(a, b)| {
-                    (
-                        b.z_function.compute(&b.asset, &b.transform),
-                        b.render_mode,
-                        (a, RenderItem::Asset(b)),
-                    )
-                })
+                .map(|(&a, &b, c)| (*b, c.render_mode, (*a, RenderItem::Asset(c))))
                 .collect();
-        render_queue.extend(query_render_scenes.iter().map(|(a, b)| {
+        render_queue.extend(query_render_scenes.iter().map(|(&a, b)| {
             (
                 b.transform.translation().z,
                 b.render_mode,
-                (a, RenderItem::Scene(b)),
+                (*a, RenderItem::Scene(b)),
             )
         }));
-        render_queue.extend(query_render_texts.iter().map(|(a, b)| {
+        render_queue.extend(query_render_texts.iter().map(|(&a, b)| {
             (
                 b.transform.translation().z,
                 b.render_mode,
-                (a, RenderItem::Text(b)),
+                (*a, RenderItem::Text(b)),
             )
         }));
 
@@ -122,7 +120,7 @@ pub fn render_scene(
         // Apply transforms to the respective fragments and add them to the
         // scene to be rendered
         let mut scene_buffer = Scene::new();
-        for (_, _, (&PreparedAffine(affine), render_item)) in render_queue.iter_mut() {
+        for (_, _, (affine, render_item)) in render_queue.iter_mut() {
             match render_item {
                 RenderItem::Asset(ExtractedRenderAsset {
                     asset,
@@ -132,7 +130,7 @@ pub fn render_scene(
                     ..
                 }) => match &asset.data {
                     VectorFile::Svg(scene) => {
-                        scene_buffer.append(scene, Some(affine));
+                        scene_buffer.append(scene, Some(*affine));
                     }
                     VectorFile::Lottie(composition) => {
                         debug!("playhead: {playhead}");
@@ -145,14 +143,14 @@ pub fn render_scene(
                                     .unwrap_or(composition)
                             },
                             *playhead as f64,
-                            affine,
+                            *affine,
                             *alpha as f64,
                             &mut scene_buffer,
                         );
                     }
                 },
                 RenderItem::Scene(ExtractedRenderScene { scene, .. }) => {
-                    scene_buffer.append(scene, Some(affine));
+                    scene_buffer.append(scene, Some(*affine));
                 }
                 RenderItem::Text(ExtractedRenderText {
                     font,
@@ -161,7 +159,7 @@ pub fn render_scene(
                     ..
                 }) => {
                     if let Some(font) = font_render_assets.get_mut(font) {
-                        font.render(&mut scene_buffer, affine, text, *alignment);
+                        font.render(&mut scene_buffer, *affine, text, *alignment);
                     }
                 }
             }
