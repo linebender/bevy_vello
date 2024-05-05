@@ -40,10 +40,22 @@ impl ZFunction {
             ZFunction::TransformZOffset(offset) => transform.translation().z + offset,
             ZFunction::TransformXOffset(offset) => transform.translation().x + offset,
             ZFunction::TransformYOffset(offset) => transform.translation().y + offset,
-            ZFunction::BbTop => asset.bb_in_world_space(transform).min.y,
-            ZFunction::BbBottom => -asset.bb_in_world_space(transform).max.y,
-            ZFunction::BbLeft => -asset.bb_in_world_space(transform).min.x,
-            ZFunction::BbRight => asset.bb_in_world_space(transform).max.x,
+            ZFunction::BbTop => {
+                let bb = asset.bb_in_world_space(transform);
+                bb.center().y + bb.half_size().y
+            }
+            ZFunction::BbBottom => {
+                let bb = asset.bb_in_world_space(transform);
+                bb.center().y - bb.half_size().y
+            }
+            ZFunction::BbLeft => {
+                let bb = asset.bb_in_world_space(transform);
+                bb.center().x - bb.half_size().x
+            }
+            ZFunction::BbRight => {
+                let bb = asset.bb_in_world_space(transform);
+                bb.center().x + bb.half_size().x
+            }
             ZFunction::Computed(compute_fn) => compute_fn(asset, transform),
             ZFunction::Value(v) => *v,
         }
