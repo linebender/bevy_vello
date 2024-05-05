@@ -33,7 +33,8 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
     const SIZE: f32 = 0.05;
     const OFFSET: f32 = 102.4;
 
-    let mut column = |label: &str, y: f32, zfn: ZFunction| {
+    // Show assets
+    let mut row = |label: &str, y: f32, zfn: ZFunction| {
         commands.spawn(VelloTextBundle {
             font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
             alignment: VelloTextAlignment::Right,
@@ -50,76 +51,89 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             )),
             ..default()
         });
-        for i in (0..AMOUNT).rev() {
-            // Text
-            if i == 0 {
-                commands.spawn(VelloTextBundle {
-                    font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
-                    alignment: VelloTextAlignment::Bottom,
-                    coordinate_space: CoordinateSpace::WorldSpace,
-                    text: VelloText {
-                        content: "Center".to_string(),
-                        brush: Some(Brush::Solid(Color::WHITE)),
-                        size: 50.0 / SIZE,
-                    },
-                    transform: Transform::from_scale(Vec3::splat(SIZE))
-                        .with_translation(Vec3::new(0.0, 10.0 / SIZE, f32::MAX)),
-                    ..default()
-                });
-                commands.spawn(VelloTextBundle {
-                    font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
-                    alignment: VelloTextAlignment::Bottom,
-                    coordinate_space: CoordinateSpace::WorldSpace,
-                    text: VelloText {
-                        content: "Bottom".to_string(),
-                        brush: Some(Brush::Solid(Color::WHITE)),
-                        size: 50.0 / SIZE,
-                    },
-                    transform: Transform::from_scale(Vec3::splat(SIZE))
-                        .with_translation(Vec3::new(X_SPACING, 10.0 / SIZE, f32::MAX)),
-                    ..default()
-                });
-                commands.spawn(VelloTextBundle {
-                    font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
-                    alignment: VelloTextAlignment::Bottom,
-                    coordinate_space: CoordinateSpace::WorldSpace,
-                    text: VelloText {
-                        content: "Top".to_string(),
-                        brush: Some(Brush::Solid(Color::WHITE)),
-                        size: 50.0 / SIZE,
-                    },
-                    transform: Transform::from_scale(Vec3::splat(SIZE))
-                        .with_translation(Vec3::new(X_SPACING * 2.0, 10.0 / SIZE, f32::MAX)),
-                    ..default()
-                });
-                commands.spawn(VelloTextBundle {
-                    font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
-                    alignment: VelloTextAlignment::Bottom,
-                    coordinate_space: CoordinateSpace::WorldSpace,
-                    text: VelloText {
-                        content: "Right".to_string(),
-                        brush: Some(Brush::Solid(Color::WHITE)),
-                        size: 50.0 / SIZE,
-                    },
-                    transform: Transform::from_scale(Vec3::splat(SIZE))
-                        .with_translation(Vec3::new(X_SPACING * 3.0, 10.0 / SIZE, f32::MAX)),
-                    ..default()
-                });
-                commands.spawn(VelloTextBundle {
-                    font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
-                    alignment: VelloTextAlignment::Bottom,
-                    coordinate_space: CoordinateSpace::WorldSpace,
-                    text: VelloText {
-                        content: "Left".to_string(),
-                        brush: Some(Brush::Solid(Color::WHITE)),
-                        size: 50.0 / SIZE,
-                    },
-                    transform: Transform::from_scale(Vec3::splat(SIZE))
-                        .with_translation(Vec3::new(X_SPACING * 4.0, 10.0 / SIZE, f32::MAX)),
-                    ..default()
-                });
-            }
 
+        commands.spawn(VelloTextBundle {
+            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            alignment: VelloTextAlignment::Bottom,
+            coordinate_space: CoordinateSpace::WorldSpace,
+            text: VelloText {
+                content: "Center".to_string(),
+                brush: Some(Brush::Solid(Color::WHITE)),
+                size: 50.0 / SIZE,
+            },
+            transform: Transform::from_scale(Vec3::splat(SIZE)).with_translation(Vec3::new(
+                0.0,
+                10.0 / SIZE,
+                f32::MAX,
+            )),
+            ..default()
+        });
+        commands.spawn(VelloTextBundle {
+            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            alignment: VelloTextAlignment::Bottom,
+            coordinate_space: CoordinateSpace::WorldSpace,
+            text: VelloText {
+                content: "Bottom".to_string(),
+                brush: Some(Brush::Solid(Color::WHITE)),
+                size: 50.0 / SIZE,
+            },
+            transform: Transform::from_scale(Vec3::splat(SIZE)).with_translation(Vec3::new(
+                X_SPACING,
+                10.0 / SIZE,
+                f32::MAX,
+            )),
+            ..default()
+        });
+        commands.spawn(VelloTextBundle {
+            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            alignment: VelloTextAlignment::Bottom,
+            coordinate_space: CoordinateSpace::WorldSpace,
+            text: VelloText {
+                content: "Top".to_string(),
+                brush: Some(Brush::Solid(Color::WHITE)),
+                size: 50.0 / SIZE,
+            },
+            transform: Transform::from_scale(Vec3::splat(SIZE)).with_translation(Vec3::new(
+                X_SPACING * 2.0,
+                10.0 / SIZE,
+                f32::MAX,
+            )),
+            ..default()
+        });
+        commands.spawn(VelloTextBundle {
+            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            alignment: VelloTextAlignment::Bottom,
+            coordinate_space: CoordinateSpace::WorldSpace,
+            text: VelloText {
+                content: "Right".to_string(),
+                brush: Some(Brush::Solid(Color::WHITE)),
+                size: 50.0 / SIZE,
+            },
+            transform: Transform::from_scale(Vec3::splat(SIZE)).with_translation(Vec3::new(
+                X_SPACING * 3.0,
+                10.0 / SIZE,
+                f32::MAX,
+            )),
+            ..default()
+        });
+        commands.spawn(VelloTextBundle {
+            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            alignment: VelloTextAlignment::Bottom,
+            coordinate_space: CoordinateSpace::WorldSpace,
+            text: VelloText {
+                content: "Left".to_string(),
+                brush: Some(Brush::Solid(Color::WHITE)),
+                size: 50.0 / SIZE,
+            },
+            transform: Transform::from_scale(Vec3::splat(SIZE)).with_translation(Vec3::new(
+                X_SPACING * 4.0,
+                10.0 / SIZE,
+                f32::MAX,
+            )),
+            ..default()
+        });
+
+        for i in (1..AMOUNT).rev() {
             // Assets
             commands.spawn(VelloAssetBundle {
                 vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
@@ -193,11 +207,15 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
         ("BbRight", ZFunction::BbRight),
         ("BbLeft", ZFunction::BbLeft),
         ("BbTop", ZFunction::BbTop),
+        ("BbBottomInverse", ZFunction::BbBottomInverse),
+        ("BbRightInverse", ZFunction::BbRightInverse),
+        ("BbLeftInverse", ZFunction::BbLeftInverse),
+        ("BbTopInverse", ZFunction::BbTopInverse),
     ]
     .iter()
     .enumerate()
     {
-        column(label, -(i as f32) * Y_SPACING, *zfn);
+        row(label, -(i as f32) * Y_SPACING, *zfn);
     }
 }
 

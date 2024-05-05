@@ -10,9 +10,16 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.3.2
+
+### added
+
+- Inverse `ZFunction` options added for `BbTop`, `BbBottom`, `BbLeft`, and `BbRight`.
+
 ### fixed
 
-- A panic that can happen in the extract schedule of lottie files
+- A panic that can happen in the extract schedule of lottie files.
+- Z-ordering now works correctly for `Bb` functions.
 
 ## 0.3.1 (2024-05-01)
 

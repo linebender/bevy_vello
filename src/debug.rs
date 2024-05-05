@@ -285,22 +285,22 @@ fn draw_bounding_box(gizmos: &mut Gizmos, z_fn: &ZFunction, position: Vec2, size
             position + Vec2::new(half_width, *offset),
             Z_COLOR,
         ),
-        ZFunction::BbTop => gizmos.line_2d(
+        ZFunction::BbTop | ZFunction::BbTopInverse => gizmos.line_2d(
             position + Vec2::new(-half_width, half_height),
             position + Vec2::new(half_width, half_height),
             Z_COLOR,
         ),
-        ZFunction::BbBottom => gizmos.line_2d(
+        ZFunction::BbBottom | ZFunction::BbBottomInverse => gizmos.line_2d(
             position + Vec2::new(-half_width, -half_height),
             position + Vec2::new(half_width, -half_height),
             Z_COLOR,
         ),
-        ZFunction::BbLeft => gizmos.line_2d(
+        ZFunction::BbLeft | ZFunction::BbLeftInverse => gizmos.line_2d(
             position + Vec2::new(-half_width, -half_height),
             position + Vec2::new(-half_width, half_height),
             Z_COLOR,
         ),
-        ZFunction::BbRight => gizmos.line_2d(
+        ZFunction::BbRight | ZFunction::BbRightInverse => gizmos.line_2d(
             position + Vec2::new(half_width, -half_height),
             position + Vec2::new(half_width, half_height),
             Z_COLOR,
