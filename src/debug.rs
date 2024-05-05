@@ -219,18 +219,6 @@ fn draw_origin(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin:
 
     gizmos.line_2d(from, to, Color::RED);
 }
-/// A helper method to draw text gizmos.
-fn draw_origin_blue(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin: Vec2) {
-    let from = origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
-    let to = origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
-
-    gizmos.line_2d(from, to, Color::CYAN);
-
-    let from = origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
-    let to = origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
-
-    gizmos.line_2d(from, to, Color::CYAN);
-}
 
 /// A helper method to draw the bounding box
 fn draw_bounding_box(gizmos: &mut Gizmos, z_fn: &ZFunction, position: Vec2, size: Vec2) {
@@ -297,22 +285,22 @@ fn draw_bounding_box(gizmos: &mut Gizmos, z_fn: &ZFunction, position: Vec2, size
             position + Vec2::new(half_width, *offset),
             Z_COLOR,
         ),
-        ZFunction::BbTop => gizmos.line_2d(
+        ZFunction::BbTop | ZFunction::BbTopInverse => gizmos.line_2d(
             position + Vec2::new(-half_width, half_height),
             position + Vec2::new(half_width, half_height),
             Z_COLOR,
         ),
-        ZFunction::BbBottom => gizmos.line_2d(
+        ZFunction::BbBottom | ZFunction::BbBottomInverse => gizmos.line_2d(
             position + Vec2::new(-half_width, -half_height),
             position + Vec2::new(half_width, -half_height),
             Z_COLOR,
         ),
-        ZFunction::BbLeft => gizmos.line_2d(
+        ZFunction::BbLeft | ZFunction::BbLeftInverse => gizmos.line_2d(
             position + Vec2::new(-half_width, -half_height),
             position + Vec2::new(-half_width, half_height),
             Z_COLOR,
         ),
-        ZFunction::BbRight => gizmos.line_2d(
+        ZFunction::BbRight | ZFunction::BbRightInverse => gizmos.line_2d(
             position + Vec2::new(half_width, -half_height),
             position + Vec2::new(half_width, half_height),
             Z_COLOR,
