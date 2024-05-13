@@ -113,7 +113,7 @@ impl PrepareRenderInstance for ExtractedRenderAsset {
 
 pub fn prepare_vector_affines(
     mut commands: Commands,
-    camera: Query<(&ExtractedCamera, &ExtractedView)>,
+    camera: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
     mut render_vectors: Query<(Entity, &ExtractedRenderAsset)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
@@ -136,7 +136,7 @@ pub fn prepare_vector_affines(
 
 pub fn prepare_scene_affines(
     mut commands: Commands,
-    camera: Query<(&ExtractedCamera, &ExtractedView)>,
+    camera: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
     mut render_vectors: Query<(Entity, &ExtractedRenderScene)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
@@ -201,7 +201,7 @@ pub fn prepare_scene_affines(
 
 pub fn prepare_text_affines(
     mut commands: Commands,
-    camera: Query<(&ExtractedCamera, &ExtractedView)>,
+    camera: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
     render_texts: Query<(Entity, &ExtractedRenderText)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
