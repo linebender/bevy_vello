@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.3.3
+
+### fixed
+
+- Projects with a 2D and 3D camera should no longer conflict with `bevy_vello`'s queries.
+
 ## 0.3.2
 
 ### added
