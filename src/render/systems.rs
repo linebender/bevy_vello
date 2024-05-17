@@ -285,7 +285,7 @@ pub fn setup_ss_rendertarget(
         .insert(render_target);
 }
 
-/// Hide the RenderTarget canvas if there is nothing to render
+/// Hide the render target canvas if there is nothing to render
 pub fn clear_when_empty(
     mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
     render_items: Query<(&mut CoordinateSpace, &ViewVisibility)>,

@@ -5,7 +5,7 @@ use bevy::utils::hashbrown::HashMap;
 /// A lottie player that closely mirrors the behavior and functionality for
 /// dotLottie Interactivity.
 ///
-/// See: https://docs.lottiefiles.com/dotlottie-js-external/
+/// See: <https://docs.lottiefiles.com/dotlottie-js-external/>
 #[derive(Component, Clone, Default, Debug)]
 pub struct LottiePlayer {
     pub(crate) current_state: Option<&'static str>,
