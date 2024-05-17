@@ -119,31 +119,31 @@ impl VelloFont {
         let height = (metrics.cap_height.unwrap_or(line_height) + pen_y) as f64;
         match alignment {
             VelloTextAlignment::TopLeft => {
-                transform *= vello::kurbo::Affine::translate((0.0, height))
+                transform *= vello::kurbo::Affine::translate((0.0, height));
             }
             VelloTextAlignment::Left => {
-                transform *= vello::kurbo::Affine::translate((0.0, height / 2.0))
+                transform *= vello::kurbo::Affine::translate((0.0, height / 2.0));
             }
             VelloTextAlignment::BottomLeft => {
-                transform *= vello::kurbo::Affine::translate((0.0, 0.0))
+                transform *= vello::kurbo::Affine::translate((0.0, 0.0));
             }
             VelloTextAlignment::Top => {
-                transform *= vello::kurbo::Affine::translate((-width / 2.0, height))
+                transform *= vello::kurbo::Affine::translate((-width / 2.0, height));
             }
             VelloTextAlignment::Center => {
-                transform *= vello::kurbo::Affine::translate((-width / 2.0, height / 2.0))
+                transform *= vello::kurbo::Affine::translate((-width / 2.0, height / 2.0));
             }
             VelloTextAlignment::Bottom => {
-                transform *= vello::kurbo::Affine::translate((-width / 2.0, 0.0))
+                transform *= vello::kurbo::Affine::translate((-width / 2.0, 0.0));
             }
             VelloTextAlignment::TopRight => {
-                transform *= vello::kurbo::Affine::translate((-width, height))
+                transform *= vello::kurbo::Affine::translate((-width, height));
             }
             VelloTextAlignment::Right => {
-                transform *= vello::kurbo::Affine::translate((-width, height / 2.0))
+                transform *= vello::kurbo::Affine::translate((-width, height / 2.0));
             }
             VelloTextAlignment::BottomRight => {
-                transform *= vello::kurbo::Affine::translate((-width, 0.0))
+                transform *= vello::kurbo::Affine::translate((-width, 0.0));
             }
         }
 
