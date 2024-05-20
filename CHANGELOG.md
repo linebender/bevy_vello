@@ -20,6 +20,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - `VelloAsset.metadata()` is no longer available, as it is specific to Lottie. There is now a trait, `LottieExt` that can be imported to call `.metadata()` on a `Composition` instead. This is no longer fallible as a result.
 - `PlaybackAlphaOverride` was removed in favor of an `alpha` field on `VelloAsset`.
 - `LottiePlayer` was renamed to `DotLottiePlayer`.
+- Paths to several locations have changed, e.g. `bevy_vello::assets` -> `bevy_vello::integrations`
 
 ### Fixed
 
