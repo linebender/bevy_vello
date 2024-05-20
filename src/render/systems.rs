@@ -1,9 +1,9 @@
 use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
 use super::prepare::PreparedAffine;
-use super::{VelatoRenderer, VelloRenderer};
+use super::VelloRenderer;
 use crate::render::extract::ExtractedRenderScene;
 use crate::render::prepare::PreparedZIndex;
-use crate::{CoordinateSpace, VectorFile, VelloCanvasMaterial, VelloFont};
+use crate::{CoordinateSpace, VelloCanvasMaterial, VelloFont};
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;
 use bevy::render::render_asset::{RenderAssetUsages, RenderAssets};
@@ -59,7 +59,7 @@ pub fn render_scene(
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
     mut vello_renderer: Local<Option<VelloRenderer>>,
-    mut velato_renderer: ResMut<VelatoRenderer>,
+    #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
 ) {
     let renderer = vello_renderer.get_or_insert_with(|| {
         VelloRenderer(
@@ -72,6 +72,7 @@ pub fn render_scene(
                     num_init_threads: None,
                 },
             )
+            // TODO: Attempt CPU fallback. Support changing antialias settings.
             .expect("No GPU Device"),
         )
     });
@@ -122,16 +123,21 @@ pub fn render_scene(
             match render_item {
                 RenderItem::Asset(ExtractedRenderAsset {
                     asset,
-                    theme,
+                    #[cfg(feature = "lottie")]
                     alpha,
+                    #[cfg(feature = "lottie")]
+                    theme,
+                    #[cfg(feature = "lottie")]
                     playhead,
                     ..
-                }) => match &asset.data {
-                    VectorFile::Svg(scene) => {
+                }) => match &asset.file {
+                    #[cfg(feature = "svg")]
+                    crate::VectorFile::Svg(scene) => {
+                        // TODO: Apply alpha
                         scene_buffer.append(scene, Some(*affine));
                     }
-                    VectorFile::Lottie(composition) => {
-                        debug!("playhead: {playhead}");
+                    #[cfg(feature = "lottie")]
+                    crate::VectorFile::Lottie(composition) => {
                         velato_renderer.render(
                             {
                                 theme
@@ -146,6 +152,8 @@ pub fn render_scene(
                             &mut scene_buffer,
                         );
                     }
+                    #[cfg(not(any(feature = "svg", feature = "lottie")))]
+                    _ => unimplemented!(),
                 },
                 RenderItem::Scene(ExtractedRenderScene { scene, .. }) => {
                     scene_buffer.append(scene, Some(*affine));
@@ -168,9 +176,13 @@ pub fn render_scene(
         let empty_encodings = render_queue
             .iter()
             .filter(|(_, _, (_, item))| match item {
-                RenderItem::Asset(a) => match &a.asset.data {
-                    VectorFile::Svg(scene) => scene.encoding().is_empty(),
-                    VectorFile::Lottie(composition) => composition.layers.is_empty(),
+                RenderItem::Asset(a) => match &a.asset.file {
+                    #[cfg(feature = "svg")]
+                    crate::VectorFile::Svg(scene) => scene.encoding().is_empty(),
+                    #[cfg(feature = "lottie")]
+                    crate::VectorFile::Lottie(composition) => composition.layers.is_empty(),
+                    #[cfg(not(any(feature = "svg", feature = "lottie")))]
+                    _ => unimplemented!(),
                 },
                 RenderItem::Scene(s) => s.scene.encoding().is_empty(),
                 RenderItem::Text(t) => t.text.content.is_empty(),

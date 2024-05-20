@@ -17,8 +17,8 @@ fn main() {
                 setup_worldspace_vectors,
             ),
         );
-    embedded_asset!(app, "assets/squid.json");
-    embedded_asset!(app, "assets/Rubik-Medium.vttf");
+    embedded_asset!(app, "assets/google_fonts/squid.json");
+    embedded_asset!(app, "assets/fonts/Rubik-Medium.vttf");
     app.run();
 }
 
@@ -36,7 +36,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
     // Show assets
     let mut row = |label: &str, y: f32, zfn: ZFunction| {
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
             alignment: VelloTextAlignment::Right,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -53,7 +53,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
         });
 
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -69,7 +69,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -85,7 +85,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -101,7 +101,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -117,7 +117,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -136,7 +136,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
         for i in (1..AMOUNT).rev() {
             // Assets
             commands.spawn(VelloAssetBundle {
-                vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+                vector: asset_server.load("embedded://z_ordering/assets/google_fonts/squid.json"),
                 alignment: VelloAssetAlignment::Center,
                 transform: Transform::from_scale(Vec3::splat(i as f32 * SIZE))
                     .with_translation(Vec3::new(0.0, y * Y_SPACING, 0.0)),
@@ -146,7 +146,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             });
 
             commands.spawn(VelloAssetBundle {
-                vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+                vector: asset_server.load("embedded://z_ordering/assets/google_fonts/squid.json"),
                 alignment: VelloAssetAlignment::Bottom,
                 transform: Transform::from_translation(Vec3::new(
                     X_SPACING,
@@ -160,7 +160,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             });
 
             commands.spawn(VelloAssetBundle {
-                vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+                vector: asset_server.load("embedded://z_ordering/assets/google_fonts/squid.json"),
                 alignment: VelloAssetAlignment::Top,
                 transform: Transform::from_translation(Vec3::new(
                     X_SPACING * 2.0,
@@ -173,7 +173,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
                 ..default()
             });
             commands.spawn(VelloAssetBundle {
-                vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+                vector: asset_server.load("embedded://z_ordering/assets/google_fonts/squid.json"),
                 alignment: VelloAssetAlignment::Right,
                 transform: Transform::from_translation(Vec3::new(
                     X_SPACING * 3.0 + OFFSET,
@@ -186,7 +186,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
                 ..default()
             });
             commands.spawn(VelloAssetBundle {
-                vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+                vector: asset_server.load("embedded://z_ordering/assets/google_fonts/squid.json"),
                 alignment: VelloAssetAlignment::Left,
                 transform: Transform::from_translation(Vec3::new(
                     X_SPACING * 4.0 - OFFSET,
@@ -221,7 +221,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
 
 fn setup_screenspace_vectors(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(VelloAssetBundle {
-        vector: asset_server.load("embedded://z_ordering/assets/squid.json"),
+        vector: asset_server.load("embedded://z_ordering/assets/google_fonts/squid.json"),
         transform: Transform::from_scale(Vec3::splat(0.03)).with_translation(Vec3::splat(20.0)),
         coordinate_space: CoordinateSpace::ScreenSpace,
         ..default()

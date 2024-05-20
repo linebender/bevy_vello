@@ -4,11 +4,10 @@
 
 **A vector graphics rendering integration for [Bevy game engine](https://bevyengine.org) using [Vello](https://vello.dev).**
 
-[![Discord](https://img.shields.io/discord/913957940560531456.svg?label=Loopy&logo=discord&logoColor=ffffff&color=ffffff&labelColor=000000)](https://discord.gg/zrjnQzdjCB)
+[![Linebender Zulip](https://img.shields.io/badge/Linebender-%23gpu-blue?logo=Zulip)](https://xi.zulipchat.com/#narrow/stream/197075-gpu)
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
 [![Vello](https://img.shields.io/badge/vello-v0.1.0-purple.svg)](https://crates.io/crates/vello)
-[![Following released Bevy versions](https://img.shields.io/badge/bevy%20tracking-released%20version-lightblue)](https://bevyengine.org/learn/quick-start/plugin-development/#main-branch-tracking)
-
+[![Following released Bevy versions](https://img.shields.io/badge/bevy%20tracking-released%20version-lightblue)](https://bevyengine.org/learn/quick-start/plugin-development/#main-branch-tracking)\
 [![Dependency status](https://deps.rs/repo/github/loopystudios/bevy_vello/status.svg)](https://deps.rs/repo/github/loopystudios/bevy_vello)
 [![Crates.io](https://img.shields.io/crates/v/bevy_vello.svg)](https://crates.io/crates/bevy_vello)
 [![Docs](https://img.shields.io/docsrs/bevy_vello)](https://docs.rs/bevy_vello)
@@ -16,10 +15,7 @@
 
 </div>
 
-> [!WARNING]
-> The support of SVG and Lottie is limited. If there is an SVG-related issue, please file the issue in [`vello_svg`](https://github.com/linebender/vello_svg). If there is a Lottie-related issue, please file the issue in [`velato`](https://github.com/linebender/velato). Please see the respective backends for for more information about limitations.
-
-bevy_vello is a rendering integration for rendering vector graphics in the Bevy game engine. Currently it renders standard vello `Scene`s, as well as SVG and Lottie files.
+`bevy_vello` is a cross-platform, 2D compute-centric vector graphics rendering library for Bevy. There is default support for rendering text and scenes, with additional opt-in features for SVG and Lottie. Experimental support for dotLottie is coming.
 
 Quickstart to run the demo:
 
@@ -29,32 +25,23 @@ cargo run -p demo
 
 ![Alt text](image.png)
 
-It uses several support backends for assets:
-
-- [`vello_svg`](https://github.com/linebender/vello_svg) - Converting SVG files to a vello `Scene`
-- [`velato`](https://github.com/linebender/velato) - Converting Lottie files to a vello `Scene`
-
-Visual inconsistencies discovered should be reported to the respective backend.
-
 ## Bevy version support
-
-**NOTE**: You must use a git rev for now, but we are planning a publish. See [issue #3](https://github.com/loopystudios/bevy_vello/issues/3).
 
 |bevy|bevy_vello|
 |---|---|
 |0.13|0.1-0.3, main|
 |< 0.13| unsupported |
 
-## Features
+## Cargo features
 
-- Spawn vector graphics rendering in screen-space or world-space coordinates.
-- Runtime color swapping of Lottie files with a `Theme` component.
-- Augment playback options with a `PlaybackOptions` component.
-- Limited state machine support with a `LottiePlayer` component.
-- Text
-  - NOTE: To avoid conflict with bevy's built-in font loader, rename fonts used by `bevy_vello` to end with `*.vtff`. This is a limitation of the bevy game engine, and can probably be an improvement in the future.
-- Debug drawing for bounding boxes and origin
-- Render immediate-mode vello `Scene`s
+> [!WARNING]
+> The support of SVG and Lottie is limited. If there is an SVG-related issue, please file the issue in [`vello_svg`](https://github.com/linebender/vello_svg). If there is a Lottie-related issue, please file the issue in [`velato`](https://github.com/linebender/velato). Please see the respective backends for for more information about limitations.
+
+|Cargo feature|Description|Default?|
+|---|---|----|
+|`svg`|Render `.svg` files with [`vello_svg`](https://github.com/linebender/vello_svg)|Yes|
+|`lottie`|Render `.json` Lottie files with [`velato`](https://github.com/linebender/velato)|Yes|
+|`experimental-dotLottie`|Render `.lottie` Lottie files. **Work in Progress**|No|
 
 ## Examples
 
@@ -86,7 +73,7 @@ There is also a web demo [available here](https://loopystudios.github.io/bevy_ve
 
 ## Community
 
-All Loopy projects and development happens in the [Loopy Discord](https://discord.gg/zrjnQzdjCB). The discord is open to the public.
+Discussion of Vello development happens in the [Linebender Zulip](https://xi.zulipchat.com/), specifically the [#gpu stream](https://xi.zulipchat.com/#narrow/stream/197075-gpu). All public content can be read without logging in.
 
 Contributions are welcome by pull request. The [Rust code of conduct](https://www.rust-lang.org/policies/code-of-conduct) applies.
 

@@ -1,10 +1,7 @@
 use super::z_function::ZFunction;
 use crate::text::VelloTextAlignment;
 use crate::theme::Theme;
-use crate::{
-    CoordinateSpace, PlaybackAlphaOverride, Playhead, VelloAsset, VelloAssetAlignment, VelloFont,
-    VelloScene, VelloText,
-};
+use crate::{CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont, VelloScene, VelloText};
 use bevy::prelude::*;
 use bevy::render::extract_component::ExtractComponent;
 use bevy::render::Extract;
@@ -23,7 +20,8 @@ pub struct ExtractedRenderAsset {
     pub ui_node: Option<Node>,
 }
 
-pub fn asset_instances(
+#[cfg(feature = "svg")]
+pub fn extract_svg_instances(
     mut commands: Commands,
     query_vectors: Extract<
         Query<(
@@ -32,9 +30,54 @@ pub fn asset_instances(
             &CoordinateSpace,
             &ZFunction,
             &GlobalTransform,
-            Option<&Playhead>,
+            Option<&Node>,
+            &ViewVisibility,
+            &InheritedVisibility,
+        )>,
+    >,
+    assets: Extract<Res<Assets<VelloAsset>>>,
+) {
+    for (
+        vello_vector_handle,
+        alignment,
+        coord_space,
+        z_function,
+        transform,
+        ui_node,
+        view_visibility,
+        inherited_visibility,
+    ) in query_vectors.iter()
+    {
+        if let Some(asset) = assets.get(vello_vector_handle) {
+            if view_visibility.get() && inherited_visibility.get() {
+                commands.spawn(ExtractedRenderAsset {
+                    asset: asset.to_owned(),
+                    transform: *transform,
+                    alignment: *alignment,
+                    z_function: *z_function,
+                    theme: None,
+                    render_mode: *coord_space,
+                    playhead: 0.0,
+                    alpha: asset.alpha,
+                    ui_node: ui_node.cloned(),
+                });
+            }
+        }
+    }
+}
+
+#[cfg(feature = "lottie")]
+pub fn extract_lottie_instances(
+    mut commands: Commands,
+    query_vectors: Extract<
+        Query<(
+            &Handle<VelloAsset>,
+            &VelloAssetAlignment,
+            &CoordinateSpace,
+            &ZFunction,
+            &GlobalTransform,
+            &crate::Playhead,
             Option<&Theme>,
-            Option<&PlaybackAlphaOverride>,
             Option<&Node>,
             &ViewVisibility,
             &InheritedVisibility,
@@ -50,7 +93,6 @@ pub fn asset_instances(
         transform,
         playhead,
         theme,
-        alpha,
         ui_node,
         view_visibility,
         inherited_visibility,
@@ -58,16 +100,7 @@ pub fn asset_instances(
     {
         if let Some(asset) = assets.get(vello_vector_handle) {
             if view_visibility.get() && inherited_visibility.get() {
-                let playhead = match asset.data {
-                    crate::VectorFile::Svg { .. } => 0.0,
-                    crate::VectorFile::Lottie { .. } => {
-                        if let Some(playhead) = playhead {
-                            playhead.frame()
-                        } else {
-                            continue;
-                        }
-                    }
-                };
+                let playhead = playhead.frame();
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
                     transform: *transform,
@@ -76,7 +109,7 @@ pub fn asset_instances(
                     theme: theme.cloned(),
                     render_mode: *coord_space,
                     playhead,
-                    alpha: alpha.map(|a| a.0).unwrap_or(1.0),
+                    alpha: asset.alpha,
                     ui_node: ui_node.cloned(),
                 });
             }

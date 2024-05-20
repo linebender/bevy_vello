@@ -1,20 +1,14 @@
-use super::Metadata;
+use crate::VectorFile;
 use bevy::prelude::*;
 use bevy::reflect::TypePath;
-use std::sync::Arc;
-
-#[derive(Clone)]
-pub enum VectorFile {
-    Svg(Arc<vello::Scene>),
-    Lottie(Arc<velato::Composition>),
-}
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloAsset {
-    pub data: VectorFile,
+    pub file: VectorFile,
     pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
+    pub alpha: f32,
 }
 
 impl VelloAsset {
@@ -45,18 +39,6 @@ impl VelloAsset {
             .viewport_to_world_2d(camera_transform, min)
             .zip(camera.viewport_to_world_2d(camera_transform, max))
             .map(|(min, max)| Rect { min, max })
-    }
-
-    /// Gets the lottie metadata (if vector is a lottie), an object used for
-    /// inspecting this vector's layers and shapes
-    pub fn metadata(&self) -> Option<Metadata> {
-        if let VectorFile::Lottie(composition) = &self.data {
-            Some(Metadata {
-                composition: composition.clone(),
-            })
-        } else {
-            None
-        }
     }
 }
 

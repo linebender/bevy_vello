@@ -61,8 +61,10 @@ impl Material2d for VelloCanvasMaterial {
 pub struct VelloRenderer(vello::Renderer);
 
 #[derive(Resource, Deref, DerefMut)]
+#[cfg(feature = "lottie")]
 pub struct VelatoRenderer(velato::Renderer);
 
+#[cfg(feature = "lottie")]
 impl Default for VelatoRenderer {
     fn default() -> Self {
         // TODO: Velato should have a ::default()

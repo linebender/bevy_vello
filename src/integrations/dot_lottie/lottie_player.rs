@@ -5,9 +5,11 @@ use bevy::utils::hashbrown::HashMap;
 /// A lottie player that closely mirrors the behavior and functionality for
 /// dotLottie Interactivity.
 ///
+/// Controls lottie playback and transitions with state machine support.
+///
 /// See: <https://docs.lottiefiles.com/dotlottie-js-external/>
-#[derive(Component, Clone, Default, Debug)]
-pub struct LottiePlayer {
+#[derive(Component, Clone, Debug)]
+pub struct DotLottiePlayer {
     pub(crate) current_state: Option<&'static str>,
     pub(crate) next_state: Option<&'static str>,
     pub(crate) states: HashMap<&'static str, PlayerState>,
@@ -20,7 +22,7 @@ pub struct LottiePlayer {
     pub(crate) stopped: bool,
 }
 
-impl LottiePlayer {
+impl DotLottiePlayer {
     /// Retrieve an immutable reference to the current state.
     pub fn state(&self) -> &PlayerState {
         self.states
@@ -92,9 +94,9 @@ impl LottiePlayer {
     }
 }
 
-impl LottiePlayer {
-    pub fn new(initial_state: &'static str) -> LottiePlayer {
-        LottiePlayer {
+impl DotLottiePlayer {
+    pub fn new(initial_state: &'static str) -> DotLottiePlayer {
+        DotLottiePlayer {
             current_state: None,
             next_state: Some(initial_state),
             states: HashMap::new(),
