@@ -15,7 +15,7 @@ fn main() {
             (setup_camera, setup_screenspace_text, setup_worldspace_text),
         );
     embedded_asset!(app, "assets/Rubik-Medium.ttf");
-    embedded_asset!(app, "assets/Rubik-Medium.vttf");
+    embedded_asset!(app, "assets/Rubik-Medium.ttf");
     app.run();
 }
 
@@ -25,7 +25,7 @@ fn setup_camera(mut commands: Commands) {
 
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("embedded://text/assets/Rubik-Medium.vttf"),
+        font: asset_server.load("embedded://text/assets/Rubik-Medium.ttf"),
         text: VelloText {
             content: "This text is centered\non x and y axes".to_string(),
             size: 50.0,
@@ -38,7 +38,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
     });
 
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("embedded://text/assets/Rubik-Medium.vttf"),
+        font: asset_server.load("embedded://text/assets/Rubik-Medium.ttf"),
         text: VelloText {
             content: "WXYZ".to_string(),
             size: 100.0,
@@ -53,7 +53,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 fn setup_screenspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     // Vello text
     commands.spawn(VelloTextBundle {
-        font: asset_server.load("embedded://text/assets/Rubik-Medium.vttf"),
+        font: asset_server.load("embedded://text/assets/Rubik-Medium.ttf"),
         text: VelloText {
             content: "Text rendered by Vello!".to_string(),
             size: 15.0,
