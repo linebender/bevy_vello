@@ -12,6 +12,11 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## 0.4.0
 
+### Added
+
+- new `svg` example
+- new `lottie` example
+
 ### Changed
 
 - SVG (.svg) support is now added through a cargo feature `svg`.

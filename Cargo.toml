@@ -7,6 +7,8 @@ members = [
   "examples/text",
   "examples/z_ordering",
   "examples/scene",
+  "examples/svg",
+  "examples/lottie",
 ]
 
 [workspace.package]
