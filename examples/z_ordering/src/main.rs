@@ -18,7 +18,7 @@ fn main() {
             ),
         );
     embedded_asset!(app, "assets/google_fonts/squid.json");
-    embedded_asset!(app, "assets/fonts/Rubik-Medium.vttf");
+    embedded_asset!(app, "assets/fonts/Rubik-Medium.ttf");
     app.run();
 }
 
@@ -36,7 +36,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
     // Show assets
     let mut row = |label: &str, y: f32, zfn: ZFunction| {
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.ttf"),
             alignment: VelloTextAlignment::Right,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -53,7 +53,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
         });
 
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.ttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -69,7 +69,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.ttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -85,7 +85,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.ttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -101,7 +101,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.ttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {
@@ -117,7 +117,7 @@ fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetSe
             ..default()
         });
         commands.spawn(VelloTextBundle {
-            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.vttf"),
+            font: asset_server.load("embedded://z_ordering/assets/fonts/Rubik-Medium.ttf"),
             alignment: VelloTextAlignment::Bottom,
             coordinate_space: CoordinateSpace::WorldSpace,
             text: VelloText {

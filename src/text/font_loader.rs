@@ -30,6 +30,6 @@ impl AssetLoader for VelloFontLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["vttf"]
+        &["ttf"]
     }
 }
