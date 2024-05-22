@@ -8,10 +8,10 @@
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
 [![Vello](https://img.shields.io/badge/vello-v0.1.0-purple.svg)](https://crates.io/crates/vello)
 [![Following released Bevy versions](https://img.shields.io/badge/bevy%20tracking-released%20version-lightblue)](https://bevyengine.org/learn/quick-start/plugin-development/#main-branch-tracking)\
-[![Dependency status](https://deps.rs/repo/github/loopystudios/bevy_vello/status.svg)](https://deps.rs/repo/github/loopystudios/bevy_vello)
+[![Dependency status](https://deps.rs/repo/github/linebender/bevy_vello/status.svg)](https://deps.rs/repo/github/linebender/bevy_vello)
 [![Crates.io](https://img.shields.io/crates/v/bevy_vello.svg)](https://crates.io/crates/bevy_vello)
 [![Docs](https://img.shields.io/docsrs/bevy_vello)](https://docs.rs/bevy_vello)
-[![Build status](https://github.com/loopystudios/bevy_vello/workflows/CI/badge.svg)](https://github.com/loopystudios/bevy_vello/actions)
+[![Build status](https://github.com/linebender/bevy_vello/workflows/CI/badge.svg)](https://github.com/linebender/bevy_vello/actions)
 
 </div>
 
@@ -66,7 +66,7 @@ rustup target add wasm32-unknown-unknown
 cargo run_wasm -p text
 ```
 
-There is also a web demo [available here](https://loopystudios.github.io/bevy_vello) on supporting web browsers.
+There is also a web demo [available here](https://linebender.github.io/bevy_vello) on supporting web browsers.
 
 > [!WARNING]
 > The web is not currently a primary target for Vello, and WebGPU implementations are incomplete, so you might run into issues running this example.

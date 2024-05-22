@@ -15,7 +15,7 @@ members = [
 edition = "2021"
 version = "0.4.0"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/loopystudios/bevy_vello"
+repository = "https://github.com/linebender/bevy_vello"
 
 [workspace.dependencies]
 bevy = { version = "0.13.0", default-features = false, features = [

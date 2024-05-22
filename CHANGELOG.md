@@ -14,11 +14,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### Added
 
-- new `svg` example
-- new `lottie` example
+- New `svg` example
+- New `lottie` example
 
 ### Changed
 
+- The GitHub repo has migrated into the linebender org: <https://github.com/linebender>
+  - You may need to update your git ref from `loopystudios` to `linebender`
 - SVG and Lottie features are now feature-gated
   - SVG (.svg) support is now added through a cargo feature `svg`.
   - Lottie (.json) support is now added through the cargo feature `lottie`.
