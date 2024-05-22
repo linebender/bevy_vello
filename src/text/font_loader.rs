@@ -1,5 +1,5 @@
 use super::font::VelloFont;
-use crate::assets::VectorLoaderError;
+use crate::integrations::VectorLoaderError;
 use bevy::asset::io::Reader;
 use bevy::asset::{AssetLoader, AsyncReadExt, LoadContext};
 use bevy::utils::BoxedFuture;
@@ -30,6 +30,6 @@ impl AssetLoader for VelloFontLoader {
     }
 
     fn extensions(&self) -> &[&str] {
-        &["vttf"]
+        &["ttf"]
     }
 }

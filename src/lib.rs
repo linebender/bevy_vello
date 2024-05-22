@@ -8,34 +8,35 @@ use bevy::prelude::*;
 mod plugin;
 pub use plugin::VelloPlugin;
 
-pub mod assets;
 pub mod debug;
-pub mod playback;
-pub mod player;
+pub mod integrations;
 pub mod render;
 pub mod text;
-pub mod theme;
 
 // Re-exports
 pub use {velato, vello, vello_svg};
 
 pub mod prelude {
-    pub use crate::assets::{VectorFile, VelloAsset, VelloAssetAlignment};
+    pub use {vello, vello::kurbo, vello::peniko, vello::skrifa};
+
     pub use crate::debug::DebugVisualizations;
-    pub use crate::playback::{
-        PlaybackAlphaOverride, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
-        PlaybackPlayMode, Playhead,
-    };
-    pub use crate::player::{LottiePlayer, PlayerState, PlayerTransition};
+    pub use crate::integrations::{VectorFile, VelloAsset, VelloAssetAlignment};
     pub use crate::render::{VelloCanvasMaterial, ZFunction};
     pub use crate::text::{VelloFont, VelloText, VelloTextAlignment};
-    pub use crate::theme::Theme;
     pub use crate::{
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
-    pub use {vello, vello::kurbo, vello::peniko, vello::skrifa};
+
+    #[cfg(feature = "experimental-dotLottie")]
+    pub use crate::integrations::dot_lottie::{DotLottiePlayer, PlayerState, PlayerTransition};
+    #[cfg(feature = "lottie")]
+    pub use crate::integrations::lottie::{
+        LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
+        Playhead, Theme,
+    };
 }
 
+/// Which coordinate space the transform is relative to.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
 #[reflect(Component)]
 pub enum CoordinateSpace {
@@ -110,6 +111,7 @@ pub struct VelloTextBundle {
     pub view_visibility: ViewVisibility,
 }
 
+/// A simple newtype component wrapper for [`vello::Scene`] for rendering.
 #[derive(Component, Default, Clone)]
 pub struct VelloScene(vello::Scene);
 

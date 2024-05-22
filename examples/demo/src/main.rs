@@ -31,7 +31,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             ..default()
         })
         .insert(
-            LottiePlayer::new("stopped")
+            DotLottiePlayer::new("stopped")
                 .with_state({
                     PlayerState::new("stopped")
                         .playback_options(PlaybackOptions {
@@ -74,10 +74,10 @@ fn print_metadata(
     for ev in asset_ev.read() {
         if let AssetEvent::LoadedWithDependencies { id } = ev {
             let asset = assets.get(*id).unwrap();
-            if let Some(metadata) = asset.metadata() {
+            if let VectorFile::Lottie(composition) = &asset.file {
                 info!(
                     "Animated asset loaded. Layers:\n{:#?}",
-                    metadata.get_layers().collect::<Vec<_>>()
+                    composition.as_ref().get_layers().collect::<Vec<_>>()
                 );
             }
         }

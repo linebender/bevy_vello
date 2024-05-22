@@ -8,7 +8,7 @@ use std::time::Duration;
 pub fn controls_ui(
     mut contexts: EguiContexts,
     mut player: Query<(
-        &mut LottiePlayer,
+        &mut DotLottiePlayer,
         &mut Playhead,
         &mut PlaybackOptions,
         &mut Theme,
@@ -22,8 +22,7 @@ pub fn controls_ui(
     };
 
     let asset = assets.get(handle.id()).unwrap();
-    let metadata = asset.metadata().unwrap();
-    let VectorFile::Lottie(composition) = &asset.data else {
+    let VectorFile::Lottie(composition) = &asset.file else {
         return;
     };
 
@@ -243,7 +242,7 @@ pub fn controls_ui(
         });
 
         ui.heading("Theme");
-        for layer in metadata.get_layers() {
+        for layer in composition.as_ref().get_layers() {
             let color = theme.get_mut(layer).cloned().unwrap_or_default();
             let mut color_edit = [color.r(), color.g(), color.b(), color.a()];
             ui.horizontal(|ui| {

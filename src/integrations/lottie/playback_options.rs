@@ -1,13 +1,15 @@
+//! Playback options for lottie files.
+
 use bevy::prelude::*;
 use std::ops::Range;
 use std::time::Duration;
 
-#[derive(PartialEq, Component, Clone, Debug, Reflect)]
-#[reflect(Component)]
 /// Playback options which adjust the playback of an asset.
 ///
 /// You can add this component directly to a `VelloAssetBundle` entity to adjust
 /// playback options.
+#[derive(PartialEq, Component, Clone, Debug, Reflect)]
+#[reflect(Component)]
 pub struct PlaybackOptions {
     /// Whether to automatically start the animation.
     pub autoplay: bool,

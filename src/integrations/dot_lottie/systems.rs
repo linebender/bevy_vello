@@ -1,5 +1,5 @@
-use crate::playback::PlaybackPlayMode;
-use crate::player::LottiePlayer;
+use super::DotLottiePlayer;
+use crate::integrations::lottie::PlaybackPlayMode;
 use crate::{
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlayerTransition, Playhead,
     VectorFile, VelloAsset,
@@ -9,81 +9,49 @@ use bevy::utils::Instant;
 use std::time::Duration;
 use vello_svg::usvg::strict_num::Ulps;
 
-/// Spawn playheads for Lotties. Every Lottie gets exactly 1 playhead.
-/// Only
-pub fn spawn_playheads(
-    mut commands: Commands,
-    query: Query<(Entity, &Handle<VelloAsset>, Option<&PlaybackOptions>), Without<Playhead>>,
-    assets: Res<Assets<VelloAsset>>,
-) {
-    for (entity, handle, options) in query.iter() {
-        if let Some(asset) = assets.get(handle) {
-            let VectorFile::Lottie(composition) = &asset.data else {
-                commands.entity(entity).insert(Playhead::new(0.0));
-                return;
-            };
-            let frame = match options {
-                Some(options) => match options.direction {
-                    PlaybackDirection::Normal => {
-                        options.segments.start.max(composition.frames.start)
-                    }
-                    PlaybackDirection::Reverse => {
-                        options.segments.end.min(composition.frames.end).prev()
-                    }
-                },
-                None => composition.frames.start,
-            };
-            commands.entity(entity).insert(Playhead::new(frame));
-        }
-    }
-}
-
-/// Advance all the playheads in the scene
-pub fn advance_playheads(
+/// Advance all the dotLottie playheads in the scene
+pub fn advance_dot_lottie_playheads(
     mut query: Query<(
         &Handle<VelloAsset>,
         &mut Playhead,
-        Option<&mut LottiePlayer>,
-        Option<&PlaybackOptions>,
+        &mut DotLottiePlayer,
+        &PlaybackOptions,
     )>,
     mut assets: ResMut<Assets<VelloAsset>>,
     time: Res<Time>,
 ) {
-    for (asset_handle, mut playhead, player, options) in query.iter_mut() {
+    for (asset_handle, mut playhead, mut player, options) in query.iter_mut() {
         // Get asset
         let Some(VelloAsset {
-            data: VectorFile::Lottie(composition),
+            file: VectorFile::Lottie(composition),
             ..
         }) = assets.get_mut(asset_handle.id())
         else {
             continue;
         };
 
-        let options = options.cloned().unwrap_or_default();
-
         // Keep playhead bounded
         let start_frame = options.segments.start.max(composition.frames.start);
         let end_frame = options.segments.end.min(composition.frames.end).prev();
         playhead.frame = playhead.frame.clamp(start_frame, end_frame);
 
-        if let Some(mut player) = player {
-            if player.stopped {
-                continue;
-            }
-            // Auto play
-            if !player.started && options.autoplay {
-                player.started = true;
-                player.playing = true;
-            }
-            // Return if paused
-            if !player.playing {
-                continue;
-            }
+        // Check if we are stopped
+        if player.stopped {
+            continue;
         }
 
-        let start_frame = options.segments.start.max(composition.frames.start);
-        let end_frame = options.segments.end.min(composition.frames.end).prev();
-        let length = end_frame - start_frame;
+        // Set first render
+        playhead.first_render.get_or_insert(Instant::now());
+
+        // Auto play
+        if !player.started && options.autoplay {
+            player.started = true;
+            player.playing = true;
+        }
+        // Return if paused
+        if !player.playing {
+            continue;
+        }
 
         // Handle intermissions
         if let Some(ref mut intermission) = playhead.intermission {
@@ -99,13 +67,11 @@ pub fn advance_playheads(
                     }
                 }
             }
-            return;
+            continue;
         }
 
-        // Set first render
-        playhead.first_render.get_or_insert(Instant::now());
-
         // Advance playhead
+        let length = end_frame - start_frame;
         playhead.frame += (time.delta_seconds_f64()
             * options.speed
             * composition.frame_rate
@@ -171,7 +137,7 @@ pub fn advance_playheads(
 
 pub fn run_transitions(
     mut query_player: Query<(
-        &mut LottiePlayer,
+        &mut DotLottiePlayer,
         &Playhead,
         &PlaybackOptions,
         &GlobalTransform,
@@ -240,7 +206,7 @@ pub fn run_transitions(
                     }
                 }
                 PlayerTransition::OnComplete { state } => {
-                    if let VectorFile::Lottie(composition) = &current_asset.data {
+                    if let VectorFile::Lottie(composition) = &current_asset.file {
                         let loops_needed = match options.looping {
                             PlaybackLoopBehavior::DoNotLoop => Some(0),
                             PlaybackLoopBehavior::Amount(amt) => Some(amt),
@@ -307,20 +273,21 @@ pub fn run_transitions(
 
 pub fn transition_state(
     mut commands: Commands,
-    mut query_sm: Query<(Entity, &mut LottiePlayer, &mut Playhead)>,
+    mut query_sm: Query<(Entity, &mut DotLottiePlayer, &mut Playhead)>,
     assets: Res<Assets<VelloAsset>>,
 ) {
     for (entity, mut player, mut playhead) in query_sm.iter_mut() {
+        // Is there a state to transition to?
         let Some(next_state) = player.next_state else {
             continue;
         };
+        // Is it the same state?
         if Some(next_state) == player.current_state {
-            // Already in expected state, ignoring...
             player.next_state.take();
             continue;
         }
-        info!("animation controller transitioning to={next_state}");
 
+        info!("animation controller transitioning to={next_state}");
         let target_state = player
             .states
             .get(&next_state)
@@ -337,13 +304,20 @@ pub fn transition_state(
             commands.entity(entity).insert(target_handle.clone());
         }
         // Reset playheads if requested
-        if player.state().reset_playhead_on_exit || target_state.reset_playhead_on_start {
-            let asset = target_state.asset.as_ref();
-            if let Some(VelloAsset {
-                data: VectorFile::Lottie(composition),
-                ..
-            }) = asset.and_then(|a| assets.get(a))
-            {
+        let reset_playhead =
+            player.state().reset_playhead_on_exit || target_state.reset_playhead_on_start;
+        if reset_playhead {
+            let target_asset = target_state.asset.as_ref();
+            if let Some(target_asset) = target_asset {
+                let Some(VelloAsset {
+                    file: VectorFile::Lottie(composition),
+                    ..
+                }) = assets.get(target_asset)
+                else {
+                    warn!("not ready for state transition, re-queueing {next_state}...");
+                    player.next_state = Some(next_state);
+                    continue;
+                };
                 let frame = match target_options.direction {
                     PlaybackDirection::Normal => {
                         target_options.segments.start.max(composition.frames.start)
@@ -354,8 +328,7 @@ pub fn transition_state(
                         .min(composition.frames.end)
                         .prev(),
                 };
-                // Reset playhead
-                playhead.frame = frame;
+                playhead.seek(frame);
             }
         }
 
