@@ -61,7 +61,7 @@ serde_json = { optional = true, version = "1" }
 wasm-bindgen-test = "0.3.42"
 
 [features]
-default = ["svg", "lottie"]
+default = []
 svg = []
 # TODO: Remove `serde_json` after https://github.com/linebender/velato/pull/19
 lottie = ["serde_json"]

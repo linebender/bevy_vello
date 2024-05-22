@@ -19,10 +19,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### Changed
 
-- SVG (.svg) support is now added through a cargo feature `svg`.
-- Lottie (.json) support is now added through the cargo feature `lottie`.
-- experimental `dotLottie` features (`LottiePlayer`, `PlayerTransition`, `PlayerState`) are now feature-gated through the cargo feature `experimental-dotLottie`. This is only partial support, and a work in progress.
-- `VelloAsset.metadata()` is no longer available, as it is specific to Lottie. There is now a trait, `LottieExt` that can be imported to call `.metadata()` on a `Composition` instead. This is no longer fallible as a result.
+- SVG and Lottie features are now feature-gated
+  - SVG (.svg) support is now added through a cargo feature `svg`.
+  - Lottie (.json) support is now added through the cargo feature `lottie`.
+  - experimental `dotLottie` features (`LottiePlayer`, `PlayerTransition`, `PlayerState`) are now feature-gated through the cargo feature `experimental-dotLottie`. This is only partial support, and a work in progress.
+  - `Theme` is now activated through the `lottie` feature, as it was only possible to style runtime lotties.
+  - `VelloAsset.metadata()` is no longer available, as it is specific to Lottie. There is now a trait, `LottieExt` that can be imported to call `.metadata()` on a `Composition` instead. This is no longer fallible as a result.
 - `PlaybackAlphaOverride` was removed in favor of an `alpha` field on `VelloAsset`.
 - `LottiePlayer` was renamed to `DotLottiePlayer`.
 - Paths to several locations have changed, e.g. `bevy_vello::assets` -> `bevy_vello::integrations`

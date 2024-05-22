@@ -12,7 +12,6 @@ pub mod debug;
 pub mod integrations;
 pub mod render;
 pub mod text;
-pub mod theme;
 
 // Re-exports
 pub use {velato, vello, vello_svg};
@@ -24,7 +23,6 @@ pub mod prelude {
     pub use crate::integrations::{VectorFile, VelloAsset, VelloAssetAlignment};
     pub use crate::render::{VelloCanvasMaterial, ZFunction};
     pub use crate::text::{VelloFont, VelloText, VelloTextAlignment};
-    pub use crate::theme::Theme;
     pub use crate::{
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
@@ -34,7 +32,7 @@ pub mod prelude {
     #[cfg(feature = "lottie")]
     pub use crate::integrations::lottie::{
         LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
-        Playhead,
+        Playhead, Theme,
     };
 }
 

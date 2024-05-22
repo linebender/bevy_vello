@@ -10,18 +10,17 @@ use vello_svg::usvg::strict_num::Ulps;
 /// Spawn playheads for Lotties. Every Lottie gets exactly 1 playhead.
 pub fn spawn_playheads(
     mut commands: Commands,
-    query: Query<
-        (Entity, &Handle<VelloAsset>, Option<&PlaybackOptions>),
-        (Added<Handle<VelloAsset>>, Without<Playhead>),
-    >,
+    query: Query<(Entity, &Handle<VelloAsset>, Option<&PlaybackOptions>), Without<Playhead>>,
     assets: Res<Assets<VelloAsset>>,
 ) {
     for (entity, handle, options) in query.iter() {
-        if let Some(asset) = assets.get(handle) {
-            let VectorFile::Lottie(composition) = &asset.file else {
-                // Asset is one that doesn't need a playhead, e.g. SVG
-                continue;
-            };
+        if let Some(
+            _asset @ VelloAsset {
+                file: _file @ VectorFile::Lottie(composition),
+                ..
+            },
+        ) = assets.get(handle)
+        {
             let frame = match options {
                 Some(options) => match options.direction {
                     PlaybackDirection::Normal => {
@@ -46,7 +45,7 @@ pub fn advance_playheads_without_options(
     >,
     #[cfg(not(feature = "experimental-dotLottie"))] mut query: Query<
         (&Handle<VelloAsset>, &mut Playhead),
-        (Without<PlaybackOptions>),
+        Without<PlaybackOptions>,
     >,
     mut assets: ResMut<Assets<VelloAsset>>,
     time: Res<Time>,

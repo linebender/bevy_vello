@@ -7,7 +7,7 @@ impl Plugin for LottieIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset_loader::<VelloLottieLoader>()
             .add_systems(
-                First,
+                PostUpdate,
                 (
                     systems::advance_playheads_without_options,
                     systems::advance_playheads_with_options,
