@@ -11,6 +11,5 @@ pub enum VectorLoaderError {
     Usvg(#[from] vello_svg::usvg::Error),
     #[cfg(feature = "lottie")]
     #[error("Could not parse lottie: {0}")]
-    // TODO: Replace with `VelatoError` after https://github.com/linebender/velato/pull/19.
-    Velato(#[from] serde_json::Error),
+    Velato(#[from] velato::VelatoError),
 }

@@ -10,6 +10,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.4.1
+
+### Fixed
+
+- Updated to vello_svg v0.1.1, fixing viewboxes.
+- Updates to velato v0.1.1, fixing viewboxes.
+
 ## 0.4.0
 
 ### Added
