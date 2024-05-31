@@ -137,7 +137,7 @@ pub fn prepare_vector_affines(
 pub fn prepare_scene_affines(
     mut commands: Commands,
     camera: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
-    mut render_vectors: Query<(Entity, &ExtractedRenderScene)>,
+    mut render_scenes: Query<(Entity, &ExtractedRenderScene)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let Ok((camera, view)) = camera.get_single() else {
@@ -145,7 +145,7 @@ pub fn prepare_scene_affines(
     };
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
     let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-    for (entity, render_vector) in render_vectors.iter_mut() {
+    for (entity, render_scene) in render_scenes.iter_mut() {
         let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
             [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
             [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
@@ -154,21 +154,17 @@ pub fn prepare_scene_affines(
         ])
         .transpose();
 
-        let world_transform = render_vector.transform;
+        let world_transform = render_scene.transform;
 
-        let raw_transform = match render_vector.render_mode {
+        let mut raw_transform = match render_scene.render_mode {
             CoordinateSpace::ScreenSpace => {
-                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
-                model_matrix.w_axis.y *= -1.0;
-                model_matrix
+                world_transform.compute_matrix().mul_scalar(pixel_scale.0)
             }
             CoordinateSpace::WorldSpace => {
-                let mut model_matrix = world_transform.compute_matrix();
-                model_matrix.w_axis.y *= -1.0;
+                let model_matrix = world_transform.compute_matrix();
 
                 let (projection_mat, view_mat) = {
-                    let mut view_mat = view.transform.compute_matrix();
-                    view_mat.w_axis.y *= -1.0;
+                    let view_mat = view.transform.compute_matrix();
 
                     (view.projection, view_mat)
                 };
@@ -178,6 +174,22 @@ pub fn prepare_scene_affines(
                 ndc_to_pixels_matrix * view_proj_matrix * model_matrix
             }
         };
+
+        if let Some(node) = &render_scene.ui_node {
+            // The Bevy Transform for a UI node seems to always have the origin
+            // of the translation at the center of its bounding box. Here we
+            // move the origin back to the top left, so that, e.g., drawing a
+            // shape with center=(20,20) inside of a 40x40 UI node results in
+            // the shape being centered within the node.
+            let Vec2 { x, y } = node.size() * pixel_scale.0;
+            raw_transform.w_axis.x -= x / 2.0;
+            raw_transform.w_axis.y -= y / 2.0;
+
+            // Note that there's no need to flip the Y axis in this case, as
+            // Bevy handles it for us.
+        } else {
+            raw_transform.w_axis.y *= -1.0;
+        }
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 
