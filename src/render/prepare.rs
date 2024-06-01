@@ -158,7 +158,7 @@ pub fn prepare_scene_affines(
 
         let raw_transform = match render_scene.render_mode {
             CoordinateSpace::ScreenSpace => {
-                let mut raw_transform = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
 
                 if let Some(node) = &render_scene.ui_node {
                     // The Bevy Transform for a UI node seems to always have the origin
@@ -167,16 +167,16 @@ pub fn prepare_scene_affines(
                     // shape with center=(20,20) inside of a 40x40 UI node results in
                     // the shape being centered within the node.
                     let Vec2 { x, y } = node.size() * pixel_scale.0;
-                    raw_transform.w_axis.x -= x / 2.0;
-                    raw_transform.w_axis.y -= y / 2.0;
+                    model_matrix.w_axis.x -= x / 2.0;
+                    model_matrix.w_axis.y -= y / 2.0;
 
                     // Note that there's no need to flip the Y axis in this case, as
                     // Bevy handles it for us.
                 } else {
-                    raw_transform.w_axis.y *= -1.0;
+                    model_matrix.w_axis.y *= -1.0;
                 }
 
-                raw_transform
+                model_matrix
             }
             CoordinateSpace::WorldSpace => {
                 let mut model_matrix = world_transform.compute_matrix();
