@@ -156,15 +156,35 @@ pub fn prepare_scene_affines(
 
         let world_transform = render_scene.transform;
 
-        let mut raw_transform = match render_scene.render_mode {
+        let raw_transform = match render_scene.render_mode {
             CoordinateSpace::ScreenSpace => {
-                world_transform.compute_matrix().mul_scalar(pixel_scale.0)
+                let mut raw_transform = world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+
+                if let Some(node) = &render_scene.ui_node {
+                    // The Bevy Transform for a UI node seems to always have the origin
+                    // of the translation at the center of its bounding box. Here we
+                    // move the origin back to the top left, so that, e.g., drawing a
+                    // shape with center=(20,20) inside of a 40x40 UI node results in
+                    // the shape being centered within the node.
+                    let Vec2 { x, y } = node.size() * pixel_scale.0;
+                    raw_transform.w_axis.x -= x / 2.0;
+                    raw_transform.w_axis.y -= y / 2.0;
+
+                    // Note that there's no need to flip the Y axis in this case, as
+                    // Bevy handles it for us.
+                } else {
+                    raw_transform.w_axis.y *= -1.0;
+                }
+
+                raw_transform
             }
             CoordinateSpace::WorldSpace => {
-                let model_matrix = world_transform.compute_matrix();
+                let mut model_matrix = world_transform.compute_matrix();
+                model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {
-                    let view_mat = view.transform.compute_matrix();
+                    let mut view_mat = view.transform.compute_matrix();
+                    view_mat.w_axis.y *= -1.0;
 
                     (view.projection, view_mat)
                 };
@@ -174,22 +194,6 @@ pub fn prepare_scene_affines(
                 ndc_to_pixels_matrix * view_proj_matrix * model_matrix
             }
         };
-
-        if let Some(node) = &render_scene.ui_node {
-            // The Bevy Transform for a UI node seems to always have the origin
-            // of the translation at the center of its bounding box. Here we
-            // move the origin back to the top left, so that, e.g., drawing a
-            // shape with center=(20,20) inside of a 40x40 UI node results in
-            // the shape being centered within the node.
-            let Vec2 { x, y } = node.size() * pixel_scale.0;
-            raw_transform.w_axis.x -= x / 2.0;
-            raw_transform.w_axis.y -= y / 2.0;
-
-            // Note that there's no need to flip the Y axis in this case, as
-            // Bevy handles it for us.
-        } else {
-            raw_transform.w_axis.y *= -1.0;
-        }
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 
