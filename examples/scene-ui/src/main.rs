@@ -36,7 +36,6 @@ fn setup_ui(mut commands: Commands) {
     ));
 }
 
-#[allow(clippy::type_complexity)]
 fn update_ui(mut query: Query<(&Node, &Interaction, &mut VelloScene)>) {
     let Ok((node, interaction, mut scene)) = query.get_single_mut() else {
         return;
