@@ -10,6 +10,14 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### Added
+
+- New `scene-ui` example demonstrating a `VelloScene` attached to a `bevy::ui::Node`
+
+### Fixed
+
+- `VelloScene` components on `bevy::ui::Node` entities now account for Bevy's UI layout systems and render at the expected viewport coordinates
+
 ## 0.4.2
 
 ### Fixed

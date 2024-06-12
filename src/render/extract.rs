@@ -136,6 +136,7 @@ pub struct ExtractedRenderScene {
     pub scene: VelloScene,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
+    pub ui_node: Option<Node>,
 }
 
 pub fn scene_instances(
@@ -147,10 +148,11 @@ pub fn scene_instances(
             &GlobalTransform,
             &ViewVisibility,
             &InheritedVisibility,
+            Option<&Node>,
         )>,
     >,
 ) {
-    for (scene, coord_space, transform, view_visibility, inherited_visibility) in
+    for (scene, coord_space, transform, view_visibility, inherited_visibility, ui_node) in
         query_scenes.iter()
     {
         if view_visibility.get() && inherited_visibility.get() {
@@ -158,6 +160,7 @@ pub fn scene_instances(
                 transform: *transform,
                 render_mode: *coord_space,
                 scene: scene.clone(),
+                ui_node: ui_node.cloned(),
             });
         }
     }
