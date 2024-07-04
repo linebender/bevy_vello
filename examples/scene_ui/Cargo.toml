@@ -1,5 +1,5 @@
 [package]
-name = "scene-ui"
+name = "scene_ui"
 version.workspace = true
 license.workspace = true
 edition.workspace = true

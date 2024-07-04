@@ -27,7 +27,7 @@ fn setup_ui(mut commands: Commands) {
                 border: UiRect::all(Val::Px(2.0)),
                 ..default()
             },
-            border_color: Color::FUCHSIA.with_a(0.5).into(),
+            border_color: Srgba::rgb(1.0, 0.0, 1.0).with_alpha(0.5).into(),
             ..default()
         },
         Interaction::default(),

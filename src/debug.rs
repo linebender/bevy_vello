@@ -212,12 +212,12 @@ fn draw_origin(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin:
     let from = origin + RED_X_SIZE * Vec2::splat(1.0) * projection.scale;
     let to = origin + RED_X_SIZE * Vec2::splat(-1.0) * projection.scale;
 
-    gizmos.line_2d(from, to, Color::RED);
+    gizmos.line_2d(from, to, Srgba::RED);
 
     let from = origin + RED_X_SIZE * Vec2::new(1.0, -1.0) * projection.scale;
     let to = origin + RED_X_SIZE * Vec2::new(-1.0, 1.0) * projection.scale;
 
-    gizmos.line_2d(from, to, Color::RED);
+    gizmos.line_2d(from, to, Srgba::RED);
 }
 
 /// A helper method to draw the bounding box
@@ -263,7 +263,7 @@ fn draw_bounding_box(gizmos: &mut Gizmos, z_fn: &ZFunction, position: Vec2, size
     //     Color::WHITE,
     // );
     // ```
-    const Z_COLOR: Color = Color::GREEN;
+    const Z_COLOR: Srgba = Srgba::GREEN;
     match z_fn {
         ZFunction::TransformX => gizmos.line_2d(
             position + Vec2::new(0.0, -half_height),

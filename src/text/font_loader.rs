@@ -2,7 +2,7 @@ use super::font::VelloFont;
 use crate::integrations::VectorLoaderError;
 use bevy::asset::io::Reader;
 use bevy::asset::{AssetLoader, AsyncReadExt, LoadContext};
-use bevy::utils::BoxedFuture;
+use bevy::utils::ConditionalSendFuture;
 
 #[derive(Default)]
 pub struct VelloFontLoader;
@@ -19,7 +19,7 @@ impl AssetLoader for VelloFontLoader {
         reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         _load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<Output = Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;

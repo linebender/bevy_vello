@@ -81,10 +81,10 @@ impl PrepareRenderInstance for ExtractedRenderAsset {
                 model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {
-                    let mut view_mat = view.transform.compute_matrix();
+                    let mut view_mat = view.world_from_view.compute_matrix();
                     view_mat.w_axis.y *= -1.0;
 
-                    (view.projection, view_mat)
+                    (view.clip_from_view, view_mat)
                 };
 
                 let view_proj_matrix = projection_mat * view_mat.inverse();
@@ -183,10 +183,10 @@ pub fn prepare_scene_affines(
                 model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {
-                    let mut view_mat = view.transform.compute_matrix();
+                    let mut view_mat = view.world_from_view.compute_matrix();
                     view_mat.w_axis.y *= -1.0;
 
-                    (view.projection, view_mat)
+                    (view.clip_from_view, view_mat)
                 };
 
                 let view_proj_matrix = projection_mat * view_mat.inverse();
@@ -241,10 +241,10 @@ pub fn prepare_text_affines(
         model_matrix.w_axis.y *= -1.0;
 
         let (projection_mat, view_mat) = {
-            let mut view_mat = view.transform.compute_matrix();
+            let mut view_mat = view.world_from_view.compute_matrix();
             view_mat.w_axis.y *= -1.0;
 
-            (view.projection, view_mat)
+            (view.clip_from_view, view_mat)
         };
 
         let view_proj_matrix = projection_mat * view_mat.inverse();

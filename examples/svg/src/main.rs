@@ -4,10 +4,12 @@ use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin)
-        .add_systems(Startup, load_svg);
+    app.add_plugins(DefaultPlugins.set(AssetPlugin {
+        meta_check: AssetMetaCheck::Never,
+        ..default()
+    }))
+    .add_plugins(VelloPlugin)
+    .add_systems(Startup, load_svg);
     embedded_asset!(app, "assets/fountain.svg");
     app.run();
 }

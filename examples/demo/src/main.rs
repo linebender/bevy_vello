@@ -8,14 +8,16 @@ use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins)
-        .add_plugins(EguiPlugin)
-        .add_plugins(VelloPlugin)
-        .init_resource::<EmbeddedAssetRegistry>()
-        .add_plugins(bevy_pancam::PanCamPlugin)
-        .add_systems(Startup, setup_vector_graphics)
-        .add_systems(Update, (print_metadata, ui::controls_ui));
+    app.add_plugins(DefaultPlugins.set(AssetPlugin {
+        meta_check: AssetMetaCheck::Never,
+        ..default()
+    }))
+    .add_plugins(EguiPlugin)
+    .add_plugins(VelloPlugin)
+    .init_resource::<EmbeddedAssetRegistry>()
+    .add_plugins(bevy_pancam::PanCamPlugin)
+    .add_systems(Startup, setup_vector_graphics)
+    .add_systems(Update, (print_metadata, ui::controls_ui));
     embedded_asset!(app, "assets/calendar.json");
     app.run();
 }

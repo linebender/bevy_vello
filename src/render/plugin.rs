@@ -22,7 +22,7 @@ impl Plugin for VelloRenderPlugin {
             Shader::from_wgsl
         );
 
-        let Ok(render_app) = app.get_sub_app_mut(RenderApp) else {
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
 

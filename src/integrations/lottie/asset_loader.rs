@@ -4,7 +4,7 @@ use crate::VelloAsset;
 use bevy::asset::io::Reader;
 use bevy::asset::{AssetLoader, AsyncReadExt, LoadContext};
 use bevy::prelude::*;
-use bevy::utils::BoxedFuture;
+use bevy::utils::ConditionalSendFuture;
 
 #[derive(Default)]
 pub struct VelloLottieLoader;
@@ -21,7 +21,7 @@ impl AssetLoader for VelloLottieLoader {
         reader: &'a mut Reader,
         _settings: &'a Self::Settings,
         load_context: &'a mut LoadContext,
-    ) -> BoxedFuture<'a, Result<Self::Asset, Self::Error>> {
+    ) -> impl ConditionalSendFuture<Output = Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
             let mut bytes = Vec::new();
             reader.read_to_end(&mut bytes).await?;
