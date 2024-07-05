@@ -15,12 +15,14 @@ pub struct ExtractedRenderAsset {
     pub alignment: VelloAssetAlignment,
     pub transform: GlobalTransform,
     pub z_function: ZFunction,
+    pub render_mode: CoordinateSpace,
+    pub ui_node: Option<Node>,
     #[cfg(feature = "lottie")]
     pub theme: Option<crate::Theme>,
-    pub render_mode: CoordinateSpace,
+    #[cfg(feature = "lottie")]
     pub playhead: f64,
+    #[cfg(feature = "lottie")]
     pub alpha: f32,
-    pub ui_node: Option<Node>,
 }
 
 #[cfg(feature = "svg")]
@@ -54,6 +56,7 @@ pub fn extract_svg_instances(
         if let Some(
             asset @ VelloAsset {
                 file: _file @ crate::VectorFile::Svg(_),
+                #[cfg(feature = "lottie")]
                 alpha,
                 ..
             },
@@ -65,12 +68,14 @@ pub fn extract_svg_instances(
                     transform: *transform,
                     alignment: *alignment,
                     z_function: *z_function,
+                    render_mode: *coord_space,
+                    ui_node: ui_node.cloned(),
                     #[cfg(feature = "lottie")]
                     theme: None,
-                    render_mode: *coord_space,
+                    #[cfg(feature = "lottie")]
                     playhead: 0.0,
+                    #[cfg(feature = "lottie")]
                     alpha: *alpha,
-                    ui_node: ui_node.cloned(),
                 });
             }
         }

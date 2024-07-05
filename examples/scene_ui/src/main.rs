@@ -1,7 +1,6 @@
-use std::f64::consts::{FRAC_PI_4, SQRT_2};
-
 use bevy::{color::palettes::css, prelude::*};
 use bevy_vello::{prelude::*, VelloPlugin};
+use std::f64::consts::{FRAC_PI_4, SQRT_2};
 
 fn main() {
     App::new()

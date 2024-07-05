@@ -204,6 +204,8 @@ pub fn run_transitions(
                     }
                 }
                 PlayerTransition::OnComplete { state } => {
+                    // can be irrefutable if only feature is lottie
+                    #[allow(irrefutable_let_patterns)]
                     if let VectorFile::Lottie(composition) = &current_asset.file {
                         let loops_needed = match options.looping {
                             PlaybackLoopBehavior::DoNotLoop => Some(0),
