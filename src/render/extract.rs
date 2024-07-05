@@ -159,11 +159,6 @@ pub fn scene_instances(
     for (scene, coord_space, transform, view_visibility, inherited_visibility, ui_node) in
         query_scenes.iter()
     {
-        error!(
-            "view: {}, inherited: {}",
-            view_visibility.get(),
-            inherited_visibility.get()
-        );
         if view_visibility.get() && inherited_visibility.get() {
             commands.spawn(ExtractedRenderScene {
                 transform: *transform,
