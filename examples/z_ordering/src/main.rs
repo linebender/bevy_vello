@@ -1,7 +1,12 @@
-use bevy::asset::{embedded_asset, AssetMetaCheck};
-use bevy::prelude::*;
-use bevy_vello::vello::peniko::{Brush, Color};
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy::{
+    asset::{embedded_asset, AssetMetaCheck},
+    prelude::*,
+};
+use bevy_vello::{
+    prelude::*,
+    vello::peniko::{Brush, Color},
+    VelloPlugin,
+};
 
 fn main() {
     let mut app = App::new();

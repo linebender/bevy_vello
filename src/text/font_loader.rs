@@ -1,8 +1,9 @@
 use super::font::VelloFont;
 use crate::integrations::VectorLoaderError;
-use bevy::asset::io::Reader;
-use bevy::asset::{AssetLoader, AsyncReadExt, LoadContext};
-use bevy::utils::ConditionalSendFuture;
+use bevy::{
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
+    utils::ConditionalSendFuture,
+};
 
 #[derive(Default)]
 pub struct VelloFontLoader;

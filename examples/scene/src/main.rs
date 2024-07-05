@@ -1,6 +1,9 @@
 use bevy::prelude::*;
-use bevy_vello::vello::{kurbo, peniko};
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{
+    prelude::*,
+    vello::{kurbo, peniko},
+    VelloPlugin,
+};
 
 fn main() {
     App::new()

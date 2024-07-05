@@ -1,11 +1,13 @@
 //! A component to augment playback colors.
 //!
-//! A long-term vision here is a selector-styled language, but now is just color swapping by layer name.
+//! A long-term vision here is a selector-styled language, but now is just color swapping by layer
+//! name.
 
-use bevy::prelude::*;
-use bevy::utils::HashMap;
-use velato::model::{Brush, Shape};
-use velato::Composition;
+use bevy::{prelude::*, utils::HashMap};
+use velato::{
+    model::{Brush, Shape},
+    Composition,
+};
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]

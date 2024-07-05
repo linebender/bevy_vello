@@ -2,9 +2,10 @@ use super::extract::{
     ExtractedPixelScale, ExtractedRenderAsset, ExtractedRenderScene, ExtractedRenderText,
 };
 use crate::CoordinateSpace;
-use bevy::prelude::*;
-use bevy::render::camera::ExtractedCamera;
-use bevy::render::view::ExtractedView;
+use bevy::{
+    prelude::*,
+    render::{camera::ExtractedCamera, view::ExtractedView},
+};
 use vello::kurbo::Affine;
 
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
@@ -16,7 +17,8 @@ pub struct PreparedTransform(GlobalTransform);
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedZIndex(f32);
 
-// All extracted bevy_vello render instance types should implement this (RenderAsset, RenderScene, RenderText, etc...)
+// All extracted bevy_vello render instance types should implement this (RenderAsset, RenderScene,
+// RenderText, etc...)
 pub trait PrepareRenderInstance {
     fn z_index(&self, transform: GlobalTransform) -> PreparedZIndex;
     fn final_transform(&self) -> PreparedTransform;

@@ -1,5 +1,7 @@
-use bevy::asset::{embedded_asset, AssetMetaCheck};
-use bevy::prelude::*;
+use bevy::{
+    asset::{embedded_asset, AssetMetaCheck},
+    prelude::*,
+};
 use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {

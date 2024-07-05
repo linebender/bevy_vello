@@ -1,8 +1,8 @@
-use bevy::asset::{embedded_asset, AssetMetaCheck};
-use bevy::prelude::*;
-use bevy_vello::text::VelloTextAlignment;
-use bevy_vello::vello::peniko;
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy::{
+    asset::{embedded_asset, AssetMetaCheck},
+    prelude::*,
+};
+use bevy_vello::{prelude::*, text::VelloTextAlignment, vello::peniko, VelloPlugin};
 
 fn main() {
     let mut app = App::new();

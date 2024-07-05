@@ -1,8 +1,9 @@
 use bevy::prelude::*;
-use bevy_egui::egui::{self};
-use bevy_egui::EguiContexts;
-use bevy_vello::prelude::*;
-use bevy_vello::vello_svg::usvg::strict_num::Ulps;
+use bevy_egui::{
+    egui::{self},
+    EguiContexts,
+};
+use bevy_vello::{prelude::*, vello_svg::usvg::strict_num::Ulps};
 use std::time::Duration;
 
 pub fn controls_ui(
@@ -244,7 +245,8 @@ pub fn controls_ui(
         ui.heading("Theme");
         for layer in composition.as_ref().get_layers() {
             let color = theme.get_mut(layer).cloned().unwrap_or_default();
-            let mut color_edit = [color.r(), color.g(), color.b(), color.a()];
+            let color = color.to_srgba();
+            let mut color_edit = [color.red, color.green, color.blue, color.alpha];
             ui.horizontal(|ui| {
                 if ui
                     .color_edit_button_rgba_unmultiplied(&mut color_edit)
@@ -256,8 +258,8 @@ pub fn controls_ui(
                         .theme
                         .as_mut()
                         .unwrap()
-                        .edit(layer, Color::rgba(r, g, b, a));
-                    theme.edit(layer, Color::rgba(r, g, b, a));
+                        .edit(layer, Color::srgba(r, g, b, a));
+                    theme.edit(layer, Color::srgba(r, g, b, a));
                 };
                 ui.label(layer);
             });

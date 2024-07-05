@@ -1,10 +1,12 @@
-use crate::integrations::svg::load_svg_from_bytes;
-use crate::integrations::VectorLoaderError;
-use crate::VelloAsset;
-use bevy::asset::io::Reader;
-use bevy::asset::{AssetLoader, AsyncReadExt, LoadContext};
-use bevy::prelude::*;
-use bevy::utils::ConditionalSendFuture;
+use crate::{
+    integrations::{svg::load_svg_from_bytes, VectorLoaderError},
+    VelloAsset,
+};
+use bevy::{
+    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
+    prelude::*,
+    utils::ConditionalSendFuture,
+};
 
 #[derive(Default)]
 pub struct VelloSvgLoader;

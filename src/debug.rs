@@ -1,8 +1,9 @@
 //! Logic for rendering debug visualizations
-use crate::text::VelloTextAlignment;
-use crate::{CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont, VelloText, ZFunction};
-use bevy::math::Vec3Swizzles;
-use bevy::prelude::*;
+use crate::{
+    text::VelloTextAlignment, CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont,
+    VelloText, ZFunction,
+};
+use bevy::{math::Vec3Swizzles, prelude::*};
 
 const RED_X_SIZE: f32 = 8.0;
 

@@ -1,22 +1,29 @@
-use super::extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget};
-use super::prepare::PreparedAffine;
-use super::VelloRenderer;
-use crate::render::extract::ExtractedRenderScene;
-use crate::render::prepare::PreparedZIndex;
-use crate::{CoordinateSpace, VelloCanvasMaterial, VelloFont};
-use bevy::prelude::*;
-use bevy::render::mesh::Indices;
-use bevy::render::render_asset::{RenderAssetUsages, RenderAssets};
-use bevy::render::render_resource::{
-    Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
+use super::{
+    extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget},
+    prepare::PreparedAffine,
+    VelloRenderer,
 };
-use bevy::render::renderer::{RenderDevice, RenderQueue};
-use bevy::render::texture::GpuImage;
-use bevy::render::view::NoFrustumCulling;
-use bevy::sprite::{MaterialMesh2dBundle, Mesh2dHandle};
-use bevy::window::{WindowResized, WindowResolution};
-use vello::kurbo::Affine;
-use vello::{AaSupport, RenderParams, Renderer, RendererOptions, Scene};
+use crate::{
+    render::{extract::ExtractedRenderScene, prepare::PreparedZIndex},
+    CoordinateSpace, VelloCanvasMaterial, VelloFont,
+};
+use bevy::{
+    prelude::*,
+    render::{
+        mesh::Indices,
+        render_asset::{RenderAssetUsages, RenderAssets},
+        render_resource::{
+            Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension, TextureFormat,
+            TextureUsages,
+        },
+        renderer::{RenderDevice, RenderQueue},
+        texture::GpuImage,
+        view::NoFrustumCulling,
+    },
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+    window::{WindowResized, WindowResolution},
+};
+use vello::{kurbo::Affine, AaSupport, RenderParams, Renderer, RendererOptions, Scene};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -292,7 +299,9 @@ pub fn setup_ss_rendertarget(
         .spawn(MaterialMesh2dBundle {
             mesh,
             material,
-            transform: Transform::from_translation(0.001 * Vec3::NEG_Z), // Make sure the vello canvas renders behind Gizmos
+            transform: Transform::from_translation(0.001 * Vec3::NEG_Z), /* Make sure the vello
+                                                                          * canvas renders behind
+                                                                          * Gizmos */
             ..Default::default()
         })
         .insert(NoFrustumCulling)

@@ -1,14 +1,15 @@
-use super::vello_text::VelloText;
-use super::VelloTextAlignment;
-use bevy::prelude::*;
-use bevy::reflect::TypePath;
-use bevy::render::render_asset::RenderAsset;
+use super::{vello_text::VelloText, VelloTextAlignment};
+use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use std::sync::Arc;
-use vello::glyph::skrifa::{FontRef, MetadataProvider};
-use vello::glyph::Glyph;
-use vello::kurbo::Affine;
-use vello::peniko::{self, Blob, Brush, Color, Font};
-use vello::Scene;
+use vello::{
+    glyph::{
+        skrifa::{FontRef, MetadataProvider},
+        Glyph,
+    },
+    kurbo::Affine,
+    peniko::{self, Blob, Brush, Color, Font},
+    Scene,
+};
 
 const VARIATIONS: &[(&str, f32)] = &[];
 
@@ -42,7 +43,8 @@ impl VelloFont {
         let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
         let axes = font.axes();
-        // TODO: What do Variations here do? Any font nerds know? I'm definitely not doing this right.
+        // TODO: What do Variations here do? Any font nerds know? I'm definitely not doing this
+        // right.
         let var_loc = axes.location(VARIATIONS);
         let metrics = font.metrics(font_size, &var_loc);
         let line_height = metrics.ascent - metrics.descent + metrics.leading;

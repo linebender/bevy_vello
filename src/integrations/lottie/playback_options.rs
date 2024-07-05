@@ -1,8 +1,7 @@
 //! Playback options for lottie files.
 
 use bevy::prelude::*;
-use std::ops::Range;
-use std::time::Duration;
+use std::{ops::Range, time::Duration};
 
 /// Playback options which adjust the playback of an asset.
 ///

@@ -1,9 +1,8 @@
-use crate::integrations::lottie::PlaybackPlayMode;
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VectorFile, VelloAsset,
+    integrations::lottie::PlaybackPlayMode, PlaybackDirection, PlaybackLoopBehavior,
+    PlaybackOptions, Playhead, VectorFile, VelloAsset,
 };
-use bevy::prelude::*;
-use bevy::utils::Instant;
+use bevy::{prelude::*, utils::Instant};
 use std::time::Duration;
 use vello_svg::usvg::strict_num::Ulps;
 

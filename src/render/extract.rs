@@ -1,9 +1,13 @@
 use super::z_function::ZFunction;
-use crate::text::VelloTextAlignment;
-use crate::{CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont, VelloScene, VelloText};
-use bevy::prelude::*;
-use bevy::render::{extract_component::ExtractComponent, Extract};
-use bevy::window::PrimaryWindow;
+use crate::{
+    text::VelloTextAlignment, CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont,
+    VelloScene, VelloText,
+};
+use bevy::{
+    prelude::*,
+    render::{extract_component::ExtractComponent, Extract},
+    window::PrimaryWindow,
+};
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderAsset {
