@@ -23,7 +23,11 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
-use vello::{kurbo::Affine, AaSupport, RenderParams, Renderer, RendererOptions, Scene};
+use vello::{
+    kurbo::{Affine, Rect},
+    peniko::Mix,
+    AaSupport, RenderParams, Renderer, RendererOptions, Scene,
+};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -133,7 +137,6 @@ pub fn render_scene(
         match render_item {
             RenderItem::Asset(ExtractedRenderAsset {
                 asset,
-                #[cfg(feature = "lottie")]
                 alpha,
                 #[cfg(feature = "lottie")]
                 theme,
@@ -143,11 +146,29 @@ pub fn render_scene(
             }) => match &asset.file {
                 #[cfg(feature = "svg")]
                 crate::VectorFile::Svg(scene) => {
-                    // TODO: Apply alpha
+                    if *alpha < 1.0 {
+                        scene_buffer.push_layer(
+                            Mix::Normal,
+                            *alpha,
+                            *affine,
+                            &Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                        );
+                    }
                     scene_buffer.append(scene, Some(*affine));
+                    if *alpha < 1.0 {
+                        scene_buffer.pop_layer();
+                    }
                 }
                 #[cfg(feature = "lottie")]
                 crate::VectorFile::Lottie(composition) => {
+                    if *alpha < 1.0 {
+                        scene_buffer.push_layer(
+                            Mix::Normal,
+                            *alpha,
+                            *affine,
+                            &Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                        );
+                    }
                     velato_renderer.append(
                         {
                             theme
@@ -158,9 +179,13 @@ pub fn render_scene(
                         },
                         *playhead as f64,
                         *affine,
-                        *alpha as f64,
+                        // TODO: Alpha should probably be removed from the renderer. The current way it works isn't correct.
+                        1.0,
                         &mut scene_buffer,
                     );
+                    if *alpha < 1.0 {
+                        scene_buffer.pop_layer();
+                    }
                 }
                 #[cfg(not(any(feature = "svg", feature = "lottie")))]
                 _ => unimplemented!(),
