@@ -27,6 +27,10 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - `VelloScene` components on `bevy::ui::Node` entities now account for Bevy's UI layout systems and render at the expected viewport coordinates
 
+### Removed
+
+- Pancam and/or egui from all examples besides the demo, as external dependencies can bottleneck upgrading to the next bevy version.
+
 ## 0.4.2
 
 ### Fixed
