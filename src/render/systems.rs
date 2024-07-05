@@ -23,11 +23,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
-use vello::{
-    kurbo::{Affine, Rect},
-    peniko::Mix,
-    AaSupport, RenderParams, Renderer, RendererOptions, Scene,
-};
+use vello::{kurbo::Affine, AaSupport, RenderParams, Renderer, RendererOptions, Scene};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -134,6 +130,7 @@ pub fn render_scene(
     // scene to be rendered
     let mut scene_buffer = Scene::new();
     for (_, _, (affine, render_item)) in render_queue.iter_mut() {
+        #[allow(unused_variables)]
         match render_item {
             RenderItem::Asset(ExtractedRenderAsset {
                 asset,
@@ -148,10 +145,15 @@ pub fn render_scene(
                 crate::VectorFile::Svg(scene) => {
                     if *alpha < 1.0 {
                         scene_buffer.push_layer(
-                            Mix::Normal,
+                            vello::peniko::Mix::Normal,
                             *alpha,
                             *affine,
-                            &Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                            &vello::kurbo::Rect::new(
+                                0.0,
+                                0.0,
+                                asset.width as f64,
+                                asset.height as f64,
+                            ),
                         );
                     }
                     scene_buffer.append(scene, Some(*affine));
@@ -163,10 +165,15 @@ pub fn render_scene(
                 crate::VectorFile::Lottie(composition) => {
                     if *alpha < 1.0 {
                         scene_buffer.push_layer(
-                            Mix::Normal,
+                            vello::peniko::Mix::Normal,
                             *alpha,
                             *affine,
-                            &Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                            &vello::kurbo::Rect::new(
+                                0.0,
+                                0.0,
+                                asset.width as f64,
+                                asset.height as f64,
+                            ),
                         );
                     }
                     velato_renderer.append(
