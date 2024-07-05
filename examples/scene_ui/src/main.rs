@@ -1,6 +1,6 @@
 use std::f64::consts::{FRAC_PI_4, SQRT_2};
 
-use bevy::prelude::*;
+use bevy::{color::palettes::css, prelude::*};
 use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {
@@ -27,7 +27,7 @@ fn setup_ui(mut commands: Commands) {
                 border: UiRect::all(Val::Px(2.0)),
                 ..default()
             },
-            border_color: Srgba::rgb(1.0, 0.0, 1.0).with_alpha(0.5).into(),
+            border_color: css::FUCHSIA.with_alpha(0.5).into(),
             ..default()
         },
         Interaction::default(),

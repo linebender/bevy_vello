@@ -245,7 +245,7 @@ pub fn controls_ui(
         ui.heading("Theme");
         for layer in composition.as_ref().get_layers() {
             let color = theme.get_mut(layer).cloned().unwrap_or_default();
-            let color = color.to_srgba();
+            let color = color.to_linear();
             let mut color_edit = [color.red, color.green, color.blue, color.alpha];
             ui.horizontal(|ui| {
                 if ui
@@ -258,8 +258,8 @@ pub fn controls_ui(
                         .theme
                         .as_mut()
                         .unwrap()
-                        .edit(layer, Color::srgba(r, g, b, a));
-                    theme.edit(layer, Color::srgba(r, g, b, a));
+                        .edit(layer, Color::linear_rgba(r, g, b, a));
+                    theme.edit(layer, Color::linear_rgba(r, g, b, a));
                 };
                 ui.label(layer);
             });
