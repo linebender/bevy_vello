@@ -15,7 +15,7 @@ const VARIATIONS: &[(&str, f32)] = &[];
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloFont {
-    pub font: Arc<peniko::Font>,
+    pub font: peniko::Font,
 }
 
 impl RenderAsset for VelloFont {
@@ -34,7 +34,7 @@ impl RenderAsset for VelloFont {
 impl VelloFont {
     pub fn new(font_data: Vec<u8>) -> Self {
         Self {
-            font: Arc::new(Font::new(Blob::new(Arc::new(font_data)), 0)),
+            font: Font::new(Blob::new(Arc::new(font_data)), 0),
         }
     }
 
