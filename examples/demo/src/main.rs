@@ -2,6 +2,7 @@ mod ui;
 
 use bevy::{
     asset::{embedded_asset, io::embedded::EmbeddedAssetRegistry, AssetMetaCheck},
+    color::palettes::css,
     prelude::*,
 };
 use bevy_egui::EguiPlugin;
@@ -41,7 +42,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             autoplay: false,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", Color::BLUE))
+                        .theme(Theme::new().add("calendar", css::BLUE.into()))
                         .transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .reset_playhead_on_start()
                 })
@@ -52,7 +53,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             speed: 0.25,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", Color::GREEN))
+                        .theme(Theme::new().add("calendar", css::GREEN.into()))
                         .transition(PlayerTransition::OnMouseLeave { state: "rev" }),
                 )
                 .with_state(
@@ -63,7 +64,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             speed: 0.25,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", Color::RED))
+                        .theme(Theme::new().add("calendar", css::RED.into()))
                         .transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .transition(PlayerTransition::OnComplete { state: "stopped" }),
                 ),
