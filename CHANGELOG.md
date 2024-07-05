@@ -25,6 +25,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### Fixed
 
+- Removed `Arc` in another `Arc` for `VelloFont`
 - Opacity now correctly applies to SVG assets.
 - Opacity now applies correctly to the lottie image group, rather than each element and path within it, causing overdraw.
 - `VelloScene` components on `bevy::ui::Node` entities now account for Bevy's UI layout systems and render at the expected viewport coordinates
