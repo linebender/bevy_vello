@@ -17,7 +17,7 @@ fn main() {
     .add_plugins(EguiPlugin)
     .add_plugins(VelloPlugin)
     .init_resource::<EmbeddedAssetRegistry>()
-    .add_plugins(bevy_pancam::PanCamPlugin)
+    //.add_plugins(bevy_pancam::PanCamPlugin)
     .add_systems(Startup, setup_vector_graphics)
     .add_systems(Update, (print_metadata, ui::controls_ui));
     embedded_asset!(app, "assets/calendar.json");
@@ -25,7 +25,8 @@ fn main() {
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
+    commands.spawn(Camera2dBundle::default());
+    //commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands
         .spawn(VelloAssetBundle {
             vector: asset_server.load::<VelloAsset>("embedded://demo/assets/calendar.json"),
@@ -42,7 +43,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             autoplay: false,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", css::BLUE.into()))
+                        .theme(Theme::new().add("calendar", css::YELLOW.into()))
                         .transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .reset_playhead_on_start()
                 })
@@ -50,10 +51,10 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     PlayerState::new("play")
                         .playback_options(PlaybackOptions {
                             looping: PlaybackLoopBehavior::DoNotLoop,
-                            speed: 0.25,
+                            speed: 0.75,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", css::GREEN.into()))
+                        .theme(Theme::new().add("calendar", css::LIME.into()))
                         .transition(PlayerTransition::OnMouseLeave { state: "rev" }),
                 )
                 .with_state(
@@ -61,7 +62,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                         .playback_options(PlaybackOptions {
                             looping: PlaybackLoopBehavior::DoNotLoop,
                             direction: PlaybackDirection::Reverse,
-                            speed: 0.25,
+                            speed: 0.75,
                             ..default()
                         })
                         .theme(Theme::new().add("calendar", css::RED.into()))
