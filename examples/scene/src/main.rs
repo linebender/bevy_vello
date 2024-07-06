@@ -1,16 +1,17 @@
-use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
-use bevy_vello::vello::{kurbo, peniko};
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{
+    prelude::*,
+    vello::{kurbo, peniko},
+    VelloPlugin,
+};
 
 fn main() {
     App::new()
-        .insert_resource(AssetMetaCheck::Never)
         .add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, simple_animation)
-        .run()
+        .run();
 }
 
 fn setup_vector_graphics(mut commands: Commands) {
@@ -21,7 +22,6 @@ fn setup_vector_graphics(mut commands: Commands) {
 fn simple_animation(mut query_scene: Query<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
     let sin_time = time.elapsed_seconds().sin().mul_add(0.5, 0.5);
     let (mut transform, mut scene) = query_scene.single_mut();
-
     // Reset scene every frame
     *scene = VelloScene::default();
 

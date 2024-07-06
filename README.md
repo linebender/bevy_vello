@@ -6,7 +6,7 @@
 
 [![Linebender Zulip](https://img.shields.io/badge/Linebender-%23gpu-blue?logo=Zulip)](https://xi.zulipchat.com/#narrow/stream/197075-gpu)
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
-[![Vello](https://img.shields.io/badge/vello-v0.1.0-purple.svg)](https://crates.io/crates/vello)
+[![Vello](https://img.shields.io/badge/vello-v0.2.0-purple.svg)](https://crates.io/crates/vello)
 [![Following released Bevy versions](https://img.shields.io/badge/bevy%20tracking-released%20version-lightblue)](https://bevyengine.org/learn/quick-start/plugin-development/#main-branch-tracking)\
 [![Dependency status](https://deps.rs/repo/github/linebender/bevy_vello/status.svg)](https://deps.rs/repo/github/linebender/bevy_vello)
 [![Crates.io](https://img.shields.io/crates/v/bevy_vello.svg)](https://crates.io/crates/bevy_vello)
@@ -29,7 +29,8 @@ cargo run -p demo
 
 |bevy|bevy_vello|
 |---|---|
-|0.13|0.1-0.4, main|
+|0.14|0.5, main|
+|0.13|0.1-0.4|
 |< 0.13| unsupported |
 
 ## Cargo features

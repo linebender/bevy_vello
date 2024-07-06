@@ -23,7 +23,7 @@ jobs:
       run: cargo clippy -- -D warnings
 
     - name: Build | Rustfmt
-      run: cargo fmt --all -- --check
+      run: cargo fmt -- --check
 
   check:
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
       uses: Swatinem/rust-cache@v2
 
     - name: Build | Check (native)
-      run: cargo check --all
+      run: cargo check
 
     - name: Build | Check (wasm)
       run: cargo check --target wasm32-unknown-unknown
@@ -70,7 +70,7 @@ jobs:
       uses: Swatinem/rust-cache@v2.7.3
 
     - name: Build | Test (native)
-      run: cargo test --all
+      run: cargo test
 
     - name: Build | Test (wasm)
       run: wasm-pack test --node

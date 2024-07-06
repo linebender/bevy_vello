@@ -1,27 +1,32 @@
 mod ui;
 
-use bevy::asset::io::embedded::EmbeddedAssetRegistry;
-use bevy::asset::{embedded_asset, AssetMetaCheck};
-use bevy::prelude::*;
+use bevy::{
+    asset::{embedded_asset, io::embedded::EmbeddedAssetRegistry, AssetMetaCheck},
+    color::palettes::css,
+    prelude::*,
+};
 use bevy_egui::EguiPlugin;
 use bevy_vello::{prelude::*, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins)
-        .add_plugins(EguiPlugin)
-        .add_plugins(VelloPlugin)
-        .init_resource::<EmbeddedAssetRegistry>()
-        .add_plugins(bevy_pancam::PanCamPlugin)
-        .add_systems(Startup, setup_vector_graphics)
-        .add_systems(Update, (print_metadata, ui::controls_ui));
+    app.add_plugins(DefaultPlugins.set(AssetPlugin {
+        meta_check: AssetMetaCheck::Never,
+        ..default()
+    }))
+    .add_plugins(EguiPlugin)
+    .add_plugins(VelloPlugin)
+    .init_resource::<EmbeddedAssetRegistry>()
+    //.add_plugins(bevy_pancam::PanCamPlugin)
+    .add_systems(Startup, setup_vector_graphics)
+    .add_systems(Update, (print_metadata, ui::controls_ui));
     embedded_asset!(app, "assets/calendar.json");
     app.run();
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
+    commands.spawn(Camera2dBundle::default());
+    //commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands
         .spawn(VelloAssetBundle {
             vector: asset_server.load::<VelloAsset>("embedded://demo/assets/calendar.json"),
@@ -38,7 +43,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                             autoplay: false,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", Color::BLUE))
+                        .theme(Theme::new().add("calendar", css::YELLOW.into()))
                         .transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .reset_playhead_on_start()
                 })
@@ -46,10 +51,10 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                     PlayerState::new("play")
                         .playback_options(PlaybackOptions {
                             looping: PlaybackLoopBehavior::DoNotLoop,
-                            speed: 0.25,
+                            speed: 0.75,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", Color::GREEN))
+                        .theme(Theme::new().add("calendar", css::LIME.into()))
                         .transition(PlayerTransition::OnMouseLeave { state: "rev" }),
                 )
                 .with_state(
@@ -57,10 +62,10 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                         .playback_options(PlaybackOptions {
                             looping: PlaybackLoopBehavior::DoNotLoop,
                             direction: PlaybackDirection::Reverse,
-                            speed: 0.25,
+                            speed: 0.75,
                             ..default()
                         })
-                        .theme(Theme::new().add("calendar", Color::RED))
+                        .theme(Theme::new().add("calendar", css::RED.into()))
                         .transition(PlayerTransition::OnMouseEnter { state: "play" })
                         .transition(PlayerTransition::OnComplete { state: "stopped" }),
                 ),

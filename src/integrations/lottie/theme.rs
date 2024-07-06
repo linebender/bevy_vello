@@ -1,11 +1,13 @@
 //! A component to augment playback colors.
 //!
-//! A long-term vision here is a selector-styled language, but now is just color swapping by layer name.
+//! A long-term vision here is a selector-styled language, but now is just color swapping by layer
+//! name.
 
-use bevy::prelude::*;
-use bevy::utils::HashMap;
-use velato::model::{Brush, Shape};
-use velato::Composition;
+use bevy::{prelude::*, utils::HashMap};
+use velato::{
+    model::{Brush, Shape},
+    Composition,
+};
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
@@ -62,11 +64,14 @@ impl Theme {
                     continue 'layers;
                 }
             };
+            // TODO: Vello hasn't fully implemented color spaces yet, so I'm very unsure of
+            // which color space to use here.
+            let target_color = target_color.to_linear();
             let target_color = vello::peniko::Color::rgba(
-                target_color.r().into(),
-                target_color.g().into(),
-                target_color.b().into(),
-                target_color.a().into(),
+                target_color.red as _,
+                target_color.green as _,
+                target_color.blue as _,
+                target_color.alpha as _,
             );
             for shape in shapes.iter_mut() {
                 recolor_shape(shape, target_color);

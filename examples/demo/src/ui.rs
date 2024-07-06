@@ -1,8 +1,9 @@
 use bevy::prelude::*;
-use bevy_egui::egui::{self};
-use bevy_egui::EguiContexts;
-use bevy_vello::prelude::*;
-use bevy_vello::vello_svg::usvg::strict_num::Ulps;
+use bevy_egui::{
+    egui::{self, Color32},
+    EguiContexts,
+};
+use bevy_vello::{prelude::*, vello_svg::usvg::strict_num::Ulps};
 use std::time::Duration;
 
 pub fn controls_ui(
@@ -47,6 +48,11 @@ pub fn controls_ui(
                 player.pause();
                 playhead.seek(frame);
             };
+            if player.is_stopped() {
+                ui.colored_label(Color32::RED, "stopped");
+            } else if !player.is_playing() {
+                ui.colored_label(Color32::YELLOW, "paused");
+            }
         });
 
         ui.horizontal_wrapped(|ui| {
@@ -244,20 +250,22 @@ pub fn controls_ui(
         ui.heading("Theme");
         for layer in composition.as_ref().get_layers() {
             let color = theme.get_mut(layer).cloned().unwrap_or_default();
-            let mut color_edit = [color.r(), color.g(), color.b(), color.a()];
+            let color = color.to_srgba().to_u8_array();
+            let mut color32 =
+                Color32::from_rgba_unmultiplied(color[0], color[1], color[2], color[3]);
             ui.horizontal(|ui| {
-                if ui
-                    .color_edit_button_rgba_unmultiplied(&mut color_edit)
-                    .changed()
-                {
-                    let [r, g, b, a] = color_edit;
+                if ui.color_edit_button_srgba(&mut color32).changed() {
+                    let r = color32.r();
+                    let g = color32.g();
+                    let b = color32.b();
+                    let a = color32.a();
                     player
                         .state_mut()
                         .theme
                         .as_mut()
                         .unwrap()
-                        .edit(layer, Color::rgba(r, g, b, a));
-                    theme.edit(layer, Color::rgba(r, g, b, a));
+                        .edit(layer, Color::srgba_u8(r, g, b, a));
+                    theme.edit(layer, Color::srgba_u8(r, g, b, a));
                 };
                 ui.label(layer);
             });

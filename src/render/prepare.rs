@@ -2,9 +2,10 @@ use super::extract::{
     ExtractedPixelScale, ExtractedRenderAsset, ExtractedRenderScene, ExtractedRenderText,
 };
 use crate::CoordinateSpace;
-use bevy::prelude::*;
-use bevy::render::camera::ExtractedCamera;
-use bevy::render::view::ExtractedView;
+use bevy::{
+    prelude::*,
+    render::{camera::ExtractedCamera, view::ExtractedView},
+};
 use vello::kurbo::Affine;
 
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
@@ -16,7 +17,8 @@ pub struct PreparedTransform(GlobalTransform);
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedZIndex(f32);
 
-// All extracted bevy_vello render instance types should implement this (RenderAsset, RenderScene, RenderText, etc...)
+// All extracted bevy_vello render instance types should implement this (RenderAsset, RenderScene,
+// RenderText, etc...)
 pub trait PrepareRenderInstance {
     fn z_index(&self, transform: GlobalTransform) -> PreparedZIndex;
     fn final_transform(&self) -> PreparedTransform;
@@ -81,10 +83,10 @@ impl PrepareRenderInstance for ExtractedRenderAsset {
                 model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {
-                    let mut view_mat = view.transform.compute_matrix();
+                    let mut view_mat = view.world_from_view.compute_matrix();
                     view_mat.w_axis.y *= -1.0;
 
-                    (view.projection, view_mat)
+                    (view.clip_from_view, view_mat)
                 };
 
                 let view_proj_matrix = projection_mat * view_mat.inverse();
@@ -183,10 +185,10 @@ pub fn prepare_scene_affines(
                 model_matrix.w_axis.y *= -1.0;
 
                 let (projection_mat, view_mat) = {
-                    let mut view_mat = view.transform.compute_matrix();
+                    let mut view_mat = view.world_from_view.compute_matrix();
                     view_mat.w_axis.y *= -1.0;
 
-                    (view.projection, view_mat)
+                    (view.clip_from_view, view_mat)
                 };
 
                 let view_proj_matrix = projection_mat * view_mat.inverse();
@@ -241,10 +243,10 @@ pub fn prepare_text_affines(
         model_matrix.w_axis.y *= -1.0;
 
         let (projection_mat, view_mat) = {
-            let mut view_mat = view.transform.compute_matrix();
+            let mut view_mat = view.world_from_view.compute_matrix();
             view_mat.w_axis.y *= -1.0;
 
-            (view.projection, view_mat)
+            (view.clip_from_view, view_mat)
         };
 
         let view_proj_matrix = projection_mat * view_mat.inverse();

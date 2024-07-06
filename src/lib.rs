@@ -14,16 +14,18 @@ pub mod render;
 pub mod text;
 
 // Re-exports
-pub use {velato, vello, vello_svg};
+pub use velato;
+pub use vello;
+pub use vello_svg;
 
 pub mod prelude {
-    pub use {vello, vello::kurbo, vello::peniko, vello::skrifa};
+    pub use vello::{self, kurbo, peniko, skrifa};
 
-    pub use crate::debug::DebugVisualizations;
-    pub use crate::integrations::{VectorFile, VelloAsset, VelloAssetAlignment};
-    pub use crate::render::{VelloCanvasMaterial, ZFunction};
-    pub use crate::text::{VelloFont, VelloText, VelloTextAlignment};
     pub use crate::{
+        debug::DebugVisualizations,
+        integrations::{VectorFile, VelloAsset, VelloAssetAlignment},
+        render::{VelloCanvasMaterial, ZFunction},
+        text::{VelloFont, VelloText, VelloTextAlignment},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
 
@@ -57,7 +59,9 @@ pub struct VelloAssetBundle {
     pub transform: Transform,
     /// The global transform managed by Bevy
     pub global_transform: GlobalTransform,
-    /// Use a depth-sorting function for this asset, used when rendering. By default, all assets use the transform's Z-coordinate for depth sorting in the renderer's painter's algorithm (see [`ZFunction::Inherited`]).
+    /// Use a depth-sorting function for this asset, used when rendering. By default, all assets
+    /// use the transform's Z-coordinate for depth sorting in the renderer's painter's algorithm
+    /// (see [`ZFunction::Inherited`]).
     pub z_function: ZFunction,
     /// Whether to render debug visualizations
     pub debug_visualizations: DebugVisualizations,
@@ -65,7 +69,8 @@ pub struct VelloAssetBundle {
     pub visibility: Visibility,
     /// Whether or not an entity is visible in the hierarchy.
     pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
+    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
+    /// for rendering.
     pub view_visibility: ViewVisibility,
 }
 
@@ -83,7 +88,8 @@ pub struct VelloSceneBundle {
     pub visibility: Visibility,
     /// Whether or not an entity is visible in the hierarchy.
     pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
+    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
+    /// for rendering.
     pub view_visibility: ViewVisibility,
 }
 
@@ -107,7 +113,8 @@ pub struct VelloTextBundle {
     pub visibility: Visibility,
     /// Whether or not an entity is visible in the hierarchy.
     pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted for rendering.
+    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
+    /// for rendering.
     pub view_visibility: ViewVisibility,
 }
 

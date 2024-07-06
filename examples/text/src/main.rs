@@ -1,26 +1,27 @@
-use bevy::asset::{embedded_asset, AssetMetaCheck};
-use bevy::prelude::*;
-use bevy_vello::text::VelloTextAlignment;
-use bevy_vello::vello::peniko;
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy::{
+    asset::{embedded_asset, AssetMetaCheck},
+    prelude::*,
+};
+use bevy_vello::{prelude::*, text::VelloTextAlignment, vello::peniko, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin)
-        .add_plugins(bevy_pancam::PanCamPlugin)
-        .add_systems(
-            Startup,
-            (setup_camera, setup_screenspace_text, setup_worldspace_text),
-        );
+    app.add_plugins(DefaultPlugins.set(AssetPlugin {
+        meta_check: AssetMetaCheck::Never,
+        ..default()
+    }))
+    .add_plugins(VelloPlugin)
+    .add_systems(
+        Startup,
+        (setup_camera, setup_screenspace_text, setup_worldspace_text),
+    );
     embedded_asset!(app, "assets/Rubik-Medium.ttf");
     embedded_asset!(app, "assets/Rubik-Medium.ttf");
     app.run();
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {

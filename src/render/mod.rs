@@ -1,12 +1,16 @@
 //! Components and logic for rendering.
 
-use bevy::prelude::*;
-use bevy::render::mesh::MeshVertexBufferLayout;
-use bevy::render::render_resource::{
-    AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
-    VertexBufferLayout, VertexFormat, VertexStepMode,
+use bevy::{
+    prelude::*,
+    render::{
+        mesh::MeshVertexBufferLayoutRef,
+        render_resource::{
+            AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
+            VertexBufferLayout, VertexFormat, VertexStepMode,
+        },
+    },
+    sprite::{Material2d, Material2dKey},
 };
-use bevy::sprite::{Material2d, Material2dKey};
 
 mod extract;
 mod plugin;
@@ -39,7 +43,7 @@ impl Material2d for VelloCanvasMaterial {
 
     fn specialize(
         descriptor: &mut RenderPipelineDescriptor,
-        _layout: &MeshVertexBufferLayout,
+        _layout: &MeshVertexBufferLayoutRef,
         _key: Material2dKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
         let formats = vec![

@@ -1,9 +1,13 @@
 use super::z_function::ZFunction;
-use crate::text::VelloTextAlignment;
-use crate::{CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont, VelloScene, VelloText};
-use bevy::prelude::*;
-use bevy::render::{extract_component::ExtractComponent, Extract};
-use bevy::window::PrimaryWindow;
+use crate::{
+    text::VelloTextAlignment, CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont,
+    VelloScene, VelloText,
+};
+use bevy::{
+    prelude::*,
+    render::{extract_component::ExtractComponent, Extract},
+    window::PrimaryWindow,
+};
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderAsset {
@@ -11,12 +15,13 @@ pub struct ExtractedRenderAsset {
     pub alignment: VelloAssetAlignment,
     pub transform: GlobalTransform,
     pub z_function: ZFunction,
+    pub render_mode: CoordinateSpace,
+    pub ui_node: Option<Node>,
+    pub alpha: f32,
     #[cfg(feature = "lottie")]
     pub theme: Option<crate::Theme>,
-    pub render_mode: CoordinateSpace,
+    #[cfg(feature = "lottie")]
     pub playhead: f64,
-    pub alpha: f32,
-    pub ui_node: Option<Node>,
 }
 
 #[cfg(feature = "svg")]
@@ -61,12 +66,13 @@ pub fn extract_svg_instances(
                     transform: *transform,
                     alignment: *alignment,
                     z_function: *z_function,
+                    render_mode: *coord_space,
+                    ui_node: ui_node.cloned(),
+                    alpha: *alpha,
                     #[cfg(feature = "lottie")]
                     theme: None,
-                    render_mode: *coord_space,
+                    #[cfg(feature = "lottie")]
                     playhead: 0.0,
-                    alpha: *alpha,
-                    ui_node: ui_node.cloned(),
                 });
             }
         }

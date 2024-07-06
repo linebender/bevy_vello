@@ -1,5 +1,4 @@
-use crate::integrations::VectorLoaderError;
-use crate::{VectorFile, VelloAsset};
+use crate::{integrations::VectorLoaderError, VectorFile, VelloAsset};
 use bevy::prelude::*;
 use std::sync::Arc;
 

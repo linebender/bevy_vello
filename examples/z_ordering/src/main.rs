@@ -1,29 +1,35 @@
-use bevy::asset::{embedded_asset, AssetMetaCheck};
-use bevy::prelude::*;
-use bevy_vello::vello::peniko::{Brush, Color};
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy::{
+    asset::{embedded_asset, AssetMetaCheck},
+    prelude::*,
+};
+use bevy_vello::{
+    prelude::*,
+    vello::peniko::{Brush, Color},
+    VelloPlugin,
+};
 
 fn main() {
     let mut app = App::new();
-    app.insert_resource(AssetMetaCheck::Never)
-        .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin)
-        .add_plugins(bevy_pancam::PanCamPlugin)
-        .add_systems(
-            Startup,
-            (
-                setup_camera,
-                setup_screenspace_vectors,
-                setup_worldspace_vectors,
-            ),
-        );
+    app.add_plugins(DefaultPlugins.set(AssetPlugin {
+        meta_check: AssetMetaCheck::Never,
+        ..default()
+    }))
+    .add_plugins(VelloPlugin)
+    .add_systems(
+        Startup,
+        (
+            setup_camera,
+            setup_screenspace_vectors,
+            setup_worldspace_vectors,
+        ),
+    );
     embedded_asset!(app, "assets/google_fonts/squid.json");
     embedded_asset!(app, "assets/fonts/Rubik-Medium.ttf");
     app.run();
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn setup_worldspace_vectors(mut commands: Commands, asset_server: ResMut<AssetServer>) {

@@ -1,43 +1,40 @@
-use super::vello_text::VelloText;
-use super::VelloTextAlignment;
-use bevy::prelude::*;
-use bevy::reflect::TypePath;
-use bevy::render::render_asset::RenderAsset;
+use super::{vello_text::VelloText, VelloTextAlignment};
+use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use std::sync::Arc;
-use vello::glyph::skrifa::{FontRef, MetadataProvider};
-use vello::glyph::Glyph;
-use vello::kurbo::Affine;
-use vello::peniko::{self, Blob, Brush, Color, Font};
-use vello::Scene;
+use vello::{
+    glyph::{
+        skrifa::{FontRef, MetadataProvider},
+        Glyph,
+    },
+    kurbo::Affine,
+    peniko::{self, Blob, Brush, Color, Font},
+    Scene,
+};
 
 const VARIATIONS: &[(&str, f32)] = &[];
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloFont {
-    pub font: Arc<peniko::Font>,
+    pub font: peniko::Font,
 }
 
 impl RenderAsset for VelloFont {
-    type PreparedAsset = VelloFont;
+    type SourceAsset = VelloFont;
 
     type Param = ();
 
-    fn asset_usage(&self) -> bevy::render::render_asset::RenderAssetUsages {
-        Default::default()
-    }
-
     fn prepare_asset(
-        self,
+        source_asset: Self::SourceAsset,
         _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
-    ) -> Result<Self::PreparedAsset, bevy::render::render_asset::PrepareAssetError<Self>> {
-        Ok(self)
+    ) -> Result<Self, bevy::render::render_asset::PrepareAssetError<Self::SourceAsset>> {
+        Ok(source_asset)
     }
 }
 
 impl VelloFont {
     pub fn new(font_data: Vec<u8>) -> Self {
         Self {
-            font: Arc::new(Font::new(Blob::new(Arc::new(font_data)), 0)),
+            font: Font::new(Blob::new(Arc::new(font_data)), 0),
         }
     }
 
@@ -46,11 +43,14 @@ impl VelloFont {
         let font_size = vello::skrifa::instance::Size::new(text.size);
         let charmap = font.charmap();
         let axes = font.axes();
+        // TODO: What do Variations here do? Any font nerds know? I'm definitely not doing this
+        // right.
         let var_loc = axes.location(VARIATIONS);
         let metrics = font.metrics(font_size, &var_loc);
         let line_height = metrics.ascent - metrics.descent + metrics.leading;
         let glyph_metrics = font.glyph_metrics(font_size, &var_loc);
 
+        // TODO: Parley recently implemented type hinting, I should be handling this.
         let mut pen_x = 0.0;
         let mut pen_y: f32 = 0.0;
         let mut width: f32 = 0.0;

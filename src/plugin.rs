@@ -1,7 +1,7 @@
-use crate::debug::DebugVisualizationsPlugin;
-use crate::render::VelloRenderPlugin;
-use crate::text::VelloFontLoader;
-use crate::{VelloAsset, VelloFont};
+use crate::{
+    debug::DebugVisualizationsPlugin, render::VelloRenderPlugin, text::VelloFontLoader, VelloAsset,
+    VelloFont,
+};
 use bevy::prelude::*;
 
 pub struct VelloPlugin;

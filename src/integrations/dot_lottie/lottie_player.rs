@@ -1,6 +1,5 @@
 use super::PlayerState;
-use bevy::prelude::*;
-use bevy::utils::hashbrown::HashMap;
+use bevy::{prelude::*, utils::hashbrown::HashMap};
 
 /// A lottie player that closely mirrors the behavior and functionality for
 /// dotLottie Interactivity.

@@ -1,15 +1,23 @@
-use super::extract::{self, ExtractedPixelScale, SSRenderTarget};
-use super::{prepare, systems};
-use crate::render::extract::ExtractedRenderText;
-use crate::render::SSRT_SHADER_HANDLE;
-use crate::{VelloCanvasMaterial, VelloFont};
-use bevy::asset::load_internal_asset;
-use bevy::prelude::*;
-use bevy::render::extract_component::ExtractComponentPlugin;
-use bevy::render::render_asset::RenderAssetPlugin;
-use bevy::render::renderer::RenderDevice;
-use bevy::render::{Render, RenderApp, RenderSet};
-use bevy::sprite::Material2dPlugin;
+use super::{
+    extract::{self, ExtractedPixelScale, SSRenderTarget},
+    prepare, systems,
+};
+use crate::{
+    render::{extract::ExtractedRenderText, SSRT_SHADER_HANDLE},
+    VelloAsset, VelloCanvasMaterial, VelloFont, VelloScene,
+};
+use bevy::{
+    asset::load_internal_asset,
+    prelude::*,
+    render::{
+        extract_component::ExtractComponentPlugin,
+        render_asset::RenderAssetPlugin,
+        renderer::RenderDevice,
+        view::{check_visibility, VisibilitySystems},
+        Render, RenderApp, RenderSet,
+    },
+    sprite::Material2dPlugin,
+};
 
 pub struct VelloRenderPlugin;
 
@@ -22,7 +30,7 @@ impl Plugin for VelloRenderPlugin {
             Shader::from_wgsl
         );
 
-        let Ok(render_app) = app.get_sub_app_mut(RenderApp) else {
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
 
@@ -68,6 +76,11 @@ impl Plugin for VelloRenderPlugin {
         .add_systems(
             Update,
             (systems::resize_rendertargets, systems::clear_when_empty),
+        )
+        .add_systems(
+            PostUpdate,
+            check_visibility::<Or<(With<VelloScene>, With<Handle<VelloAsset>>)>>
+                .in_set(VisibilitySystems::CheckVisibility),
         );
     }
 }

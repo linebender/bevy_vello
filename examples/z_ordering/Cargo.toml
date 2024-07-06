@@ -10,4 +10,3 @@ publish = false
 [dependencies]
 bevy_vello = { path = "../../" }
 bevy = { workspace = true }
-bevy_pancam = { version = "0.11", features = ["bevy_egui"] }

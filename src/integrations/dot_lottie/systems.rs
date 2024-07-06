@@ -1,11 +1,9 @@
 use super::DotLottiePlayer;
-use crate::integrations::lottie::PlaybackPlayMode;
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlayerTransition, Playhead,
-    VectorFile, VelloAsset,
+    integrations::lottie::PlaybackPlayMode, PlaybackDirection, PlaybackLoopBehavior,
+    PlaybackOptions, PlayerTransition, Playhead, VectorFile, VelloAsset,
 };
-use bevy::prelude::*;
-use bevy::utils::Instant;
+use bevy::{prelude::*, utils::Instant};
 use std::time::Duration;
 use vello_svg::usvg::strict_num::Ulps;
 
@@ -206,6 +204,8 @@ pub fn run_transitions(
                     }
                 }
                 PlayerTransition::OnComplete { state } => {
+                    // can be irrefutable if only feature is lottie
+                    #[allow(irrefutable_let_patterns)]
                     if let VectorFile::Lottie(composition) = &current_asset.file {
                         let loops_needed = match options.looping {
                             PlaybackLoopBehavior::DoNotLoop => Some(0),

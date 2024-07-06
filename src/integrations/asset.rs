@@ -1,6 +1,5 @@
 use crate::VectorFile;
-use bevy::prelude::*;
-use bevy::reflect::TypePath;
+use bevy::{prelude::*, reflect::TypePath};
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloAsset {
