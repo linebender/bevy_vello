@@ -14,7 +14,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### Added
 
-- New `scene_ui` example demonstrating a `VelloScene` attached to a `bevy::ui::Node`
+- New `scene_ui` example demonstrating a `VelloScene` attached to a `bevy::ui::Node`.
 
 ### Changed
 
