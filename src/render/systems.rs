@@ -213,41 +213,20 @@ pub fn render_scene(
         }
     }
 
-    // TODO: Vello should be ignoring 0-sized buffers in the future, so this could go away.
-    // Prevent a panic in the vello renderer if all the items contain empty encoding data
-    let empty_encodings = render_queue
-        .iter()
-        .filter(|(_, _, (_, item))| match item {
-            RenderItem::Asset(a) => match &a.asset.file {
-                #[cfg(feature = "svg")]
-                crate::VectorFile::Svg(scene) => scene.encoding().is_empty(),
-                #[cfg(feature = "lottie")]
-                crate::VectorFile::Lottie(composition) => composition.layers.is_empty(),
-                #[cfg(not(any(feature = "svg", feature = "lottie")))]
-                _ => unimplemented!(),
+    renderer
+        .render_to_texture(
+            device.wgpu_device(),
+            &queue,
+            &scene_buffer,
+            &gpu_image.texture_view,
+            &RenderParams {
+                base_color: vello::peniko::Color::TRANSPARENT,
+                width: gpu_image.size.x as u32,
+                height: gpu_image.size.y as u32,
+                antialiasing_method: vello::AaConfig::Area,
             },
-            RenderItem::Scene(s) => s.scene.encoding().is_empty(),
-            RenderItem::Text(t) => t.text.content.is_empty(),
-        })
-        .count()
-        == render_queue.len();
-
-    if !render_queue.is_empty() && !empty_encodings {
-        renderer
-            .render_to_texture(
-                device.wgpu_device(),
-                &queue,
-                &scene_buffer,
-                &gpu_image.texture_view,
-                &RenderParams {
-                    base_color: vello::peniko::Color::TRANSPARENT,
-                    width: gpu_image.size.x as u32,
-                    height: gpu_image.size.y as u32,
-                    antialiasing_method: vello::AaConfig::Area,
-                },
-            )
-            .unwrap();
-    }
+        )
+        .unwrap();
 }
 
 pub fn resize_rendertargets(
