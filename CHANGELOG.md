@@ -10,6 +10,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+## 0.5.1
+
+### Fixed
+
+- Updated to patch vello 0.2.1. It is now no-longer possible to panic when the vello encodings are empty.
+- The demo CI now deploys that bevy_pancam has been updated to bevy 0.14
+
 ## 0.5.0
 
 ### Added
