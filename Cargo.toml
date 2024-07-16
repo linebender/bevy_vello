@@ -14,7 +14,7 @@ members = [
 
 [workspace.package]
 edition = "2021"
-version = "0.5.0"
+version = "0.5.1"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/linebender/bevy_vello"
 
@@ -50,7 +50,7 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { workspace = true }
-vello = "0.2.0"
+vello = "0.2.1"
 vello_svg = "0.3.0"
 velato = "0.3.0"
 thiserror = "1.0.61"
