@@ -17,7 +17,7 @@ fn main() {
     .add_plugins(EguiPlugin)
     .add_plugins(VelloPlugin)
     .init_resource::<EmbeddedAssetRegistry>()
-    //.add_plugins(bevy_pancam::PanCamPlugin)
+    .add_plugins(bevy_pancam::PanCamPlugin)
     .add_systems(Startup, setup_vector_graphics)
     .add_systems(Update, (print_metadata, ui::controls_ui));
     embedded_asset!(app, "assets/calendar.json");
@@ -25,8 +25,7 @@ fn main() {
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
-    //commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
+    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands
         .spawn(VelloAssetBundle {
             vector: asset_server.load::<VelloAsset>("embedded://demo/assets/calendar.json"),
