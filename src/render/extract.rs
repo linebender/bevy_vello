@@ -1,6 +1,6 @@
 use crate::{
-    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloFont, VelloScene,
-    VelloText,
+    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloScene,
+    VelloTextSection,
 };
 use bevy::{
     prelude::*,
@@ -166,8 +166,7 @@ pub fn scene_instances(
 
 #[derive(Component, Clone)]
 pub struct ExtractedRenderText {
-    pub font: Handle<VelloFont>,
-    pub text: VelloText,
+    pub text: VelloTextSection,
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
@@ -175,8 +174,7 @@ pub struct ExtractedRenderText {
 
 impl ExtractComponent for ExtractedRenderText {
     type QueryData = (
-        &'static Handle<VelloFont>,
-        &'static VelloText,
+        &'static VelloTextSection,
         &'static VelloTextAnchor,
         &'static GlobalTransform,
         &'static CoordinateSpace,
@@ -187,13 +185,12 @@ impl ExtractComponent for ExtractedRenderText {
     type Out = Self;
 
     fn extract_component(
-        (vello_font_handle, text, text_anchor, transform, render_mode): bevy::ecs::query::QueryItem<
+        (text, text_anchor, transform, render_mode): bevy::ecs::query::QueryItem<
             '_,
             Self::QueryData,
         >,
     ) -> Option<Self> {
         Some(Self {
-            font: vello_font_handle.clone(),
             text: text.clone(),
             text_anchor: *text_anchor,
             transform: *transform,

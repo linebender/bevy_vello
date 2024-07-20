@@ -10,8 +10,17 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### Added
+
+- There is now a `default_font` feature that uses the same `FiraMono-subset.ttf` font used in the bevy/default_font feature.
+
 ### Changed
 
+- The font API has changed significantly. Please visit `examples/text` for further usage. This is to prepare for additional text features such as linebreak behavior, bounded text, and text justification.
+  - `VelloText` has been renamed to `VelloTextSection`.
+  - `VelloText.content` has been renamed to `VelloText.value`.
+  - There is now a `VelloTextStyle` struct and it is a required field of `VelloText`.
+  - `VelloFont` has been removed from `VelloTextBundle` and moved into `VelloTextStyle`.
 - The field `VelloAssetBundle.vector` was renamed to `VelloAssetBundle.asset`.
 - Renamed `VelloAssetAlignment` to `VelloAssetAnchor`. Fields were renamed `alignment` were renamed to `asset_anchor`.
 - Renamed `VelloTextAlignment` to `VelloTextAnchor`. Fields were renamed `alignment` were renamed to `text_anchor`.

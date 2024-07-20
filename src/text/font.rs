@@ -1,4 +1,4 @@
-use super::{vello_text::VelloText, VelloTextAnchor};
+use super::{vello_text::VelloTextSection, VelloTextAnchor};
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use std::sync::Arc;
 use vello::{
@@ -7,13 +7,13 @@ use vello::{
         Glyph,
     },
     kurbo::Affine,
-    peniko::{self, Blob, Brush, Color, Font},
+    peniko::{self, Blob, Font},
     Scene,
 };
 
 const VARIATIONS: &[(&str, f32)] = &[];
 
-#[derive(Asset, TypePath, Clone)]
+#[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {
     pub font: peniko::Font,
 }
@@ -38,9 +38,9 @@ impl VelloFont {
         }
     }
 
-    pub fn sizeof(&self, text: &VelloText) -> Vec2 {
+    pub fn sizeof(&self, text: &VelloTextSection) -> Vec2 {
         let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
-        let font_size = vello::skrifa::instance::Size::new(text.size);
+        let font_size = vello::skrifa::instance::Size::new(text.style.font_size);
         let charmap = font.charmap();
         let axes = font.axes();
         // TODO: What do Variations here do? Any font nerds know? I'm definitely not doing this
@@ -54,7 +54,7 @@ impl VelloFont {
         let mut pen_x = 0.0;
         let mut pen_y: f32 = 0.0;
         let mut width: f32 = 0.0;
-        for ch in text.content.chars() {
+        for ch in text.value.chars() {
             if ch == '\n' {
                 pen_y += line_height;
                 pen_x = 0.0;
@@ -74,12 +74,12 @@ impl VelloFont {
         &self,
         scene: &mut Scene,
         mut transform: Affine,
-        text: &VelloText,
+        text: &VelloTextSection,
         text_anchor: VelloTextAnchor,
     ) {
         let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
 
-        let font_size = vello::skrifa::instance::Size::new(text.size);
+        let font_size = vello::skrifa::instance::Size::new(text.style.font_size);
         let charmap = font.charmap();
         let axes = font.axes();
         let var_loc = axes.location(VARIATIONS);
@@ -91,7 +91,7 @@ impl VelloFont {
         let mut pen_y = 0f32;
         let mut width = 0f32;
         let glyphs: Vec<Glyph> = text
-            .content
+            .value
             .chars()
             .filter_map(|ch| {
                 if ch == '\n' {
@@ -149,10 +149,10 @@ impl VelloFont {
 
         scene
             .draw_glyphs(&self.font)
-            .font_size(text.size)
+            .font_size(text.style.font_size)
             .transform(transform)
             .normalized_coords(var_loc.coords())
-            .brush(&text.brush.clone().unwrap_or(Brush::Solid(Color::WHITE)))
+            .brush(&text.style.brush.clone())
             .draw(vello::peniko::Fill::EvenOdd, glyphs.into_iter());
     }
 }

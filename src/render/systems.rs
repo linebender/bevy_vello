@@ -205,12 +205,9 @@ pub fn render_scene(
                 scene_buffer.append(scene, Some(*affine));
             }
             RenderItem::Text(ExtractedRenderText {
-                font,
-                text,
-                text_anchor,
-                ..
+                text, text_anchor, ..
             }) => {
-                if let Some(font) = font_render_assets.get_mut(font) {
+                if let Some(font) = font_render_assets.get_mut(text.style.font.id()) {
                     font.render(&mut scene_buffer, *affine, text, *text_anchor);
                 }
             }

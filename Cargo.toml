@@ -59,7 +59,8 @@ once_cell = "1.19.0"
 wasm-bindgen-test = "0.3.42"
 
 [features]
-default = []
+default = ["default_font"]
 svg = []
 lottie = []
 experimental-dotLottie = ["lottie"]
+default_font = []
