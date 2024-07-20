@@ -1,6 +1,7 @@
 //! Logic for rendering debug visualizations
 use crate::{
-    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloFont, VelloText,
+    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloFont,
+    VelloTextSection,
 };
 use bevy::{color::palettes::css, math::Vec3Swizzles, prelude::*};
 
@@ -86,8 +87,7 @@ fn render_asset_debug(
 fn render_text_debug(
     query_world: Query<
         (
-            &Handle<VelloFont>,
-            &VelloText,
+            &VelloTextSection,
             &VelloTextAnchor,
             &GlobalTransform,
             &CoordinateSpace,
@@ -104,11 +104,11 @@ fn render_text_debug(
     };
 
     // Show world-space vectors
-    for (font, text, text_anchor, gtransform, space, _) in query_world
+    for (text, text_anchor, gtransform, space, _) in query_world
         .iter()
-        .filter(|(_, _, _, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
-        if let Some(font) = fonts.get(font) {
+        if let Some(font) = fonts.get(text.style.font.id()) {
             let rect = text.bb_in_world_space(font, gtransform);
             let mut origin = gtransform.translation().xy();
             match space {

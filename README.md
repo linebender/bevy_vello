@@ -40,8 +40,9 @@ cargo run -p demo
 
 |Cargo feature|Description|Default?|
 |---|---|----|
-|`svg`|Render `.svg` files with [`vello_svg`](https://github.com/linebender/vello_svg)|Yes|
-|`lottie`|Render `.json` Lottie files with [`velato`](https://github.com/linebender/velato)|Yes|
+|`default_font`|Include a default font, containing only ASCII characters, at the cost of a 20kB binary size increase|Yes|
+|`svg`|Render `.svg` files with [`vello_svg`](https://github.com/linebender/vello_svg)|No|
+|`lottie`|Render `.json` Lottie files with [`velato`](https://github.com/linebender/velato)|No|
 |`experimental-dotLottie`|Render `.lottie` Lottie files. **Work in Progress**|No|
 
 ## Examples

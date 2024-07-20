@@ -1,6 +1,29 @@
 use crate::VelloFont;
 use bevy::prelude::*;
-use vello::peniko::Brush;
+use vello::peniko::{self, Brush};
+
+#[derive(Component, Default, Clone)]
+pub struct VelloTextSection {
+    pub value: String,
+    pub style: VelloTextStyle,
+}
+
+#[derive(Component, Clone)]
+pub struct VelloTextStyle {
+    pub font: Handle<VelloFont>,
+    pub font_size: f32,
+    pub brush: Brush,
+}
+
+impl Default for VelloTextStyle {
+    fn default() -> Self {
+        Self {
+            font: Default::default(),
+            font_size: 24.0,
+            brush: Brush::Solid(peniko::Color::WHITE),
+        }
+    }
+}
 
 /// Describes how the text is positioned relative to its [`Transform`]. It defaults to [`VelloTextAnchor::BottomLeft`].
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
@@ -28,14 +51,7 @@ pub enum VelloTextAnchor {
     TopRight,
 }
 
-#[derive(Component, Default, Clone)]
-pub struct VelloText {
-    pub content: String,
-    pub size: f32,
-    pub brush: Option<Brush>,
-}
-
-impl VelloText {
+impl VelloTextSection {
     /// Returns the bounding box in world space
     pub fn bb_in_world_space(&self, font: &VelloFont, gtransform: &GlobalTransform) -> Rect {
         let size = font.sizeof(self);

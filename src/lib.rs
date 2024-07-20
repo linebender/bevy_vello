@@ -25,7 +25,7 @@ pub mod prelude {
         debug::DebugVisualizations,
         integrations::{VectorFile, VelloAsset, VelloAssetAnchor},
         render::VelloCanvasMaterial,
-        text::{VelloFont, VelloText, VelloTextAnchor},
+        text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
 
@@ -91,10 +91,8 @@ pub struct VelloSceneBundle {
 
 #[derive(Bundle, Default)]
 pub struct VelloTextBundle {
-    /// Font to render
-    pub font: Handle<VelloFont>,
     /// Text to render
-    pub text: VelloText,
+    pub text: VelloTextSection,
     /// How the text is positioned relative to its [`Transform`].
     pub text_anchor: VelloTextAnchor,
     /// The coordinate space in which this text should be rendered.

@@ -6,4 +6,4 @@ repository.workspace = true
 publish = false
 
 [dependencies]
-cargo-run-wasm = "0.3.2"
+cargo-run-wasm = "0.4.0"

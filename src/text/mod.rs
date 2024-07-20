@@ -6,4 +6,4 @@ mod vello_text;
 
 pub use font::VelloFont;
 pub(crate) use font_loader::VelloFontLoader;
-pub use vello_text::{VelloText, VelloTextAnchor};
+pub use vello_text::{VelloTextAnchor, VelloTextSection, VelloTextStyle};
