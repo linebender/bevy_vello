@@ -4,8 +4,7 @@ use super::{
     VelloRenderer,
 };
 use crate::{
-    render::{extract::ExtractedRenderScene, prepare::PreparedZIndex},
-    CoordinateSpace, VelloCanvasMaterial, VelloFont,
+    render::extract::ExtractedRenderScene, CoordinateSpace, VelloCanvasMaterial, VelloFont,
 };
 use bevy::{
     prelude::*,
@@ -59,7 +58,7 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 #[allow(clippy::complexity)]
 pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
-    query_render_vectors: Query<(&PreparedAffine, &PreparedZIndex, &ExtractedRenderAsset)>,
+    query_render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
     query_render_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
@@ -98,30 +97,36 @@ pub fn render_scene(
     }
     let mut render_queue: Vec<(f32, CoordinateSpace, (Affine, RenderItem))> = query_render_vectors
         .iter()
-        .map(|(&a, &b, c)| (*b, c.render_mode, (*a, RenderItem::Asset(c))))
+        .map(|(&affine, asset)| {
+            (
+                asset.transform.translation().z,
+                asset.render_mode,
+                (*affine, RenderItem::Asset(asset)),
+            )
+        })
         .collect();
-    render_queue.extend(query_render_scenes.iter().map(|(&a, b)| {
+    render_queue.extend(query_render_scenes.iter().map(|(&affine, scene)| {
         (
-            b.transform.translation().z,
-            b.render_mode,
-            (*a, RenderItem::Scene(b)),
+            scene.transform.translation().z,
+            scene.render_mode,
+            (*affine, RenderItem::Scene(scene)),
         )
     }));
-    render_queue.extend(query_render_texts.iter().map(|(&a, b)| {
+    render_queue.extend(query_render_texts.iter().map(|(&affine, text)| {
         (
-            b.transform.translation().z,
-            b.render_mode,
-            (*a, RenderItem::Text(b)),
+            text.transform.translation().z,
+            text.render_mode,
+            (*affine, RenderItem::Text(text)),
         )
     }));
 
     // Sort by render mode with screen space on top, then by z-index
     render_queue.sort_by(
-        |(a_z_index, a_render_mode, _), (b_z_index, b_render_mode, _)| {
+        |(a_z_index, a_coord_space, _), (b_z_index, b_coord_space, _)| {
             let z_index = a_z_index
                 .partial_cmp(b_z_index)
                 .unwrap_or(std::cmp::Ordering::Equal);
-            let render_mode = a_render_mode.cmp(b_render_mode);
+            let render_mode = a_coord_space.cmp(b_coord_space);
             render_mode.then(z_index)
         },
     );
@@ -186,7 +191,6 @@ pub fn render_scene(
                         },
                         *playhead as f64,
                         *affine,
-                        // TODO: Alpha should probably be removed from the renderer. The current way it works isn't correct.
                         1.0,
                         &mut scene_buffer,
                     );

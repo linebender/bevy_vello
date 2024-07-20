@@ -14,13 +14,9 @@ pub struct PreparedAffine(Affine);
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedTransform(GlobalTransform);
 
-#[derive(Component, Copy, Clone, Deref, DerefMut)]
-pub struct PreparedZIndex(f32);
-
 // All extracted bevy_vello render instance types should implement this (RenderAsset, RenderScene,
 // RenderText, etc...)
 pub trait PrepareRenderInstance {
-    fn z_index(&self, transform: GlobalTransform) -> PreparedZIndex;
     fn final_transform(&self) -> PreparedTransform;
     fn scene_affine(
         &self,
@@ -32,10 +28,6 @@ pub trait PrepareRenderInstance {
 }
 
 impl PrepareRenderInstance for ExtractedRenderAsset {
-    fn z_index(&self, prepared_transform: GlobalTransform) -> PreparedZIndex {
-        PreparedZIndex(self.z_function.compute(&self.asset, &prepared_transform))
-    }
-
     fn final_transform(&self) -> PreparedTransform {
         PreparedTransform(self.alignment.compute(&self.asset, &self.transform))
     }
@@ -128,11 +120,8 @@ pub fn prepare_vector_affines(
         let final_transform = render_vector.final_transform();
         let affine =
             render_vector.scene_affine(view, *final_transform, pixel_scale.0, viewport_size);
-        let z_index = render_vector.z_index(*final_transform);
 
-        commands
-            .entity(entity)
-            .insert((affine, final_transform, z_index));
+        commands.entity(entity).insert((affine, final_transform));
     }
 }
 
