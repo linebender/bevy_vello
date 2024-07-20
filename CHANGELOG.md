@@ -10,6 +10,10 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### Removed
+
+- Removed `ZFunction`s from the render pipeline. Now ordering is based solely on the `Transform`'s z component. If you dependeded on this behavior, you'll need to adjust the transform Z in a system prior to render.
+
 ## 0.5.1
 
 ### Fixed

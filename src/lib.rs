@@ -24,7 +24,7 @@ pub mod prelude {
     pub use crate::{
         debug::DebugVisualizations,
         integrations::{VectorFile, VelloAsset, VelloAssetAlignment},
-        render::{VelloCanvasMaterial, ZFunction},
+        render::VelloCanvasMaterial,
         text::{VelloFont, VelloText, VelloTextAlignment},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
@@ -59,10 +59,6 @@ pub struct VelloAssetBundle {
     pub transform: Transform,
     /// The global transform managed by Bevy
     pub global_transform: GlobalTransform,
-    /// Use a depth-sorting function for this asset, used when rendering. By default, all assets
-    /// use the transform's Z-coordinate for depth sorting in the renderer's painter's algorithm
-    /// (see [`ZFunction::Inherited`]).
-    pub z_function: ZFunction,
     /// Whether to render debug visualizations
     pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
