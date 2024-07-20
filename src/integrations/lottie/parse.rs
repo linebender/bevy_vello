@@ -10,7 +10,7 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
     let width = composition.width as f32;
     let height = composition.height as f32;
 
-    let vello_vector = VelloAsset {
+    let asset = VelloAsset {
         file: VectorFile::Lottie(Arc::new(composition)),
         local_transform_center: {
             let mut transform = Transform::default();
@@ -23,7 +23,7 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderEr
         alpha: 1.0,
     };
 
-    Ok(vello_vector)
+    Ok(asset)
 }
 
 /// Deserialize a Lottie file from a string slice.

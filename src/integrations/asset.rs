@@ -41,9 +41,9 @@ impl VelloAsset {
     }
 }
 
-/// Describes how to position the asset from the origin
+/// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
-pub enum VelloAssetAlignment {
+pub enum VelloAssetAnchor {
     /// Bounds start from the render position and advance up and to the right.
     BottomLeft,
     /// Bounds start from the render position and advance up.
@@ -67,24 +67,24 @@ pub enum VelloAssetAlignment {
     TopRight,
 }
 
-impl VelloAssetAlignment {
+impl VelloAssetAnchor {
     pub(crate) fn compute(
         &self,
         asset: &VelloAsset,
         transform: &GlobalTransform,
     ) -> GlobalTransform {
         let (width, height) = (asset.width, asset.height);
-        // Apply alignment
+        // Apply positioning
         let adjustment = match self {
-            VelloAssetAlignment::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-            VelloAssetAlignment::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-            VelloAssetAlignment::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-            VelloAssetAlignment::Top => Vec3::new(0.0, -height / 2.0, 0.0),
-            VelloAssetAlignment::Center => Vec3::new(0.0, 0.0, 0.0),
-            VelloAssetAlignment::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
-            VelloAssetAlignment::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-            VelloAssetAlignment::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-            VelloAssetAlignment::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+            VelloAssetAnchor::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+            VelloAssetAnchor::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+            VelloAssetAnchor::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+            VelloAssetAnchor::Top => Vec3::new(0.0, -height / 2.0, 0.0),
+            VelloAssetAnchor::Center => Vec3::new(0.0, 0.0, 0.0),
+            VelloAssetAnchor::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
+            VelloAssetAnchor::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+            VelloAssetAnchor::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+            VelloAssetAnchor::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
         };
         let new_translation: Vec3 = (transform.compute_matrix() * adjustment.extend(1.0)).xyz();
         GlobalTransform::from(

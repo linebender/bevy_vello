@@ -28,7 +28,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
     commands
         .spawn(VelloAssetBundle {
-            vector: asset_server.load::<VelloAsset>("embedded://demo/assets/calendar.json"),
+            asset: asset_server.load::<VelloAsset>("embedded://demo/assets/calendar.json"),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(20.0)),
             debug_visualizations: DebugVisualizations::Visible,
@@ -78,6 +78,7 @@ fn print_metadata(
     for ev in asset_ev.read() {
         if let AssetEvent::LoadedWithDependencies { id } = ev {
             let asset = assets.get(*id).unwrap();
+            #[allow(irrefutable_let_patterns)]
             if let VectorFile::Lottie(composition) = &asset.file {
                 info!(
                     "Animated asset loaded. Layers:\n{:#?}",

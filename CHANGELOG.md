@@ -10,6 +10,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ## Unreleased
 
+### Changed
+
+- The field `VelloAssetBundle.vector` was renamed to `VelloAssetBundle.asset`.
+- Renamed `VelloAssetAlignment` to `VelloAssetAnchor`. Fields were renamed `alignment` were renamed to `asset_anchor`.
+- Renamed `VelloTextAlignment` to `VelloTextAnchor`. Fields were renamed `alignment` were renamed to `text_anchor`.
+
 ### Removed
 
 - Removed `ZFunction`s from the render pipeline. Now ordering is based solely on the `Transform`'s z component. If you dependeded on this behavior, you'll need to adjust the transform Z in a system prior to render.

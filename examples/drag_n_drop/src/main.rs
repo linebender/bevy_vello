@@ -20,7 +20,7 @@ fn main() {
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
     commands.spawn(VelloAssetBundle {
-        vector: asset_server.load::<VelloAsset>("embedded://drag_n_drop/assets/fountain.svg"),
+        asset: asset_server.load::<VelloAsset>("embedded://drag_n_drop/assets/fountain.svg"),
         debug_visualizations: DebugVisualizations::Visible,
         transform: Transform::from_scale(Vec3::splat(5.0)),
         ..default()
@@ -34,7 +34,7 @@ fn drag_and_drop(
     asset_server: ResMut<AssetServer>,
     mut dnd_evr: EventReader<FileDragAndDrop>,
 ) {
-    let Ok(mut vector) = query.get_single_mut() else {
+    let Ok(mut asset) = query.get_single_mut() else {
         return;
     };
     for ev in dnd_evr.read() {
@@ -42,6 +42,6 @@ fn drag_and_drop(
             continue;
         };
         let new_handle = asset_server.load(path_buf.clone());
-        *vector = new_handle;
+        *asset = new_handle;
     }
 }

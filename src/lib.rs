@@ -23,9 +23,9 @@ pub mod prelude {
 
     pub use crate::{
         debug::DebugVisualizations,
-        integrations::{VectorFile, VelloAsset, VelloAssetAlignment},
+        integrations::{VectorFile, VelloAsset, VelloAssetAnchor},
         render::VelloCanvasMaterial,
-        text::{VelloFont, VelloText, VelloTextAlignment},
+        text::{VelloFont, VelloText, VelloTextAnchor},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
 
@@ -50,9 +50,9 @@ pub enum CoordinateSpace {
 #[derive(Bundle, Default)]
 pub struct VelloAssetBundle {
     /// Asset data to render
-    pub vector: Handle<VelloAsset>,
-    /// How the bounding asset is aligned, respective to the transform.
-    pub alignment: VelloAssetAlignment,
+    pub asset: Handle<VelloAsset>,
+    /// How the asset is positioned relative to its [`Transform`].
+    pub asset_anchor: VelloAssetAnchor,
     /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this vector
@@ -95,8 +95,8 @@ pub struct VelloTextBundle {
     pub font: Handle<VelloFont>,
     /// Text to render
     pub text: VelloText,
-    /// How the bounding text is aligned, respective to the transform.
-    pub alignment: VelloTextAlignment,
+    /// How the text is positioned relative to its [`Transform`].
+    pub text_anchor: VelloTextAnchor,
     /// The coordinate space in which this text should be rendered.
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this text

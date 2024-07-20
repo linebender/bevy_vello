@@ -58,7 +58,7 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 #[allow(clippy::complexity)]
 pub fn render_scene(
     ss_render_target: Query<&SSRenderTarget>,
-    query_render_vectors: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
+    query_render_assets: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
     query_render_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
     query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
@@ -95,7 +95,7 @@ pub fn render_scene(
         Scene(&'a ExtractedRenderScene),
         Text(&'a ExtractedRenderText),
     }
-    let mut render_queue: Vec<(f32, CoordinateSpace, (Affine, RenderItem))> = query_render_vectors
+    let mut render_queue: Vec<(f32, CoordinateSpace, (Affine, RenderItem))> = query_render_assets
         .iter()
         .map(|(&affine, asset)| {
             (
@@ -207,11 +207,11 @@ pub fn render_scene(
             RenderItem::Text(ExtractedRenderText {
                 font,
                 text,
-                alignment,
+                text_anchor,
                 ..
             }) => {
                 if let Some(font) = font_render_assets.get_mut(font) {
-                    font.render(&mut scene_buffer, *affine, text, *alignment);
+                    font.render(&mut scene_buffer, *affine, text, *text_anchor);
                 }
             }
         }

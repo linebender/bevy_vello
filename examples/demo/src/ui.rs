@@ -23,7 +23,9 @@ pub fn controls_ui(
     };
 
     let asset = assets.get(handle.id()).unwrap();
-    let VectorFile::Lottie(composition) = &asset.file else {
+    #[allow(irrefutable_let_patterns)]
+    let VectorFile::Lottie(composition) = &asset.file
+    else {
         return;
     };
 

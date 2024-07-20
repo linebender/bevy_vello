@@ -29,7 +29,7 @@ pub trait PrepareRenderInstance {
 
 impl PrepareRenderInstance for ExtractedRenderAsset {
     fn final_transform(&self) -> PreparedTransform {
-        PreparedTransform(self.alignment.compute(&self.asset, &self.transform))
+        PreparedTransform(self.asset_anchor.compute(&self.asset, &self.transform))
     }
 
     fn scene_affine(
@@ -45,12 +45,12 @@ impl PrepareRenderInstance for ExtractedRenderAsset {
             CoordinateSpace::ScreenSpace => {
                 let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale);
 
-                let vector_size = Vec2::new(self.asset.width, self.asset.height);
+                let asset_size = Vec2::new(self.asset.width, self.asset.height);
 
                 // Make the screen space vector instance sized to fill the
                 // entire UI Node box if it's bundled with a Node
                 if let Some(node) = &self.ui_node {
-                    let fill_scale = node.size() / vector_size;
+                    let fill_scale = node.size() / asset_size;
                     model_matrix.x_axis.x *= fill_scale.x;
                     model_matrix.y_axis.y *= fill_scale.y;
                 }
@@ -108,18 +108,18 @@ impl PrepareRenderInstance for ExtractedRenderAsset {
 pub fn prepare_vector_affines(
     mut commands: Commands,
     camera: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
-    mut render_vectors: Query<(Entity, &ExtractedRenderAsset)>,
+    mut render_assets: Query<(Entity, &ExtractedRenderAsset)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
     let Ok((camera, view)) = camera.get_single() else {
         return;
     };
     let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
-    for (entity, render_vector) in render_vectors.iter_mut() {
+    for (entity, render_asset) in render_assets.iter_mut() {
         // Prepare render data needed for the subsequent render system
-        let final_transform = render_vector.final_transform();
+        let final_transform = render_asset.final_transform();
         let affine =
-            render_vector.scene_affine(view, *final_transform, pixel_scale.0, viewport_size);
+            render_asset.scene_affine(view, *final_transform, pixel_scale.0, viewport_size);
 
         commands.entity(entity).insert((affine, final_transform));
     }

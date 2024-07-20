@@ -1,7 +1,6 @@
 //! Logic for rendering debug visualizations
 use crate::{
-    text::VelloTextAlignment, CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont,
-    VelloText,
+    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloFont, VelloText,
 };
 use bevy::{color::palettes::css, math::Vec3Swizzles, prelude::*};
 
@@ -28,14 +27,14 @@ fn render_asset_debug(
     query_vectors: Query<
         (
             &Handle<VelloAsset>,
-            &VelloAssetAlignment,
+            &VelloAssetAnchor,
             &GlobalTransform,
             &CoordinateSpace,
             &DebugVisualizations,
         ),
         Without<Node>,
     >,
-    vectors: Res<Assets<VelloAsset>>,
+    assets: Res<Assets<VelloAsset>>,
     query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
     mut gizmos: Gizmos,
 ) {
@@ -44,20 +43,20 @@ fn render_asset_debug(
     };
 
     // Show vectors
-    for (vector, alignment, gtransform, space, _) in query_vectors
+    for (asset, asset_anchor, gtransform, space, _) in query_vectors
         .iter()
         .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
-        if let Some(vector) = vectors.get(vector) {
+        if let Some(asset) = assets.get(asset) {
             match space {
                 CoordinateSpace::WorldSpace => {
                     // Origin
                     let origin = gtransform.translation().xy();
                     draw_origin(&mut gizmos, projection, origin);
                     // Bounding box
-                    let gtransform = &alignment.compute(vector, gtransform);
+                    let gtransform = &asset_anchor.compute(asset, gtransform);
                     let rect_center = gtransform.translation().xy();
-                    let rect = vector.bb_in_world_space(gtransform);
+                    let rect = asset.bb_in_world_space(gtransform);
                     draw_bounding_box(&mut gizmos, rect_center, rect.size());
                 }
                 CoordinateSpace::ScreenSpace => {
@@ -68,12 +67,12 @@ fn render_asset_debug(
                     };
                     draw_origin(&mut gizmos, projection, origin);
                     // Bounding box
-                    let gtransform = &alignment.compute(vector, gtransform);
+                    let gtransform = &asset_anchor.compute(asset, gtransform);
                     let rect_center = gtransform.translation().xy();
                     let Some(rect_center) = camera.viewport_to_world_2d(view, rect_center) else {
                         continue;
                     };
-                    let Some(rect) = vector.bb_in_screen_space(gtransform, camera, view) else {
+                    let Some(rect) = asset.bb_in_screen_space(gtransform, camera, view) else {
                         continue;
                     };
                     draw_bounding_box(&mut gizmos, rect_center, rect.size());
@@ -89,7 +88,7 @@ fn render_text_debug(
         (
             &Handle<VelloFont>,
             &VelloText,
-            &VelloTextAlignment,
+            &VelloTextAnchor,
             &GlobalTransform,
             &CoordinateSpace,
             &DebugVisualizations,
@@ -105,7 +104,7 @@ fn render_text_debug(
     };
 
     // Show world-space vectors
-    for (font, text, alignment, gtransform, space, _) in query_world
+    for (font, text, text_anchor, gtransform, space, _) in query_world
         .iter()
         .filter(|(_, _, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
@@ -117,33 +116,33 @@ fn render_text_debug(
                     draw_origin(&mut gizmos, projection, origin);
                     let size = rect.size();
                     let (width, height) = size.into();
-                    match alignment {
-                        VelloTextAlignment::BottomLeft => {}
-                        VelloTextAlignment::Bottom => {
+                    match text_anchor {
+                        VelloTextAnchor::BottomLeft => {}
+                        VelloTextAnchor::Bottom => {
                             origin.x += -width / 2.0;
                         }
-                        VelloTextAlignment::BottomRight => {
+                        VelloTextAnchor::BottomRight => {
                             origin.x += -width;
                         }
-                        VelloTextAlignment::TopLeft => {
+                        VelloTextAnchor::TopLeft => {
                             origin.y += -height;
                         }
-                        VelloTextAlignment::Left => {
+                        VelloTextAnchor::Left => {
                             origin.y += -height / 2.0;
                         }
-                        VelloTextAlignment::Top => {
+                        VelloTextAnchor::Top => {
                             origin.x += -width / 2.0;
                             origin.y += -height;
                         }
-                        VelloTextAlignment::Center => {
+                        VelloTextAnchor::Center => {
                             origin.x += -width / 2.0;
                             origin.y += -height / 2.0;
                         }
-                        VelloTextAlignment::TopRight => {
+                        VelloTextAnchor::TopRight => {
                             origin.x += -width;
                             origin.y += -height;
                         }
-                        VelloTextAlignment::Right => {
+                        VelloTextAnchor::Right => {
                             origin.x += -width;
                             origin.y += -height / 2.0;
                         }
@@ -163,33 +162,33 @@ fn render_text_debug(
                     draw_origin(&mut gizmos, projection, origin);
                     let size = rect.size();
                     let (width, height) = size.into();
-                    match alignment {
-                        VelloTextAlignment::BottomLeft => {}
-                        VelloTextAlignment::Bottom => {
+                    match text_anchor {
+                        VelloTextAnchor::BottomLeft => {}
+                        VelloTextAnchor::Bottom => {
                             origin.x += -width / 2.0;
                         }
-                        VelloTextAlignment::BottomRight => {
+                        VelloTextAnchor::BottomRight => {
                             origin.x += -width;
                         }
-                        VelloTextAlignment::TopLeft => {
+                        VelloTextAnchor::TopLeft => {
                             origin.y += height;
                         }
-                        VelloTextAlignment::Left => {
+                        VelloTextAnchor::Left => {
                             origin.y += height / 2.0;
                         }
-                        VelloTextAlignment::Top => {
+                        VelloTextAnchor::Top => {
                             origin.x += -width / 2.0;
                             origin.y += height;
                         }
-                        VelloTextAlignment::Center => {
+                        VelloTextAnchor::Center => {
                             origin.x += -width / 2.0;
                             origin.y += height / 2.0;
                         }
-                        VelloTextAlignment::TopRight => {
+                        VelloTextAnchor::TopRight => {
                             origin.x += -width;
                             origin.y += height;
                         }
-                        VelloTextAlignment::Right => {
+                        VelloTextAnchor::Right => {
                             origin.x += -width;
                             origin.y += height / 2.0;
                         }

@@ -21,7 +21,7 @@ fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 
     // Yes, it's this simple.
     commands.spawn(VelloAssetBundle {
-        vector: asset_server.load("embedded://svg/assets/fountain.svg"),
+        asset: asset_server.load("embedded://svg/assets/fountain.svg"),
         debug_visualizations: DebugVisualizations::Visible,
         transform: Transform::from_scale(Vec3::splat(5.0)),
         ..default()

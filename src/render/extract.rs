@@ -1,6 +1,6 @@
 use crate::{
-    text::VelloTextAlignment, CoordinateSpace, VelloAsset, VelloAssetAlignment, VelloFont,
-    VelloScene, VelloText,
+    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloFont, VelloScene,
+    VelloText,
 };
 use bevy::{
     prelude::*,
@@ -11,7 +11,7 @@ use bevy::{
 #[derive(Component, Clone)]
 pub struct ExtractedRenderAsset {
     pub asset: VelloAsset,
-    pub alignment: VelloAssetAlignment,
+    pub asset_anchor: VelloAssetAnchor,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub ui_node: Option<Node>,
@@ -28,7 +28,7 @@ pub fn extract_svg_instances(
     query_vectors: Extract<
         Query<(
             &Handle<VelloAsset>,
-            &VelloAssetAlignment,
+            &VelloAssetAnchor,
             &CoordinateSpace,
             &GlobalTransform,
             Option<&Node>,
@@ -39,8 +39,8 @@ pub fn extract_svg_instances(
     assets: Extract<Res<Assets<VelloAsset>>>,
 ) {
     for (
-        vello_vector_handle,
-        alignment,
+        asset,
+        asset_anchor,
         coord_space,
         transform,
         ui_node,
@@ -54,13 +54,13 @@ pub fn extract_svg_instances(
                 alpha,
                 ..
             },
-        ) = assets.get(vello_vector_handle)
+        ) = assets.get(asset)
         {
             if view_visibility.get() && inherited_visibility.get() {
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
                     transform: *transform,
-                    alignment: *alignment,
+                    asset_anchor: *asset_anchor,
                     render_mode: *coord_space,
                     ui_node: ui_node.cloned(),
                     alpha: *alpha,
@@ -80,7 +80,7 @@ pub fn extract_lottie_instances(
     query_vectors: Extract<
         Query<(
             &Handle<VelloAsset>,
-            &VelloAssetAlignment,
+            &VelloAssetAnchor,
             &CoordinateSpace,
             &GlobalTransform,
             &crate::Playhead,
@@ -93,8 +93,8 @@ pub fn extract_lottie_instances(
     assets: Extract<Res<Assets<VelloAsset>>>,
 ) {
     for (
-        vello_vector_handle,
-        alignment,
+        asset,
+        asset_anchor,
         coord_space,
         transform,
         playhead,
@@ -110,14 +110,14 @@ pub fn extract_lottie_instances(
                 alpha,
                 ..
             },
-        ) = assets.get(vello_vector_handle)
+        ) = assets.get(asset)
         {
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = playhead.frame();
                 commands.spawn(ExtractedRenderAsset {
                     asset: asset.to_owned(),
                     transform: *transform,
-                    alignment: *alignment,
+                    asset_anchor: *asset_anchor,
                     theme: theme.cloned(),
                     render_mode: *coord_space,
                     playhead,
@@ -168,7 +168,7 @@ pub fn scene_instances(
 pub struct ExtractedRenderText {
     pub font: Handle<VelloFont>,
     pub text: VelloText,
-    pub alignment: VelloTextAlignment,
+    pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
 }
@@ -177,7 +177,7 @@ impl ExtractComponent for ExtractedRenderText {
     type QueryData = (
         &'static Handle<VelloFont>,
         &'static VelloText,
-        &'static VelloTextAlignment,
+        &'static VelloTextAnchor,
         &'static GlobalTransform,
         &'static CoordinateSpace,
     );
@@ -187,7 +187,7 @@ impl ExtractComponent for ExtractedRenderText {
     type Out = Self;
 
     fn extract_component(
-        (vello_font_handle, text, alignment, transform, render_mode): bevy::ecs::query::QueryItem<
+        (vello_font_handle, text, text_anchor, transform, render_mode): bevy::ecs::query::QueryItem<
             '_,
             Self::QueryData,
         >,
@@ -195,7 +195,7 @@ impl ExtractComponent for ExtractedRenderText {
         Some(Self {
             font: vello_font_handle.clone(),
             text: text.clone(),
-            alignment: *alignment,
+            text_anchor: *text_anchor,
             transform: *transform,
             render_mode: *render_mode,
         })
