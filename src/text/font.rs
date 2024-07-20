@@ -1,4 +1,4 @@
-use super::{vello_text::VelloText, VelloTextAlignment};
+use super::{vello_text::VelloText, VelloTextAnchor};
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use std::sync::Arc;
 use vello::{
@@ -75,7 +75,7 @@ impl VelloFont {
         scene: &mut Scene,
         mut transform: Affine,
         text: &VelloText,
-        alignment: VelloTextAlignment,
+        text_anchor: VelloTextAnchor,
     ) {
         let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
 
@@ -117,32 +117,32 @@ impl VelloFont {
         // Alignment settings
         let width = width as f64;
         let height = (metrics.cap_height.unwrap_or(line_height) + pen_y) as f64;
-        match alignment {
-            VelloTextAlignment::TopLeft => {
+        match text_anchor {
+            VelloTextAnchor::TopLeft => {
                 transform *= vello::kurbo::Affine::translate((0.0, height));
             }
-            VelloTextAlignment::Left => {
+            VelloTextAnchor::Left => {
                 transform *= vello::kurbo::Affine::translate((0.0, height / 2.0));
             }
-            VelloTextAlignment::BottomLeft => {
+            VelloTextAnchor::BottomLeft => {
                 transform *= vello::kurbo::Affine::translate((0.0, 0.0));
             }
-            VelloTextAlignment::Top => {
+            VelloTextAnchor::Top => {
                 transform *= vello::kurbo::Affine::translate((-width / 2.0, height));
             }
-            VelloTextAlignment::Center => {
+            VelloTextAnchor::Center => {
                 transform *= vello::kurbo::Affine::translate((-width / 2.0, height / 2.0));
             }
-            VelloTextAlignment::Bottom => {
+            VelloTextAnchor::Bottom => {
                 transform *= vello::kurbo::Affine::translate((-width / 2.0, 0.0));
             }
-            VelloTextAlignment::TopRight => {
+            VelloTextAnchor::TopRight => {
                 transform *= vello::kurbo::Affine::translate((-width, height));
             }
-            VelloTextAlignment::Right => {
+            VelloTextAnchor::Right => {
                 transform *= vello::kurbo::Affine::translate((-width, height / 2.0));
             }
-            VelloTextAlignment::BottomRight => {
+            VelloTextAnchor::BottomRight => {
                 transform *= vello::kurbo::Affine::translate((-width, 0.0));
             }
         }

@@ -39,13 +39,13 @@ impl AssetLoader for VelloLottieLoader {
             debug!("parsing {}...", load_context.path().display());
             match ext {
                 "json" => {
-                    let vello_vector = load_lottie_from_bytes(&bytes)?;
+                    let asset = load_lottie_from_bytes(&bytes)?;
                     info!(
                         path = format!("{}", load_context.path().display()),
-                        size = format!("{:?}", (vello_vector.width, vello_vector.height)),
+                        size = format!("{:?}", (asset.width, asset.height)),
                         "finished parsing lottie json asset"
                     );
-                    Ok(vello_vector)
+                    Ok(asset)
                 }
                 ext => Err(VectorLoaderError::Io(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,

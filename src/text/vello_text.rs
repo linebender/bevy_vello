@@ -2,9 +2,9 @@ use crate::VelloFont;
 use bevy::prelude::*;
 use vello::peniko::Brush;
 
-/// Describes how to position text from the origin
+/// Describes how the text is positioned relative to its [`Transform`]. It defaults to [`VelloTextAnchor::BottomLeft`].
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
-pub enum VelloTextAlignment {
+pub enum VelloTextAnchor {
     /// Bounds start from the render position and advance up and to the right.
     #[default]
     BottomLeft,

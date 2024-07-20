@@ -17,7 +17,7 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
     let width = tree.size().width();
     let height = tree.size().height();
 
-    let vello_vector = VelloAsset {
+    let asset = VelloAsset {
         file: VectorFile::Svg(Arc::new(scene)),
         local_transform_center: {
             let mut transform = Transform::default();
@@ -30,7 +30,7 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloAsset, VectorLoaderError
         alpha: 1.0,
     };
 
-    Ok(vello_vector)
+    Ok(asset)
 }
 
 /// Deserialize an SVG file from a string slice.

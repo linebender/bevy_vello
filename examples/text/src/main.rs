@@ -2,7 +2,7 @@ use bevy::{
     asset::{embedded_asset, AssetMetaCheck},
     prelude::*,
 };
-use bevy_vello::{prelude::*, text::VelloTextAlignment, vello::peniko, VelloPlugin};
+use bevy_vello::{prelude::*, text::VelloTextAnchor, vello::peniko, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
@@ -32,7 +32,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
             size: 50.0,
             brush: None,
         },
-        alignment: VelloTextAlignment::Center,
+        text_anchor: VelloTextAnchor::Center,
         transform: Transform::from_xyz(100.0, 100.0, 0.0),
         debug_visualizations: DebugVisualizations::Visible,
         ..default()
@@ -60,7 +60,7 @@ fn setup_screenspace_text(mut commands: Commands, asset_server: ResMut<AssetServ
             size: 15.0,
             brush: Some(peniko::Brush::Solid(peniko::Color::RED)),
         },
-        alignment: bevy_vello::text::VelloTextAlignment::TopLeft,
+        text_anchor: bevy_vello::text::VelloTextAnchor::TopLeft,
         transform: Transform::from_xyz(100.0, 85.0, 0.0),
         coordinate_space: CoordinateSpace::ScreenSpace,
         debug_visualizations: DebugVisualizations::Visible,

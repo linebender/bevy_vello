@@ -21,7 +21,7 @@ fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 
     // Yes, it's this simple.
     commands.spawn(VelloAssetBundle {
-        vector: asset_server.load("embedded://lottie/assets/Tiger.json"),
+        asset: asset_server.load("embedded://lottie/assets/Tiger.json"),
         debug_visualizations: DebugVisualizations::Visible,
         transform: Transform::from_scale(Vec3::splat(0.5)),
         ..default()
