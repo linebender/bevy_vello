@@ -116,7 +116,7 @@ pub fn prepare_vector_affines(
 ) {
     let Some((camera, view, _)) = camera
         .iter()
-        .find(|&(_, _, &render_layers)| render_layers.intersects(&RenderLayers::default()))
+        .find(|(_, _, render_layers)| render_layers.intersects(&RenderLayers::default()))
     else {
         return;
     };
@@ -139,7 +139,7 @@ pub fn prepare_scene_affines(
 ) {
     let Some((camera, view, _)) = camera
         .iter()
-        .find(|&(_, _, &render_layers)| render_layers.intersects(&RenderLayers::default()))
+        .find(|(_, _, render_layers)| render_layers.intersects(&RenderLayers::default()))
     else {
         return;
     };
@@ -224,7 +224,7 @@ pub fn prepare_text_affines(
 ) {
     let Some((camera, view, _)) = camera
         .iter()
-        .find(|&(_, _, &render_layers)| render_layers.intersects(&RenderLayers::default()))
+        .find(|(_, _, render_layers)| render_layers.intersects(&RenderLayers::default()))
     else {
         return;
     };
