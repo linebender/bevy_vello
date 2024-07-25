@@ -110,14 +110,15 @@ impl PrepareRenderInstance for ExtractedRenderAsset {
 
 pub fn prepare_vector_affines(
     mut commands: Commands,
-    camera: Query<(&ExtractedCamera, &ExtractedView, &RenderLayers), With<Camera2d>>,
+    camera: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
     mut render_assets: Query<(Entity, &ExtractedRenderAsset)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
-    let Some((camera, view, _)) = camera
-        .iter()
-        .find(|(_, _, render_layers)| render_layers.intersects(&RenderLayers::default()))
-    else {
+    let Some((camera, view, _)) = camera.iter().find(|(_, _, render_layers)| {
+        render_layers
+            .unwrap_or_default()
+            .intersects(&RenderLayers::default())
+    }) else {
         return;
     };
     let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
@@ -133,14 +134,15 @@ pub fn prepare_vector_affines(
 
 pub fn prepare_scene_affines(
     mut commands: Commands,
-    camera: Query<(&ExtractedCamera, &ExtractedView, &RenderLayers), With<Camera2d>>,
+    camera: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
     mut render_scenes: Query<(Entity, &ExtractedRenderScene)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
-    let Some((camera, view, _)) = camera
-        .iter()
-        .find(|(_, _, render_layers)| render_layers.intersects(&RenderLayers::default()))
-    else {
+    let Some((camera, view, _)) = camera.iter().find(|(_, _, render_layers)| {
+        render_layers
+            .unwrap_or_default()
+            .intersects(&RenderLayers::default())
+    }) else {
         return;
     };
 
@@ -218,14 +220,15 @@ pub fn prepare_scene_affines(
 
 pub fn prepare_text_affines(
     mut commands: Commands,
-    camera: Query<(&ExtractedCamera, &ExtractedView, &RenderLayers), With<Camera2d>>,
+    camera: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
     render_texts: Query<(Entity, &ExtractedRenderText)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
-    let Some((camera, view, _)) = camera
-        .iter()
-        .find(|(_, _, render_layers)| render_layers.intersects(&RenderLayers::default()))
-    else {
+    let Some((camera, view, _)) = camera.iter().find(|(_, _, render_layers)| {
+        render_layers
+            .unwrap_or_default()
+            .intersects(&RenderLayers::default())
+    }) else {
         return;
     };
     let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();

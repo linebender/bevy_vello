@@ -22,7 +22,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
-use vello::{kurbo::Affine, AaSupport, RenderParams, Renderer, RendererOptions, Scene};
+use vello::{kurbo::Affine, RenderParams, Scene};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -68,22 +68,8 @@ pub fn render_scene(
     mut vello_renderer: Local<Option<VelloRenderer>>,
     #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
 ) {
-    let renderer = vello_renderer.get_or_insert_with(|| {
-        VelloRenderer(
-            Renderer::new(
-                device.wgpu_device(),
-                RendererOptions {
-                    surface_format: None,
-                    use_cpu: false,
-                    antialiasing_support: AaSupport::area_only(),
-                    num_init_threads: None,
-                },
-            )
-            // TODO: Attempt CPU fallback. Support changing antialias settings.
-            .expect("No GPU Device"),
-        )
-    });
-
+    let renderer =
+        vello_renderer.get_or_insert_with(|| VelloRenderer::from_device(device.wgpu_device()));
     let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() else {
         error!("No render target");
         return;
