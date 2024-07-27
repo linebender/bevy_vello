@@ -4,7 +4,7 @@ use crate::{
 };
 use bevy::{
     prelude::*,
-    render::{extract_component::ExtractComponent, Extract},
+    render::{extract_component::ExtractComponent, view::RenderLayers, Extract},
     window::PrimaryWindow,
 };
 
@@ -15,6 +15,7 @@ pub struct ExtractedRenderAsset {
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub ui_node: Option<Node>,
+    pub render_layers: Option<RenderLayers>,
     pub alpha: f32,
     #[cfg(feature = "lottie")]
     pub theme: Option<crate::Theme>,
@@ -23,7 +24,7 @@ pub struct ExtractedRenderAsset {
 }
 
 #[cfg(feature = "svg")]
-pub fn extract_svg_instances(
+pub fn extract_svg_assets(
     mut commands: Commands,
     query_vectors: Extract<
         Query<(
@@ -32,6 +33,7 @@ pub fn extract_svg_instances(
             &CoordinateSpace,
             &GlobalTransform,
             Option<&Node>,
+            Option<&RenderLayers>,
             &ViewVisibility,
             &InheritedVisibility,
         )>,
@@ -44,6 +46,7 @@ pub fn extract_svg_instances(
         coord_space,
         transform,
         ui_node,
+        render_layers,
         view_visibility,
         inherited_visibility,
     ) in query_vectors.iter()
@@ -63,6 +66,7 @@ pub fn extract_svg_instances(
                     asset_anchor: *asset_anchor,
                     render_mode: *coord_space,
                     ui_node: ui_node.cloned(),
+                    render_layers: render_layers.cloned(),
                     alpha: *alpha,
                     #[cfg(feature = "lottie")]
                     theme: None,
@@ -75,7 +79,7 @@ pub fn extract_svg_instances(
 }
 
 #[cfg(feature = "lottie")]
-pub fn extract_lottie_instances(
+pub fn extract_lottie_assets(
     mut commands: Commands,
     query_vectors: Extract<
         Query<(
@@ -86,6 +90,7 @@ pub fn extract_lottie_instances(
             &crate::Playhead,
             Option<&crate::Theme>,
             Option<&Node>,
+            Option<&RenderLayers>,
             &ViewVisibility,
             &InheritedVisibility,
         )>,
@@ -100,6 +105,7 @@ pub fn extract_lottie_instances(
         playhead,
         theme,
         ui_node,
+        render_layers,
         view_visibility,
         inherited_visibility,
     ) in query_vectors.iter()
@@ -123,6 +129,7 @@ pub fn extract_lottie_instances(
                     playhead,
                     alpha: *alpha,
                     ui_node: ui_node.cloned(),
+                    render_layers: render_layers.cloned(),
                 });
             }
         }
@@ -135,9 +142,10 @@ pub struct ExtractedRenderScene {
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub ui_node: Option<Node>,
+    pub render_layers: Option<RenderLayers>,
 }
 
-pub fn scene_instances(
+pub fn extract_scenes(
     mut commands: Commands,
     query_scenes: Extract<
         Query<(
@@ -147,11 +155,19 @@ pub fn scene_instances(
             &ViewVisibility,
             &InheritedVisibility,
             Option<&Node>,
+            Option<&RenderLayers>,
         )>,
     >,
 ) {
-    for (scene, coord_space, transform, view_visibility, inherited_visibility, ui_node) in
-        query_scenes.iter()
+    for (
+        scene,
+        coord_space,
+        transform,
+        view_visibility,
+        inherited_visibility,
+        ui_node,
+        render_layers,
+    ) in query_scenes.iter()
     {
         if view_visibility.get() && inherited_visibility.get() {
             commands.spawn(ExtractedRenderScene {
@@ -159,6 +175,7 @@ pub fn scene_instances(
                 render_mode: *coord_space,
                 scene: scene.clone(),
                 ui_node: ui_node.cloned(),
+                render_layers: render_layers.cloned(),
             });
         }
     }
@@ -169,36 +186,47 @@ pub struct ExtractedRenderText {
     pub text: VelloTextSection,
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
-    pub render_mode: CoordinateSpace,
+    pub render_space: CoordinateSpace,
+    pub render_layers: Option<RenderLayers>,
 }
 
-impl ExtractComponent for ExtractedRenderText {
-    type QueryData = (
-        &'static VelloTextSection,
-        &'static VelloTextAnchor,
-        &'static GlobalTransform,
-        &'static CoordinateSpace,
-    );
-
-    type QueryFilter = ();
-
-    type Out = Self;
-
-    fn extract_component(
-        (text, text_anchor, transform, render_mode): bevy::ecs::query::QueryItem<
-            '_,
-            Self::QueryData,
-        >,
-    ) -> Option<Self> {
-        Some(Self {
-            text: text.clone(),
-            text_anchor: *text_anchor,
-            transform: *transform,
-            render_mode: *render_mode,
-        })
+pub fn extract_text(
+    mut commands: Commands,
+    query_scenes: Extract<
+        Query<(
+            &VelloTextSection,
+            &VelloTextAnchor,
+            &GlobalTransform,
+            &ViewVisibility,
+            &InheritedVisibility,
+            &CoordinateSpace,
+            Option<&RenderLayers>,
+        )>,
+    >,
+) {
+    for (
+        text,
+        text_anchor,
+        transform,
+        view_visibility,
+        inherited_visibility,
+        render_space,
+        render_layers,
+    ) in query_scenes.iter()
+    {
+        if view_visibility.get() && inherited_visibility.get() {
+            commands.spawn(ExtractedRenderText {
+                text: text.clone(),
+                text_anchor: *text_anchor,
+                transform: *transform,
+                render_space: *render_space,
+                render_layers: render_layers.cloned(),
+            });
+        }
     }
 }
 
+/// A screenspace render target. We use a resizable fullscreen quad.
 #[derive(Component, Default)]
 pub struct SSRenderTarget(pub Handle<Image>);
 
@@ -227,6 +255,5 @@ pub fn extract_pixel_scale(
         .get_single()
         .map(|window| window.resolution.scale_factor())
         .unwrap_or(1.0);
-
     pixel_scale.0 = scale_factor;
 }

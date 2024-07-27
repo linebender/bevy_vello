@@ -3,8 +3,8 @@ use super::{
     prepare, systems,
 };
 use crate::{
-    render::{extract::ExtractedRenderText, SSRT_SHADER_HANDLE},
-    VelloAsset, VelloCanvasMaterial, VelloFont, VelloScene,
+    render::SSRT_SHADER_HANDLE, VelloAsset, VelloCanvasMaterial, VelloFont, VelloScene,
+    VelloTextSection,
 };
 use bevy::{
     asset::load_internal_asset,
@@ -35,11 +35,11 @@ impl Plugin for VelloRenderPlugin {
         };
 
         #[cfg(feature = "svg")]
-        render_app.add_systems(ExtractSchedule, extract::extract_svg_instances);
+        render_app.add_systems(ExtractSchedule, extract::extract_svg_assets);
         #[cfg(feature = "lottie")]
         render_app
             .init_resource::<super::VelatoRenderer>()
-            .add_systems(ExtractSchedule, extract::extract_lottie_instances);
+            .add_systems(ExtractSchedule, extract::extract_lottie_assets);
 
         render_app
             .insert_resource(ExtractedPixelScale(1.0))
@@ -47,13 +47,14 @@ impl Plugin for VelloRenderPlugin {
                 ExtractSchedule,
                 (
                     extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
-                    extract::scene_instances,
+                    extract::extract_scenes,
+                    extract::extract_text,
                 ),
             )
             .add_systems(
                 Render,
                 (
-                    prepare::prepare_vector_affines,
+                    prepare::prepare_asset_affines,
                     prepare::prepare_scene_affines,
                     prepare::prepare_text_affines,
                 )
@@ -61,14 +62,13 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 Render,
-                systems::render_scene
+                systems::render_frame
                     .in_set(RenderSet::Render)
                     .run_if(resource_exists::<RenderDevice>),
             );
 
         app.add_plugins((
             Material2dPlugin::<VelloCanvasMaterial>::default(),
-            ExtractComponentPlugin::<ExtractedRenderText>::default(),
             ExtractComponentPlugin::<SSRenderTarget>::default(),
             RenderAssetPlugin::<VelloFont>::default(),
         ))
@@ -79,7 +79,13 @@ impl Plugin for VelloRenderPlugin {
         )
         .add_systems(
             PostUpdate,
-            check_visibility::<Or<(With<VelloScene>, With<Handle<VelloAsset>>)>>
+            check_visibility::<
+                Or<(
+                    With<VelloScene>,
+                    With<Handle<VelloAsset>>,
+                    With<VelloTextSection>,
+                )>,
+            >
                 .in_set(VisibilitySystems::CheckVisibility),
         );
     }

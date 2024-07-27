@@ -55,8 +55,9 @@ fn setup_screenspace_text(mut commands: Commands) {
     // Vello text
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
-            value: "World-space text rendered by Vello!".to_string(),
+            value: "Screen-space text rendered by Vello!".to_string(),
             style: VelloTextStyle {
+                font_size: 24.0,
                 brush: peniko::Brush::Solid(peniko::Color::RED),
                 ..default()
             },
@@ -70,13 +71,19 @@ fn setup_screenspace_text(mut commands: Commands) {
 
     // Bevy text
     commands.spawn(
-        TextBundle::from_section("Screen-space text rendered by Bevy!", TextStyle::default())
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                top: Val::Px(100.0),
-                left: Val::Px(100.0),
+        TextBundle::from_section(
+            "Screen-space text rendered by Bevy!",
+            TextStyle {
+                font_size: 24.0,
                 ..default()
-            })
-            .with_text_justify(JustifyText::Left),
+            },
+        )
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(100.0),
+            left: Val::Px(100.0),
+            ..default()
+        })
+        .with_text_justify(JustifyText::Left),
     );
 }

@@ -4,11 +4,13 @@ use super::{
     VelloRenderer,
 };
 use crate::{
-    render::extract::ExtractedRenderScene, CoordinateSpace, VelloCanvasMaterial, VelloFont,
+    render::extract::ExtractedRenderScene, CoordinateSpace, VelloAsset, VelloCanvasMaterial,
+    VelloFont, VelloScene, VelloTextSection,
 };
 use bevy::{
     prelude::*,
     render::{
+        camera::ExtractedCamera,
         mesh::Indices,
         render_asset::{RenderAssetUsages, RenderAssets},
         render_resource::{
@@ -17,12 +19,12 @@ use bevy::{
         },
         renderer::{RenderDevice, RenderQueue},
         texture::GpuImage,
-        view::NoFrustumCulling,
+        view::{NoFrustumCulling, RenderLayers},
     },
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
 };
-use vello::{kurbo::Affine, AaSupport, RenderParams, Renderer, RendererOptions, Scene};
+use vello::{kurbo::Affine, RenderParams, Scene};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -56,11 +58,12 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 /// Transforms all the vectors extracted from the game world and places them in
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
-pub fn render_scene(
+pub fn render_frame(
     ss_render_target: Query<&SSRenderTarget>,
-    query_render_assets: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
-    query_render_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
-    query_render_texts: Query<(&PreparedAffine, &ExtractedRenderText)>,
+    views: Query<(&ExtractedCamera, Option<&RenderLayers>), With<Camera2d>>,
+    view_assets: Query<(&PreparedAffine, &ExtractedRenderAsset)>,
+    view_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
+    view_text: Query<(&PreparedAffine, &ExtractedRenderText)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
@@ -68,22 +71,8 @@ pub fn render_scene(
     mut vello_renderer: Local<Option<VelloRenderer>>,
     #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
 ) {
-    let renderer = vello_renderer.get_or_insert_with(|| {
-        VelloRenderer(
-            Renderer::new(
-                device.wgpu_device(),
-                RendererOptions {
-                    surface_format: None,
-                    use_cpu: false,
-                    antialiasing_support: AaSupport::area_only(),
-                    num_init_threads: None,
-                },
-            )
-            // TODO: Attempt CPU fallback. Support changing antialias settings.
-            .expect("No GPU Device"),
-        )
-    });
-
+    let renderer =
+        vello_renderer.get_or_insert_with(|| VelloRenderer::from_device(device.wgpu_device()));
     let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() else {
         error!("No render target");
         return;
@@ -95,7 +84,7 @@ pub fn render_scene(
         Scene(&'a ExtractedRenderScene),
         Text(&'a ExtractedRenderText),
     }
-    let mut render_queue: Vec<(f32, CoordinateSpace, (Affine, RenderItem))> = query_render_assets
+    let mut render_queue: Vec<(f32, CoordinateSpace, (Affine, RenderItem))> = view_assets
         .iter()
         .map(|(&affine, asset)| {
             (
@@ -105,17 +94,17 @@ pub fn render_scene(
             )
         })
         .collect();
-    render_queue.extend(query_render_scenes.iter().map(|(&affine, scene)| {
+    render_queue.extend(view_scenes.iter().map(|(&affine, scene)| {
         (
             scene.transform.translation().z,
             scene.render_mode,
             (*affine, RenderItem::Scene(scene)),
         )
     }));
-    render_queue.extend(query_render_texts.iter().map(|(&affine, text)| {
+    render_queue.extend(view_text.iter().map(|(&affine, text)| {
         (
             text.transform.translation().z,
-            text.render_mode,
+            text.render_space,
             (*affine, RenderItem::Text(text)),
         )
     }));
@@ -131,103 +120,124 @@ pub fn render_scene(
         },
     );
 
-    // Apply transforms to the respective fragments and add them to the
-    // scene to be rendered
+    // Respect camera ordering
+    let mut views: Vec<(&ExtractedCamera, Option<&RenderLayers>)> = views.into_iter().collect();
+    views.sort_by(|(camera_a, _), (camera_b, _)| camera_a.order.cmp(&camera_b.order));
+
+    // Render the frame
     let mut scene_buffer = Scene::new();
-    for (_, _, (affine, render_item)) in render_queue.iter_mut() {
-        #[allow(unused_variables)]
-        match render_item {
-            RenderItem::Asset(ExtractedRenderAsset {
-                asset,
-                alpha,
-                #[cfg(feature = "lottie")]
-                theme,
-                #[cfg(feature = "lottie")]
-                playhead,
-                ..
-            }) => match &asset.file {
-                #[cfg(feature = "svg")]
-                crate::VectorFile::Svg(scene) => {
-                    if *alpha < 1.0 {
-                        scene_buffer.push_layer(
-                            vello::peniko::Mix::Normal,
-                            *alpha,
-                            *affine,
-                            &vello::kurbo::Rect::new(
-                                0.0,
-                                0.0,
-                                asset.width as f64,
-                                asset.height as f64,
-                            ),
-                        );
+    for (_, maybe_camera_layers) in views.iter() {
+        let view_camera_layers = maybe_camera_layers.unwrap_or_default();
+        // Apply transforms to the respective fragments and add them to the
+        // scene to be rendered
+        for (_, _, (affine, render_item)) in
+            render_queue
+                .iter()
+                .filter(|(_, _, (_, asset))| match asset {
+                    RenderItem::Scene(ExtractedRenderScene { render_layers, .. })
+                    | &RenderItem::Text(ExtractedRenderText { render_layers, .. })
+                    | RenderItem::Asset(ExtractedRenderAsset { render_layers, .. }) => {
+                        render_layers
+                            .as_ref()
+                            .unwrap_or_default()
+                            .intersects(view_camera_layers)
                     }
+                })
+        {
+            #[allow(unused_variables)]
+            match render_item {
+                RenderItem::Asset(ExtractedRenderAsset {
+                    asset,
+                    alpha,
+                    #[cfg(feature = "lottie")]
+                    theme,
+                    #[cfg(feature = "lottie")]
+                    playhead,
+                    ..
+                }) => match &asset.file {
+                    #[cfg(feature = "svg")]
+                    crate::VectorFile::Svg(scene) => {
+                        if *alpha < 1.0 {
+                            scene_buffer.push_layer(
+                                vello::peniko::Mix::Normal,
+                                *alpha,
+                                *affine,
+                                &vello::kurbo::Rect::new(
+                                    0.0,
+                                    0.0,
+                                    asset.width as f64,
+                                    asset.height as f64,
+                                ),
+                            );
+                        }
+                        scene_buffer.append(scene, Some(*affine));
+                        if *alpha < 1.0 {
+                            scene_buffer.pop_layer();
+                        }
+                    }
+                    #[cfg(feature = "lottie")]
+                    crate::VectorFile::Lottie(composition) => {
+                        if *alpha < 1.0 {
+                            scene_buffer.push_layer(
+                                vello::peniko::Mix::Normal,
+                                *alpha,
+                                *affine,
+                                &vello::kurbo::Rect::new(
+                                    0.0,
+                                    0.0,
+                                    asset.width as f64,
+                                    asset.height as f64,
+                                ),
+                            );
+                        }
+                        velato_renderer.append(
+                            {
+                                theme
+                                    .as_ref()
+                                    .map(|cs| cs.recolor(composition))
+                                    .as_ref()
+                                    .unwrap_or(composition)
+                            },
+                            *playhead as f64,
+                            *affine,
+                            1.0,
+                            &mut scene_buffer,
+                        );
+                        if *alpha < 1.0 {
+                            scene_buffer.pop_layer();
+                        }
+                    }
+                    #[cfg(not(any(feature = "svg", feature = "lottie")))]
+                    _ => unimplemented!(),
+                },
+                RenderItem::Scene(ExtractedRenderScene { scene, .. }) => {
                     scene_buffer.append(scene, Some(*affine));
-                    if *alpha < 1.0 {
-                        scene_buffer.pop_layer();
-                    }
                 }
-                #[cfg(feature = "lottie")]
-                crate::VectorFile::Lottie(composition) => {
-                    if *alpha < 1.0 {
-                        scene_buffer.push_layer(
-                            vello::peniko::Mix::Normal,
-                            *alpha,
-                            *affine,
-                            &vello::kurbo::Rect::new(
-                                0.0,
-                                0.0,
-                                asset.width as f64,
-                                asset.height as f64,
-                            ),
-                        );
+                RenderItem::Text(ExtractedRenderText {
+                    text, text_anchor, ..
+                }) => {
+                    if let Some(font) = font_render_assets.get_mut(text.style.font.id()) {
+                        font.render(&mut scene_buffer, *affine, text, *text_anchor);
                     }
-                    velato_renderer.append(
-                        {
-                            theme
-                                .as_ref()
-                                .map(|cs| cs.recolor(composition))
-                                .as_ref()
-                                .unwrap_or(composition)
-                        },
-                        *playhead as f64,
-                        *affine,
-                        1.0,
-                        &mut scene_buffer,
-                    );
-                    if *alpha < 1.0 {
-                        scene_buffer.pop_layer();
-                    }
-                }
-                #[cfg(not(any(feature = "svg", feature = "lottie")))]
-                _ => unimplemented!(),
-            },
-            RenderItem::Scene(ExtractedRenderScene { scene, .. }) => {
-                scene_buffer.append(scene, Some(*affine));
-            }
-            RenderItem::Text(ExtractedRenderText {
-                text, text_anchor, ..
-            }) => {
-                if let Some(font) = font_render_assets.get_mut(text.style.font.id()) {
-                    font.render(&mut scene_buffer, *affine, text, *text_anchor);
                 }
             }
         }
-    }
 
-    renderer
-        .render_to_texture(
-            device.wgpu_device(),
-            &queue,
-            &scene_buffer,
-            &gpu_image.texture_view,
-            &RenderParams {
-                base_color: vello::peniko::Color::TRANSPARENT,
-                width: gpu_image.size.x as u32,
-                height: gpu_image.size.y as u32,
-                antialiasing_method: vello::AaConfig::Area,
-            },
-        )
-        .unwrap();
+        renderer
+            .render_to_texture(
+                device.wgpu_device(),
+                &queue,
+                &scene_buffer,
+                &gpu_image.texture_view,
+                &RenderParams {
+                    base_color: vello::peniko::Color::TRANSPARENT,
+                    width: gpu_image.size.x,
+                    height: gpu_image.size.y,
+                    antialiasing_method: vello::AaConfig::Area,
+                },
+            )
+            .unwrap();
+    }
 }
 
 pub fn resize_rendertargets(
@@ -323,7 +333,14 @@ pub fn setup_ss_rendertarget(
 /// Hide the render target canvas if there is nothing to render
 pub fn clear_when_empty(
     mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
-    render_items: Query<(&mut CoordinateSpace, &ViewVisibility)>,
+    render_items: Query<
+        (),
+        Or<(
+            With<VelloScene>,
+            With<Handle<VelloAsset>>,
+            With<VelloTextSection>,
+        )>,
+    >,
 ) {
     if let Ok(mut visibility) = query_render_target.get_single_mut() {
         if render_items.is_empty() {

@@ -62,14 +62,23 @@ impl Material2d for VelloCanvasMaterial {
 #[derive(Deref, DerefMut)]
 pub struct VelloRenderer(vello::Renderer);
 
-#[derive(Resource, Deref, DerefMut)]
-#[cfg(feature = "lottie")]
-pub struct VelatoRenderer(velato::Renderer);
-
-#[cfg(feature = "lottie")]
-impl Default for VelatoRenderer {
-    fn default() -> Self {
-        // TODO: Velato should have a ::default()
-        Self(velato::Renderer::new())
+impl VelloRenderer {
+    pub fn from_device(device: &vello::wgpu::Device) -> Self {
+        let renderer = vello::Renderer::new(
+            device,
+            vello::RendererOptions {
+                surface_format: None,
+                use_cpu: false,
+                antialiasing_support: vello::AaSupport::area_only(),
+                num_init_threads: None,
+            },
+        )
+        // TODO: Attempt CPU fallback. Support changing antialias settings.
+        .expect("No GPU Device");
+        VelloRenderer(renderer)
     }
 }
+
+#[derive(Resource, Deref, DerefMut, Default)]
+#[cfg(feature = "lottie")]
+pub struct VelatoRenderer(velato::Renderer);
