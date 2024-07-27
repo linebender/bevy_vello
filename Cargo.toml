@@ -9,6 +9,8 @@ members = [
   "examples/svg",
   "examples/lottie",
   "examples/scene_ui",
+  "examples/render_layers",
+  "examples/cube3d",
 ]
 
 [workspace.package]
