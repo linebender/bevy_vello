@@ -13,6 +13,8 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ### Added
 
 - There is now a `default_font` feature that uses the same `FiraMono-subset.ttf` font used in the bevy/default_font feature.
+- There is now a `render_layers` example.
+- There is now a `cube_3d` example.
 
 ### Changed
 
@@ -24,10 +26,15 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - The field `VelloAssetBundle.vector` was renamed to `VelloAssetBundle.asset`.
 - Renamed `VelloAssetAlignment` to `VelloAssetAnchor`. Fields were renamed `alignment` were renamed to `asset_anchor`.
 - Renamed `VelloTextAlignment` to `VelloTextAnchor`. Fields were renamed `alignment` were renamed to `text_anchor`.
+- The `SSRenderTarget` (fullscreen quad that renders your frame) no longer renders at a zepth of `-0.001`. This was a legacy hack used to ensure Gizmos rendered on-top.
 
 ### Removed
 
 - Removed `ZFunction`s from the render pipeline. Now ordering is based solely on the `Transform`'s z component. If you dependeded on this behavior, you'll need to adjust the transform Z in a system prior to render.
+
+### Fixed
+
+- Text, assets, and scenes rendered will now correctly respect camera `RenderLayers`.
 
 ## 0.5.1
 
