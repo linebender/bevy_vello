@@ -19,7 +19,7 @@ use bevy::{
         },
         renderer::{RenderDevice, RenderQueue},
         texture::GpuImage,
-        view::{ExtractedView, NoFrustumCulling, RenderLayers},
+        view::{NoFrustumCulling, RenderLayers},
     },
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
     window::{WindowResized, WindowResolution},
@@ -132,7 +132,7 @@ pub fn render_frame(
         // scene to be rendered
         for (_, _, (affine, render_item)) in
             render_queue
-                .iter_mut()
+                .iter()
                 .filter(|(_, _, (_, asset))| match asset {
                     RenderItem::Scene(ExtractedRenderScene { render_layers, .. })
                     | &RenderItem::Text(ExtractedRenderText { render_layers, .. })
