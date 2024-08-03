@@ -18,6 +18,7 @@ mod prepare;
 mod systems;
 
 pub use plugin::VelloRenderPlugin;
+pub use plugin::VelloRenderSettings;
 
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
