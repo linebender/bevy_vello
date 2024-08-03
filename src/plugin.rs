@@ -4,7 +4,6 @@ use crate::{
 };
 use bevy::{asset::load_internal_binary_asset, prelude::*};
 
-#[derive(Default)]
 pub struct VelloPlugin;
 
 impl Plugin for VelloPlugin {
