@@ -33,7 +33,7 @@ fn main() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin::default())
+        .add_plugins(VelloPlugin)
         .add_systems(Startup, setup)
         .add_systems(Update, cube_rotator_system)
         .add_plugins(ExtractComponentPlugin::<VelloTarget>::default());

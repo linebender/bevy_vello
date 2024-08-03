@@ -1,7 +1,8 @@
 use super::{
     extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget},
+    plugin::VelloRenderSettings,
     prepare::PreparedAffine,
-    VelloRenderPlugin, VelloRenderer,
+    VelloRenderer,
 };
 use crate::{
     render::extract::ExtractedRenderScene, CoordinateSpace, VelloAsset, VelloCanvasMaterial,
@@ -282,7 +283,7 @@ pub fn setup_ss_rendertarget(
     mut custom_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
-    config: Res<VelloRenderPlugin>,
+    config: Option<Res<VelloRenderSettings>>,
 ) {
     let Ok(window) = windows.get_single() else {
         return;
@@ -331,8 +332,8 @@ pub fn setup_ss_rendertarget(
         .insert(render_target)
         .id();
 
-    if let Some(layer) = &config.canvas_render_layers {
-        commands.entity(entity).insert(layer.clone());
+    if let Some(layer) = config.and_then(|config| config.canvas_render_layers.clone()) {
+        commands.entity(entity).insert(layer);
     }
 }
 

@@ -10,7 +10,7 @@ fn main() {
         meta_check: AssetMetaCheck::Never,
         ..default()
     }))
-    .add_plugins(VelloPlugin::default())
+    .add_plugins(VelloPlugin)
     .add_systems(
         Startup,
         (setup_camera, setup_screenspace_text, setup_worldspace_text),

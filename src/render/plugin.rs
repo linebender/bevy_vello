@@ -19,16 +19,16 @@ use bevy::{
     sprite::Material2dPlugin,
 };
 
-#[derive(Resource, Default, Clone)]
-pub struct VelloRenderPlugin {
+pub struct VelloRenderPlugin;
+
+#[derive(Default, Resource, Clone)]
+pub struct VelloRenderSettings {
     /// the render layer that will be used for the vello canvas mesh
     pub canvas_render_layers: Option<RenderLayers>,
 }
 
 impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(self.clone());
-
         load_internal_asset!(
             app,
             SSRT_SHADER_HANDLE,
