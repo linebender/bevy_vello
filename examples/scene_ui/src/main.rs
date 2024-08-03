@@ -5,7 +5,7 @@ use std::f64::consts::{FRAC_PI_4, SQRT_2};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin)
+        .add_plugins(VelloPlugin::default())
         .add_systems(Startup, setup_ui)
         .add_systems(Update, update_ui)
         .run();

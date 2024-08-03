@@ -6,7 +6,7 @@ use bevy_vello::{prelude::*, VelloPlugin};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin)
+        .add_plugins(VelloPlugin::default())
         .add_systems(Startup, (setup_animation, setup_background))
         .add_systems(
             Update,

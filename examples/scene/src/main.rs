@@ -8,7 +8,7 @@ use bevy_vello::{
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin)
+        .add_plugins(VelloPlugin::default())
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, simple_animation)
         .run();

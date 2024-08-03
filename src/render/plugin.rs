@@ -13,16 +13,22 @@ use bevy::{
         extract_component::ExtractComponentPlugin,
         render_asset::RenderAssetPlugin,
         renderer::RenderDevice,
-        view::{check_visibility, VisibilitySystems},
+        view::{check_visibility, RenderLayers, VisibilitySystems},
         Render, RenderApp, RenderSet,
     },
     sprite::Material2dPlugin,
 };
 
-pub struct VelloRenderPlugin;
+#[derive(Resource, Default, Clone)]
+pub struct VelloRenderPlugin {
+    /// the render layer that will be used for the vello canvas mesh
+    pub canvas_render_layers: Option<RenderLayers>,
+}
 
 impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(self.clone());
+
         load_internal_asset!(
             app,
             SSRT_SHADER_HANDLE,
