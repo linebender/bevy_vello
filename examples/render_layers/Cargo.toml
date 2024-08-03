@@ -10,3 +10,4 @@ publish = false
 [dependencies]
 bevy_vello = { path = "../../" }
 bevy = { workspace = true, features = ["bevy_gizmos"] }
+bevy-inspector-egui = "0.25"

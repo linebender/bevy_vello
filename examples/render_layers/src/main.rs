@@ -7,7 +7,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin)
-        .add_systems(Startup, (setup_animation, setup_background))
+        .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::default())
+        .add_systems(Startup, (setup_gizmos, setup_animation, setup_background))
         .add_systems(
             Update,
             (
@@ -18,6 +19,11 @@ fn main() {
             ),
         )
         .run();
+}
+
+fn setup_gizmos(mut config_store: ResMut<GizmoConfigStore>) {
+    let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
+    config.render_layers = RenderLayers::layer(1);
 }
 
 /// A tag that will mark the scene on RenderLayer 0.
@@ -33,7 +39,7 @@ struct Layer1Scene;
 struct Layer2Scene;
 
 fn setup_animation(mut commands: Commands) {
-    const LAYER_0: RenderLayers = RenderLayers::layer(0);
+    // const LAYER_0: RenderLayers = RenderLayers::layer(0);
     const LAYER_1: RenderLayers = RenderLayers::layer(1);
 
     // This camera can see everything on Layer 1 and Layer 2.
@@ -46,10 +52,11 @@ fn setup_animation(mut commands: Commands) {
             },
             ..default()
         },
-        LAYER_0.union(&LAYER_1),
+        // LAYER_0.union(&LAYER_1),
+        LAYER_1,
     ));
 
-    commands.spawn((VelloSceneBundle::default(), Layer0Scene, LAYER_0));
+    commands.spawn((VelloSceneBundle::default(), Layer0Scene, LAYER_1));
     commands.spawn((VelloSceneBundle::default(), Layer1Scene, LAYER_1));
 }
 
