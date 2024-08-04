@@ -24,7 +24,7 @@ pub mod prelude {
     pub use crate::{
         debug::DebugVisualizations,
         integrations::{VectorFile, VelloAsset, VelloAssetAnchor},
-        render::{VelloCanvasSettings, VelloRenderSettings},
+        render::VelloRenderSettings,
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
