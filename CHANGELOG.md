@@ -15,6 +15,8 @@ You can find its changes [documented below](#051---2024-07-04).
 
 This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
+## v0.6.0
+
 ### Added
 
 - There is now a `default_font` feature that uses the same `FiraMono-subset.ttf` font used in the bevy/default_font feature.
