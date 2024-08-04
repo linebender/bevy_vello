@@ -33,7 +33,11 @@ fn main() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin::default())
+        .add_plugins(VelloPlugin {
+            use_cpu: false,
+            antialiasing: vello::AaConfig::Msaa8,
+            ..default()
+        })
         .add_systems(Startup, setup)
         .add_systems(Update, cube_rotator_system)
         .add_plugins(ExtractComponentPlugin::<VelloTarget>::default());
@@ -115,15 +119,14 @@ fn setup(
 }
 
 fn render_texture(
-    mut vello_renderer: Local<Option<VelloRenderer>>,
+    renderer: Res<VelloRenderer>,
+    render_settings: Res<VelloRenderSettings>,
     target: Query<&VelloTarget>,
     device: Res<RenderDevice>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     queue: Res<RenderQueue>,
     time: Res<Time>,
 ) {
-    let renderer =
-        vello_renderer.get_or_insert_with(|| VelloRenderer::from_device(device.wgpu_device()));
     let target = target.single();
 
     let mut scene = VelloScene::default();
@@ -147,9 +150,11 @@ fn render_texture(
         base_color: vello::peniko::Color::WHITE,
         width: gpu_image.size.x,
         height: gpu_image.size.y,
-        antialiasing_method: vello::AaConfig::Area,
+        antialiasing_method: render_settings.antialiasing,
     };
     renderer
+        .lock()
+        .unwrap()
         .render_to_texture(
             device.wgpu_device(),
             &queue,

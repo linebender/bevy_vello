@@ -6,16 +6,11 @@ use bevy_vello::{prelude::*, VelloPlugin};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin::default())
-        .add_systems(
-            Startup,
-            (
-                setup_canvas,
-                setup_gizmos,
-                setup_animation,
-                setup_background,
-            ),
-        )
+        .add_plugins(VelloPlugin {
+            canvas_render_layers: RenderLayers::layer(1).with(2),
+            ..default()
+        })
+        .add_systems(Startup, (setup_gizmos, setup_scene))
         .add_systems(Update, (animation, background, run_gizmos))
         .run();
 }
@@ -27,11 +22,6 @@ struct AnimationScene;
 /// A tag that will mark the scene with the blue square.
 #[derive(Component)]
 struct BackgroundScene;
-
-fn setup_canvas(mut settings: ResMut<VelloRenderSettings>) {
-    // There's only 1 Vello canvas, so as long as you use a layer that has a camera, you're good!
-    settings.canvas_render_layers = RenderLayers::layer(3); // the gizmo camera layer
-}
 
 fn setup_gizmos(mut commands: Commands, mut config_store: ResMut<GizmoConfigStore>) {
     // This camera can only see Gizmos.
@@ -50,42 +40,28 @@ fn setup_gizmos(mut commands: Commands, mut config_store: ResMut<GizmoConfigStor
     config.render_layers = RenderLayers::layer(3);
 }
 
-fn setup_animation(mut commands: Commands) {
+fn setup_scene(mut commands: Commands) {
     commands.spawn((
         Camera2dBundle {
             camera: Camera {
-                // This camera will render AFTER the blue background camera!
-                order: 0,
-                ..default()
-            },
-            ..default()
-        },
-        RenderLayers::layer(2),
-    ));
-
-    commands.spawn((
-        VelloSceneBundle::default(),
-        AnimationScene,
-        RenderLayers::layer(2),
-    ));
-}
-
-fn setup_background(mut commands: Commands) {
-    commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                // Render first
+                // This camera will render first.
                 order: -1,
                 ..default()
             },
             ..default()
         },
-        RenderLayers::layer(1),
+        RenderLayers::layer(1).with(2),
     ));
+
     commands.spawn((
         VelloSceneBundle::default(),
         BackgroundScene,
         RenderLayers::layer(1),
+    ));
+    commands.spawn((
+        VelloSceneBundle::default(),
+        AnimationScene,
+        RenderLayers::layer(2),
     ));
 }
 

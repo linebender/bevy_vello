@@ -1,12 +1,11 @@
 use super::{
     extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget},
-    plugin::VelloRenderSettings,
     prepare::PreparedAffine,
-    VelloRenderer,
+    VelloCanvasMaterial, VelloCanvasSettings, VelloRenderSettings, VelloRenderer,
 };
 use crate::{
-    render::extract::ExtractedRenderScene, CoordinateSpace, VelloAsset, VelloCanvasMaterial,
-    VelloFont, VelloScene, VelloTextSection,
+    render::extract::ExtractedRenderScene, CoordinateSpace, VelloAsset, VelloFont, VelloScene,
+    VelloTextSection,
 };
 use bevy::{
     prelude::*,
@@ -69,11 +68,11 @@ pub fn render_frame(
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
-    mut vello_renderer: Local<Option<VelloRenderer>>,
+    renderer: Res<VelloRenderer>,
+    render_settings: Res<VelloRenderSettings>,
+
     #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
 ) {
-    let renderer =
-        vello_renderer.get_or_insert_with(|| VelloRenderer::from_device(device.wgpu_device()));
     let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() else {
         error!("No render target");
         return;
@@ -225,6 +224,8 @@ pub fn render_frame(
         }
 
         renderer
+            .lock()
+            .unwrap()
             .render_to_texture(
                 device.wgpu_device(),
                 &queue,
@@ -234,7 +235,7 @@ pub fn render_frame(
                     base_color: vello::peniko::Color::TRANSPARENT,
                     width: gpu_image.size.x,
                     height: gpu_image.size.y,
-                    antialiasing_method: vello::AaConfig::Area,
+                    antialiasing_method: render_settings.antialiasing,
                 },
             )
             .unwrap();
@@ -283,7 +284,7 @@ pub fn setup_ss_rendertarget(
     mut custom_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
-    settings: Res<VelloRenderSettings>,
+    settings: Res<VelloCanvasSettings>,
 ) {
     let Ok(window) = windows.get_single() else {
         return;
@@ -327,22 +328,19 @@ pub fn setup_ss_rendertarget(
         })
         .insert(NoFrustumCulling)
         .insert(render_target)
-        .insert(settings.canvas_render_layers.clone());
+        .insert(settings.render_layers.clone());
 }
 
-/// Listen for settings changes that a developer could make.
-pub fn settings_change_detection(
+/// Reinitialize for renderer settings changes.
+pub fn render_settings_change_detection(
     mut commands: Commands,
-    mut query_render_target: Query<Entity, With<SSRenderTarget>>,
-    settings: Res<VelloRenderSettings>,
+    render_settings: Res<VelloRenderSettings>,
 ) {
-    if let Ok(entity) = query_render_target.get_single_mut() {
-        if settings.is_changed() {
-            // Replace the canvas render layers
-            commands
-                .entity(entity)
-                .insert(settings.canvas_render_layers.clone());
-        }
+    if render_settings.is_changed() && !render_settings.is_added() {
+        // Replace renderer
+        info!("Render settings changed, re-initializing vello...");
+        commands.remove_resource::<VelloRenderer>();
+        commands.init_resource::<VelloRenderer>();
     }
 }
 

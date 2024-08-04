@@ -8,17 +8,20 @@ use bevy::{
             AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
             VertexBufferLayout, VertexFormat, VertexStepMode,
         },
+        renderer::RenderDevice,
+        view::RenderLayers,
     },
     sprite::{Material2d, Material2dKey},
 };
+use std::sync::{Arc, Mutex};
+use vello::{AaConfig, AaSupport};
 
 mod extract;
 mod plugin;
 mod prepare;
 mod systems;
 
-pub use plugin::VelloRenderPlugin;
-pub use plugin::VelloRenderSettings;
+pub(crate) use plugin::VelloRenderPlugin;
 
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
@@ -60,26 +63,82 @@ impl Material2d for VelloCanvasMaterial {
     }
 }
 
-#[derive(Deref, DerefMut)]
-pub struct VelloRenderer(vello::Renderer);
+#[derive(Resource, Deref, DerefMut)]
+pub struct VelloRenderer(Arc<Mutex<vello::Renderer>>);
 
 impl VelloRenderer {
-    pub fn from_device(device: &vello::wgpu::Device) -> Self {
-        let renderer = vello::Renderer::new(
+    pub fn try_new(
+        device: &vello::wgpu::Device,
+        settings: &VelloRenderSettings,
+    ) -> Result<Self, vello::Error> {
+        vello::Renderer::new(
             device,
             vello::RendererOptions {
                 surface_format: None,
-                use_cpu: false,
-                antialiasing_support: vello::AaSupport::area_only(),
+                use_cpu: settings.use_cpu,
+                // TODO: Vello doesn't currently allow adding additional AA support after initialization, so we need to use all support modes here instead.
+                antialiasing_support: AaSupport::all(),
                 num_init_threads: None,
             },
         )
-        // TODO: Attempt CPU fallback. Support changing antialias settings.
-        .expect("No GPU Device");
-        VelloRenderer(renderer)
+        .map(Mutex::new)
+        .map(Arc::new)
+        .map(VelloRenderer)
+    }
+}
+
+impl FromWorld for VelloRenderer {
+    fn from_world(world: &mut World) -> Self {
+        match VelloRenderer::try_new(
+            world.get_resource::<RenderDevice>().unwrap().wgpu_device(),
+            world.get_resource::<VelloRenderSettings>().unwrap(),
+        ) {
+            Ok(r) => r,
+            Err(e) => {
+                error!("Attempting safe-mode fallback, failed to initialize renderer: {e:}");
+                {
+                    let mut settings = world.get_resource_mut::<VelloRenderSettings>().unwrap();
+                    settings.use_cpu = true;
+                    settings.antialiasing = AaConfig::Area;
+                }
+                match VelloRenderer::try_new(
+                    world.get_resource::<RenderDevice>().unwrap().wgpu_device(),
+                    world.get_resource::<VelloRenderSettings>().unwrap(),
+                ) {
+                    Ok(r) => r,
+                    Err(e) => panic!("Failed to start vello: {e}"),
+                }
+            }
+        }
     }
 }
 
 #[derive(Resource, Deref, DerefMut, Default)]
 #[cfg(feature = "lottie")]
 pub struct VelatoRenderer(velato::Renderer);
+
+/// Render settings for Vello.
+#[derive(Resource, Clone)]
+pub struct VelloRenderSettings {
+    /// Use CPU instead of GPU
+    pub use_cpu: bool,
+
+    /// Which antialiasing strategy to use
+    pub antialiasing: AaConfig,
+}
+
+impl Default for VelloRenderSettings {
+    fn default() -> Self {
+        Self {
+            use_cpu: false,
+            antialiasing: AaConfig::Area,
+        }
+    }
+}
+
+/// Canvas settings for Vello.
+#[derive(Resource, Clone, Debug, Default, PartialEq)]
+pub(crate) struct VelloCanvasSettings {
+    /// The render layers that will be used for the Vello canvas mesh.
+    pub render_layers: RenderLayers,
+}

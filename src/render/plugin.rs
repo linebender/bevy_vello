@@ -1,10 +1,10 @@
 use super::{
     extract::{self, ExtractedPixelScale, SSRenderTarget},
-    prepare, systems,
+    prepare, systems, VelloCanvasSettings, VelloRenderSettings,
 };
 use crate::{
-    render::SSRT_SHADER_HANDLE, VelloAsset, VelloCanvasMaterial, VelloFont, VelloScene,
-    VelloTextSection,
+    render::{VelloCanvasMaterial, VelloRenderer, SSRT_SHADER_HANDLE},
+    VelloAsset, VelloFont, VelloScene, VelloTextSection,
 };
 use bevy::{
     asset::load_internal_asset,
@@ -13,18 +13,19 @@ use bevy::{
         extract_component::ExtractComponentPlugin,
         render_asset::RenderAssetPlugin,
         renderer::RenderDevice,
-        view::{check_visibility, RenderLayers, VisibilitySystems},
+        view::{check_visibility, VisibilitySystems},
         Render, RenderApp, RenderSet,
     },
     sprite::Material2dPlugin,
 };
 
-pub struct VelloRenderPlugin;
+#[derive(Default)]
+pub struct VelloRenderPlugin {
+    /// Settings used for the canvas
+    pub canvas_settings: VelloCanvasSettings,
 
-#[derive(Resource, Default, Clone, Debug)]
-pub struct VelloRenderSettings {
-    /// The render layer that will be used for the vello canvas mesh.
-    pub canvas_render_layers: RenderLayers,
+    /// Settings used for rendering with Vello
+    pub render_settings: VelloRenderSettings,
 }
 
 impl Plugin for VelloRenderPlugin {
@@ -48,7 +49,12 @@ impl Plugin for VelloRenderPlugin {
             .add_systems(ExtractSchedule, extract::extract_lottie_assets);
 
         render_app
+            .insert_resource(self.render_settings.clone())
             .insert_resource(ExtractedPixelScale(1.0))
+            .add_systems(
+                Render,
+                systems::render_settings_change_detection.in_set(RenderSet::Cleanup),
+            )
             .add_systems(
                 ExtractSchedule,
                 (
@@ -73,30 +79,34 @@ impl Plugin for VelloRenderPlugin {
                     .run_if(resource_exists::<RenderDevice>),
             );
 
-        app.add_plugins((
-            Material2dPlugin::<VelloCanvasMaterial>::default(),
-            ExtractComponentPlugin::<SSRenderTarget>::default(),
-            RenderAssetPlugin::<VelloFont>::default(),
-        ))
-        .add_systems(Startup, systems::setup_ss_rendertarget)
-        .add_systems(
-            Update,
-            (
-                systems::resize_rendertargets,
-                systems::hide_when_empty,
-                systems::settings_change_detection,
-            ),
-        )
-        .add_systems(
-            PostUpdate,
-            check_visibility::<
-                Or<(
-                    With<VelloScene>,
-                    With<Handle<VelloAsset>>,
-                    With<VelloTextSection>,
-                )>,
-            >
-                .in_set(VisibilitySystems::CheckVisibility),
-        );
+        app.insert_resource(self.canvas_settings.clone())
+            .add_plugins((
+                Material2dPlugin::<VelloCanvasMaterial>::default(),
+                ExtractComponentPlugin::<SSRenderTarget>::default(),
+                RenderAssetPlugin::<VelloFont>::default(),
+            ))
+            .add_systems(Startup, systems::setup_ss_rendertarget)
+            .add_systems(
+                Update,
+                (systems::resize_rendertargets, systems::hide_when_empty),
+            )
+            .add_systems(
+                PostUpdate,
+                check_visibility::<
+                    Or<(
+                        With<VelloScene>,
+                        With<Handle<VelloAsset>>,
+                        With<VelloTextSection>,
+                    )>,
+                >
+                    .in_set(VisibilitySystems::CheckVisibility),
+            );
+    }
+
+    fn finish(&self, app: &mut App) {
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
+        render_app.init_resource::<VelloRenderer>();
     }
 }
