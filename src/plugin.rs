@@ -1,14 +1,20 @@
 use crate::{
     debug::DebugVisualizationsPlugin, render::VelloRenderPlugin, text::VelloFontLoader, VelloAsset,
-    VelloFont,
+    VelloFont, VelloRenderSettings,
 };
-use bevy::{asset::load_internal_binary_asset, prelude::*};
+use bevy::{asset::load_internal_binary_asset, prelude::*, render::view::RenderLayers};
 
-pub struct VelloPlugin;
+#[derive(Resource, Default, Debug)]
+pub struct VelloPlugin {
+    pub canvas_render_layers: RenderLayers,
+}
 
 impl Plugin for VelloPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(VelloRenderPlugin)
+            .insert_resource(VelloRenderSettings {
+                canvas_render_layers: self.canvas_render_layers.clone(),
+            })
             .add_plugins(DebugVisualizationsPlugin)
             .init_asset::<VelloAsset>()
             .init_asset::<VelloFont>()

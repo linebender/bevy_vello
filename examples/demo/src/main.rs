@@ -15,7 +15,7 @@ fn main() {
         ..default()
     }))
     .add_plugins(EguiPlugin)
-    .add_plugins(VelloPlugin)
+    .add_plugins(VelloPlugin::default())
     .init_resource::<EmbeddedAssetRegistry>()
     .add_plugins(bevy_pancam::PanCamPlugin)
     .add_systems(Startup, setup_vector_graphics)

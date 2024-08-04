@@ -1,5 +1,6 @@
 use super::{
     extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget},
+    plugin::VelloRenderSettings,
     prepare::PreparedAffine,
     VelloRenderer,
 };
@@ -282,6 +283,7 @@ pub fn setup_ss_rendertarget(
     mut custom_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
+    settings: Res<VelloRenderSettings>,
 ) {
     let Ok(window) = windows.get_single() else {
         return;
@@ -321,17 +323,31 @@ pub fn setup_ss_rendertarget(
         .spawn(MaterialMesh2dBundle {
             mesh,
             material,
-            transform: Transform::from_translation(0.001 * Vec3::NEG_Z), /* Make sure the vello
-                                                                          * canvas renders behind
-                                                                          * Gizmos */
-            ..Default::default()
+            ..default()
         })
         .insert(NoFrustumCulling)
-        .insert(render_target);
+        .insert(render_target)
+        .insert(settings.canvas_render_layers.clone());
+}
+
+/// Listen for settings changes that a developer could make.
+pub fn settings_change_detection(
+    mut commands: Commands,
+    mut query_render_target: Query<Entity, With<SSRenderTarget>>,
+    settings: Res<VelloRenderSettings>,
+) {
+    if let Ok(entity) = query_render_target.get_single_mut() {
+        if settings.is_changed() {
+            // Replace the canvas render layers
+            commands
+                .entity(entity)
+                .insert(settings.canvas_render_layers.clone());
+        }
+    }
 }
 
 /// Hide the render target canvas if there is nothing to render
-pub fn clear_when_empty(
+pub fn hide_when_empty(
     mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
     render_items: Query<
         (),
