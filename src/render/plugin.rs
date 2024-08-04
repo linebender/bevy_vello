@@ -3,8 +3,8 @@ use super::{
     prepare, systems, VelloCanvasSettings, VelloRenderSettings,
 };
 use crate::{
-    render::VelloCanvasMaterial, render::SSRT_SHADER_HANDLE, VelloAsset, VelloFont, VelloScene,
-    VelloTextSection,
+    render::{VelloCanvasMaterial, VelloRenderer, SSRT_SHADER_HANDLE},
+    VelloAsset, VelloFont, VelloScene, VelloTextSection,
 };
 use bevy::{
     asset::load_internal_asset,
@@ -97,5 +97,12 @@ impl Plugin for VelloRenderPlugin {
                 >
                     .in_set(VisibilitySystems::CheckVisibility),
             );
+    }
+
+    fn finish(&self, app: &mut App) {
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
+        render_app.init_resource::<VelloRenderer>();
     }
 }

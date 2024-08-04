@@ -68,17 +68,11 @@ pub fn render_frame(
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
-    mut vello_renderer: Local<Option<VelloRenderer>>,
-    settings: Res<VelloRenderSettings>,
+    renderer: Res<VelloRenderer>,
+    render_settings: Res<VelloRenderSettings>,
+
     #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
 ) {
-    let renderer = if settings.is_changed() {
-        vello_renderer.insert(VelloRenderer::from_device(device.wgpu_device(), &settings))
-    } else {
-        vello_renderer
-            .get_or_insert_with(|| VelloRenderer::from_device(device.wgpu_device(), &settings))
-    };
-
     let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() else {
         error!("No render target");
         return;
@@ -230,6 +224,8 @@ pub fn render_frame(
         }
 
         renderer
+            .lock()
+            .unwrap()
             .render_to_texture(
                 device.wgpu_device(),
                 &queue,
@@ -239,7 +235,7 @@ pub fn render_frame(
                     base_color: vello::peniko::Color::TRANSPARENT,
                     width: gpu_image.size.x,
                     height: gpu_image.size.y,
-                    antialiasing_method: vello::AaConfig::Area,
+                    antialiasing_method: render_settings.antialiasing,
                 },
             )
             .unwrap();

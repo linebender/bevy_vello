@@ -15,11 +15,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - There is now a `default_font` feature that uses the same `FiraMono-subset.ttf` font used in the bevy/default_font feature.
 - There is now a `render_layers` example.
 - There is now a `cube_3d` example.
-- Added `VelloRenderer::from_device` to create a renderer manually.
+- You may now choose the render layers for the Vello canvas. This can be configured through the `VelloPlugin`.
+- You may now choose to use CPU rendering with Vello and configure anti-aliasing. This can be configured through the `VelloPlugin`.
 
 ### Changed
 
 - `VelloPlugin` now has configuration. To retain previous behavior, use `VelloPlugin::default()`.
+- `VelloRenderer` is now a resource.
 - The font API has changed significantly. Please visit `examples/text` for further usage. This is to prepare for additional text features such as linebreak behavior, bounded text, and text justification.
   - `VelloText` has been renamed to `VelloTextSection`.
   - `VelloText.content` has been renamed to `VelloText.value`.
@@ -28,12 +30,13 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - The field `VelloAssetBundle.vector` was renamed to `VelloAssetBundle.asset`.
 - Renamed `VelloAssetAlignment` to `VelloAssetAnchor`. Fields were renamed `alignment` were renamed to `asset_anchor`.
 - Renamed `VelloTextAlignment` to `VelloTextAnchor`. Fields were renamed `alignment` were renamed to `text_anchor`.
-- The `SSRenderTarget` (fullscreen quad that renders your frame) no longer renders at a zepth of `-0.001`. This was a legacy hack used to ensure Gizmos rendered on-top.
+- The `SSRenderTarget` (fullscreen quad that renders your frame) no longer renders at a zepth of `-0.001`. This was a legacy hack used to ensure Gizmos rendered on-top. `RenderLayers` should be used now (there's an example).
 
 ### Removed
 
 - Removed `ZFunction`s from the render pipeline. Now ordering is based solely on the `Transform`'s z component. If you dependeded on this behavior, you'll need to adjust the transform Z in a system prior to render.
-- Removed `VelloCanvasMaterial` from prelude, as it's not typically meant to be used under normal circumstances and could be a common footgun.
+- `VelloRenderPlugin` is now private, as it is not helpful for downstream developers to add manually.
+- Removed `VelloCanvasMaterial` from prelude, as it is not typical to use.
 
 ### Fixed
 

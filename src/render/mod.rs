@@ -8,10 +8,12 @@ use bevy::{
             AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
             VertexBufferLayout, VertexFormat, VertexStepMode,
         },
+        renderer::RenderDevice,
         view::RenderLayers,
     },
     sprite::{Material2d, Material2dKey},
 };
+use std::sync::{Arc, Mutex};
 use vello::{AaConfig, AaSupport};
 
 mod extract;
@@ -19,7 +21,7 @@ mod plugin;
 mod prepare;
 mod systems;
 
-pub use plugin::VelloRenderPlugin;
+pub(crate) use plugin::VelloRenderPlugin;
 
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
@@ -61,12 +63,15 @@ impl Material2d for VelloCanvasMaterial {
     }
 }
 
-#[derive(Deref, DerefMut)]
-pub struct VelloRenderer(vello::Renderer);
+#[derive(Resource, Deref, DerefMut)]
+pub struct VelloRenderer(Arc<Mutex<vello::Renderer>>);
 
 impl VelloRenderer {
-    pub fn from_device(device: &vello::wgpu::Device, settings: &VelloRenderSettings) -> Self {
-        let renderer = vello::Renderer::new(
+    pub fn new(
+        device: &vello::wgpu::Device,
+        settings: &VelloRenderSettings,
+    ) -> Result<Self, vello::Error> {
+        vello::Renderer::new(
             device,
             vello::RendererOptions {
                 surface_format: None,
@@ -79,9 +84,34 @@ impl VelloRenderer {
                 num_init_threads: None,
             },
         )
-        // TODO: Attempt CPU fallback. Support changing antialias settings.
-        .expect("No GPU Device");
-        VelloRenderer(renderer)
+        .map(Mutex::new)
+        .map(Arc::new)
+        .map(VelloRenderer)
+    }
+}
+
+impl FromWorld for VelloRenderer {
+    fn from_world(world: &mut World) -> Self {
+        match VelloRenderer::new(
+            world.get_resource::<RenderDevice>().unwrap().wgpu_device(),
+            world.get_resource::<VelloRenderSettings>().unwrap(),
+        ) {
+            Ok(r) => r,
+            Err(e) => {
+                error!("Attempting CPU fallback, failed to initialize renderer: {e:}");
+                {
+                    let mut settings = world.get_resource_mut::<VelloRenderSettings>().unwrap();
+                    settings.use_cpu = true;
+                }
+                match VelloRenderer::new(
+                    world.get_resource::<RenderDevice>().unwrap().wgpu_device(),
+                    world.get_resource::<VelloRenderSettings>().unwrap(),
+                ) {
+                    Ok(r) => r,
+                    Err(e) => panic!("Failed to start vello: {e}"),
+                }
+            }
+        }
     }
 }
 
