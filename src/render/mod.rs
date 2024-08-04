@@ -67,7 +67,7 @@ impl Material2d for VelloCanvasMaterial {
 pub struct VelloRenderer(Arc<Mutex<vello::Renderer>>);
 
 impl VelloRenderer {
-    pub fn new(
+    pub fn try_new(
         device: &vello::wgpu::Device,
         settings: &VelloRenderSettings,
     ) -> Result<Self, vello::Error> {
@@ -92,7 +92,7 @@ impl VelloRenderer {
 
 impl FromWorld for VelloRenderer {
     fn from_world(world: &mut World) -> Self {
-        match VelloRenderer::new(
+        match VelloRenderer::try_new(
             world.get_resource::<RenderDevice>().unwrap().wgpu_device(),
             world.get_resource::<VelloRenderSettings>().unwrap(),
         ) {
@@ -103,7 +103,7 @@ impl FromWorld for VelloRenderer {
                     let mut settings = world.get_resource_mut::<VelloRenderSettings>().unwrap();
                     settings.use_cpu = true;
                 }
-                match VelloRenderer::new(
+                match VelloRenderer::try_new(
                     world.get_resource::<RenderDevice>().unwrap().wgpu_device(),
                     world.get_resource::<VelloRenderSettings>().unwrap(),
                 ) {
