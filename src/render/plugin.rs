@@ -51,7 +51,10 @@ impl Plugin for VelloRenderPlugin {
         render_app
             .insert_resource(self.render_settings.clone())
             .insert_resource(ExtractedPixelScale(1.0))
-            .add_systems(Update, systems::render_settings_change_detection)
+            .add_systems(
+                Render,
+                systems::render_settings_change_detection.in_set(RenderSet::Cleanup),
+            )
             .add_systems(
                 ExtractSchedule,
                 (

@@ -76,11 +76,8 @@ impl VelloRenderer {
             vello::RendererOptions {
                 surface_format: None,
                 use_cpu: settings.use_cpu,
-                antialiasing_support: AaSupport {
-                    area: settings.antialiasing == AaConfig::Area,
-                    msaa8: settings.antialiasing == AaConfig::Msaa8,
-                    msaa16: settings.antialiasing == AaConfig::Msaa16,
-                },
+                // TODO: Vello doesn't currently allow adding additional AA support after initialization, so we need to use all support modes here instead.
+                antialiasing_support: AaSupport::all(),
                 num_init_threads: None,
             },
         )
@@ -98,10 +95,11 @@ impl FromWorld for VelloRenderer {
         ) {
             Ok(r) => r,
             Err(e) => {
-                error!("Attempting CPU fallback, failed to initialize renderer: {e:}");
+                error!("Attempting safe-mode fallback, failed to initialize renderer: {e:}");
                 {
                     let mut settings = world.get_resource_mut::<VelloRenderSettings>().unwrap();
                     settings.use_cpu = true;
+                    settings.antialiasing = AaConfig::Area;
                 }
                 match VelloRenderer::try_new(
                     world.get_resource::<RenderDevice>().unwrap().wgpu_device(),

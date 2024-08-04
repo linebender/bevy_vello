@@ -336,8 +336,9 @@ pub fn render_settings_change_detection(
     mut commands: Commands,
     render_settings: Res<VelloRenderSettings>,
 ) {
-    if render_settings.is_changed() {
+    if render_settings.is_changed() && !render_settings.is_added() {
         // Replace renderer
+        info!("Render settings changed, re-initializing vello...");
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
     }

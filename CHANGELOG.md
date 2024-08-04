@@ -22,6 +22,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - `VelloPlugin` now has configuration. To retain previous behavior, use `VelloPlugin::default()`.
 - `VelloRenderer` is now a resource.
+- The `VelloRenderer` will attempt CPU fallback if it cannot obtain a GPU.
 - The font API has changed significantly. Please visit `examples/text` for further usage. This is to prepare for additional text features such as linebreak behavior, bounded text, and text justification.
   - `VelloText` has been renamed to `VelloTextSection`.
   - `VelloText.content` has been renamed to `VelloText.value`.
