@@ -331,6 +331,18 @@ pub fn setup_ss_rendertarget(
         .insert(settings.render_layers.clone());
 }
 
+/// Reinitialize for renderer settings changes.
+pub fn render_settings_change_detection(
+    mut commands: Commands,
+    render_settings: Res<VelloRenderSettings>,
+) {
+    if render_settings.is_changed() {
+        // Replace renderer
+        commands.remove_resource::<VelloRenderer>();
+        commands.init_resource::<VelloRenderer>();
+    }
+}
+
 /// Hide the render target canvas if there is nothing to render
 pub fn hide_when_empty(
     mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
