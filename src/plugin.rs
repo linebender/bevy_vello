@@ -56,7 +56,7 @@ impl Plugin for VelloPlugin {
         load_internal_binary_asset!(
             app,
             Handle::default(),
-            "text/FiraMono-subset.ttf",
+            "text/FiraMono/FiraMono-subset.ttf",
             |bytes: &[u8], _path: String| { VelloFont::new(bytes.to_vec()) }
         );
     }
