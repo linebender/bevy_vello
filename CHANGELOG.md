@@ -18,6 +18,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 ### Changed
 
+- `VelloPlugin` now has configuration. To retain previous behavior, use `VelloPlugin::default()`.
 - The font API has changed significantly. Please visit `examples/text` for further usage. This is to prepare for additional text features such as linebreak behavior, bounded text, and text justification.
   - `VelloText` has been renamed to `VelloTextSection`.
   - `VelloText.content` has been renamed to `VelloText.value`.

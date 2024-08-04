@@ -10,7 +10,7 @@ fn main() {
         meta_check: AssetMetaCheck::Never,
         ..default()
     }))
-    .add_plugins(VelloPlugin)
+    .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_vector_graphics)
     .add_systems(Update, drag_and_drop);
     embedded_asset!(app, "assets/fountain.svg");

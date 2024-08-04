@@ -21,10 +21,10 @@ use bevy::{
 
 pub struct VelloRenderPlugin;
 
-#[derive(Default, Resource, Clone)]
+#[derive(Resource, Default, Clone, Debug)]
 pub struct VelloRenderSettings {
-    /// the render layer that will be used for the vello canvas mesh
-    pub canvas_render_layers: Option<RenderLayers>,
+    /// The render layer that will be used for the vello canvas mesh.
+    pub canvas_render_layers: RenderLayers,
 }
 
 impl Plugin for VelloRenderPlugin {
@@ -81,7 +81,11 @@ impl Plugin for VelloRenderPlugin {
         .add_systems(Startup, systems::setup_ss_rendertarget)
         .add_systems(
             Update,
-            (systems::resize_rendertargets, systems::clear_when_empty),
+            (
+                systems::resize_rendertargets,
+                systems::hide_when_empty,
+                systems::settings_change_detection,
+            ),
         )
         .add_systems(
             PostUpdate,
