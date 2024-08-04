@@ -17,6 +17,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - There is now a `cube_3d` example.
 - You may now choose the render layers for the Vello canvas. This can be configured through the `VelloPlugin`.
 - You may now choose to use CPU rendering with Vello and configure anti-aliasing. This can be configured through the `VelloPlugin`.
+- Added the `SkipEncoding` component, which allows you to skip encoding any renderable asset without removing the asset.
 
 ### Changed
 

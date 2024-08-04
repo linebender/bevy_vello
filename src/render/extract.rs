@@ -1,7 +1,4 @@
-use crate::{
-    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloScene,
-    VelloTextSection,
-};
+use crate::prelude::*;
 use bevy::{
     prelude::*,
     render::{extract_component::ExtractComponent, view::RenderLayers, Extract},
@@ -27,16 +24,19 @@ pub struct ExtractedRenderAsset {
 pub fn extract_svg_assets(
     mut commands: Commands,
     query_vectors: Extract<
-        Query<(
-            &Handle<VelloAsset>,
-            &VelloAssetAnchor,
-            &CoordinateSpace,
-            &GlobalTransform,
-            Option<&Node>,
-            Option<&RenderLayers>,
-            &ViewVisibility,
-            &InheritedVisibility,
-        )>,
+        Query<
+            (
+                &Handle<VelloAsset>,
+                &VelloAssetAnchor,
+                &CoordinateSpace,
+                &GlobalTransform,
+                Option<&Node>,
+                Option<&RenderLayers>,
+                &ViewVisibility,
+                &InheritedVisibility,
+            ),
+            Without<SkipEncoding>,
+        >,
     >,
     assets: Extract<Res<Assets<VelloAsset>>>,
 ) {
@@ -82,18 +82,21 @@ pub fn extract_svg_assets(
 pub fn extract_lottie_assets(
     mut commands: Commands,
     query_vectors: Extract<
-        Query<(
-            &Handle<VelloAsset>,
-            &VelloAssetAnchor,
-            &CoordinateSpace,
-            &GlobalTransform,
-            &crate::Playhead,
-            Option<&crate::Theme>,
-            Option<&Node>,
-            Option<&RenderLayers>,
-            &ViewVisibility,
-            &InheritedVisibility,
-        )>,
+        Query<
+            (
+                &Handle<VelloAsset>,
+                &VelloAssetAnchor,
+                &CoordinateSpace,
+                &GlobalTransform,
+                &crate::Playhead,
+                Option<&crate::Theme>,
+                Option<&Node>,
+                Option<&RenderLayers>,
+                &ViewVisibility,
+                &InheritedVisibility,
+            ),
+            Without<SkipEncoding>,
+        >,
     >,
     assets: Extract<Res<Assets<VelloAsset>>>,
 ) {
@@ -148,15 +151,18 @@ pub struct ExtractedRenderScene {
 pub fn extract_scenes(
     mut commands: Commands,
     query_scenes: Extract<
-        Query<(
-            &VelloScene,
-            &CoordinateSpace,
-            &GlobalTransform,
-            &ViewVisibility,
-            &InheritedVisibility,
-            Option<&Node>,
-            Option<&RenderLayers>,
-        )>,
+        Query<
+            (
+                &VelloScene,
+                &CoordinateSpace,
+                &GlobalTransform,
+                &ViewVisibility,
+                &InheritedVisibility,
+                Option<&Node>,
+                Option<&RenderLayers>,
+            ),
+            Without<SkipEncoding>,
+        >,
     >,
 ) {
     for (
