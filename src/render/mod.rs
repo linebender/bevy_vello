@@ -140,7 +140,7 @@ impl Default for VelloRenderSettings {
 
 /// Canvas settings for Vello.
 #[derive(Resource, Clone, Debug, Default, PartialEq)]
-pub struct VelloCanvasSettings {
+pub(crate) struct VelloCanvasSettings {
     /// The render layers that will be used for the Vello canvas mesh.
     pub render_layers: RenderLayers,
 }
