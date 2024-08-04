@@ -142,3 +142,7 @@ pub(crate) struct VelloCanvasSettings {
     /// The render layers that will be used for the Vello canvas mesh.
     pub render_layers: RenderLayers,
 }
+
+/// Add this to any renderable vello asset to skip encoding that renderable.
+#[derive(Component, Debug, Clone, Copy)]
+pub struct SkipEncoding;
