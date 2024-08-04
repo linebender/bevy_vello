@@ -8,9 +8,11 @@ use bevy::{
             AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
             VertexBufferLayout, VertexFormat, VertexStepMode,
         },
+        view::RenderLayers,
     },
     sprite::{Material2d, Material2dKey},
 };
+use vello::{AaConfig, AaSupport};
 
 mod extract;
 mod plugin;
@@ -18,7 +20,6 @@ mod prepare;
 mod systems;
 
 pub use plugin::VelloRenderPlugin;
-pub use plugin::VelloRenderSettings;
 
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
@@ -64,13 +65,17 @@ impl Material2d for VelloCanvasMaterial {
 pub struct VelloRenderer(vello::Renderer);
 
 impl VelloRenderer {
-    pub fn from_device(device: &vello::wgpu::Device) -> Self {
+    pub fn from_device(device: &vello::wgpu::Device, settings: &VelloRenderSettings) -> Self {
         let renderer = vello::Renderer::new(
             device,
             vello::RendererOptions {
                 surface_format: None,
-                use_cpu: false,
-                antialiasing_support: vello::AaSupport::area_only(),
+                use_cpu: settings.use_cpu,
+                antialiasing_support: AaSupport {
+                    area: settings.antialiasing == AaConfig::Area,
+                    msaa8: settings.antialiasing == AaConfig::Msaa8,
+                    msaa16: settings.antialiasing == AaConfig::Msaa16,
+                },
                 num_init_threads: None,
             },
         )
@@ -83,3 +88,29 @@ impl VelloRenderer {
 #[derive(Resource, Deref, DerefMut, Default)]
 #[cfg(feature = "lottie")]
 pub struct VelatoRenderer(velato::Renderer);
+
+/// Render settings for Vello.
+#[derive(Resource, Clone)]
+pub struct VelloRenderSettings {
+    /// Use CPU instead of GPU
+    pub use_cpu: bool,
+
+    /// Which antialiasing strategy to use
+    pub antialiasing: AaConfig,
+}
+
+impl Default for VelloRenderSettings {
+    fn default() -> Self {
+        Self {
+            use_cpu: false,
+            antialiasing: AaConfig::Area,
+        }
+    }
+}
+
+/// Canvas settings for Vello.
+#[derive(Resource, Clone, Debug, Default, PartialEq)]
+pub struct VelloCanvasSettings {
+    /// The render layers that will be used for the Vello canvas mesh.
+    pub render_layers: RenderLayers,
+}

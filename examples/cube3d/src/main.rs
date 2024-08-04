@@ -11,7 +11,11 @@ use bevy::{
         Render, RenderApp, RenderSet,
     },
 };
-use bevy_vello::{prelude::*, render::VelloRenderer, VelloPlugin};
+use bevy_vello::{
+    prelude::*,
+    render::{VelloRenderPlugin, VelloRenderer},
+    VelloPlugin,
+};
 
 #[derive(Component)]
 pub struct VelloTarget(Handle<Image>);
@@ -33,7 +37,7 @@ fn main() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin::default())
+        .add_plugins(VelloRenderPlugin::default())
         .add_systems(Startup, setup)
         .add_systems(Update, cube_rotator_system)
         .add_plugins(ExtractComponentPlugin::<VelloTarget>::default());
@@ -122,8 +126,16 @@ fn render_texture(
     queue: Res<RenderQueue>,
     time: Res<Time>,
 ) {
-    let renderer =
-        vello_renderer.get_or_insert_with(|| VelloRenderer::from_device(device.wgpu_device()));
+    let renderer = vello_renderer.get_or_insert_with(|| {
+        VelloRenderer::from_device(
+            device.wgpu_device(),
+            &VelloRenderSettings {
+                use_cpu: false,
+                antialiasing: vello::AaConfig::Msaa8,
+                ..default()
+            },
+        )
+    });
     let target = target.single();
 
     let mut scene = VelloScene::default();

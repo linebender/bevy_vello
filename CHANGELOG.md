@@ -15,6 +15,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - There is now a `default_font` feature that uses the same `FiraMono-subset.ttf` font used in the bevy/default_font feature.
 - There is now a `render_layers` example.
 - There is now a `cube_3d` example.
+- Added `VelloRenderer::from_device` to create a renderer manually.
 
 ### Changed
 
@@ -32,6 +33,7 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 ### Removed
 
 - Removed `ZFunction`s from the render pipeline. Now ordering is based solely on the `Transform`'s z component. If you dependeded on this behavior, you'll need to adjust the transform Z in a system prior to render.
+- Removed `VelloCanvasMaterial` from prelude, as it's not typically meant to be used under normal circumstances and could be a common footgun.
 
 ### Fixed
 

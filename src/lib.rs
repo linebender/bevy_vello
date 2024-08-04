@@ -24,7 +24,7 @@ pub mod prelude {
     pub use crate::{
         debug::DebugVisualizations,
         integrations::{VectorFile, VelloAsset, VelloAssetAnchor},
-        render::{VelloCanvasMaterial, VelloRenderSettings},
+        render::{VelloCanvasSettings, VelloRenderSettings},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
@@ -113,22 +113,8 @@ pub struct VelloTextBundle {
 }
 
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
-#[derive(Component, Default, Clone)]
+#[derive(Component, Default, Clone, Deref, DerefMut)]
 pub struct VelloScene(vello::Scene);
-
-impl std::ops::Deref for VelloScene {
-    type Target = vello::Scene;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl std::ops::DerefMut for VelloScene {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
 
 impl VelloScene {
     pub fn new() -> Self {
