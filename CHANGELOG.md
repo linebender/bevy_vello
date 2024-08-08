@@ -7,12 +7,13 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
 -->
+
 The latest published Bevy Vello release is [0.5.1](#051---2024-07-04) which was released on 2024-07-16.
 You can find its changes [documented below](#051---2024-07-04).
 
 ## [Unreleased]
 
-This release has an [MSRV][] of 1.80.
+This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
 ### Added
 
@@ -50,7 +51,7 @@ This release has an [MSRV][] of 1.80.
 
 ## [0.5.1] - 2024-07-04
 
-This release has an [MSRV][] of 1.79.
+This release supports Bevy version 0.14 and has an [MSRV][] of 1.79.
 
 ### Fixed
 
@@ -59,7 +60,7 @@ This release has an [MSRV][] of 1.79.
 
 ## [0.5.0] - 2024-07-04
 
-This release has an [MSRV][] of 1.79.
+This release supports Bevy version 0.14 and has an [MSRV][] of 1.79.
 
 ### Added
 
@@ -85,7 +86,7 @@ This release has an [MSRV][] of 1.79.
 
 ## [0.4.2] - 2024-05-26
 
-This release has an [MSRV][] of 1.78.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Fixed
 
@@ -96,7 +97,7 @@ This release has an [MSRV][] of 1.78.
 
 ## [0.4.0] - 2024-05-21
 
-This release has an [MSRV][] of 1.78.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Added
 
@@ -124,7 +125,7 @@ This release has an [MSRV][] of 1.78.
 
 ## [0.3.3] - 2024-05-13
 
-This release has an [MSRV][] of 1.78.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Fixed
 
@@ -132,7 +133,7 @@ This release has an [MSRV][] of 1.78.
 
 ## [0.3.2] - 2024-05-04
 
-This release has an [MSRV][] of 1.78.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Added
 
@@ -145,7 +146,7 @@ This release has an [MSRV][] of 1.78.
 
 ## [0.3.1] - 2024-05-01
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
@@ -153,7 +154,7 @@ This release has an [MSRV][] of 1.77.
 
 ## [0.3.0] - 2024-05-01
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Added
 
@@ -169,7 +170,7 @@ This release has an [MSRV][] of 1.77.
 
 ## [0.2.2] - 2024-04-22
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
@@ -177,7 +178,7 @@ This release has an [MSRV][] of 1.77.
 
 ## [0.2.1] - 2024-04-21
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
@@ -187,7 +188,7 @@ This release has an [MSRV][] of 1.77.
 
 ## [0.2.0] - 2024-04-17
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Added
 
@@ -200,7 +201,7 @@ This release has an [MSRV][] of 1.77.
 
 ## [0.1.2] - 2024-04-08
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
@@ -208,7 +209,7 @@ This release has an [MSRV][] of 1.77.
 
 ## [0.1.1] - 2024-04-04
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
@@ -216,7 +217,7 @@ This release has an [MSRV][] of 1.77.
 
 ## [0.1.0] - 2024-03-26
 
-This release has an [MSRV][] of 1.77.
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 - Initial release
 
