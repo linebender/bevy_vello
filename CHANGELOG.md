@@ -7,6 +7,8 @@ This changelog follows the patterns described here: <https://keepachangelog.com/
 Subheadings to categorize changes are `added, changed, deprecated, removed, fixed, security`.
 
 -->
+The latest published Bevy Vello release is [0.5.1](#051---2024-07-04) which was released on 2024-07-16.
+You can find its changes [documented below](#051---2024-07-04).
 
 ## [Unreleased]
 
