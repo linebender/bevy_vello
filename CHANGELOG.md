@@ -8,7 +8,12 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-## Unreleased
+The latest published Bevy Vello release is [0.5.1](#051---2024-07-04) which was released on 2024-07-04.
+You can find its changes [documented below](#051---2024-07-04).
+
+## [Unreleased]
+
+This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
 ### Added
 
@@ -44,14 +49,18 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - Text, assets, and scenes rendered will now correctly respect camera `RenderLayers`.
 
-## 0.5.1
+## [0.5.1] - 2024-07-04
+
+This release supports Bevy version 0.14 and has an [MSRV][] of 1.79.
 
 ### Fixed
 
 - Updated to patch vello 0.2.1. It is now no-longer possible to panic when the vello encodings are empty.
 - The demo CI now deploys that bevy_pancam has been updated to bevy 0.14
 
-## 0.5.0
+## [0.5.0] - 2024-07-04
+
+This release supports Bevy version 0.14 and has an [MSRV][] of 1.79.
 
 ### Added
 
@@ -75,16 +84,20 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - Pancam and/or egui from all examples besides the demo, as external dependencies can bottleneck upgrading to the next bevy version.
 
-## 0.4.2
+## [0.4.2] - 2024-05-26
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Fixed
 
 - Updated to vello_svg v0.2.0, fixing viewboxes.
 - Updates to velato v0.2.0, fixing viewboxes.
 
-## 0.4.1 (Yanked)
+## [0.4.1] (Yanked) - 2024-05-26
 
-## 0.4.0
+## [0.4.0] - 2024-05-21
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Added
 
@@ -110,13 +123,17 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - A slow startup delay for lottie assets to begin rendering
 - A dotLottie issue where the first frame can jump on web platforms.
 
-## 0.3.3
+## [0.3.3] - 2024-05-13
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Fixed
 
 - Projects with a 2D and 3D camera should no longer conflict with `bevy_vello`'s queries.
 
-## 0.3.2
+## [0.3.2] - 2024-05-04
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.78.
 
 ### Added
 
@@ -127,13 +144,17 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - A panic that can happen in the extract schedule of lottie files.
 - Z-ordering now works correctly for `Bb` functions.
 
-## 0.3.1 (2024-05-01)
+## [0.3.1] - 2024-05-01
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
 - `bevy_vello::prelude::Scene` was removed, since it conflicts with `bevy::prelude::Scene`.
 
-## 0.3.0 (2024-05-01)
+## [0.3.0] - 2024-05-01
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Added
 
@@ -147,13 +168,17 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - `bevy_vello::VelloPlugin` was removed from the prelude.
 
-## 0.2.2 (2024-04-22)
+## [0.2.2] - 2024-04-22
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
 - Now when a `VelloScene` and `VelloText` have the same Z-Index, text will be rendered above the scene.
 
-## 0.2.1 (2024-04-21)
+## [0.2.1] - 2024-04-21
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
@@ -161,7 +186,9 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 - The playhead now will now always be bounded
 - A rare issue where, if an asset was not available, parts of a state would not transition properly.
 
-## 0.2.0 (2024-04-17)
+## [0.2.0] - 2024-04-17
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Added
 
@@ -172,18 +199,43 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 - Text bounding boxes are now tighter as they are capped by the baseline.
 
-## 0.1.2 (2024-04-08)
+## [0.1.2] - 2024-04-08
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
 - Fixes a window hang issue in bevy on native platforms
 
-## 0.1.1 (2024-04-04)
+## [0.1.1] - 2024-04-04
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 ### Fixed
 
 - fixed panic on Windows when window is minimized
 
-## 0.1.0 (2024-03-26)
+## [0.1.0] - 2024-03-26
+
+This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 - Initial release
+
+[Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/linebender/bevy_vello/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/linebender/bevy_vello/compare/v0.4.2...v0.5.0
+[0.4.2]: https://github.com/linebender/bevy_vello/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/linebender/bevy_vello/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/linebender/bevy_vello/compare/v0.3.3...v0.4.0
+[0.3.3]: https://github.com/linebender/bevy_vello/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/linebender/bevy_vello/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/linebender/bevy_vello/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/linebender/bevy_vello/compare/v0.2.2...v0.3.0
+[0.2.2]: https://github.com/linebender/bevy_vello/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/linebender/bevy_vello/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/linebender/bevy_vello/compare/v0.1.2...v0.2.0
+[0.1.2]: https://github.com/linebender/bevy_vello/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/linebender/bevy_vello/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/linebender/bevy_vello/releases/tag/v0.1.0
+
+[MSRV]: README.md#minimum-supported-rust-version-msrv
