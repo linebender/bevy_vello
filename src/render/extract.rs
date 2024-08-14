@@ -199,15 +199,18 @@ pub struct ExtractedRenderText {
 pub fn extract_text(
     mut commands: Commands,
     query_scenes: Extract<
-        Query<(
-            &VelloTextSection,
-            &VelloTextAnchor,
-            &GlobalTransform,
-            &ViewVisibility,
-            &InheritedVisibility,
-            &CoordinateSpace,
-            Option<&RenderLayers>,
-        )>,
+        Query<
+            (
+                &VelloTextSection,
+                &VelloTextAnchor,
+                &GlobalTransform,
+                &ViewVisibility,
+                &InheritedVisibility,
+                &CoordinateSpace,
+                Option<&RenderLayers>,
+            ),
+            Without<SkipEncoding>,
+        >,
     >,
 ) {
     for (
