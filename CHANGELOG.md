@@ -15,10 +15,6 @@ You can find its changes [documented below](#051---2024-07-04).
 
 This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
-## [0.6.1] - 2024-08-14
-
-This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
-
 ### Fixed
 
 - Text is now properly skipped when a `SkipEncoding` component is present.
