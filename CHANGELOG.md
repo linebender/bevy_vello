@@ -17,7 +17,7 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
 ### Fixed
 
-- Text is now properly skipped when a `SkipEncoding` component is present.
+- Text is now properly skipped when a `SkipEncoding` component is present. ([#77] by [@simbleau])
 
 ## [0.6.0] - 2024-08-09
 
@@ -228,6 +228,10 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 - Initial release
+
+[#77]: https://github.com/linebender/bevy_vello/pull/77
+
+[@simbleau]: https://github.com/simbleau
 
 [Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.6.0...HEAD
 [0.6.0]: https://github.com/linebender/bevy_vello/compare/v0.5.1...v0.6.0
