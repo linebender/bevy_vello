@@ -53,7 +53,7 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
 ### Removed
 
-- Removed `ZFunction`s from the render pipeline. Now ordering is based solely on the `Transform`'s z component. If you dependeded on this behavior, you'll need to adjust the transform Z in a system prior to render.
+- Removed `ZFunction`s from the render pipeline. Now ordering is based solely on the `Transform`'s z component. If you depended on this behavior, you'll need to adjust the transform Z in a system prior to render.
 - `VelloRenderPlugin` is now private, as it is not helpful for downstream developers to add manually.
 - Removed `VelloCanvasMaterial` from prelude, as it is not typical to use.
 
