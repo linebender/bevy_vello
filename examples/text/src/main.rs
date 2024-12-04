@@ -20,7 +20,7 @@ fn main() {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn(Camera2d);
+    commands.spawn((Camera2d, VelloView));
 }
 
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {

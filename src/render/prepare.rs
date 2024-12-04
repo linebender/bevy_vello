@@ -1,4 +1,7 @@
-use super::extract::{ExtractedPixelScale, ExtractedRenderScene, ExtractedRenderText};
+use super::{
+    extract::{ExtractedPixelScale, ExtractedRenderScene, ExtractedRenderText},
+    VelloView,
+};
 use crate::CoordinateSpace;
 use bevy::{
     prelude::*,
@@ -30,7 +33,10 @@ pub trait PrepareRenderInstance {
 
 pub fn prepare_scene_affines(
     mut commands: Commands,
-    views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
+    views: Query<
+        (&ExtractedCamera, &ExtractedView, Option<&RenderLayers>),
+        (With<Camera2d>, With<VelloView>),
+    >,
     render_entities: Query<(Entity, &ExtractedRenderScene)>,
 ) {
     for (camera, view, maybe_camera_layers) in views.iter() {
@@ -118,7 +124,10 @@ pub fn prepare_scene_affines(
 
 pub fn prepare_text_affines(
     mut commands: Commands,
-    views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
+    views: Query<
+        (&ExtractedCamera, &ExtractedView, Option<&RenderLayers>),
+        (With<Camera2d>, With<VelloView>),
+    >,
     render_entities: Query<(Entity, &ExtractedRenderText)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {

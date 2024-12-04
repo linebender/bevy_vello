@@ -5,6 +5,7 @@ use crate::{
         PlaybackPlayMode,
     },
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlayerTransition, Playhead,
+    VelloView,
 };
 use bevy::{prelude::*, utils::Instant};
 use std::time::Duration;
@@ -146,7 +147,7 @@ pub fn run_transitions(
     )>,
     mut assets: ResMut<Assets<VelloLottie>>,
     windows: Query<&Window>,
-    query_view: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
+    query_view: Query<(&Camera, &GlobalTransform), (With<Camera2d>, With<VelloView>)>,
     buttons: Res<ButtonInput<MouseButton>>,
     mut hovered: Local<bool>,
 ) {

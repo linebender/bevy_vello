@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     render::{VelloCanvasMaterial, VelloRenderer, SSRT_SHADER_HANDLE},
-    VelloFont, VelloScene, VelloTextSection,
+    VelloFont, VelloScene, VelloTextSection, VelloView,
 };
 use bevy::{
     asset::load_internal_asset,
@@ -70,6 +70,8 @@ impl Plugin for VelloRenderPlugin {
                     .in_set(RenderSet::Render)
                     .run_if(resource_exists::<RenderDevice>),
             );
+
+        app.add_plugins(ExtractComponentPlugin::<VelloView>::default());
 
         app.insert_resource(self.canvas_settings.clone())
             .add_plugins((

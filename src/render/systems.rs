@@ -1,7 +1,7 @@
 use super::{
     extract::{ExtractedRenderText, SSRenderTarget},
     prepare::PreparedAffine,
-    VelloCanvasMaterial, VelloCanvasSettings, VelloRenderSettings, VelloRenderer,
+    VelloCanvasMaterial, VelloCanvasSettings, VelloRenderSettings, VelloRenderer, VelloView,
 };
 use crate::{
     render::extract::ExtractedRenderScene, CoordinateSpace, VelloFont, VelloScene, VelloTextSection,
@@ -64,7 +64,7 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 #[allow(clippy::complexity)]
 pub fn render_frame(
     ss_render_target: Query<&SSRenderTarget>,
-    views: Query<(&ExtractedCamera, Option<&RenderLayers>), With<Camera2d>>,
+    views: Query<(&ExtractedCamera, Option<&RenderLayers>), (With<Camera2d>, With<VelloView>)>,
     #[cfg(feature = "svg")] view_svgs: Query<(&PreparedAffine, &ExtractedSvgAsset)>,
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
     #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
