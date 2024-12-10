@@ -23,7 +23,7 @@ pub mod prelude {
 
     pub use crate::{
         debug::DebugVisualizations,
-        integrations::{VectorFile, VelloAsset, VelloAssetAnchor},
+        integrations::{VectorFile, VelloAsset, VelloAssetAnchor, VelloAssetHandle},
         render::{SkipEncoding, VelloRenderSettings},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
@@ -50,7 +50,7 @@ pub enum CoordinateSpace {
 #[derive(Bundle, Default)]
 pub struct VelloAssetBundle {
     /// Asset data to render
-    pub asset: Handle<VelloAsset>,
+    pub asset: VelloAssetHandle,
     /// How the asset is positioned relative to its [`Transform`].
     pub asset_anchor: VelloAssetAnchor,
     /// The coordinate space in which this vector should be rendered.

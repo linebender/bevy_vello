@@ -1,7 +1,7 @@
 use super::DotLottiePlayer;
 use crate::{
     integrations::lottie::PlaybackPlayMode, PlaybackDirection, PlaybackLoopBehavior,
-    PlaybackOptions, PlayerTransition, Playhead, VectorFile, VelloAsset,
+    PlaybackOptions, PlayerTransition, Playhead, VectorFile, VelloAsset, VelloAssetHandle,
 };
 use bevy::{prelude::*, utils::Instant};
 use std::time::Duration;
@@ -10,7 +10,7 @@ use vello_svg::usvg::strict_num::Ulps;
 /// Advance all the dotLottie playheads in the scene
 pub fn advance_dot_lottie_playheads(
     mut query: Query<(
-        &Handle<VelloAsset>,
+        &VelloAssetHandle,
         &mut Playhead,
         &mut DotLottiePlayer,
         &PlaybackOptions,
@@ -139,7 +139,7 @@ pub fn run_transitions(
         &Playhead,
         &PlaybackOptions,
         &GlobalTransform,
-        &mut Handle<VelloAsset>,
+        &mut VelloAssetHandle,
     )>,
     mut assets: ResMut<Assets<VelloAsset>>,
     windows: Query<&Window>,

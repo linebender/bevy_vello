@@ -67,7 +67,7 @@ impl Theme {
             // TODO: Vello hasn't fully implemented color spaces yet, so I'm very unsure of
             // which color space to use here.
             let target_color = target_color.to_linear();
-            let target_color = vello::peniko::Color::rgba(
+            let target_color = vello::peniko::Color::from_rgba8(
                 target_color.red as _,
                 target_color.green as _,
                 target_color.blue as _,
