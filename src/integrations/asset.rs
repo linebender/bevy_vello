@@ -1,7 +1,7 @@
 use crate::VectorFile;
 use bevy::{prelude::*, reflect::TypePath};
 
-#[derive(Component, Default, Clone)]
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
 pub struct VelloAssetHandle(pub Handle<VelloAsset>);
 
 #[derive(Asset, TypePath, Clone)]
