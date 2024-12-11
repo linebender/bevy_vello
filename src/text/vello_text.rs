@@ -3,12 +3,13 @@ use bevy::prelude::*;
 use vello::peniko::{self, Brush};
 
 #[derive(Component, Default, Clone)]
+#[require(VelloTextAnchor, Transform)]
 pub struct VelloTextSection {
     pub value: String,
     pub style: VelloTextStyle,
 }
 
-#[derive(Component, Clone)]
+#[derive(Clone)]
 pub struct VelloTextStyle {
     pub font: Handle<VelloFont>,
     pub font_size: f32,
@@ -80,7 +81,8 @@ impl VelloTextSection {
         let Rect { min, max } = self.bb_in_world_space(font, gtransform);
         camera
             .viewport_to_world_2d(camera_transform, min)
-            .zip(camera.viewport_to_world_2d(camera_transform, max))
+            .ok()
+            .zip(camera.viewport_to_world_2d(camera_transform, max).ok())
             .map(|(min, max)| Rect { min, max })
     }
 }

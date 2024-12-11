@@ -13,6 +13,6 @@ impl Plugin for LottieIntegrationPlugin {
                     systems::advance_playheads_with_options,
                 ),
             )
-            .add_systems(Last, systems::spawn_playheads);
+            .add_observer(systems::spawn_playheads);
     }
 }

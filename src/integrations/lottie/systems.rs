@@ -1,49 +1,51 @@
 use crate::{
     integrations::lottie::PlaybackPlayMode, PlaybackDirection, PlaybackLoopBehavior,
-    PlaybackOptions, Playhead, VectorFile, VelloAsset,
+    PlaybackOptions, Playhead, VectorFile, VelloAsset, VelloAsset2d,
 };
 use bevy::{prelude::*, utils::Instant};
 use std::time::Duration;
 use vello_svg::usvg::strict_num::Ulps;
 
 /// Spawn playheads for Lotties. Every Lottie gets exactly 1 playhead.
+/// TODO: This should be a required component method
 pub fn spawn_playheads(
+    trigger: Trigger<OnAdd, VelloAsset2d>,
     mut commands: Commands,
-    query: Query<(Entity, &Handle<VelloAsset>, Option<&PlaybackOptions>), Without<Playhead>>,
+    query: Query<(&VelloAsset2d, Option<&PlaybackOptions>)>,
     assets: Res<Assets<VelloAsset>>,
 ) {
-    for (entity, handle, options) in query.iter() {
-        if let Some(
-            _asset @ VelloAsset {
-                file: _file @ VectorFile::Lottie(composition),
-                ..
+    let entity = trigger.entity();
+    let Ok((handle, options)) = query.get(entity) else {
+        return;
+    };
+    if let Some(
+        _asset @ VelloAsset {
+            file: _file @ VectorFile::Lottie(composition),
+            ..
+        },
+    ) = assets.get(handle.id())
+    {
+        let frame = match options {
+            Some(options) => match options.direction {
+                PlaybackDirection::Normal => options.segments.start.max(composition.frames.start),
+                PlaybackDirection::Reverse => {
+                    options.segments.end.min(composition.frames.end).prev()
+                }
             },
-        ) = assets.get(handle)
-        {
-            let frame = match options {
-                Some(options) => match options.direction {
-                    PlaybackDirection::Normal => {
-                        options.segments.start.max(composition.frames.start)
-                    }
-                    PlaybackDirection::Reverse => {
-                        options.segments.end.min(composition.frames.end).prev()
-                    }
-                },
-                None => composition.frames.start,
-            };
-            commands.entity(entity).insert(Playhead::new(frame));
-        }
+            None => composition.frames.start,
+        };
+        commands.entity(entity).insert(Playhead::new(frame));
     }
 }
 
 /// Advance all lottie playheads without playback options in the scene
 pub fn advance_playheads_without_options(
     #[cfg(feature = "experimental-dotLottie")] mut query: Query<
-        (&Handle<VelloAsset>, &mut Playhead),
+        (&VelloAsset2d, &mut Playhead),
         (Without<PlaybackOptions>, Without<crate::DotLottiePlayer>),
     >,
     #[cfg(not(feature = "experimental-dotLottie"))] mut query: Query<
-        (&Handle<VelloAsset>, &mut Playhead),
+        (&VelloAsset2d, &mut Playhead),
         Without<PlaybackOptions>,
     >,
     mut assets: ResMut<Assets<VelloAsset>>,
@@ -69,7 +71,7 @@ pub fn advance_playheads_without_options(
 
         // Advance playhead
         let length = end_frame - start_frame;
-        playhead.frame += (time.delta_seconds_f64() * composition.frame_rate) % length;
+        playhead.frame += (time.delta_secs_f64() * composition.frame_rate) % length;
 
         if playhead.frame > end_frame {
             // Wrap around to the beginning of the segment
@@ -81,11 +83,11 @@ pub fn advance_playheads_without_options(
 /// Advance all lottie playheads with playback options in the scene
 pub fn advance_playheads_with_options(
     #[cfg(feature = "experimental-dotLottie")] mut query: Query<
-        (&Handle<VelloAsset>, &mut Playhead, &PlaybackOptions),
+        (&VelloAsset2d, &mut Playhead, &PlaybackOptions),
         Without<crate::DotLottiePlayer>,
     >,
     #[cfg(not(feature = "experimental-dotLottie"))] mut query: Query<(
-        &Handle<VelloAsset>,
+        &VelloAsset2d,
         &mut Playhead,
         &PlaybackOptions,
     )>,
@@ -134,7 +136,7 @@ pub fn advance_playheads_with_options(
 
         // Advance playhead
         let length = end_frame - start_frame;
-        playhead.frame += (time.delta_seconds_f64()
+        playhead.frame += (time.delta_secs_f64()
             * options.speed
             * composition.frame_rate
             * (options.direction as i32 as f64)

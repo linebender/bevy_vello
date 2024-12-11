@@ -1,6 +1,11 @@
 use crate::VectorFile;
 use bevy::{prelude::*, reflect::TypePath};
 
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
+// TODO: Add required components
+pub struct VelloAsset2d(pub Handle<VelloAsset>);
+
+// TODO: Split this into VelloSvg and VelloLottie
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloAsset {
     pub file: VectorFile,
@@ -36,13 +41,15 @@ impl VelloAsset {
         let Rect { min, max } = self.bb_in_world_space(gtransform);
         camera
             .viewport_to_world_2d(camera_transform, min)
-            .zip(camera.viewport_to_world_2d(camera_transform, max))
+            .ok()
+            .zip(camera.viewport_to_world_2d(camera_transform, max).ok())
             .map(|(min, max)| Rect { min, max })
     }
 }
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
+// TODO: Add required components
 pub enum VelloAssetAnchor {
     /// Bounds start from the render position and advance up and to the right.
     BottomLeft,
