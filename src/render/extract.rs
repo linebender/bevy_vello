@@ -57,7 +57,7 @@ pub fn extract_svg_assets(
                 alpha,
                 ..
             },
-        ) = assets.get(asset)
+        ) = assets.get(asset.id())
         {
             if view_visibility.get() && inherited_visibility.get() {
                 commands.spawn(ExtractedRenderAsset {
@@ -119,7 +119,7 @@ pub fn extract_lottie_assets(
                 alpha,
                 ..
             },
-        ) = assets.get(asset)
+        ) = assets.get(asset.id())
         {
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = playhead.frame();
