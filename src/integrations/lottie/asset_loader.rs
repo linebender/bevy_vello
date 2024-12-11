@@ -3,7 +3,7 @@ use crate::{
     VelloAsset,
 };
 use bevy::{
-    asset::{io::Reader, AssetLoader, AsyncReadExt, LoadContext},
+    asset::{io::Reader, AssetLoader, LoadContext},
     prelude::*,
     utils::ConditionalSendFuture,
 };
@@ -19,10 +19,10 @@ impl AssetLoader for VelloLottieLoader {
     type Error = VectorLoaderError;
 
     fn load(
-        & self,
-        reader: & mut dyn  Reader,
-        _settings: & Self::Settings,
-        load_context: & mut LoadContext,
+        &self,
+        reader: &mut dyn Reader,
+        _settings: &Self::Settings,
+        load_context: &mut LoadContext,
     ) -> impl ConditionalSendFuture<Output = Result<Self::Asset, Self::Error>> {
         Box::pin(async move {
             let mut bytes = Vec::new();
