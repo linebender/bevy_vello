@@ -1,17 +1,8 @@
 use crate::VectorFile;
 use bevy::{prelude::*, reflect::TypePath};
-use std::ops::Deref;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
 pub struct VelloAssetHandle(pub Handle<VelloAsset>);
-
-impl Deref for VelloAssetHandle {
-    type Target = Handle<VelloAsset>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloAsset {
