@@ -48,7 +48,7 @@ fn render_asset_debug(
         .iter()
         .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
     {
-        if let Some(asset) = assets.get(&asset.0) {
+        if let Some(asset) = assets.get(asset.id()) {
             match space {
                 CoordinateSpace::WorldSpace => {
                     // Origin

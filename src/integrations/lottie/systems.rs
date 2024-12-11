@@ -18,7 +18,7 @@ pub fn spawn_playheads(
                 file: _file @ VectorFile::Lottie(composition),
                 ..
             },
-        ) = assets.get(&handle.0)
+        ) = assets.get(handle.id())
         {
             let frame = match options {
                 Some(options) => match options.direction {
@@ -54,7 +54,7 @@ pub fn advance_playheads_without_options(
         let Some(VelloAsset {
             file: VectorFile::Lottie(composition),
             ..
-        }) = assets.get_mut(asset_handle.0.id())
+        }) = assets.get_mut(asset_handle.id())
         else {
             continue;
         };
@@ -97,7 +97,7 @@ pub fn advance_playheads_with_options(
         let Some(VelloAsset {
             file: VectorFile::Lottie(composition),
             ..
-        }) = assets.get_mut(asset_handle.0.id())
+        }) = assets.get_mut(asset_handle.id())
         else {
             continue;
         };
