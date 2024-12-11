@@ -131,14 +131,17 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
                     for _ in 0..stops.count {
                         for stop in stops.values.iter_mut() {
                             let _offset = stop[0];
+
+                            let [cr, cg, cb, ca] = target_color.components;
+
                             let r = &mut stop[1];
-                            *r = target_color.r as f64;
+                            *r = cr as f64;
                             let g = &mut stop[2];
-                            *g = target_color.g as f64;
+                            *g = cg as f64;
                             let b = &mut stop[3];
-                            *b = target_color.b as f64;
+                            *b = cb as f64;
                             let a = &mut stop[4];
-                            *a = target_color.a as f64;
+                            *a = ca as f64;
                         }
                     }
                 }
