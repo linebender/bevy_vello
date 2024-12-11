@@ -57,17 +57,10 @@ pub struct VelloAssetBundle {
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this vector
     pub transform: Transform,
-    /// The global transform managed by Bevy
-    pub global_transform: GlobalTransform,
     /// Whether to render debug visualizations
     pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
-    /// Whether or not an entity is visible in the hierarchy.
-    pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
-    /// for rendering.
-    pub view_visibility: ViewVisibility,
 }
 
 #[derive(Bundle, Default)]
@@ -78,15 +71,8 @@ pub struct VelloSceneBundle {
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this scene
     pub transform: Transform,
-    /// The global transform managed by Bevy
-    pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
-    /// Whether or not an entity is visible in the hierarchy.
-    pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
-    /// for rendering.
-    pub view_visibility: ViewVisibility,
 }
 
 #[derive(Bundle, Default)]
@@ -99,17 +85,10 @@ pub struct VelloTextBundle {
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this text
     pub transform: Transform,
-    /// The global transform managed by Bevy
-    pub global_transform: GlobalTransform,
     /// Whether to render debug visualizations
     pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
-    /// Whether or not an entity is visible in the hierarchy.
-    pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
-    /// for rendering.
-    pub view_visibility: ViewVisibility,
 }
 
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
