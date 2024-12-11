@@ -315,17 +315,16 @@ pub fn setup_ss_rendertarget(
         meshes.add(rendertarget_quad)
     });
     let texture_image = setup_image(&mut images, &window.resolution);
-    let render_target = SSRenderTarget(texture_image.clone());
-    let mesh = Mesh2d(mesh_handle.clone());
-    let material = custom_materials.add(VelloCanvasMaterial {
-        texture: texture_image,
-    });
 
     commands
-        .spawn(mesh)
-        .insert(MeshMaterial2d(material))
+        .spawn((
+            SSRenderTarget(texture_image.clone()),
+            Mesh2d(mesh_handle.clone()),
+            MeshMaterial2d(custom_materials.add(VelloCanvasMaterial {
+                texture: texture_image,
+            })),
+        ))
         .insert(NoFrustumCulling)
-        .insert(render_target)
         .insert(settings.render_layers.clone());
 }
 
