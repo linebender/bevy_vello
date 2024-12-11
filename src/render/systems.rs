@@ -245,7 +245,7 @@ pub fn render_frame(
 
 pub fn resize_rendertargets(
     mut window_resize_events: EventReader<WindowResized>,
-    mut query: Query<(&mut SSRenderTarget, &mut VelloCanvasMaterialHandle)>,
+    mut query: Query<(&mut SSRenderTarget, &VelloCanvasMaterialHandle)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
@@ -262,9 +262,9 @@ pub fn resize_rendertargets(
         if size.width == 0 || size.height == 0 {
             return;
         }
-        for (mut target, mut target_mat_handle) in query.iter_mut() {
+        for (mut target, target_mat_handle) in query.iter_mut() {
             let image = setup_image(&mut images, &window.resolution);
-            if let Some(mat) = target_materials.get_mut(&mut target_mat_handle.0) {
+            if let Some(mat) = target_materials.get_mut(target_mat_handle.id()) {
                 target.0 = image.clone();
                 mat.texture = image;
             }
