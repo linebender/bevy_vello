@@ -23,18 +23,28 @@ pub mod prelude {
 
     pub use crate::{
         debug::DebugVisualizations,
-        integrations::{VectorFile, VelloAsset, VelloAssetAnchor, VelloAssetHandle},
         render::{SkipEncoding, VelloRenderSettings},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
-        CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
+        CoordinateSpace, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
+
+    #[cfg(any(feature = "svg", feature = "lottie"))]
+    pub use crate::integrations::VelloAssetAnchor;
 
     #[cfg(feature = "experimental-dotLottie")]
     pub use crate::integrations::dot_lottie::{DotLottiePlayer, PlayerState, PlayerTransition};
     #[cfg(feature = "lottie")]
-    pub use crate::integrations::lottie::{
-        LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
-        Playhead, Theme,
+    pub use crate::{
+        integrations::lottie::{
+            LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
+            Playhead, Theme, VelloLottie, VelloLottieHandle,
+        },
+        VelloLottieBundle,
+    };
+    #[cfg(feature = "svg")]
+    pub use crate::{
+        integrations::svg::{VelloSvg, VelloSvgHandle},
+        VelloSvgBundle,
     };
 }
 
@@ -47,10 +57,28 @@ pub enum CoordinateSpace {
     ScreenSpace,
 }
 
+#[cfg(feature = "svg")]
 #[derive(Bundle, Default)]
-pub struct VelloAssetBundle {
+pub struct VelloSvgBundle {
     /// Asset data to render
-    pub asset: VelloAssetHandle,
+    pub asset: VelloSvgHandle,
+    /// How the asset is positioned relative to its [`Transform`].
+    pub asset_anchor: VelloAssetAnchor,
+    /// The coordinate space in which this vector should be rendered.
+    pub coordinate_space: CoordinateSpace,
+    /// A transform to apply to this vector
+    pub transform: Transform,
+    /// Whether to render debug visualizations
+    pub debug_visualizations: DebugVisualizations,
+    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
+    pub visibility: Visibility,
+}
+
+#[cfg(feature = "lottie")]
+#[derive(Bundle, Default)]
+pub struct VelloLottieBundle {
+    /// Asset data to render
+    pub asset: VelloLottieHandle,
     /// How the asset is positioned relative to its [`Transform`].
     pub asset_anchor: VelloAssetAnchor,
     /// The coordinate space in which this vector should be rendered.

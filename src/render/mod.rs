@@ -16,10 +16,11 @@ use bevy::{
 use std::sync::{Arc, Mutex};
 use vello::{AaConfig, AaSupport};
 
-mod extract;
 mod plugin;
-mod prepare;
 mod systems;
+
+pub(crate) mod extract;
+pub(crate) mod prepare;
 
 pub(crate) use plugin::VelloRenderPlugin;
 

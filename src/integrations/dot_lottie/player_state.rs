@@ -1,10 +1,10 @@
 use super::PlayerTransition;
-use crate::{PlaybackOptions, Theme, VelloAssetHandle};
+use crate::{integrations::lottie::asset::VelloLottieHandle, PlaybackOptions, Theme};
 
 #[derive(Debug, Clone)]
 pub struct PlayerState {
     pub id: &'static str,
-    pub asset: Option<VelloAssetHandle>,
+    pub asset: Option<VelloLottieHandle>,
     pub theme: Option<Theme>,
     pub options: Option<PlaybackOptions>,
     pub transitions: Vec<PlayerTransition>,
@@ -27,7 +27,7 @@ impl PlayerState {
         }
     }
 
-    pub fn asset(mut self, asset: VelloAssetHandle) -> Self {
+    pub fn asset(mut self, asset: VelloLottieHandle) -> Self {
         self.asset.replace(asset);
         self
     }
@@ -57,7 +57,7 @@ impl PlayerState {
         self
     }
 
-    pub fn set_asset(mut self, asset: Option<VelloAssetHandle>) -> Self {
+    pub fn set_asset(mut self, asset: Option<VelloLottieHandle>) -> Self {
         self.asset = asset;
         self
     }
@@ -87,7 +87,7 @@ impl PlayerState {
         self
     }
 
-    pub fn get_asset(&self) -> Option<&VelloAssetHandle> {
+    pub fn get_asset(&self) -> Option<&VelloLottieHandle> {
         self.asset.as_ref()
     }
 

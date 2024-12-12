@@ -1,7 +1,5 @@
-use crate::{
-    integrations::{lottie::load_lottie_from_bytes, VectorLoaderError},
-    VelloAsset,
-};
+use super::asset::VelloLottie;
+use crate::integrations::{lottie::load_lottie_from_bytes, VectorLoaderError};
 use bevy::{
     asset::{io::Reader, AssetLoader, LoadContext},
     prelude::*,
@@ -12,7 +10,7 @@ use bevy::{
 pub struct VelloLottieLoader;
 
 impl AssetLoader for VelloLottieLoader {
-    type Asset = VelloAsset;
+    type Asset = VelloLottie;
 
     type Settings = ();
 
