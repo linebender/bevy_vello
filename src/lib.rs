@@ -19,7 +19,8 @@ pub use vello;
 pub use vello_svg;
 
 pub mod prelude {
-    pub use vello::{self, kurbo, peniko, skrifa};
+    pub use skrifa;
+    pub use vello::{self, kurbo, peniko};
 
     pub use crate::{
         debug::DebugVisualizations,
