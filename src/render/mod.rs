@@ -41,6 +41,7 @@ impl Material2d for VelloCanvasMaterial {
     fn vertex_shader() -> ShaderRef {
         SSRT_SHADER_HANDLE.into()
     }
+
     fn fragment_shader() -> ShaderRef {
         SSRT_SHADER_HANDLE.into()
     }
