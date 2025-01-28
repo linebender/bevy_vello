@@ -56,7 +56,7 @@ impl Material2d for VelloCanvasMaterial {
         if let Some(target) = descriptor.fragment.as_mut() {
             let mut_targets = &mut target.targets;
             if let Some(Some(target)) = mut_targets.get_mut(0) {
-                target.blend = Some(vello::wgpu::BlendState::PREMULTIPLIED_ALPHA_BLENDING);
+                target.blend = Some(vello::wgpu::BlendState::ALPHA_BLENDING);
             }
         }
 
