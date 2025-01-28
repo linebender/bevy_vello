@@ -13,7 +13,7 @@ pub fn controls_ui(
         &mut Playhead,
         &mut PlaybackOptions,
         &mut Theme,
-        &Handle<VelloAsset>,
+        &VelloAssetHandle,
     )>,
     assets: Res<Assets<VelloAsset>>,
 ) {
