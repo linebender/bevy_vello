@@ -1,8 +1,7 @@
 use super::{
     extract::{ExtractedRenderAsset, ExtractedRenderText, SSRenderTarget},
     prepare::PreparedAffine,
-    VelloCanvasMaterial, VelloCanvasMaterialHandle, VelloCanvasSettings, VelloRenderSettings,
-    VelloRenderer,
+    VelloCanvasMaterial, VelloCanvasSettings, VelloRenderSettings, VelloRenderer,
 };
 use crate::{
     render::extract::ExtractedRenderScene, CoordinateSpace, VelloAssetHandle, VelloFont,
@@ -245,7 +244,7 @@ pub fn render_frame(
 
 pub fn resize_rendertargets(
     mut window_resize_events: EventReader<WindowResized>,
-    mut query: Query<(&mut SSRenderTarget, &VelloCanvasMaterialHandle)>,
+    mut query: Query<(&mut SSRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,
