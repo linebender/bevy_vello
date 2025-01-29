@@ -40,7 +40,6 @@ impl Plugin for VelloRenderPlugin {
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
-
         #[cfg(feature = "svg")]
         render_app.add_systems(ExtractSchedule, extract::extract_svg_assets);
         #[cfg(feature = "lottie")]
