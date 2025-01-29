@@ -25,7 +25,6 @@ pub trait PrepareRenderInstance {
         &self,
         view: &ExtractedView,
         world_transform: GlobalTransform,
-        pixel_scale: f32,
         viewport_size: UVec2,
     ) -> PreparedAffine;
 }
@@ -39,14 +38,13 @@ impl PrepareRenderInstance for ExtractedRenderAsset {
         &self,
         view: &ExtractedView,
         world_transform: GlobalTransform,
-        pixel_scale: f32,
         viewport_size: UVec2,
     ) -> PreparedAffine {
         let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
         let raw_transform = match self.render_mode {
             CoordinateSpace::ScreenSpace => {
-                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale);
+                let mut model_matrix = world_transform.compute_matrix();
 
                 let asset_size = Vec2::new(self.asset.width, self.asset.height);
 
@@ -112,7 +110,6 @@ pub fn prepare_asset_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
     mut render_entities: Query<(Entity, &ExtractedRenderAsset)>,
-    pixel_scale: Res<ExtractedPixelScale>,
 ) {
     for (camera, view, maybe_camera_layers) in views.iter() {
         let camera_render_layers = maybe_camera_layers.unwrap_or_default();
@@ -126,8 +123,7 @@ pub fn prepare_asset_affines(
 
             // Prepare render data needed for the subsequent render system
             let final_transform = render_entity.final_transform();
-            let affine =
-                render_entity.scene_affine(view, *final_transform, pixel_scale.0, viewport_size);
+            let affine = render_entity.scene_affine(view, *final_transform, viewport_size);
 
             commands.entity(entity).insert((affine, final_transform));
         }
@@ -138,7 +134,6 @@ pub fn prepare_scene_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
     render_entities: Query<(Entity, &ExtractedRenderScene)>,
-    pixel_scale: Res<ExtractedPixelScale>,
 ) {
     for (camera, view, maybe_camera_layers) in views.iter() {
         let camera_render_layers = maybe_camera_layers.unwrap_or_default();
@@ -165,8 +160,7 @@ pub fn prepare_scene_affines(
 
             let raw_transform = match render_entity.render_mode {
                 CoordinateSpace::ScreenSpace => {
-                    let mut model_matrix =
-                        world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+                    let mut model_matrix = world_transform.compute_matrix();
 
                     if let Some(node) = &render_entity.ui_node {
                         // The Bevy Transform for a UI node seems to always have the origin
@@ -174,9 +168,9 @@ pub fn prepare_scene_affines(
                         // move the origin back to the top left, so that, e.g., drawing a
                         // shape with center=(20,20) inside of a 40x40 UI node results in
                         // the shape being centered within the node.
-                        let Vec2 { x, y } = node.size() * pixel_scale.0;
-                        model_matrix.w_axis.x -= x / 2.0;
-                        model_matrix.w_axis.y -= y / 2.0;
+                        let Vec2 { x, y } = node.size();
+                        model_matrix.w_axis.x -= x * 0.5;
+                        model_matrix.w_axis.y -= y * 0.5;
 
                         // Note that there's no need to flip the Y axis in this case, as
                         // Bevy handles it for us.
