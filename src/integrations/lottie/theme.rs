@@ -65,15 +65,14 @@ impl Theme {
                     continue 'layers;
                 }
             };
-            // TODO: Vello hasn't fully implemented color spaces yet, so I'm very unsure of
-            // which color space to use here.
-            let target_color = target_color.to_linear();
-            let target_color = vello::peniko::Color::from_rgba8(
+            // Convert Bevy color to peniko::Color
+            let target_color = target_color.to_srgba();
+            let target_color = vello::peniko::Color::new([
                 target_color.red as _,
                 target_color.green as _,
                 target_color.blue as _,
                 target_color.alpha as _,
-            );
+            ]);
             for shape in shapes.iter_mut() {
                 recolor_shape(shape, target_color);
             }
