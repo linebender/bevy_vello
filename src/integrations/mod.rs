@@ -17,10 +17,8 @@ pub mod dot_lottie;
 mod error;
 pub use error::VectorLoaderError;
 
-#[cfg(any(feature = "svg", feature = "lottie"))]
 use bevy::prelude::*;
 
-#[cfg(any(feature = "svg", feature = "lottie"))]
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
 pub enum VelloAssetAnchor {
@@ -47,7 +45,6 @@ pub enum VelloAssetAnchor {
     TopRight,
 }
 
-#[cfg(any(feature = "svg", feature = "lottie"))]
 impl VelloAssetAnchor {
     pub(crate) fn compute(
         &self,

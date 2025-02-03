@@ -1,7 +1,10 @@
 use crate::prelude::*;
 use bevy::{
     prelude::*,
-    render::{extract_component::ExtractComponent, view::RenderLayers, Extract},
+    render::{
+        extract_component::ExtractComponent, sync_world::TemporaryRenderEntity, view::RenderLayers,
+        Extract,
+    },
     window::PrimaryWindow,
 };
 
@@ -42,13 +45,15 @@ pub fn extract_scenes(
     ) in query_scenes.iter()
     {
         if view_visibility.get() && inherited_visibility.get() {
-            commands.spawn(ExtractedRenderScene {
-                transform: *transform,
-                render_mode: *coord_space,
-                scene: scene.clone(),
-                ui_node: ui_node.cloned(),
-                render_layers: render_layers.cloned(),
-            });
+            commands
+                .spawn(ExtractedRenderScene {
+                    transform: *transform,
+                    render_mode: *coord_space,
+                    scene: scene.clone(),
+                    ui_node: ui_node.cloned(),
+                    render_layers: render_layers.cloned(),
+                })
+                .insert(TemporaryRenderEntity);
         }
     }
 }
@@ -90,13 +95,15 @@ pub fn extract_text(
     ) in query_scenes.iter()
     {
         if view_visibility.get() && inherited_visibility.get() {
-            commands.spawn(ExtractedRenderText {
-                text: text.clone(),
-                text_anchor: *text_anchor,
-                transform: *transform,
-                render_space: *render_space,
-                render_layers: render_layers.cloned(),
-            });
+            commands
+                .spawn(ExtractedRenderText {
+                    text: text.clone(),
+                    text_anchor: *text_anchor,
+                    transform: *transform,
+                    render_space: *render_space,
+                    render_layers: render_layers.cloned(),
+                })
+                .insert(TemporaryRenderEntity);
         }
     }
 }

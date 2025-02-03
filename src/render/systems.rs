@@ -1,8 +1,7 @@
 use super::{
     extract::{ExtractedRenderText, SSRenderTarget},
     prepare::PreparedAffine,
-    VelloCanvasMaterial, VelloCanvasMaterialHandle, VelloCanvasSettings, VelloRenderSettings,
-    VelloRenderer,
+    VelloCanvasMaterial, VelloCanvasSettings, VelloRenderSettings, VelloRenderer,
 };
 use crate::{
     render::extract::ExtractedRenderScene, CoordinateSpace, VelloFont, VelloScene, VelloTextSection,
@@ -68,6 +67,7 @@ pub fn render_frame(
     views: Query<(&ExtractedCamera, Option<&RenderLayers>), With<Camera2d>>,
     #[cfg(feature = "svg")] view_svgs: Query<(&PreparedAffine, &ExtractedSvgAsset)>,
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
+    #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
     view_scenes: Query<(&PreparedAffine, &ExtractedRenderScene)>,
     view_text: Query<(&PreparedAffine, &ExtractedRenderText)>,
     mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
@@ -76,8 +76,6 @@ pub fn render_frame(
     queue: Res<RenderQueue>,
     renderer: Res<VelloRenderer>,
     render_settings: Res<VelloRenderSettings>,
-
-    #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
 ) {
     let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() else {
         error!("No render target");
@@ -253,7 +251,7 @@ pub fn render_frame(
 
 pub fn resize_rendertargets(
     mut window_resize_events: EventReader<WindowResized>,
-    mut query: Query<(&mut SSRenderTarget, &VelloCanvasMaterialHandle)>,
+    mut query: Query<(&mut SSRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
     windows: Query<&Window>,

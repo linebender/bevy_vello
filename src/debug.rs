@@ -1,5 +1,8 @@
 //! Logic for rendering debug visualizations
 use crate::prelude::*;
+use crate::{
+    text::VelloTextAnchor, CoordinateSpace, VelloAssetAnchor, VelloFont, VelloTextSection,
+};
 use bevy::{color::palettes::css, math::Vec3Swizzles, prelude::*};
 
 const RED_X_SIZE: f32 = 8.0;

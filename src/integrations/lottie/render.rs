@@ -3,16 +3,14 @@ use super::{
     Playhead, Theme,
 };
 use crate::{
-    render::{
-        extract::ExtractedPixelScale,
-        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
-    },
+    render::prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
     CoordinateSpace, SkipEncoding, VelloAssetAnchor,
 };
 use bevy::{
     prelude::*,
     render::{
         camera::ExtractedCamera,
+        sync_world::TemporaryRenderEntity,
         view::{ExtractedView, RenderLayers},
         Extract,
     },
@@ -69,17 +67,19 @@ pub fn extract_lottie_assets(
         if let Some(asset) = assets.get(asset.id()) {
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = playhead.frame();
-                commands.spawn(ExtractedLottieAsset {
-                    asset: asset.to_owned(),
-                    transform: *transform,
-                    asset_anchor: *asset_anchor,
-                    theme: theme.cloned(),
-                    render_mode: *coord_space,
-                    playhead,
-                    alpha: asset.alpha,
-                    ui_node: ui_node.cloned(),
-                    render_layers: render_layers.cloned(),
-                });
+                commands
+                    .spawn(ExtractedLottieAsset {
+                        asset: asset.to_owned(),
+                        transform: *transform,
+                        asset_anchor: *asset_anchor,
+                        theme: theme.cloned(),
+                        render_mode: *coord_space,
+                        playhead,
+                        alpha: asset.alpha,
+                        ui_node: ui_node.cloned(),
+                        render_layers: render_layers.cloned(),
+                    })
+                    .insert(TemporaryRenderEntity);
             }
         }
     }
@@ -89,7 +89,6 @@ pub fn prepare_asset_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
     mut render_entities: Query<(Entity, &ExtractedLottieAsset)>,
-    pixel_scale: Res<ExtractedPixelScale>,
 ) {
     for (camera, view, maybe_camera_layers) in views.iter() {
         let camera_render_layers = maybe_camera_layers.unwrap_or_default();
@@ -103,8 +102,7 @@ pub fn prepare_asset_affines(
 
             // Prepare render data needed for the subsequent render system
             let final_transform = render_entity.final_transform();
-            let affine =
-                render_entity.scene_affine(view, *final_transform, pixel_scale.0, viewport_size);
+            let affine = render_entity.scene_affine(view, *final_transform, viewport_size);
 
             commands.entity(entity).insert((affine, final_transform));
         }
@@ -124,14 +122,13 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
         &self,
         view: &ExtractedView,
         world_transform: GlobalTransform,
-        pixel_scale: f32,
         viewport_size: UVec2,
     ) -> PreparedAffine {
         let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
         let raw_transform = match self.render_mode {
             CoordinateSpace::ScreenSpace => {
-                let mut model_matrix = world_transform.compute_matrix().mul_scalar(pixel_scale);
+                let mut model_matrix = world_transform.compute_matrix();
 
                 let asset_size = Vec2::new(self.asset.width, self.asset.height);
 

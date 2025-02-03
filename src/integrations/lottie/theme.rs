@@ -8,6 +8,7 @@ use velato::{
     model::{Brush, Shape},
     Composition,
 };
+use vello::peniko::color::DynamicColor;
 
 #[derive(PartialEq, Component, Default, Clone, Debug, Reflect)]
 #[reflect(Component)]
@@ -64,15 +65,14 @@ impl Theme {
                     continue 'layers;
                 }
             };
-            // TODO: Vello hasn't fully implemented color spaces yet, so I'm very unsure of
-            // which color space to use here.
-            let target_color = target_color.to_linear();
-            let target_color = vello::peniko::Color::from_rgba8(
+            // Convert Bevy color to peniko::Color
+            let target_color = target_color.to_srgba();
+            let target_color = vello::peniko::Color::new([
                 target_color.red as _,
                 target_color.green as _,
                 target_color.blue as _,
                 target_color.alpha as _,
-            );
+            ]);
             for shape in shapes.iter_mut() {
                 recolor_shape(shape, target_color);
             }
@@ -104,8 +104,8 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
                 *solid = target_color;
             }
             vello::peniko::Brush::Gradient(gradient) => {
-                for stop in gradient.stops.iter_mut() {
-                    stop.color = target_color;
+                for stop in gradient.stops.0.as_mut() {
+                    stop.color = DynamicColor::from_alpha_color(target_color);
                 }
             }
             vello::peniko::Brush::Image(_) => {}
@@ -123,8 +123,8 @@ fn recolor_brush(brush: &mut Brush, target_color: vello::peniko::Color) {
             },
             velato::model::animated::Brush::Gradient(gr) => match &mut gr.stops {
                 velato::model::ColorStops::Fixed(stops) => {
-                    for stop in stops.iter_mut() {
-                        stop.color = target_color;
+                    for stop in stops.0.as_mut() {
+                        stop.color = DynamicColor::from_alpha_color(target_color);
                     }
                 }
                 velato::model::ColorStops::Animated(stops) => {

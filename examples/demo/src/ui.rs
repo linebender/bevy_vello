@@ -13,9 +13,9 @@ pub fn controls_ui(
         &mut Playhead,
         &mut PlaybackOptions,
         &mut Theme,
-        &Handle<VelloAsset>,
+        &VelloLottieHandle,
     )>,
-    assets: Res<Assets<VelloAsset>>,
+    assets: Res<Assets<VelloLottie>>,
 ) {
     let Ok((mut player, mut playhead, mut options, mut theme, handle)) = player.get_single_mut()
     else {
@@ -23,11 +23,7 @@ pub fn controls_ui(
     };
 
     let asset = assets.get(handle.id()).unwrap();
-    #[allow(irrefutable_let_patterns)]
-    let VectorFile::Lottie(composition) = &asset.file
-    else {
-        return;
-    };
+    let composition = asset.composition.as_ref();
 
     let window = egui::Window::new("Controls")
         .resizable(false)
@@ -250,7 +246,7 @@ pub fn controls_ui(
         });
 
         ui.heading("Theme");
-        for layer in composition.as_ref().get_layers() {
+        for layer in composition.get_layers() {
             let color = theme.get_mut(layer).cloned().unwrap_or_default();
             let color = color.to_srgba().to_u8_array();
             let mut color32 =

@@ -12,7 +12,11 @@ pub struct SvgIntegrationPlugin;
 impl Plugin for SvgIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset_loader::<VelloSvgLoader>()
-            .init_asset::<VelloSvg>();
+            .init_asset::<VelloSvg>()
+            .add_systems(
+                PostUpdate,
+                check_visibility::<With<VelloSvgHandle>>.in_set(VisibilitySystems::CheckVisibility),
+            );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
@@ -23,11 +27,6 @@ impl Plugin for SvgIntegrationPlugin {
             .add_systems(
                 Render,
                 (render::prepare_asset_affines,).in_set(RenderSet::Prepare),
-            )
-            .add_systems(
-                PostUpdate,
-                check_visibility::<Or<(With<VelloSvgHandle>,)>>
-                    .in_set(VisibilitySystems::CheckVisibility),
             );
     }
 }

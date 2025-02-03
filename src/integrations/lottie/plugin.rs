@@ -24,7 +24,12 @@ impl Plugin for LottieIntegrationPlugin {
                     systems::advance_playheads_with_options,
                 ),
             )
-            .add_systems(Last, systems::spawn_playheads);
+            .add_systems(Last, systems::spawn_playheads)
+            .add_systems(
+                PostUpdate,
+                check_visibility::<With<VelloLottieHandle>>
+                    .in_set(VisibilitySystems::CheckVisibility),
+            );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
@@ -36,11 +41,6 @@ impl Plugin for LottieIntegrationPlugin {
             .add_systems(
                 Render,
                 (render::prepare_asset_affines).in_set(RenderSet::Prepare),
-            )
-            .add_systems(
-                PostUpdate,
-                check_visibility::<Or<(With<VelloLottieHandle>,)>>
-                    .in_set(VisibilitySystems::CheckVisibility),
             );
     }
 }

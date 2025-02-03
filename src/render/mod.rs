@@ -27,9 +27,6 @@ pub(crate) use plugin::VelloRenderPlugin;
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
 
-#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
-pub struct VelloCanvasMaterialHandle(Handle<VelloCanvasMaterial>);
-
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
 #[derive(AsBindGroup, TypePath, Asset, Clone)]
 pub struct VelloCanvasMaterial {
@@ -52,6 +49,15 @@ impl Material2d for VelloCanvasMaterial {
         _layout: &MeshVertexBufferLayoutRef,
         _key: Material2dKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
+        // FIXME: Vello isn't obeying transparency on render_to_surface call.
+        // See https://github.com/linebender/vello/issues/549
+        if let Some(target) = descriptor.fragment.as_mut() {
+            let mut_targets = &mut target.targets;
+            if let Some(Some(target)) = mut_targets.get_mut(0) {
+                target.blend = Some(vello::wgpu::BlendState::ALPHA_BLENDING);
+            }
+        }
+
         let formats = vec![
             // Position
             VertexFormat::Float32x3,

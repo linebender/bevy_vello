@@ -23,7 +23,6 @@ pub trait PrepareRenderInstance {
         &self,
         view: &ExtractedView,
         world_transform: GlobalTransform,
-        pixel_scale: f32,
         viewport_size: UVec2,
     ) -> PreparedAffine;
 }
@@ -32,7 +31,6 @@ pub fn prepare_scene_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
     render_entities: Query<(Entity, &ExtractedRenderScene)>,
-    pixel_scale: Res<ExtractedPixelScale>,
 ) {
     for (camera, view, maybe_camera_layers) in views.iter() {
         let camera_render_layers = maybe_camera_layers.unwrap_or_default();
@@ -59,8 +57,7 @@ pub fn prepare_scene_affines(
 
             let raw_transform = match render_entity.render_mode {
                 CoordinateSpace::ScreenSpace => {
-                    let mut model_matrix =
-                        world_transform.compute_matrix().mul_scalar(pixel_scale.0);
+                    let mut model_matrix = world_transform.compute_matrix();
 
                     if let Some(node) = &render_entity.ui_node {
                         // The Bevy Transform for a UI node seems to always have the origin
@@ -68,9 +65,9 @@ pub fn prepare_scene_affines(
                         // move the origin back to the top left, so that, e.g., drawing a
                         // shape with center=(20,20) inside of a 40x40 UI node results in
                         // the shape being centered within the node.
-                        let Vec2 { x, y } = node.size() * pixel_scale.0;
-                        model_matrix.w_axis.x -= x / 2.0;
-                        model_matrix.w_axis.y -= y / 2.0;
+                        let Vec2 { x, y } = node.size();
+                        model_matrix.w_axis.x -= x * 0.5;
+                        model_matrix.w_axis.y -= y * 0.5;
 
                         // Note that there's no need to flip the Y axis in this case, as
                         // Bevy handles it for us.

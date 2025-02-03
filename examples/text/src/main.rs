@@ -82,5 +82,5 @@ fn setup_screenspace_text(mut commands: Commands) {
             font_size: 24.,
             ..default()
         })
-        .insert(TextLayout::new_with_justify(justifytext::Left));
+        .insert(TextLayout::new_with_justify(JustifyText::Left));
 }

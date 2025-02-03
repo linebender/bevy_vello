@@ -5,72 +5,78 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - name: Setup | Checkout
-      uses: actions/checkout@v4
+      - name: Setup | Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup | Ubuntu dependencies
-      run: sudo apt install libasound2-dev libudev-dev pkg-config
+      - name: Setup | Ubuntu dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
 
-    - name: Setup | Toolchain
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        components: clippy,rustfmt
+      - name: Setup | Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
 
-    - name: Rust Cache
-      uses: Swatinem/rust-cache@v2
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
 
-    - name: Build | Clippy
-      run: cargo clippy -- -D warnings
+      - name: Build | Clippy
+        run: cargo clippy -- -D warnings
 
-    - name: Build | Rustfmt
-      run: cargo fmt -- --check
+      - name: Build | Rustfmt
+        run: cargo fmt -- --check
 
   check:
     runs-on: ubuntu-latest
     steps:
-    - name: Setup | Checkout
-      uses: actions/checkout@v4
+      - name: Setup | Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup | Ubuntu dependencies
-      run: sudo apt install libasound2-dev libudev-dev pkg-config
+      - name: Setup | Ubuntu dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
 
-    - name: Setup | Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: wasm32-unknown-unknown
+      - name: Setup | Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
 
-    - name: Rust Cache
-      uses: Swatinem/rust-cache@v2
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
 
-    - name: Build | Check (native)
-      run: cargo check
+      - name: Build | Check (native)
+        run: cargo check
 
-    - name: Build | Check (wasm)
-      run: cargo check --target wasm32-unknown-unknown
+      - name: Build | Check (wasm)
+        run: cargo check --target wasm32-unknown-unknown
 
   test:
     needs: [check]
     runs-on: ubuntu-latest
     steps:
-    - name: Setup | Checkout
-      uses: actions/checkout@v4
+      - name: Setup | Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup | Ubuntu dependencies
-      run: sudo apt install libasound2-dev libudev-dev pkg-config
+      - name: Setup | Ubuntu dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
 
-    - name: Setup | Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: wasm32-unknown-unknown
+      - name: Setup | Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
 
-    - name: Setup | wasm-pack
-      uses: jetli/wasm-pack-action@v0.4.0
+      - name: Setup | wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
 
-    - name: Rust Cache
-      uses: Swatinem/rust-cache@v2.7.3
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.7.3
 
-    - name: Build | Test (native)
-      run: cargo test
+      - name: Build | Test (native)
+        run: cargo test
 
-    - name: Build | Test (wasm)
-      run: wasm-pack test --node
+      - name: Build | Test (wasm)
+        run: wasm-pack test --node
