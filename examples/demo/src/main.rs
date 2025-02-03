@@ -25,10 +25,12 @@ fn main() {
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn((Camera2dBundle::default(), bevy_pancam::PanCam::default()));
+    commands.spawn((Camera2d, bevy_pancam::PanCam::default()));
     commands
         .spawn(VelloAssetBundle {
-            asset: asset_server.load::<VelloAsset>("embedded://demo/assets/calendar.json"),
+            asset: VelloAssetHandle(
+                asset_server.load::<VelloAsset>("embedded://demo/assets/calendar.json"),
+            ),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(20.0)),
             debug_visualizations: DebugVisualizations::Visible,

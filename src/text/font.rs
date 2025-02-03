@@ -1,14 +1,11 @@
 use super::{vello_text::VelloTextSection, VelloTextAnchor};
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
+use skrifa::{FontRef, MetadataProvider};
 use std::sync::Arc;
 use vello::{
-    glyph::{
-        skrifa::{FontRef, MetadataProvider},
-        Glyph,
-    },
     kurbo::Affine,
     peniko::{self, Blob, Font},
-    Scene,
+    Glyph, Scene,
 };
 
 const VARIATIONS: &[(&str, f32)] = &[];
@@ -40,7 +37,7 @@ impl VelloFont {
 
     pub fn sizeof(&self, text: &VelloTextSection) -> Vec2 {
         let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
-        let font_size = vello::skrifa::instance::Size::new(text.style.font_size);
+        let font_size = skrifa::instance::Size::new(text.style.font_size);
         let charmap = font.charmap();
         let axes = font.axes();
         // TODO: What do Variations here do? Any font nerds know? I'm definitely not doing this
@@ -79,7 +76,7 @@ impl VelloFont {
     ) {
         let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
 
-        let font_size = vello::skrifa::instance::Size::new(text.style.font_size);
+        let font_size = skrifa::instance::Size::new(text.style.font_size);
         let charmap = font.charmap();
         let axes = font.axes();
         let var_loc = axes.location(VARIATIONS);
@@ -105,7 +102,7 @@ impl VelloFont {
                 pen_x += advance;
                 width = width.max(pen_x);
                 Some(Glyph {
-                    id: gid.to_u16() as u32,
+                    id: gid.to_u32(),
                     x,
                     y: pen_y,
                 })
@@ -151,7 +148,7 @@ impl VelloFont {
             .draw_glyphs(&self.font)
             .font_size(text.style.font_size)
             .transform(transform)
-            .normalized_coords(var_loc.coords())
+            .normalized_coords(bytemuck::cast_slice(var_loc.coords()))
             .brush(&text.style.brush.clone())
             .draw(vello::peniko::Fill::EvenOdd, glyphs.into_iter());
     }

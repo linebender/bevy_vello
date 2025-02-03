@@ -1,7 +1,10 @@
 use crate::prelude::*;
 use bevy::{
     prelude::*,
-    render::{extract_component::ExtractComponent, view::RenderLayers, Extract},
+    render::{
+        extract_component::ExtractComponent, sync_world::TemporaryRenderEntity, view::RenderLayers,
+        Extract,
+    },
     window::PrimaryWindow,
 };
 
@@ -11,7 +14,7 @@ pub struct ExtractedRenderAsset {
     pub asset_anchor: VelloAssetAnchor,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
-    pub ui_node: Option<Node>,
+    pub ui_node: Option<ComputedNode>,
     pub render_layers: Option<RenderLayers>,
     pub alpha: f32,
     #[cfg(feature = "lottie")]
@@ -26,11 +29,11 @@ pub fn extract_svg_assets(
     query_vectors: Extract<
         Query<
             (
-                &Handle<VelloAsset>,
+                &VelloAssetHandle,
                 &VelloAssetAnchor,
                 &CoordinateSpace,
                 &GlobalTransform,
-                Option<&Node>,
+                Option<&ComputedNode>,
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
@@ -57,22 +60,24 @@ pub fn extract_svg_assets(
                 alpha,
                 ..
             },
-        ) = assets.get(asset)
+        ) = assets.get(asset.id())
         {
             if view_visibility.get() && inherited_visibility.get() {
-                commands.spawn(ExtractedRenderAsset {
-                    asset: asset.to_owned(),
-                    transform: *transform,
-                    asset_anchor: *asset_anchor,
-                    render_mode: *coord_space,
-                    ui_node: ui_node.cloned(),
-                    render_layers: render_layers.cloned(),
-                    alpha: *alpha,
-                    #[cfg(feature = "lottie")]
-                    theme: None,
-                    #[cfg(feature = "lottie")]
-                    playhead: 0.0,
-                });
+                commands
+                    .spawn(ExtractedRenderAsset {
+                        asset: asset.to_owned(),
+                        transform: *transform,
+                        asset_anchor: *asset_anchor,
+                        render_mode: *coord_space,
+                        ui_node: ui_node.cloned(),
+                        render_layers: render_layers.cloned(),
+                        alpha: *alpha,
+                        #[cfg(feature = "lottie")]
+                        theme: None,
+                        #[cfg(feature = "lottie")]
+                        playhead: 0.0,
+                    })
+                    .insert(TemporaryRenderEntity);
             }
         }
     }
@@ -84,13 +89,13 @@ pub fn extract_lottie_assets(
     query_vectors: Extract<
         Query<
             (
-                &Handle<VelloAsset>,
+                &VelloAssetHandle,
                 &VelloAssetAnchor,
                 &CoordinateSpace,
                 &GlobalTransform,
                 &crate::Playhead,
                 Option<&crate::Theme>,
-                Option<&Node>,
+                Option<&ComputedNode>,
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
@@ -119,21 +124,23 @@ pub fn extract_lottie_assets(
                 alpha,
                 ..
             },
-        ) = assets.get(asset)
+        ) = assets.get(asset.id())
         {
             if view_visibility.get() && inherited_visibility.get() {
                 let playhead = playhead.frame();
-                commands.spawn(ExtractedRenderAsset {
-                    asset: asset.to_owned(),
-                    transform: *transform,
-                    asset_anchor: *asset_anchor,
-                    theme: theme.cloned(),
-                    render_mode: *coord_space,
-                    playhead,
-                    alpha: *alpha,
-                    ui_node: ui_node.cloned(),
-                    render_layers: render_layers.cloned(),
-                });
+                commands
+                    .spawn(ExtractedRenderAsset {
+                        asset: asset.to_owned(),
+                        transform: *transform,
+                        asset_anchor: *asset_anchor,
+                        theme: theme.cloned(),
+                        render_mode: *coord_space,
+                        playhead,
+                        alpha: *alpha,
+                        ui_node: ui_node.cloned(),
+                        render_layers: render_layers.cloned(),
+                    })
+                    .insert(TemporaryRenderEntity);
             }
         }
     }
@@ -144,7 +151,7 @@ pub struct ExtractedRenderScene {
     pub scene: VelloScene,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
-    pub ui_node: Option<Node>,
+    pub ui_node: Option<ComputedNode>,
     pub render_layers: Option<RenderLayers>,
 }
 
@@ -158,7 +165,7 @@ pub fn extract_scenes(
                 &GlobalTransform,
                 &ViewVisibility,
                 &InheritedVisibility,
-                Option<&Node>,
+                Option<&ComputedNode>,
                 Option<&RenderLayers>,
             ),
             Without<SkipEncoding>,
@@ -176,13 +183,15 @@ pub fn extract_scenes(
     ) in query_scenes.iter()
     {
         if view_visibility.get() && inherited_visibility.get() {
-            commands.spawn(ExtractedRenderScene {
-                transform: *transform,
-                render_mode: *coord_space,
-                scene: scene.clone(),
-                ui_node: ui_node.cloned(),
-                render_layers: render_layers.cloned(),
-            });
+            commands
+                .spawn(ExtractedRenderScene {
+                    transform: *transform,
+                    render_mode: *coord_space,
+                    scene: scene.clone(),
+                    ui_node: ui_node.cloned(),
+                    render_layers: render_layers.cloned(),
+                })
+                .insert(TemporaryRenderEntity);
         }
     }
 }
@@ -224,13 +233,15 @@ pub fn extract_text(
     ) in query_scenes.iter()
     {
         if view_visibility.get() && inherited_visibility.get() {
-            commands.spawn(ExtractedRenderText {
-                text: text.clone(),
-                text_anchor: *text_anchor,
-                transform: *transform,
-                render_space: *render_space,
-                render_layers: render_layers.cloned(),
-            });
+            commands
+                .spawn(ExtractedRenderText {
+                    text: text.clone(),
+                    text_anchor: *text_anchor,
+                    transform: *transform,
+                    render_space: *render_space,
+                    render_layers: render_layers.cloned(),
+                })
+                .insert(TemporaryRenderEntity);
         }
     }
 }

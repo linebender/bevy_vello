@@ -17,11 +17,11 @@ fn main() {
 }
 
 fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     // Yes, it's this simple.
     commands.spawn(VelloAssetBundle {
-        asset: asset_server.load("embedded://lottie/assets/Tiger.json"),
+        asset: VelloAssetHandle(asset_server.load("embedded://lottie/assets/Tiger.json")),
         debug_visualizations: DebugVisualizations::Visible,
         transform: Transform::from_scale(Vec3::splat(0.5)),
         ..default()

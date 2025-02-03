@@ -48,6 +48,15 @@ impl Material2d for VelloCanvasMaterial {
         _layout: &MeshVertexBufferLayoutRef,
         _key: Material2dKey<Self>,
     ) -> Result<(), SpecializedMeshPipelineError> {
+        // FIXME: Vello isn't obeying transparency on render_to_surface call.
+        // See https://github.com/linebender/vello/issues/549
+        if let Some(target) = descriptor.fragment.as_mut() {
+            let mut_targets = &mut target.targets;
+            if let Some(Some(target)) = mut_targets.get_mut(0) {
+                target.blend = Some(vello::wgpu::BlendState::ALPHA_BLENDING);
+            }
+        }
+
         let formats = vec![
             // Position
             VertexFormat::Float32x3,

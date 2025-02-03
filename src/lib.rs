@@ -19,11 +19,12 @@ pub use vello;
 pub use vello_svg;
 
 pub mod prelude {
-    pub use vello::{self, kurbo, peniko, skrifa};
+    pub use skrifa;
+    pub use vello::{self, kurbo, peniko};
 
     pub use crate::{
         debug::DebugVisualizations,
-        integrations::{VectorFile, VelloAsset, VelloAssetAnchor},
+        integrations::{VectorFile, VelloAsset, VelloAssetAnchor, VelloAssetHandle},
         render::{SkipEncoding, VelloRenderSettings},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
         CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
@@ -50,24 +51,17 @@ pub enum CoordinateSpace {
 #[derive(Bundle, Default)]
 pub struct VelloAssetBundle {
     /// Asset data to render
-    pub asset: Handle<VelloAsset>,
+    pub asset: VelloAssetHandle,
     /// How the asset is positioned relative to its [`Transform`].
     pub asset_anchor: VelloAssetAnchor,
     /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this vector
     pub transform: Transform,
-    /// The global transform managed by Bevy
-    pub global_transform: GlobalTransform,
     /// Whether to render debug visualizations
     pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
-    /// Whether or not an entity is visible in the hierarchy.
-    pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
-    /// for rendering.
-    pub view_visibility: ViewVisibility,
 }
 
 #[derive(Bundle, Default)]
@@ -78,15 +72,8 @@ pub struct VelloSceneBundle {
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this scene
     pub transform: Transform,
-    /// The global transform managed by Bevy
-    pub global_transform: GlobalTransform,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
-    /// Whether or not an entity is visible in the hierarchy.
-    pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
-    /// for rendering.
-    pub view_visibility: ViewVisibility,
 }
 
 #[derive(Bundle, Default)]
@@ -99,17 +86,10 @@ pub struct VelloTextBundle {
     pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this text
     pub transform: Transform,
-    /// The global transform managed by Bevy
-    pub global_transform: GlobalTransform,
     /// Whether to render debug visualizations
     pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
-    /// Whether or not an entity is visible in the hierarchy.
-    pub inherited_visibility: InheritedVisibility,
-    /// Algorithmically-computed indication of whether an entity is visible. Should be extracted
-    /// for rendering.
-    pub view_visibility: ViewVisibility,
 }
 
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.

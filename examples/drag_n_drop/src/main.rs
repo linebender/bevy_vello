@@ -18,9 +18,11 @@ fn main() {
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
     commands.spawn(VelloAssetBundle {
-        asset: asset_server.load::<VelloAsset>("embedded://drag_n_drop/assets/fountain.svg"),
+        asset: VelloAssetHandle(
+            asset_server.load::<VelloAsset>("embedded://drag_n_drop/assets/fountain.svg"),
+        ),
         debug_visualizations: DebugVisualizations::Visible,
         transform: Transform::from_scale(Vec3::splat(5.0)),
         ..default()
@@ -30,7 +32,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
 /// Drag and drop any SVG or Lottie JSON asset into the window and change the
 /// displayed asset
 fn drag_and_drop(
-    mut query: Query<&mut Handle<VelloAsset>>,
+    mut query: Query<&mut VelloAssetHandle>,
     asset_server: ResMut<AssetServer>,
     mut dnd_evr: EventReader<FileDragAndDrop>,
 ) {
@@ -41,7 +43,7 @@ fn drag_and_drop(
         let FileDragAndDrop::DroppedFile { path_buf, .. } = ev else {
             continue;
         };
-        let new_handle = asset_server.load(path_buf.clone());
+        let new_handle = VelloAssetHandle(asset_server.load(path_buf.clone()));
         *asset = new_handle;
     }
 }

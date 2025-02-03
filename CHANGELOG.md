@@ -15,6 +15,10 @@ You can find its changes [documented below](#061---2024-08-14).
 
 This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
+### Changed
+
+- bevy_vello now uses Bevy 0.15
+
 ## [0.6.1] - 2024-08-14
 
 This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
