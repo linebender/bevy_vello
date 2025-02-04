@@ -16,7 +16,7 @@ members = [
 [workspace.package]
 edition = "2021"
 version = "0.6.1"
-license = "(MIT OR Apache-2.0) AND OFL-1.1"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/linebender/bevy_vello"
 
 [workspace.dependencies]
@@ -68,4 +68,4 @@ default = ["default_font"]
 svg = []
 lottie = []
 experimental-dotLottie = ["lottie"]
-default_font = []
+default_font = ["bevy/default_font"]
