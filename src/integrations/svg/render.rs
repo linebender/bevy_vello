@@ -82,7 +82,6 @@ pub fn prepare_asset_affines(
         let camera_render_layers = maybe_camera_layers.unwrap_or_default();
         let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
         for (entity, render_entity) in render_entities.iter_mut() {
-            info!("Preparing");
             let maybe_entity_layers = render_entity.render_layers.clone();
             let entity_render_layers = maybe_entity_layers.unwrap_or_default();
             if !camera_render_layers.intersects(&entity_render_layers) {
