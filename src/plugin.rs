@@ -4,7 +4,7 @@ use crate::{
     text::VelloFontLoader,
     VelloAsset, VelloFont, VelloRenderSettings,
 };
-use bevy::{asset::load_internal_binary_asset, prelude::*, render::view::RenderLayers};
+use bevy::{prelude::*, render::view::RenderLayers};
 use vello::AaConfig;
 
 #[derive(Clone)]
