@@ -1,4 +1,7 @@
-use super::asset::{VelloSvg, VelloSvgHandle};
+use super::{
+    asset::{VelloSvg, VelloSvgHandle},
+    VelloSvgAnchor,
+};
 use crate::{
     prelude::*,
     render::prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
@@ -17,7 +20,7 @@ use kurbo::Affine;
 #[derive(Component, Clone)]
 pub struct ExtractedSvgAsset {
     pub asset: VelloSvg,
-    pub asset_anchor: VelloAssetAnchor,
+    pub asset_anchor: VelloSvgAnchor,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub ui_node: Option<ComputedNode>,
@@ -31,7 +34,7 @@ pub fn extract_svg_assets(
         Query<
             (
                 &VelloSvgHandle,
-                &VelloAssetAnchor,
+                &VelloSvgAnchor,
                 &CoordinateSpace,
                 &GlobalTransform,
                 Option<&ComputedNode>,

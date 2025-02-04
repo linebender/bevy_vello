@@ -17,6 +17,7 @@ pub struct PreparedTransform(pub GlobalTransform);
 
 // All extracted bevy_vello render instance types should implement this (RenderAsset, RenderScene,
 // RenderText, etc...)
+#[cfg(any(feature = "svg", feature = "lottie"))]
 pub trait PrepareRenderInstance {
     fn final_transform(&self) -> PreparedTransform;
     fn scene_affine(

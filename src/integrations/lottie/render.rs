@@ -1,10 +1,10 @@
 use super::{
     asset::{VelloLottie, VelloLottieHandle},
-    Playhead, Theme,
+    Playhead, Theme, VelloLottieAnchor,
 };
 use crate::{
     render::prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
-    CoordinateSpace, SkipEncoding, VelloAssetAnchor,
+    CoordinateSpace, SkipEncoding,
 };
 use bevy::{
     prelude::*,
@@ -20,7 +20,7 @@ use vello::kurbo::Affine;
 #[derive(Component, Clone)]
 pub struct ExtractedLottieAsset {
     pub asset: VelloLottie,
-    pub asset_anchor: VelloAssetAnchor,
+    pub asset_anchor: VelloLottieAnchor,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub ui_node: Option<ComputedNode>,
@@ -36,7 +36,7 @@ pub fn extract_lottie_assets(
         Query<
             (
                 &VelloLottieHandle,
-                &VelloAssetAnchor,
+                &VelloLottieAnchor,
                 &CoordinateSpace,
                 &GlobalTransform,
                 &Playhead,

@@ -21,6 +21,7 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 - `VelloAsset` assets have been separated into `VelloSvg` and `VelloLottie`
 - `VelloAssetBundle` has been separated into `VelloSvgBundle` and `VelloLottieBundle`
 - `Handle<VelloAsset>` has been separated into `VelloSvgHandle` and `VelloLottieHandle`
+- `VelloAssetAnchor` has been separated into `VelloSvgAnchor` and `VelloLottieAnchor`
 
 ## [0.6.1] - 2024-08-14
 
@@ -262,5 +263,6 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 [0.1.2]: https://github.com/linebender/bevy_vello/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/linebender/bevy_vello/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/linebender/bevy_vello/releases/tag/v0.1.0
+
 
 [MSRV]: README.md#minimum-supported-rust-version-msrv

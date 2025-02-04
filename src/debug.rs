@@ -34,7 +34,7 @@ fn render_svg_debug(
     query_vectors: Query<
         (
             &VelloSvgHandle,
-            &VelloAssetAnchor,
+            &VelloSvgAnchor,
             &GlobalTransform,
             &CoordinateSpace,
             &DebugVisualizations,
@@ -95,7 +95,7 @@ fn render_lottie_debug(
     query_vectors: Query<
         (
             &VelloLottieHandle,
-            &VelloAssetAnchor,
+            &VelloLottieAnchor,
             &GlobalTransform,
             &CoordinateSpace,
             &DebugVisualizations,

@@ -24,7 +24,6 @@ pub mod prelude {
 
     pub use crate::{
         debug::DebugVisualizations,
-        integrations::VelloAssetAnchor,
         render::{SkipEncoding, VelloRenderSettings},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
         CoordinateSpace, VelloScene, VelloSceneBundle, VelloTextBundle,
@@ -32,16 +31,13 @@ pub mod prelude {
 
     #[cfg(feature = "experimental-dotLottie")]
     pub use crate::integrations::dot_lottie::{DotLottiePlayer, PlayerState, PlayerTransition};
-    #[cfg(feature = "svg")]
-    pub use crate::integrations::svg::{VelloSvg, VelloSvgBundle, VelloSvgHandle};
     #[cfg(feature = "lottie")]
-    pub use crate::{
-        integrations::lottie::{
-            LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
-            Playhead, Theme, VelloLottie, VelloLottieHandle,
-        },
-        VelloLottieBundle,
+    pub use crate::integrations::lottie::{
+        LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
+        Playhead, Theme, VelloLottie, VelloLottieAnchor, VelloLottieBundle, VelloLottieHandle,
     };
+    #[cfg(feature = "svg")]
+    pub use crate::integrations::svg::{VelloSvg, VelloSvgAnchor, VelloSvgBundle, VelloSvgHandle};
 }
 
 /// Which coordinate space the transform is relative to.
@@ -51,23 +47,6 @@ pub enum CoordinateSpace {
     #[default]
     WorldSpace,
     ScreenSpace,
-}
-
-#[cfg(feature = "lottie")]
-#[derive(Bundle, Default)]
-pub struct VelloLottieBundle {
-    /// Asset data to render
-    pub asset: VelloLottieHandle,
-    /// How the asset is positioned relative to its [`Transform`].
-    pub asset_anchor: VelloAssetAnchor,
-    /// The coordinate space in which this vector should be rendered.
-    pub coordinate_space: CoordinateSpace,
-    /// A transform to apply to this vector
-    pub transform: Transform,
-    /// Whether to render debug visualizations
-    pub debug_visualizations: DebugVisualizations,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub visibility: Visibility,
 }
 
 #[derive(Bundle, Default)]
