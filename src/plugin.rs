@@ -53,11 +53,15 @@ impl Plugin for VelloPlugin {
         #[cfg(feature = "experimental-dotLottie")]
         app.add_plugins(crate::integrations::dot_lottie::DotLottieIntegrationPlugin);
         #[cfg(feature = "default_font")]
-        load_internal_binary_asset!(
-            app,
-            Handle::default(),
-            "text/FiraMono/FiraMono-subset.ttf",
-            |bytes: &[u8], _path: String| { VelloFont::new(bytes.to_vec()) }
-        );
+        {
+            let mut fonts = app
+                .world_mut()
+                .get_resource_mut::<Assets<VelloFont>>()
+                .unwrap();
+            fonts.insert(
+                Handle::default().id(),
+                VelloFont::new(bevy::text::DEFAULT_FONT_DATA.to_vec()),
+            );
+        }
     }
 }
