@@ -264,5 +264,4 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 [0.1.1]: https://github.com/linebender/bevy_vello/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/linebender/bevy_vello/releases/tag/v0.1.0
 
-
 [MSRV]: README.md#minimum-supported-rust-version-msrv
