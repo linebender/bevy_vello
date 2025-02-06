@@ -52,6 +52,7 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { workspace = true }
+# Ensure this version stays up to date with the Badge on the README
 vello = "0.4.0"
 vello_svg = "0.6.0"
 velato = "0.5.0"
