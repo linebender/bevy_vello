@@ -18,6 +18,10 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 ### Changed
 
 - bevy_vello now uses Bevy 0.15
+- `VelloAsset` assets have been separated into `VelloSvg` and `VelloLottie`
+- `VelloAssetBundle` has been separated into `VelloSvgBundle` and `VelloLottieBundle`
+- `Handle<VelloAsset>` has been separated into `VelloSvgHandle` and `VelloLottieHandle`
+- `VelloAssetAnchor` has been separated into `VelloSvgAnchor` and `VelloLottieAnchor`
 - The license on bevy_vello no longer includes OFL 1.1
 
 ### Fixed

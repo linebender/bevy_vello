@@ -1,8 +1,5 @@
 //! Logic for rendering debug visualizations
-use crate::{
-    text::VelloTextAnchor, CoordinateSpace, VelloAsset, VelloAssetAnchor, VelloAssetHandle,
-    VelloFont, VelloTextSection,
-};
+use crate::prelude::*;
 use bevy::{color::palettes::css, math::Vec3Swizzles, prelude::*};
 
 const RED_X_SIZE: f32 = 8.0;
@@ -11,7 +8,15 @@ pub struct DebugVisualizationsPlugin;
 
 impl Plugin for DebugVisualizationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (render_asset_debug, render_text_debug));
+        // TODO: Would be great if we could render scene debug, but Vello doesn't tell us the AABB or BB.
+
+        app.add_systems(Update, render_text_debug);
+
+        #[cfg(feature = "svg")]
+        app.add_systems(Update, render_svg_debug);
+
+        #[cfg(feature = "lottie")]
+        app.add_systems(Update, render_lottie_debug);
     }
 }
 
@@ -23,19 +28,20 @@ pub enum DebugVisualizations {
     Visible,
 }
 
-/// A system to render debug visualizations for `VelloAsset`.
-fn render_asset_debug(
+#[cfg(feature = "svg")]
+/// A system to render debug visualizations for SVGs.
+fn render_svg_debug(
     query_vectors: Query<
         (
-            &VelloAssetHandle,
-            &VelloAssetAnchor,
+            &VelloSvgHandle,
+            &VelloSvgAnchor,
             &GlobalTransform,
             &CoordinateSpace,
             &DebugVisualizations,
         ),
         Without<Node>,
     >,
-    assets: Res<Assets<VelloAsset>>,
+    assets: Res<Assets<VelloSvg>>,
     query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
     mut gizmos: Gizmos,
 ) {
@@ -55,7 +61,7 @@ fn render_asset_debug(
                     let origin = gtransform.translation().xy();
                     draw_origin(&mut gizmos, projection, origin);
                     // Bounding box
-                    let gtransform = &asset_anchor.compute(asset, gtransform);
+                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
                     let rect_center = gtransform.translation().xy();
                     let rect = asset.bb_in_world_space(gtransform);
                     draw_bounding_box(&mut gizmos, rect_center, rect.size());
@@ -68,7 +74,68 @@ fn render_asset_debug(
                     };
                     draw_origin(&mut gizmos, projection, origin);
                     // Bounding box
-                    let gtransform = &asset_anchor.compute(asset, gtransform);
+                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
+                    let rect_center = gtransform.translation().xy();
+                    let Ok(rect_center) = camera.viewport_to_world_2d(view, rect_center) else {
+                        continue;
+                    };
+                    let Some(rect) = asset.bb_in_screen_space(gtransform, camera, view) else {
+                        continue;
+                    };
+                    draw_bounding_box(&mut gizmos, rect_center, rect.size());
+                }
+            }
+        }
+    }
+}
+
+#[cfg(feature = "lottie")]
+/// A system to render debug visualizations for SVGs.
+fn render_lottie_debug(
+    query_vectors: Query<
+        (
+            &VelloLottieHandle,
+            &VelloLottieAnchor,
+            &GlobalTransform,
+            &CoordinateSpace,
+            &DebugVisualizations,
+        ),
+        Without<Node>,
+    >,
+    assets: Res<Assets<VelloLottie>>,
+    query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
+    mut gizmos: Gizmos,
+) {
+    let Ok((camera, view, projection)) = query_cam.get_single() else {
+        return;
+    };
+
+    // Show vectors
+    for (asset, asset_anchor, gtransform, space, _) in query_vectors
+        .iter()
+        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
+    {
+        if let Some(asset) = assets.get(asset.id()) {
+            match space {
+                CoordinateSpace::WorldSpace => {
+                    // Origin
+                    let origin = gtransform.translation().xy();
+                    draw_origin(&mut gizmos, projection, origin);
+                    // Bounding box
+                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
+                    let rect_center = gtransform.translation().xy();
+                    let rect = asset.bb_in_world_space(gtransform);
+                    draw_bounding_box(&mut gizmos, rect_center, rect.size());
+                }
+                CoordinateSpace::ScreenSpace => {
+                    // Origin
+                    let origin = gtransform.translation().xy();
+                    let Ok(origin) = camera.viewport_to_world_2d(view, origin) else {
+                        continue;
+                    };
+                    draw_origin(&mut gizmos, projection, origin);
+                    // Bounding box
+                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
                     let rect_center = gtransform.translation().xy();
                     let Ok(rect_center) = camera.viewport_to_world_2d(view, rect_center) else {
                         continue;
@@ -222,6 +289,7 @@ fn draw_origin(gizmos: &mut Gizmos, projection: &OrthographicProjection, origin:
     gizmos.line_2d(from, to, css::RED);
 }
 
+#[cfg(any(feature = "svg", feature = "lottie"))]
 /// A helper method to draw the bounding box
 fn draw_bounding_box(gizmos: &mut Gizmos, position: Vec2, size: Vec2) {
     gizmos.rect_2d(

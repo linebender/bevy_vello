@@ -4,7 +4,7 @@ use super::{
 };
 use crate::{
     render::{VelloCanvasMaterial, VelloRenderer, SSRT_SHADER_HANDLE},
-    VelloAssetHandle, VelloFont, VelloScene, VelloTextSection,
+    VelloFont, VelloScene, VelloTextSection,
 };
 use bevy::{
     asset::load_internal_asset,
@@ -40,12 +40,6 @@ impl Plugin for VelloRenderPlugin {
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
-        #[cfg(feature = "svg")]
-        render_app.add_systems(ExtractSchedule, extract::extract_svg_assets);
-        #[cfg(feature = "lottie")]
-        render_app
-            .init_resource::<super::VelatoRenderer>()
-            .add_systems(ExtractSchedule, extract::extract_lottie_assets);
 
         render_app
             .insert_resource(self.render_settings.clone())
@@ -65,7 +59,6 @@ impl Plugin for VelloRenderPlugin {
             .add_systems(
                 Render,
                 (
-                    prepare::prepare_asset_affines,
                     prepare::prepare_scene_affines,
                     prepare::prepare_text_affines,
                 )
@@ -91,13 +84,7 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 PostUpdate,
-                check_visibility::<
-                    Or<(
-                        With<VelloScene>,
-                        With<VelloAssetHandle>,
-                        With<VelloTextSection>,
-                    )>,
-                >
+                check_visibility::<Or<(With<VelloScene>, With<VelloTextSection>)>>
                     .in_set(VisibilitySystems::CheckVisibility),
             );
     }

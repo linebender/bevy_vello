@@ -20,8 +20,8 @@ fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(Camera2d);
 
     // Yes, it's this simple.
-    commands.spawn(VelloAssetBundle {
-        asset: VelloAssetHandle(asset_server.load("embedded://svg/assets/fountain.svg")),
+    commands.spawn(VelloSvgBundle {
+        asset: VelloSvgHandle(asset_server.load("embedded://svg/assets/fountain.svg")),
         debug_visualizations: DebugVisualizations::Visible,
         transform: Transform::from_scale(Vec3::splat(5.0)),
         ..default()

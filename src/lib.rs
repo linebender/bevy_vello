@@ -24,10 +24,9 @@ pub mod prelude {
 
     pub use crate::{
         debug::DebugVisualizations,
-        integrations::{VectorFile, VelloAsset, VelloAssetAnchor, VelloAssetHandle},
         render::{SkipEncoding, VelloRenderSettings},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
-        CoordinateSpace, VelloAssetBundle, VelloScene, VelloSceneBundle, VelloTextBundle,
+        CoordinateSpace, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
 
     #[cfg(feature = "experimental-dotLottie")]
@@ -35,8 +34,10 @@ pub mod prelude {
     #[cfg(feature = "lottie")]
     pub use crate::integrations::lottie::{
         LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
-        Playhead, Theme,
+        Playhead, Theme, VelloLottie, VelloLottieAnchor, VelloLottieBundle, VelloLottieHandle,
     };
+    #[cfg(feature = "svg")]
+    pub use crate::integrations::svg::{VelloSvg, VelloSvgAnchor, VelloSvgBundle, VelloSvgHandle};
 }
 
 /// Which coordinate space the transform is relative to.
@@ -46,22 +47,6 @@ pub enum CoordinateSpace {
     #[default]
     WorldSpace,
     ScreenSpace,
-}
-
-#[derive(Bundle, Default)]
-pub struct VelloAssetBundle {
-    /// Asset data to render
-    pub asset: VelloAssetHandle,
-    /// How the asset is positioned relative to its [`Transform`].
-    pub asset_anchor: VelloAssetAnchor,
-    /// The coordinate space in which this vector should be rendered.
-    pub coordinate_space: CoordinateSpace,
-    /// A transform to apply to this vector
-    pub transform: Transform,
-    /// Whether to render debug visualizations
-    pub debug_visualizations: DebugVisualizations,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub visibility: Visibility,
 }
 
 #[derive(Bundle, Default)]

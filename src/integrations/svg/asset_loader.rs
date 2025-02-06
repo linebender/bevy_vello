@@ -1,7 +1,5 @@
-use crate::{
-    integrations::{svg::load_svg_from_bytes, VectorLoaderError},
-    VelloAsset,
-};
+use super::asset::VelloSvg;
+use crate::integrations::{svg::load_svg_from_bytes, VectorLoaderError};
 use bevy::{
     asset::{io::Reader, AssetLoader, LoadContext},
     prelude::*,
@@ -12,7 +10,7 @@ use bevy::{
 pub struct VelloSvgLoader;
 
 impl AssetLoader for VelloSvgLoader {
-    type Asset = VelloAsset;
+    type Asset = VelloSvg;
 
     type Settings = ();
 

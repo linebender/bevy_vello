@@ -16,14 +16,3 @@ pub mod dot_lottie;
 
 mod error;
 pub use error::VectorLoaderError;
-
-mod asset;
-pub use asset::{VelloAsset, VelloAssetAnchor, VelloAssetHandle};
-
-#[derive(Clone)]
-pub enum VectorFile {
-    #[cfg(feature = "svg")]
-    Svg(std::sync::Arc<vello::Scene>),
-    #[cfg(feature = "lottie")]
-    Lottie(std::sync::Arc<velato::Composition>),
-}
