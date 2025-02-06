@@ -27,12 +27,12 @@ cargo run -p demo
 
 ## Bevy version support
 
-|bevy|bevy_vello|
-|---|---|
-|0.15|main|
-|0.14|0.5-0.6|
-|0.13|0.1-0.4|
-|< 0.13| unsupported |
+|bevy|bevy_vello|vello|
+|---|---|---|
+|0.15|main|0.4|
+|0.14|0.5-0.6|0.3|
+|0.13|0.1-0.4|0.2|
+|< 0.13| unsupported | |
 
 ## Cargo features
 
