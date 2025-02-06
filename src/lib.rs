@@ -29,12 +29,11 @@ pub mod prelude {
         CoordinateSpace, VelloScene, VelloSceneBundle, VelloTextBundle,
     };
 
-    #[cfg(feature = "experimental-dotLottie")]
-    pub use crate::integrations::dot_lottie::{DotLottiePlayer, PlayerState, PlayerTransition};
     #[cfg(feature = "lottie")]
     pub use crate::integrations::lottie::{
-        LottieExt, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
-        Playhead, Theme, VelloLottie, VelloLottieAnchor, VelloLottieBundle, VelloLottieHandle,
+        LottieExt, LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
+        PlaybackPlayMode, PlayerState, PlayerTransition, Playhead, Theme, VelloLottie,
+        VelloLottieAnchor, VelloLottieBundle, VelloLottieHandle,
     };
     #[cfg(feature = "svg")]
     pub use crate::integrations::svg::{VelloSvg, VelloSvgAnchor, VelloSvgBundle, VelloSvgHandle};

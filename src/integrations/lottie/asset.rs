@@ -1,7 +1,9 @@
+use super::{LottiePlayer, PlaybackOptions, Playhead};
 use bevy::{prelude::*, reflect::TypePath};
 use std::sync::Arc;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
+#[require(Playhead, PlaybackOptions, LottiePlayer)]
 pub struct VelloLottieHandle(pub Handle<VelloLottie>);
 
 #[derive(Asset, TypePath, Clone)]

@@ -6,8 +6,6 @@ pub mod asset;
 pub use asset::{VelloLottie, VelloLottieHandle};
 
 mod systems;
-#[cfg(feature = "experimental-dotLottie")]
-pub(crate) use systems::spawn_playheads;
 
 mod parse;
 pub use parse::{load_lottie_from_bytes, load_lottie_from_str};
@@ -25,6 +23,15 @@ pub use playback_options::{
 
 mod playhead;
 pub use playhead::Playhead;
+
+mod lottie_player;
+pub use lottie_player::LottiePlayer;
+
+mod player_state;
+pub use player_state::PlayerState;
+
+mod player_transition;
+pub use player_transition::PlayerTransition;
 
 mod theme;
 pub use theme::Theme;

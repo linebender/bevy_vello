@@ -35,7 +35,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             ..default()
         })
         .insert(
-            DotLottiePlayer::new("stopped")
+            LottiePlayer::new("stopped")
                 .with_state({
                     PlayerState::new("stopped")
                         .playback_options(PlaybackOptions {

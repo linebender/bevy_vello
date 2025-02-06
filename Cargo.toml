@@ -67,5 +67,4 @@ wasm-bindgen-test = "0.3.50"
 default = ["default_font"]
 svg = []
 lottie = []
-experimental-dotLottie = ["lottie"]
 default_font = ["bevy/default_font"]
