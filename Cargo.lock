@@ -786,9 +786,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_pbr"
-version = "0.15.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7f17067399cf00f4441e93d39fb4c391a16cc223e0d35346ac388e66712c418"
+checksum = "8705673ff221a8cccbd57beed4a304bc53836252fd986746691c75354765c419"
 dependencies = [
  "bevy_app",
  "bevy_asset",
