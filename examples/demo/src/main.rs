@@ -25,7 +25,7 @@ fn main() {
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn((Camera2d, bevy_pancam::PanCam::default()));
+    commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
     commands
         .spawn(VelloLottieBundle {
             asset: VelloLottieHandle(asset_server.load("embedded://demo/assets/calendar.json")),

@@ -17,7 +17,7 @@ fn main() {
 }
 
 fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn(Camera2d);
+    commands.spawn((Camera2d, VelloView));
 
     // Yes, it's this simple.
     commands.spawn(VelloLottieBundle {
