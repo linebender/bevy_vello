@@ -47,10 +47,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build | Check (native)
-        run: cargo check
+        run: cargo check --workspace
 
       - name: Build | Check (wasm)
-        run: cargo check --target wasm32-unknown-unknown
+        run: cargo check --workspace --target wasm32-unknown-unknown
 
   test:
     needs: [check]
