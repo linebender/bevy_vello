@@ -20,7 +20,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/linebender/bevy_vello"
 
 [workspace.dependencies]
-bevy = { version = "0.15.1", default-features = false, features = [
+bevy = { version = "0.15.2", default-features = false, features = [
   "bevy_asset",
   "bevy_winit",
   "bevy_window",
@@ -59,12 +59,6 @@ thiserror = "2.0.11"
 once_cell = "1.19.0"
 skrifa = "0.26.5"
 bytemuck = { version = "1.21.0", features = ["derive"] }
-
-# FIXME: To remove after https://github.com/bevyengine/bevy/issues/17699
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-# We have a transitive dependency on getrandom and it does not automatically
-# support wasm32-unknown-unknown. We need to enable the js feature.
-uuid = { version = "1.13.1", default-features = false, features = ["js"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.50"

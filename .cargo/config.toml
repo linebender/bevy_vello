@@ -5,4 +5,4 @@ run_wasm = "run --release --package run_wasm --"
 run-wasm = "run_wasm"
 
 [target.'cfg(target_family = "wasm")']
-rustflags = ['--cfg=web_sys_unstable_apis', '--cfg=getrandom_backend="wasm_js"']
+rustflags = ['--cfg=web_sys_unstable_apis']
