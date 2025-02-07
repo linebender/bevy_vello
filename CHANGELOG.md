@@ -15,9 +15,14 @@ You can find its changes [documented below](#061---2024-08-14).
 
 This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
+### Added
+
+- Added `VelloView` marker component used for identifying cameras rendering vello content.
+
 ### Changed
 
 - bevy_vello now uses Bevy 0.15
+- `Camera2d` now requires a `VelloView` marker for rendering.
 - `VelloAsset` assets have been separated into `VelloSvg` and `VelloLottie`
 - `VelloAssetBundle` has been separated into `VelloSvgBundle` and `VelloLottieBundle`
 - `Handle<VelloAsset>` has been separated into `VelloSvgHandle` and `VelloLottieHandle`
