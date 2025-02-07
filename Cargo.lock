@@ -585,6 +585,7 @@ dependencies = [
  "bevy_gizmos_macros",
  "bevy_image",
  "bevy_math",
+ "bevy_pbr",
  "bevy_reflect",
  "bevy_render",
  "bevy_sprite",
@@ -680,6 +681,7 @@ dependencies = [
  "bevy_input",
  "bevy_log",
  "bevy_math",
+ "bevy_pbr",
  "bevy_picking",
  "bevy_ptr",
  "bevy_reflect",
@@ -780,6 +782,35 @@ checksum = "97951c9d2d2e52c942b883244a6b3586d5e55add303ed2c0dba67af4a9b16d28"
 dependencies = [
  "bevy",
  "bevy_egui",
+]
+
+[[package]]
+name = "bevy_pbr"
+version = "0.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7f17067399cf00f4441e93d39fb4c391a16cc223e0d35346ac388e66712c418"
+dependencies = [
+ "bevy_app",
+ "bevy_asset",
+ "bevy_color",
+ "bevy_core_pipeline",
+ "bevy_derive",
+ "bevy_ecs",
+ "bevy_image",
+ "bevy_math",
+ "bevy_reflect",
+ "bevy_render",
+ "bevy_transform",
+ "bevy_utils",
+ "bevy_window",
+ "bitflags 2.8.0",
+ "bytemuck",
+ "derive_more",
+ "fixedbitset 0.5.7",
+ "nonmax",
+ "radsort",
+ "smallvec",
+ "static_assertions",
 ]
 
 [[package]]
