@@ -10,3 +10,6 @@ publish = false
 [dependencies]
 bevy_vello = { path = "../../", features = ["svg", "lottie"] }
 bevy = { workspace = true }
+bevy_pancam = "0.17.0"
+bevy_async_task = "0.4.1"
+rfd = "0.15.2"
