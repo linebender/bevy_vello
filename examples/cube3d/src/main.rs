@@ -118,14 +118,12 @@ fn setup(
 fn render_texture(
     renderer: Res<VelloRenderer>,
     render_settings: Res<VelloRenderSettings>,
-    target: Query<&VelloTarget>,
+    target: Single<&VelloTarget>,
     device: Res<RenderDevice>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     queue: Res<RenderQueue>,
     time: Res<Time>,
 ) {
-    let target = target.single();
-
     let mut scene = VelloScene::default();
     // Animate the scene
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
@@ -142,7 +140,7 @@ fn render_texture(
         &kurbo::RoundedRect::new(0.0, 0.0, 256.0, 256.0, (sin_time as f64) * 128.0),
     );
 
-    let gpu_image = gpu_images.get(&target.0).unwrap();
+    let gpu_image = gpu_images.get(target.0.id()).unwrap();
     let params = vello::RenderParams {
         base_color: vello::peniko::Color::WHITE,
         width: gpu_image.size.x,

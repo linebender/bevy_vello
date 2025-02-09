@@ -21,7 +21,7 @@ use bevy::{
         view::{NoFrustumCulling, RenderLayers},
     },
     sprite::MeshMaterial2d,
-    window::{WindowResized, WindowResolution},
+    window::{PrimaryWindow, WindowResized, WindowResolution},
 };
 use vello::{kurbo::Affine, RenderParams, Scene};
 
@@ -63,7 +63,7 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
 pub fn render_frame(
-    ss_render_target: Query<&SSRenderTarget>,
+    ss_render_target: Single<&SSRenderTarget>,
     views: Query<(&ExtractedCamera, Option<&RenderLayers>), (With<Camera2d>, With<VelloView>)>,
     #[cfg(feature = "svg")] view_svgs: Query<(&PreparedAffine, &ExtractedSvgAsset)>,
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
@@ -77,10 +77,7 @@ pub fn render_frame(
     renderer: Res<VelloRenderer>,
     render_settings: Res<VelloRenderSettings>,
 ) {
-    let Ok(SSRenderTarget(render_target_image)) = ss_render_target.get_single() else {
-        error!("No render target");
-        return;
-    };
+    let SSRenderTarget(render_target_image) = *ss_render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
 
     enum RenderItem<'a> {
@@ -254,9 +251,10 @@ pub fn resize_rendertargets(
     mut query: Query<(&mut SSRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
-    windows: Query<&Window>,
+    window: Option<Single<&Window, With<PrimaryWindow>>>,
 ) {
-    let Ok(window) = windows.get_single() else {
+    let Some(window) = window.as_deref() else {
+        // We only support rendering to the primary window right now.
         return;
     };
     if window_resize_events.read().last().is_some() {
@@ -289,14 +287,14 @@ pub fn setup_ss_rendertarget(
     mut meshes: ResMut<Assets<Mesh>>,
     mut images: ResMut<Assets<Image>>,
     mut custom_materials: ResMut<Assets<VelloCanvasMaterial>>,
-    windows: Query<&Window>,
+    window: Option<Single<&Window, With<PrimaryWindow>>>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
     settings: Res<VelloCanvasSettings>,
 ) {
-    let Ok(window) = windows.get_single() else {
+    let Some(window) = window.as_deref() else {
+        // We only support rendering to the primary window right now.
         return;
     };
-
     let mesh_handle = render_target_mesh_handle.get_or_insert_with(|| {
         let mut rendertarget_quad = Mesh::new(
             PrimitiveTopology::TriangleList,
@@ -349,7 +347,7 @@ pub fn render_settings_change_detection(
 
 /// Hide the render target canvas if there is nothing to render
 pub fn hide_when_empty(
-    mut query_render_target: Query<&mut Visibility, With<SSRenderTarget>>,
+    mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
     // TODO: Fix this monstrocity by having a resource that counts the amount of render items.
     // ----- It would be useful for debugging purposes, too.
     #[cfg(all(feature = "svg", feature = "lottie"))] render_items: Query<
@@ -386,11 +384,11 @@ pub fn hide_when_empty(
         )>,
     >,
 ) {
-    if let Ok(mut visibility) = query_render_target.get_single_mut() {
+    if let Some(visibility) = query_render_target.as_deref_mut() {
         if render_items.is_empty() {
-            *visibility = Visibility::Hidden;
+            **visibility = Visibility::Hidden;
         } else {
-            *visibility = Visibility::Inherited;
+            **visibility = Visibility::Inherited;
         }
     }
 }

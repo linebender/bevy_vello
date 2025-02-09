@@ -6,18 +6,22 @@ use bevy_egui::{
 use bevy_vello::{prelude::*, vello_svg::usvg::strict_num::Ulps};
 use std::time::Duration;
 
+#[expect(clippy::type_complexity)]
 pub fn controls_ui(
     mut contexts: EguiContexts,
-    mut player: Query<(
-        &mut LottiePlayer,
-        &mut Playhead,
-        &mut PlaybackOptions,
-        &mut Theme,
-        &VelloLottieHandle,
-    )>,
+    mut player: Option<
+        Single<(
+            &mut LottiePlayer,
+            &mut Playhead,
+            &mut PlaybackOptions,
+            &mut Theme,
+            &VelloLottieHandle,
+        )>,
+    >,
     assets: Res<Assets<VelloLottie>>,
 ) {
-    let Ok((mut player, mut playhead, mut options, mut theme, handle)) = player.get_single_mut()
+    let Some((ref mut player, ref mut playhead, ref mut options, ref mut theme, handle)) =
+        player.as_deref_mut()
     else {
         return;
     };
