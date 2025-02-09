@@ -2351,6 +2351,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "headless"
+version = "0.6.1"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

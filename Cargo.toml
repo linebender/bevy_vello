@@ -11,6 +11,7 @@ members = [
   "examples/scene_ui",
   "examples/render_layers",
   "examples/cube3d",
+  "examples/headless",
 ]
 
 [workspace.package]
