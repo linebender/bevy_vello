@@ -2,7 +2,7 @@
 resolver = "2"
 members = [
   "examples/run_wasm",
-  "examples/demo",
+  "examples/lottie_player",
   "examples/drag_n_drop",
   "examples/text",
   "examples/scene",
