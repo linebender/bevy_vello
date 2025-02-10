@@ -24,16 +24,13 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn(VelloTextBundle {
-        text: VelloTextSection {
+    commands
+        .spawn(VelloTextSection {
             value: "Default font\nand multi-line support.".to_string(),
             ..default()
-        },
-        text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, 100.0, 0.0),
-        debug_visualizations: DebugVisualizations::Visible,
-        ..default()
-    });
+        })
+        .insert(DebugVisualizations::Visible)
+        .insert(VelloTextAnchor::Center);
 
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
