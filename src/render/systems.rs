@@ -348,44 +348,21 @@ pub fn render_settings_change_detection(
 /// Hide the render target canvas if there is nothing to render
 pub fn hide_when_empty(
     mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
-    // TODO: Fix this monstrocity by having a resource that counts the amount of render items.
-    // ----- It would be useful for debugging purposes, too.
-    #[cfg(all(feature = "svg", feature = "lottie"))] render_items: Query<
-        (),
-        Or<(
-            With<VelloScene>,
-            With<VelloSvgHandle>,
-            With<VelloLottieHandle>,
-            With<VelloTextSection>,
-        )>,
-    >,
-    #[cfg(all(not(feature = "lottie"), not(feature = "svg")))] render_items: Query<
-        (),
-        Or<(With<VelloScene>, With<VelloTextSection>)>,
-    >,
-    #[cfg(feature = "svg")]
-    #[cfg(not(feature = "lottie"))]
-    render_items: Query<
-        (),
-        Or<(
-            With<VelloScene>,
-            With<VelloSvgHandle>,
-            With<VelloTextSection>,
-        )>,
-    >,
-    #[cfg(feature = "lottie")]
-    #[cfg(not(feature = "svg"))]
-    render_items: Query<
-        (),
-        Or<(
-            With<VelloScene>,
-            With<VelloLottieHandle>,
-            With<VelloTextSection>,
-        )>,
-    >,
+    #[cfg(feature = "svg")] render_svgs: Query<&VelloSvgHandle>,
+    #[cfg(feature = "lottie")] render_lotties: Query<&VelloLottieHandle>,
+    render_texts: Query<&VelloTextSection>,
+    render_scenes: Query<&VelloScene>,
 ) {
+    // TODO: Optimize by having a VelloDiagnostics resource which counts render objects both for introspection and quick determination of whether we have anything to render.
+    // See https://github.com/linebender/bevy_vello/issues/117
+    let is_empty = render_texts.is_empty() && render_scenes.is_empty();
+    #[cfg(feature = "svg")]
+    let is_empty = is_empty && render_svgs.is_empty();
+    #[cfg(feature = "lottie")]
+    let is_empty = is_empty && render_lotties.is_empty();
+
     if let Some(visibility) = query_render_target.as_deref_mut() {
-        if render_items.is_empty() {
+        if is_empty {
             **visibility = Visibility::Hidden;
         } else {
             **visibility = Visibility::Inherited;
