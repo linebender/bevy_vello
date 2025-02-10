@@ -1,4 +1,4 @@
-name: Web Demo Update
+name: Web Example Update
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
           wasm-bindgen --target web --out-dir public target/wasm32-unknown-unknown/release/drag_n_drop.wasm --no-typescript
           cat << EOF > public/index.html
             <html>
-              <title>bevy_vello Web Demo</title>
+              <title>bevy_vello Web Example</title>
               <meta content=no-cache http-equiv=Cache-control>
               <meta content=-1 http-equiv=Expires>
               <script type=module>import initSync from"/bevy_vello/drag_n_drop.js";initSync(`/bevy_vello/drag_n_drop_bg.wasm`);</script>
