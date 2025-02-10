@@ -30,8 +30,10 @@ fn setup_ui(mut commands: Commands) {
         },
         BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
         Interaction::default(),
-        VelloScene::default(),
-        CoordinateSpace::ScreenSpace,
+        VelloSceneBundle {
+            coordinate_space: CoordinateSpace::ScreenSpace,
+            ..default()
+        },
     ));
 }
 

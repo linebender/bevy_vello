@@ -31,7 +31,7 @@ fn setup(mut commands: Commands) {
         None,
         &kurbo::Circle::new((0.0, 0.0), 50.0),
     );
-    commands.spawn(VelloSceneBundle { scene, ..default() });
+    commands.spawn(scene);
 }
 
 fn screenshot(mut commands: Commands) {
