@@ -354,6 +354,7 @@ pub fn hide_when_empty(
     render_scenes: Query<&VelloScene>,
 ) {
     // TODO: Optimize by having a VelloDiagnostics resource which counts render objects both for introspection and quick determination of whether we have anything to render.
+    // See https://github.com/linebender/bevy_vello/issues/117
     let is_empty = render_texts.is_empty() && render_scenes.is_empty();
     #[cfg(feature = "svg")]
     let is_empty = is_empty && render_svgs.is_empty();
