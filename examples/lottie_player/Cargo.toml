@@ -1,5 +1,5 @@
 [package]
-name = "demo"
+name = "lottie_player"
 version.workspace = true
 license.workspace = true
 edition.workspace = true

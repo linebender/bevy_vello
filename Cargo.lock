@@ -1930,16 +1930,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c297a1c74b71ae29df00c3e22dd9534821d60eb9af5a0192823fa2acea70c2a"
 
 [[package]]
-name = "demo"
-version = "0.6.1"
-dependencies = [
- "bevy",
- "bevy_egui",
- "bevy_pancam",
- "bevy_vello",
-]
-
-[[package]]
 name = "derive_more"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3161,6 +3151,16 @@ name = "lottie"
 version = "0.6.1"
 dependencies = [
  "bevy",
+ "bevy_vello",
+]
+
+[[package]]
+name = "lottie_player"
+version = "0.6.1"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+ "bevy_pancam",
  "bevy_vello",
 ]
 

@@ -28,7 +28,9 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
     commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
     commands
         .spawn(VelloLottieBundle {
-            asset: VelloLottieHandle(asset_server.load("embedded://demo/assets/calendar.json")),
+            asset: VelloLottieHandle(
+                asset_server.load("embedded://lottie_player/assets/calendar.json"),
+            ),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(20.0)),
             debug_visualizations: DebugVisualizations::Visible,
