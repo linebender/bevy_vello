@@ -2,6 +2,7 @@
 
 use bevy::{color::palettes::css, prelude::*, render::view::RenderLayers};
 use bevy_vello::{prelude::*, VelloPlugin};
+use std::ops::DerefMut;
 
 fn main() {
     App::new()
@@ -64,13 +65,13 @@ fn setup_scene(mut commands: Commands) {
 }
 
 fn animation(
-    mut query_scene: Query<(&mut Transform, &mut VelloScene), With<AnimationScene>>,
+    mut query_scene: Single<(&mut Transform, &mut VelloScene), With<AnimationScene>>,
     time: Res<Time>,
 ) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
-    let (mut transform, mut scene) = query_scene.single_mut();
+    let (transform, scene) = query_scene.deref_mut();
     // Reset scene every frame
-    *scene = VelloScene::default();
+    scene.reset();
 
     // Animate color green to blue
     let c = Vec3::lerp(
@@ -93,9 +94,9 @@ fn animation(
     transform.rotation = Quat::from_rotation_z(-std::f32::consts::TAU * sin_time);
 }
 
-fn background(mut query_scene: Query<&mut VelloScene, With<BackgroundScene>>) {
-    let mut scene = query_scene.single_mut();
-    *scene = VelloScene::default();
+fn background(mut query_scene: Single<&mut VelloScene, With<BackgroundScene>>) {
+    let scene = query_scene.deref_mut();
+    scene.reset();
     scene.fill(
         peniko::Fill::NonZero,
         kurbo::Affine::default(),

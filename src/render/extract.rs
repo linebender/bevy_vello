@@ -131,10 +131,10 @@ pub struct ExtractedPixelScale(pub f32);
 
 pub fn extract_pixel_scale(
     mut pixel_scale: ResMut<ExtractedPixelScale>,
-    windows: Extract<Query<&Window, With<PrimaryWindow>>>,
+    window: Extract<Option<Single<&Window, With<PrimaryWindow>>>>,
 ) {
-    let scale_factor = windows
-        .get_single()
+    let scale_factor = window
+        .as_deref()
         .map(|window| window.resolution.scale_factor())
         .unwrap_or(1.0);
     pixel_scale.0 = scale_factor;

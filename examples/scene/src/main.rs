@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_vello::{prelude::*, VelloPlugin};
+use std::ops::DerefMut;
 
 fn main() {
     App::new()
@@ -15,11 +16,11 @@ fn setup_vector_graphics(mut commands: Commands) {
     commands.spawn(VelloSceneBundle::default());
 }
 
-fn simple_animation(mut query_scene: Query<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
+fn simple_animation(mut query_scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
-    let (mut transform, mut scene) = query_scene.single_mut();
+    let (ref mut transform, ref mut scene) = query_scene.deref_mut();
     // Reset scene every frame
-    *scene = VelloScene::default();
+    scene.reset();
 
     // Animate color green to blue
     let c = Vec3::lerp(

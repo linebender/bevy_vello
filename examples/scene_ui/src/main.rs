@@ -1,6 +1,9 @@
 use bevy::{color::palettes::css, prelude::*};
 use bevy_vello::{prelude::*, VelloPlugin};
-use std::f64::consts::{FRAC_PI_4, SQRT_2};
+use std::{
+    f64::consts::{FRAC_PI_4, SQRT_2},
+    ops::DerefMut,
+};
 
 fn main() {
     App::new()
@@ -32,10 +35,8 @@ fn setup_ui(mut commands: Commands) {
     ));
 }
 
-fn update_ui(mut query: Query<(&ComputedNode, &Interaction, &mut VelloScene)>) {
-    let Ok((node, interaction, mut scene)) = query.get_single_mut() else {
-        return;
-    };
+fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut VelloScene)>) {
+    let (node, interaction, ref mut scene) = query.deref_mut();
 
     let size = node.size();
     let dmin = f32::min(size.x, size.y);
@@ -44,7 +45,7 @@ fn update_ui(mut query: Query<(&ComputedNode, &Interaction, &mut VelloScene)>) {
     let center = size / 2.0;
     let center = kurbo::Point::from((center.x as f64, center.y as f64));
 
-    *scene = VelloScene::default();
+    scene.reset();
 
     match *interaction {
         Interaction::Hovered | Interaction::Pressed => {

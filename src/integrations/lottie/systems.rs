@@ -2,7 +2,7 @@ use crate::{
     integrations::lottie::PlaybackPlayMode, render::VelloView, PlaybackDirection,
     PlaybackLoopBehavior, PlaybackOptions, Playhead,
 };
-use bevy::{prelude::*, utils::Instant};
+use bevy::{prelude::*, utils::Instant, window::PrimaryWindow};
 use std::time::Duration;
 use vello_svg::usvg::strict_num::Ulps;
 
@@ -146,12 +146,13 @@ pub fn run_transitions(
         &mut VelloLottieHandle,
     )>,
     mut assets: ResMut<Assets<VelloLottie>>,
-    windows: Query<&Window>,
+    window: Option<Single<&Window, With<PrimaryWindow>>>,
     query_view: Query<(&Camera, &GlobalTransform), (With<Camera2d>, With<VelloView>)>,
     buttons: Res<ButtonInput<MouseButton>>,
     mut hovered: Local<bool>,
 ) {
-    let Ok(window) = windows.get_single() else {
+    let Some(window) = window.as_deref() else {
+        // We only support rendering to the primary window right now.
         return;
     };
     let Ok((camera, view)) = query_view.get_single() else {
