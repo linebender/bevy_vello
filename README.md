@@ -17,10 +17,10 @@
 
 `bevy_vello` is a cross-platform, 2D compute-centric vector graphics rendering library for Bevy. There is default support for rendering text and scenes, with additional opt-in features for SVG and Lottie.
 
-Quickstart to run the demo:
+Quickstart to run an example:
 
 ```shell
-cargo run -p demo
+cargo run -p <example name>
 ```
 
 ![Alt text](image.png)
@@ -50,7 +50,7 @@ cargo run -p demo
 ### Cross platform (Bevy)
 
 ```shell
-cargo run -p <demo name>
+cargo run -p <example name>
 ```
 
 ### Web platform
