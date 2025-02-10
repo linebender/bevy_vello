@@ -1,9 +1,18 @@
-use super::{LottiePlayer, PlaybackOptions, Playhead};
+use crate::prelude::*;
 use bevy::{prelude::*, reflect::TypePath};
 use std::sync::Arc;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
-#[require(Playhead, PlaybackOptions, LottiePlayer)]
+#[require(
+    VelloLottieAnchor,
+    CoordinateSpace,
+    Playhead,
+    PlaybackOptions,
+    LottiePlayer,
+    Transform,
+    DebugVisualizations,
+    Visibility
+)]
 pub struct VelloLottieHandle(pub Handle<VelloLottie>);
 
 #[derive(Asset, TypePath, Clone)]
