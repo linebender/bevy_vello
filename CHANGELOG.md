@@ -28,6 +28,8 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 - `Handle<VelloAsset>` has been separated into `VelloSvgHandle` and `VelloLottieHandle`
 - `VelloAssetAnchor` has been separated into `VelloSvgAnchor` and `VelloLottieAnchor`
 - The license on bevy_vello no longer includes OFL 1.1
+- The `experimental-dotLottie` feature was removed and merged into the `lottie` feature.
+- `DotLottiePlayer` was renamed to `LottiePlayer`.
 
 ### Fixed
 

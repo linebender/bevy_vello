@@ -1,14 +1,11 @@
 use super::PlayerState;
 use bevy::{prelude::*, utils::hashbrown::HashMap};
 
-/// A lottie player that closely mirrors the behavior and functionality for
-/// dotLottie Interactivity.
+/// A lottie player that allows runtime manipulation of Lottie animations.
 ///
 /// Controls lottie playback and transitions with state machine support.
-///
-/// See: <https://docs.lottiefiles.com/dotlottie-js-external/>
 #[derive(Component, Clone, Debug)]
-pub struct DotLottiePlayer {
+pub struct LottiePlayer {
     pub(crate) current_state: Option<&'static str>,
     pub(crate) next_state: Option<&'static str>,
     pub(crate) states: HashMap<&'static str, PlayerState>,
@@ -21,7 +18,22 @@ pub struct DotLottiePlayer {
     pub(crate) stopped: bool,
 }
 
-impl DotLottiePlayer {
+impl Default for LottiePlayer {
+    fn default() -> Self {
+        let mut states = HashMap::new();
+        states.insert("default", PlayerState::new("default"));
+        Self {
+            current_state: Some("default"),
+            next_state: None,
+            states,
+            started: false,
+            playing: true,
+            stopped: false,
+        }
+    }
+}
+
+impl LottiePlayer {
     /// Retrieve an immutable reference to the current state.
     pub fn state(&self) -> &PlayerState {
         self.states
@@ -93,9 +105,9 @@ impl DotLottiePlayer {
     }
 }
 
-impl DotLottiePlayer {
-    pub fn new(initial_state: &'static str) -> DotLottiePlayer {
-        DotLottiePlayer {
+impl LottiePlayer {
+    pub fn new(initial_state: &'static str) -> LottiePlayer {
+        LottiePlayer {
             current_state: None,
             next_state: Some(initial_state),
             states: HashMap::new(),

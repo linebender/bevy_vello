@@ -49,8 +49,6 @@ impl Plugin for VelloPlugin {
         app.add_plugins(crate::integrations::svg::SvgIntegrationPlugin);
         #[cfg(feature = "lottie")]
         app.add_plugins(crate::integrations::lottie::LottieIntegrationPlugin);
-        #[cfg(feature = "experimental-dotLottie")]
-        app.add_plugins(crate::integrations::dot_lottie::DotLottieIntegrationPlugin);
         #[cfg(feature = "default_font")]
         {
             let mut fonts = app

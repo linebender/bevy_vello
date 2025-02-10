@@ -15,7 +15,7 @@
 
 </div>
 
-`bevy_vello` is a cross-platform, 2D compute-centric vector graphics rendering library for Bevy. There is default support for rendering text and scenes, with additional opt-in features for SVG and Lottie. Experimental support for dotLottie is coming.
+`bevy_vello` is a cross-platform, 2D compute-centric vector graphics rendering library for Bevy. There is default support for rendering text and scenes, with additional opt-in features for SVG and Lottie.
 
 Quickstart to run the demo:
 
@@ -44,7 +44,6 @@ cargo run -p demo
 |`default_font`|Include a default font, containing only ASCII characters, at the cost of a 20kB binary size increase|Yes|
 |`svg`|Render `.svg` files with [`vello_svg`](https://github.com/linebender/vello_svg)|No|
 |`lottie`|Render `.json` Lottie files with [`velato`](https://github.com/linebender/velato)|No|
-|`experimental-dotLottie`|Render `.lottie` Lottie files. **Work in Progress**|No|
 
 ## Examples
 

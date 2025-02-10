@@ -9,7 +9,7 @@ use std::time::Duration;
 pub fn controls_ui(
     mut contexts: EguiContexts,
     mut player: Query<(
-        &mut DotLottiePlayer,
+        &mut LottiePlayer,
         &mut Playhead,
         &mut PlaybackOptions,
         &mut Theme,

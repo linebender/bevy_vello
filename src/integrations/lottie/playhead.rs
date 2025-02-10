@@ -17,6 +17,12 @@ pub struct Playhead {
     pub(crate) playmode_dir: f64,
 }
 
+impl Default for Playhead {
+    fn default() -> Self {
+        Self::new(0.0)
+    }
+}
+
 impl Playhead {
     /// Get the current playhead frame
     pub fn frame(&self) -> f64 {
