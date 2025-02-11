@@ -30,6 +30,7 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 - The license on bevy_vello no longer includes OFL 1.1
 - The `experimental-dotLottie` feature was removed and merged into the `lottie` feature.
 - `DotLottiePlayer` was renamed to `LottiePlayer`.
+- All render types (`VelloSvgHandle`, `VelloLottieHandle`, `VelloScene`, and `VelloTextSection`) now have required components as an alternative to their bundle counterparts.
 
 ### Fixed
 

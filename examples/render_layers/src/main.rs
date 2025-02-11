@@ -52,16 +52,8 @@ fn setup_scene(mut commands: Commands) {
         VelloView,
     ));
 
-    commands.spawn((
-        VelloSceneBundle::default(),
-        BackgroundScene,
-        RenderLayers::layer(1),
-    ));
-    commands.spawn((
-        VelloSceneBundle::default(),
-        AnimationScene,
-        RenderLayers::layer(2),
-    ));
+    commands.spawn((VelloScene::new(), BackgroundScene, RenderLayers::layer(1)));
+    commands.spawn((VelloScene::new(), AnimationScene, RenderLayers::layer(2)));
 }
 
 fn animation(

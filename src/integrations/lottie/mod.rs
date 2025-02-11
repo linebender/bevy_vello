@@ -48,6 +48,12 @@ pub struct VelloLottieBundle {
     pub asset_anchor: VelloLottieAnchor,
     /// The coordinate space in which this vector should be rendered.
     pub coordinate_space: CoordinateSpace,
+    /// The current playhead for the animation
+    pub playhead: Playhead,
+    /// The playback options for the animation
+    pub playback_options: PlaybackOptions,
+    /// The player used for advanced state machine transitions and playback control.
+    pub player: LottiePlayer,
     /// A transform to apply to this vector
     pub transform: Transform,
     /// Whether to render debug visualizations

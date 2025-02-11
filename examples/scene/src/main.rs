@@ -13,7 +13,7 @@ fn main() {
 
 fn setup_vector_graphics(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
-    commands.spawn(VelloSceneBundle::default());
+    commands.spawn(VelloScene::new());
 }
 
 fn simple_animation(mut query_scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {

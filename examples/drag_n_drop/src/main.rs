@@ -116,10 +116,7 @@ fn button_system(
             };
             let handle = asset_server.add(svg);
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloSvgBundle {
-                asset: VelloSvgHandle(handle),
-                ..default()
-            });
+            commands.spawn(VelloSvgHandle(handle));
         } else if file_name.ends_with(".json") {
             let lottie = match bevy_vello::integrations::lottie::load_lottie_from_bytes(&file) {
                 Ok(lottie) => lottie,
@@ -130,10 +127,7 @@ fn button_system(
             };
             let handle = asset_server.add(lottie);
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloLottieBundle {
-                asset: VelloLottieHandle(handle),
-                ..default()
-            });
+            commands.spawn(VelloLottieHandle(handle));
         }
     }
 }
@@ -156,16 +150,10 @@ fn drag_and_drop(
         let lottie_ext = OsStr::new("json");
         if ext == svg_ext {
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloSvgBundle {
-                asset: VelloSvgHandle(asset_server.load(path_buf.clone())),
-                ..default()
-            });
+            commands.spawn(VelloSvgHandle(asset_server.load(path_buf.clone())));
         } else if ext == lottie_ext {
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloLottieBundle {
-                asset: VelloLottieHandle(asset_server.load(path_buf.clone())),
-                ..default()
-            });
+            commands.spawn(VelloLottieHandle(asset_server.load(path_buf.clone())));
         }
     }
 }
