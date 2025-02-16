@@ -1957,6 +1957,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "edf215dbb8cb1409cca7645aaed35f9e39fb0a21855bba1ac48bc0334903bf66"
 
 [[package]]
+name = "diagnostics"
+version = "0.6.1"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "dispatch"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

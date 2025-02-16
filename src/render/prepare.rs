@@ -1,14 +1,11 @@
 use super::{
-    extract::{ExtractedPixelScale, ExtractedRenderScene, ExtractedRenderText},
+    extract::{ExtractedPixelScale, ExtractedVelloScene, ExtractedVelloText},
     VelloView,
 };
 use crate::CoordinateSpace;
 use bevy::{
     prelude::*,
-    render::{
-        camera::ExtractedCamera,
-        view::{ExtractedView, RenderLayers},
-    },
+    render::{camera::ExtractedCamera, view::ExtractedView},
 };
 use vello::kurbo::Affine;
 
@@ -33,25 +30,15 @@ pub trait PrepareRenderInstance {
 
 pub fn prepare_scene_affines(
     mut commands: Commands,
-    views: Query<
-        (&ExtractedCamera, &ExtractedView, Option<&RenderLayers>),
-        (With<Camera2d>, With<VelloView>),
-    >,
-    render_entities: Query<(Entity, &ExtractedRenderScene)>,
+    views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
+    render_entities: Query<(Entity, &ExtractedVelloScene)>,
 ) {
-    for (camera, view, maybe_camera_layers) in views.iter() {
-        let camera_render_layers = maybe_camera_layers.unwrap_or_default();
+    for (camera, view) in views.iter() {
         let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
         let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
 
         // Render scenes
         for (entity, render_entity) in render_entities.iter() {
-            let maybe_entity_layers = render_entity.render_layers.clone();
-            let entity_render_layers = maybe_entity_layers.unwrap_or_default();
-            if !camera_render_layers.intersects(&entity_render_layers) {
-                continue;
-            }
-
             let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
                 [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
                 [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
@@ -124,25 +111,15 @@ pub fn prepare_scene_affines(
 
 pub fn prepare_text_affines(
     mut commands: Commands,
-    views: Query<
-        (&ExtractedCamera, &ExtractedView, Option<&RenderLayers>),
-        (With<Camera2d>, With<VelloView>),
-    >,
-    render_entities: Query<(Entity, &ExtractedRenderText)>,
+    views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
+    render_entities: Query<(Entity, &ExtractedVelloText)>,
     pixel_scale: Res<ExtractedPixelScale>,
 ) {
-    for (camera, view, maybe_camera_layers) in views.iter() {
-        let camera_render_layers = maybe_camera_layers.unwrap_or_default();
+    for (camera, view) in views.iter() {
         let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
         let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
 
         for (entity, render_entity) in render_entities.iter() {
-            let maybe_entity_layers = render_entity.render_layers.clone();
-            let entity_render_layers = maybe_entity_layers.unwrap_or_default();
-            if !camera_render_layers.intersects(&entity_render_layers) {
-                continue;
-            }
-
             let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
                 [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
                 [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],

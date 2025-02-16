@@ -1,4 +1,4 @@
-use crate::render::VelatoRenderer;
+use crate::render::{extract::VelloExtractStep, VelatoRenderer};
 
 use super::{
     asset::VelloLottieHandle, asset_loader::VelloLottieLoader, render, systems, VelloLottie,
@@ -34,7 +34,10 @@ impl Plugin for LottieIntegrationPlugin {
 
         render_app
             .init_resource::<VelatoRenderer>()
-            .add_systems(ExtractSchedule, render::extract_lottie_assets)
+            .add_systems(
+                ExtractSchedule,
+                render::extract_lottie_assets.in_set(VelloExtractStep::ExtractAssets),
+            )
             .add_systems(
                 Render,
                 (render::prepare_asset_affines).in_set(RenderSet::Prepare),

@@ -3,7 +3,10 @@ use super::{
     Playhead, Theme, VelloLottieAnchor,
 };
 use crate::{
-    render::prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
+    render::{
+        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
+        VelloFrameData, VelloView,
+    },
     CoordinateSpace, SkipEncoding,
 };
 use bevy::{
@@ -24,7 +27,6 @@ pub struct ExtractedLottieAsset {
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub ui_node: Option<ComputedNode>,
-    pub render_layers: Option<RenderLayers>,
     pub alpha: f32,
     pub theme: Option<Theme>,
     pub playhead: f64,
@@ -32,6 +34,10 @@ pub struct ExtractedLottieAsset {
 
 pub fn extract_lottie_assets(
     mut commands: Commands,
+    query_views: Query<
+        (&ExtractedCamera, Option<&RenderLayers>),
+        (With<Camera2d>, With<VelloView>),
+    >,
     query_vectors: Extract<
         Query<
             (
@@ -50,7 +56,15 @@ pub fn extract_lottie_assets(
         >,
     >,
     assets: Extract<Res<Assets<VelloLottie>>>,
+    mut frame_data: ResMut<VelloFrameData>,
 ) {
+    let mut n_lotties = 0;
+
+    // Respect camera ordering
+    let mut views: Vec<(&ExtractedCamera, Option<&RenderLayers>)> =
+        query_views.into_iter().collect();
+    views.sort_by(|(camera_a, _), (camera_b, _)| camera_a.order.cmp(&camera_b.order));
+
     for (
         asset,
         asset_anchor,
@@ -66,40 +80,41 @@ pub fn extract_lottie_assets(
     {
         if let Some(asset) = assets.get(asset.id()) {
             if view_visibility.get() && inherited_visibility.get() {
-                let playhead = playhead.frame();
-                commands
-                    .spawn(ExtractedLottieAsset {
-                        asset: asset.to_owned(),
-                        transform: *transform,
-                        asset_anchor: *asset_anchor,
-                        theme: theme.cloned(),
-                        render_mode: *coord_space,
-                        playhead,
-                        alpha: asset.alpha,
-                        ui_node: ui_node.cloned(),
-                        render_layers: render_layers.cloned(),
-                    })
-                    .insert(TemporaryRenderEntity);
+                let svg_render_layers = render_layers.unwrap_or_default();
+                for (_, camera_render_layers) in views.iter() {
+                    if svg_render_layers.intersects(camera_render_layers.unwrap_or_default()) {
+                        let playhead = playhead.frame();
+                        commands
+                            .spawn(ExtractedLottieAsset {
+                                asset: asset.to_owned(),
+                                transform: *transform,
+                                asset_anchor: *asset_anchor,
+                                theme: theme.cloned(),
+                                render_mode: *coord_space,
+                                playhead,
+                                alpha: asset.alpha,
+                                ui_node: ui_node.cloned(),
+                            })
+                            .insert(TemporaryRenderEntity);
+                        n_lotties += 1;
+                        break;
+                    }
+                }
             }
         }
     }
+
+    frame_data.n_lotties = n_lotties;
 }
 
 pub fn prepare_asset_affines(
     mut commands: Commands,
-    views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
+    views: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
     mut render_entities: Query<(Entity, &ExtractedLottieAsset)>,
 ) {
-    for (camera, view, maybe_camera_layers) in views.iter() {
-        let camera_render_layers = maybe_camera_layers.unwrap_or_default();
+    for (camera, view) in views.iter() {
         let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
         for (entity, render_entity) in render_entities.iter_mut() {
-            let maybe_entity_layers = render_entity.render_layers.clone();
-            let entity_render_layers = maybe_entity_layers.unwrap_or_default();
-            if !camera_render_layers.intersects(&entity_render_layers) {
-                continue;
-            }
-
             // Prepare render data needed for the subsequent render system
             let final_transform = render_entity.final_transform();
             let affine = render_entity.scene_affine(view, *final_transform, viewport_size);
