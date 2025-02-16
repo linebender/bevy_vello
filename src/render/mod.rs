@@ -163,6 +163,7 @@ pub(crate) struct VelloCanvasSettings {
 #[derive(Component, Debug, Clone, Copy)]
 pub struct SkipEncoding;
 
+/// Internally used as a prepared render asset.
 #[derive(Clone)]
 pub(crate) enum VelloRenderItem {
     #[cfg(feature = "svg")]
@@ -185,6 +186,11 @@ pub(crate) enum VelloRenderItem {
     },
 }
 
+/// Internally used to buffer sorted assets prepared for the next frame.
+#[derive(Resource, Default, Deref, DerefMut)]
+pub(crate) struct VelloRenderQueue(Vec<VelloRenderItem>);
+
+/// Internally used to track diagnostics.
 #[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloFrameData {
     /// Number of scenes.
@@ -198,6 +204,3 @@ pub(crate) struct VelloFrameData {
     #[cfg(feature = "lottie")]
     pub n_lotties: u32,
 }
-
-#[derive(Resource, Default, Deref, DerefMut)]
-pub(crate) struct VelloRenderQueue(Vec<VelloRenderItem>);
