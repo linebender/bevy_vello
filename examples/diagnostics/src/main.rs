@@ -1,8 +1,4 @@
-use bevy::{
-    diagnostic::{Diagnostic, DiagnosticsStore},
-    prelude::*,
-    render::{Render, RenderApp, RenderSet},
-};
+use bevy::{diagnostic::DiagnosticsStore, prelude::*};
 use bevy_vello::{diagnostics::VelloDiagnosticsPlugin, prelude::*, VelloPlugin};
 use std::ops::DerefMut;
 
@@ -56,6 +52,6 @@ fn print_diagnostics(diagnostics: Res<DiagnosticsStore>) {
         .unwrap();
 
     if let Some(scene_count) = diagnostic.measurement() {
-        info!("Scenes: {}", scene_count.value);
+        info!("Total scenes: {}", scene_count.value);
     }
 }
