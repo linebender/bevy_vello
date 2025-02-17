@@ -79,7 +79,7 @@ pub struct VelloTextBundle {
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
 #[require(CoordinateSpace, Transform, Visibility)]
-pub struct VelloScene(vello::Scene);
+pub struct VelloScene(Box<vello::Scene>);
 
 impl VelloScene {
     pub fn new() -> Self {
@@ -89,6 +89,6 @@ impl VelloScene {
 
 impl From<vello::Scene> for VelloScene {
     fn from(scene: vello::Scene) -> Self {
-        Self(scene)
+        Self(Box::new(scene))
     }
 }

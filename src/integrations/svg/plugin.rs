@@ -1,4 +1,5 @@
 use super::{asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render, VelloSvg};
+use crate::render::extract::VelloExtractStep;
 use bevy::{
     prelude::*,
     render::{
@@ -23,7 +24,10 @@ impl Plugin for SvgIntegrationPlugin {
         };
 
         render_app
-            .add_systems(ExtractSchedule, render::extract_svg_assets)
+            .add_systems(
+                ExtractSchedule,
+                render::extract_svg_assets.in_set(VelloExtractStep::ExtractAssets),
+            )
             .add_systems(
                 Render,
                 (render::prepare_asset_affines,).in_set(RenderSet::Prepare),
