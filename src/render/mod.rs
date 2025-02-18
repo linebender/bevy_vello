@@ -4,6 +4,7 @@ use bevy::{
     prelude::*,
     render::{
         extract_component::ExtractComponent,
+        extract_resource::ExtractResource,
         mesh::MeshVertexBufferLayoutRef,
         render_resource::{
             AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
@@ -15,7 +16,7 @@ use bevy::{
     sprite::{Material2d, Material2dKey},
 };
 use std::sync::{Arc, Mutex};
-use vello::{AaConfig, AaSupport};
+use vello::{kurbo::Affine, AaConfig, AaSupport};
 
 mod plugin;
 mod systems;
@@ -161,3 +162,45 @@ pub(crate) struct VelloCanvasSettings {
 /// Add this to any renderable vello asset to skip encoding that renderable.
 #[derive(Component, Debug, Clone, Copy)]
 pub struct SkipEncoding;
+
+/// Internally used as a prepared render asset.
+#[derive(Clone)]
+pub(crate) enum VelloRenderItem {
+    #[cfg(feature = "svg")]
+    Svg {
+        affine: Affine,
+        item: crate::integrations::svg::render::ExtractedVelloSvg,
+    },
+    #[cfg(feature = "lottie")]
+    Lottie {
+        affine: Affine,
+        item: crate::integrations::lottie::render::ExtractedLottieAsset,
+    },
+    Scene {
+        affine: Affine,
+        item: extract::ExtractedVelloScene,
+    },
+    Text {
+        affine: Affine,
+        item: extract::ExtractedVelloText,
+    },
+}
+
+/// Internally used to buffer sorted assets prepared for the next frame.
+#[derive(Resource, Default, Deref, DerefMut)]
+pub(crate) struct VelloRenderQueue(Vec<VelloRenderItem>);
+
+/// Internally used for render profiling.
+#[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
+pub(crate) struct VelloFrameData {
+    /// Number of scenes.
+    pub n_scenes: u32,
+    /// Number of text sections.
+    pub n_texts: u32,
+    /// Number of SVGs.
+    #[cfg(feature = "svg")]
+    pub n_svgs: u32,
+    /// Number of Lotties.
+    #[cfg(feature = "lottie")]
+    pub n_lotties: u32,
+}

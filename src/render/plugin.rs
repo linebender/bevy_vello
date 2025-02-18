@@ -3,7 +3,10 @@ use super::{
     prepare, systems, VelloCanvasSettings, VelloRenderSettings,
 };
 use crate::{
-    render::{VelloCanvasMaterial, VelloRenderer, SSRT_SHADER_HANDLE},
+    render::{
+        extract::VelloExtractStep, VelloCanvasMaterial, VelloFrameData, VelloRenderQueue,
+        VelloRenderer, SSRT_SHADER_HANDLE,
+    },
     VelloFont, VelloScene, VelloTextSection, VelloView,
 };
 use bevy::{
@@ -37,6 +40,9 @@ impl Plugin for VelloRenderPlugin {
             Shader::from_wgsl
         );
 
+        app.register_type::<VelloFrameData>()
+            .init_resource::<VelloFrameData>();
+
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
@@ -44,17 +50,24 @@ impl Plugin for VelloRenderPlugin {
         render_app
             .insert_resource(self.render_settings.clone())
             .insert_resource(ExtractedPixelScale(1.0))
-            .add_systems(
-                Render,
-                systems::render_settings_change_detection.in_set(RenderSet::Cleanup),
+            .init_resource::<VelloFrameData>()
+            .init_resource::<VelloRenderQueue>()
+            .configure_sets(
+                ExtractSchedule,
+                (VelloExtractStep::ExtractAssets, VelloExtractStep::SyncData).chain(),
             )
             .add_systems(
                 ExtractSchedule,
-                (
-                    extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
-                    extract::extract_scenes,
-                    extract::extract_text,
-                ),
+                extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
+            )
+            .add_systems(
+                ExtractSchedule,
+                (extract::extract_scenes, extract::extract_text)
+                    .in_set(VelloExtractStep::ExtractAssets),
+            )
+            .add_systems(
+                ExtractSchedule,
+                extract::sync_frame_data.in_set(VelloExtractStep::SyncData),
             )
             .add_systems(
                 Render,
@@ -66,9 +79,14 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 Render,
-                systems::render_frame
+                (systems::sort_render_items, systems::render_frame)
+                    .chain()
                     .in_set(RenderSet::Render)
                     .run_if(resource_exists::<RenderDevice>),
+            )
+            .add_systems(
+                Render,
+                systems::render_settings_change_detection.in_set(RenderSet::Cleanup),
             );
 
         app.add_plugins(ExtractComponentPlugin::<VelloView>::default());

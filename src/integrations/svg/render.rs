@@ -4,7 +4,10 @@ use super::{
 };
 use crate::{
     prelude::*,
-    render::prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
+    render::{
+        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
+        VelloFrameData,
+    },
 };
 use bevy::{
     prelude::*,
@@ -18,18 +21,21 @@ use bevy::{
 use kurbo::Affine;
 
 #[derive(Component, Clone)]
-pub struct ExtractedSvgAsset {
+pub struct ExtractedVelloSvg {
     pub asset: VelloSvg,
     pub asset_anchor: VelloSvgAnchor,
     pub transform: GlobalTransform,
     pub render_mode: CoordinateSpace,
     pub ui_node: Option<ComputedNode>,
-    pub render_layers: Option<RenderLayers>,
     pub alpha: f32,
 }
 
 pub fn extract_svg_assets(
     mut commands: Commands,
+    query_views: Query<
+        (&ExtractedCamera, Option<&RenderLayers>),
+        (With<Camera2d>, With<VelloView>),
+    >,
     query_vectors: Extract<
         Query<
             (
@@ -46,7 +52,15 @@ pub fn extract_svg_assets(
         >,
     >,
     assets: Extract<Res<Assets<VelloSvg>>>,
+    mut frame_data: ResMut<VelloFrameData>,
 ) {
+    let mut n_svgs = 0;
+
+    // Respect camera ordering
+    let mut views: Vec<(&ExtractedCamera, Option<&RenderLayers>)> =
+        query_views.into_iter().collect();
+    views.sort_by(|(camera_a, _), (camera_b, _)| camera_a.order.cmp(&camera_b.order));
+
     for (
         asset,
         asset_anchor,
@@ -60,47 +74,47 @@ pub fn extract_svg_assets(
     {
         if let Some(asset) = assets.get(asset.id()) {
             if view_visibility.get() && inherited_visibility.get() {
-                commands
-                    .spawn(ExtractedSvgAsset {
-                        asset: asset.to_owned(),
-                        transform: *transform,
-                        asset_anchor: *asset_anchor,
-                        render_mode: *coord_space,
-                        ui_node: ui_node.cloned(),
-                        render_layers: render_layers.cloned(),
-                        alpha: asset.alpha,
-                    })
-                    .insert(TemporaryRenderEntity);
+                let svg_render_layers = render_layers.unwrap_or_default();
+                for (_, camera_render_layers) in views.iter() {
+                    if svg_render_layers.intersects(camera_render_layers.unwrap_or_default()) {
+                        commands
+                            .spawn(ExtractedVelloSvg {
+                                asset: asset.to_owned(),
+                                transform: *transform,
+                                asset_anchor: *asset_anchor,
+                                render_mode: *coord_space,
+                                ui_node: ui_node.cloned(),
+                                alpha: asset.alpha,
+                            })
+                            .insert(TemporaryRenderEntity);
+                        n_svgs += 1;
+                        break;
+                    }
+                }
             }
         }
     }
+
+    frame_data.n_svgs = n_svgs;
 }
 
 pub fn prepare_asset_affines(
     mut commands: Commands,
-    views: Query<(&ExtractedCamera, &ExtractedView, Option<&RenderLayers>), With<Camera2d>>,
-    mut render_entities: Query<(Entity, &ExtractedSvgAsset)>,
+    views: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
+    mut render_entities: Query<(Entity, &ExtractedVelloSvg)>,
 ) {
-    for (camera, view, maybe_camera_layers) in views.iter() {
-        let camera_render_layers = maybe_camera_layers.unwrap_or_default();
+    for (camera, view) in views.iter() {
         let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
         for (entity, render_entity) in render_entities.iter_mut() {
-            let maybe_entity_layers = render_entity.render_layers.clone();
-            let entity_render_layers = maybe_entity_layers.unwrap_or_default();
-            if !camera_render_layers.intersects(&entity_render_layers) {
-                continue;
-            }
-
             // Prepare render data needed for the subsequent render system
             let final_transform = render_entity.final_transform();
             let affine = render_entity.scene_affine(view, *final_transform, viewport_size);
-
             commands.entity(entity).insert((affine, final_transform));
         }
     }
 }
 
-impl PrepareRenderInstance for ExtractedSvgAsset {
+impl PrepareRenderInstance for ExtractedVelloSvg {
     fn final_transform(&self) -> PreparedTransform {
         PreparedTransform(self.asset_anchor.compute(
             self.asset.width,
