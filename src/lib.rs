@@ -8,6 +8,9 @@ use bevy::prelude::*;
 mod plugin;
 pub use plugin::VelloPlugin;
 
+mod diagnostics;
+pub use diagnostics::VelloDiagnosticsPlugin;
+
 pub mod debug;
 pub mod integrations;
 pub mod render;

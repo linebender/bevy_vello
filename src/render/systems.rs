@@ -137,6 +137,7 @@ pub fn render_frame(
     #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
     render_settings: Res<VelloRenderSettings>,
     render_queue: Res<VelloRenderQueue>,
+    mut frame_data: ResMut<VelloFrameData>,
 ) {
     let SSRenderTarget(render_target_image) = *ss_render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
@@ -219,6 +220,8 @@ pub fn render_frame(
             }
         }
     }
+
+    frame_data.n_path_segs = scene_buffer.encoding().n_path_segments;
 
     renderer
         .lock()

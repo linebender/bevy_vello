@@ -12,6 +12,7 @@ members = [
   "examples/render_layers",
   "examples/cube3d",
   "examples/headless",
+  "examples/diagnostics",
 ]
 
 [workspace.package]

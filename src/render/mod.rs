@@ -203,4 +203,7 @@ pub(crate) struct VelloFrameData {
     /// Number of Lotties.
     #[cfg(feature = "lottie")]
     pub n_lotties: u32,
+
+    /// Total number of path segments rendered last frame.
+    pub n_path_segs: u32,
 }
