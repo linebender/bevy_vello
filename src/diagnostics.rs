@@ -45,10 +45,13 @@ pub struct VelloFrameProfileDiagnosticsPlugin;
 
 impl Plugin for VelloFrameProfileDiagnosticsPlugin {
     fn build(&self, app: &mut App) {
-        app.register_diagnostic(
-            Diagnostic::new(Self::PATH_SEGMENTS_COUNT).with_suffix(" path segments"),
-        )
-        .add_systems(Update, Self::diagnostic_system);
+        app.register_diagnostic(Diagnostic::new(Self::PATH_COUNT).with_suffix(" paths"))
+            .register_diagnostic(
+                Diagnostic::new(Self::PATH_SEGMENTS_COUNT).with_suffix(" path segments"),
+            )
+            .register_diagnostic(Diagnostic::new(Self::CLIPS_COUNT).with_suffix(" clips"))
+            .register_diagnostic(Diagnostic::new(Self::OPEN_CLIPS_COUNT).with_suffix(" open clips"))
+            .add_systems(Update, Self::diagnostic_system);
     }
 }
 
