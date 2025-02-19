@@ -42,12 +42,12 @@ fn setup(mut commands: Commands) {
             top: Val::Px(10.0),
             ..default()
         },
-        SceneCounterText,
+        DiagnosticsText,
     ));
 }
 
 #[derive(Component)]
-struct SceneCounterText;
+struct DiagnosticsText;
 
 fn simple_animation(mut query: Query<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
@@ -76,7 +76,7 @@ fn simple_animation(mut query: Query<(&mut Transform, &mut VelloScene)>, time: R
 
 fn update_scene_count_ui(
     diagnostics: Res<DiagnosticsStore>,
-    mut text: Single<&mut Text, With<SceneCounterText>>,
+    mut text: Single<&mut Text, With<DiagnosticsText>>,
 ) {
     let Some(scenes) = diagnostics.get(&VelloEntityCountDiagnosticsPlugin::SCENE_COUNT) else {
         return;
