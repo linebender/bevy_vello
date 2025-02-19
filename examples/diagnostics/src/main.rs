@@ -1,5 +1,8 @@
 use bevy::{diagnostic::DiagnosticsStore, prelude::*};
-use bevy_vello::{prelude::*, VelloDiagnosticsPlugin, VelloPlugin};
+use bevy_vello::{
+    diagnostics::VelloEntityCountDiagnosticsPlugin,
+    diagnostics::VelloFrameProfileDiagnosticsPlugin, prelude::*, VelloPlugin,
+};
 
 const SCENE_COUNT: usize = 5;
 
@@ -7,7 +10,8 @@ fn main() {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin::default())
-        .add_plugins(VelloDiagnosticsPlugin)
+        .add_plugins(VelloEntityCountDiagnosticsPlugin)
+        .add_plugins(VelloFrameProfileDiagnosticsPlugin)
         .add_systems(Startup, setup)
         .add_systems(Update, simple_animation)
         .add_systems(Update, update_scene_count_ui);
@@ -72,13 +76,24 @@ fn simple_animation(mut query: Query<(&mut Transform, &mut VelloScene)>, time: R
 
 fn update_scene_count_ui(
     diagnostics: Res<DiagnosticsStore>,
-    mut query: Query<&mut Text, With<SceneCounterText>>,
+    mut text: Single<&mut Text, With<SceneCounterText>>,
 ) {
-    if let Some(diagnostic) = diagnostics.get(&VelloDiagnosticsPlugin::PATH_SEGMENTS_COUNT) {
-        if let Some(scene_count) = diagnostic.measurement() {
-            for mut text in query.iter_mut() {
-                text.0 = format!("Total segments: {}", scene_count.value);
-            }
-        }
-    }
+    let Some(scenes) = diagnostics.get(&VelloEntityCountDiagnosticsPlugin::SCENE_COUNT) else {
+        return;
+    };
+    let Some(scene_count) = scenes.measurement() else {
+        return;
+    };
+    let Some(path_segs) = diagnostics.get(&VelloFrameProfileDiagnosticsPlugin::PATH_SEGMENTS_COUNT)
+    else {
+        return;
+    };
+    let Some(path_segs_count) = path_segs.measurement() else {
+        return;
+    };
+
+    text.0 = format!(
+        "Total scenes: {}\nTotal segments: {}",
+        scene_count.value, path_segs_count.value
+    );
 }

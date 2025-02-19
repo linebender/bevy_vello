@@ -18,7 +18,8 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 ### Added
 
 - Added `VelloView` marker component used for identifying cameras rendering vello content.
-- Added `VelloDiagnosticsPlugin` which can be used to introspect rendering data at runtime. See the `diagnostics` example.
+- Added `VelloEntityCountDiagnosticsPlugin` which can be used to provide vello entity type data at runtime. See the `diagnostics` example.
+- Added `VelloFrameProfileDiagnosticsPlugin` which can be used to provide vello frame profile data at runtime. See the `diagnostics` example.
 
 ### Changed
 

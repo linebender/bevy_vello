@@ -6,7 +6,7 @@ use crate::{
     prelude::*,
     render::{
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
-        VelloFrameData,
+        VelloEntityCountData,
     },
 };
 use bevy::{
@@ -52,17 +52,16 @@ pub fn extract_svg_assets(
         >,
     >,
     assets: Extract<Res<Assets<VelloSvg>>>,
-    mut frame_data: ResMut<VelloFrameData>,
+    mut frame_data: ResMut<VelloEntityCountData>,
 ) {
     let mut n_svgs = 0;
 
-    // Respect camera ordering
-    let mut views: Vec<(&ExtractedCamera, Option<&RenderLayers>)> =
-        query_views.into_iter().collect();
-    views.sort_by(|(camera_a, _), (camera_b, _)| camera_a.order.cmp(&camera_b.order));
+    // Sort cameras by rendering order
+    let mut views: Vec<_> = query_views.iter().collect();
+    views.sort_unstable_by_key(|(camera, _)| camera.order);
 
     for (
-        asset,
+        asset_handle,
         asset_anchor,
         coord_space,
         transform,
@@ -72,26 +71,31 @@ pub fn extract_svg_assets(
         inherited_visibility,
     ) in query_vectors.iter()
     {
-        if let Some(asset) = assets.get(asset.id()) {
-            if view_visibility.get() && inherited_visibility.get() {
-                let svg_render_layers = render_layers.unwrap_or_default();
-                for (_, camera_render_layers) in views.iter() {
-                    if svg_render_layers.intersects(camera_render_layers.unwrap_or_default()) {
-                        commands
-                            .spawn(ExtractedVelloSvg {
-                                asset: asset.to_owned(),
-                                transform: *transform,
-                                asset_anchor: *asset_anchor,
-                                render_mode: *coord_space,
-                                ui_node: ui_node.cloned(),
-                                alpha: asset.alpha,
-                            })
-                            .insert(TemporaryRenderEntity);
-                        n_svgs += 1;
-                        break;
-                    }
-                }
-            }
+        // Skip if visibility conditions are not met
+        if !view_visibility.get() || !inherited_visibility.get() {
+            continue;
+        }
+        // Skip if asset isn't loaded.
+        let Some(asset) = assets.get(asset_handle.id()) else {
+            continue;
+        };
+
+        // Check if any camera renders this asset
+        let asset_render_layers = render_layers.unwrap_or_default();
+        if views.iter().any(|(_, camera_layers)| {
+            asset_render_layers.intersects(camera_layers.unwrap_or_default())
+        }) {
+            commands
+                .spawn(ExtractedVelloSvg {
+                    asset: asset.to_owned(),
+                    transform: *transform,
+                    asset_anchor: *asset_anchor,
+                    render_mode: *coord_space,
+                    ui_node: ui_node.cloned(),
+                    alpha: asset.alpha,
+                })
+                .insert(TemporaryRenderEntity);
+            n_svgs += 1;
         }
     }
 

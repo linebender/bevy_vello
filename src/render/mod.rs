@@ -190,9 +190,9 @@ pub(crate) enum VelloRenderItem {
 #[derive(Resource, Default, Deref, DerefMut)]
 pub(crate) struct VelloRenderQueue(Vec<VelloRenderItem>);
 
-/// Internally used for render profiling.
+/// Internally used for diagnostics.
 #[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
-pub(crate) struct VelloFrameData {
+pub(crate) struct VelloEntityCountData {
     /// Number of scenes.
     pub n_scenes: u32,
     /// Number of text sections.
@@ -202,8 +202,12 @@ pub(crate) struct VelloFrameData {
     pub n_svgs: u32,
     /// Number of Lotties.
     #[cfg(feature = "lottie")]
-    pub n_lotties: u32,
+    pub n_lotties: usize,
+}
 
+/// Internally used for diagnostics.
+#[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
+pub(crate) struct VelloFrameProfileData {
     /// Total number of path segments rendered last frame.
     pub n_path_segs: u32,
 }

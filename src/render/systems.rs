@@ -1,8 +1,8 @@
 use super::{
     extract::{ExtractedVelloText, SSRenderTarget},
     prepare::PreparedAffine,
-    VelloCanvasMaterial, VelloCanvasSettings, VelloFrameData, VelloRenderItem, VelloRenderQueue,
-    VelloRenderSettings, VelloRenderer,
+    VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
+    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer,
 };
 use crate::{render::extract::ExtractedVelloScene, CoordinateSpace, VelloFont};
 use bevy::{
@@ -137,7 +137,7 @@ pub fn render_frame(
     #[cfg(feature = "lottie")] mut velato_renderer: ResMut<super::VelatoRenderer>,
     render_settings: Res<VelloRenderSettings>,
     render_queue: Res<VelloRenderQueue>,
-    mut frame_data: ResMut<VelloFrameData>,
+    mut frame_profile: ResMut<VelloFrameProfileData>,
 ) {
     let SSRenderTarget(render_target_image) = *ss_render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
@@ -221,7 +221,7 @@ pub fn render_frame(
         }
     }
 
-    frame_data.n_path_segs = scene_buffer.encoding().n_path_segments;
+    frame_profile.n_path_segs = scene_buffer.encoding().n_path_segments;
 
     renderer
         .lock()
@@ -343,13 +343,13 @@ pub fn render_settings_change_detection(
 /// Hide the render target canvas if there is nothing to render
 pub fn hide_when_empty(
     mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
-    frame_data: Res<VelloFrameData>,
+    entity_count: Res<VelloEntityCountData>,
 ) {
-    let is_empty = frame_data.n_scenes == 0 && frame_data.n_texts == 0;
+    let is_empty = entity_count.n_scenes == 0 && entity_count.n_texts == 0;
     #[cfg(feature = "svg")]
-    let is_empty = is_empty && frame_data.n_svgs == 0;
+    let is_empty = is_empty && entity_count.n_svgs == 0;
     #[cfg(feature = "lottie")]
-    let is_empty = is_empty && frame_data.n_lotties == 0;
+    let is_empty = is_empty && entity_count.n_lotties == 0;
     if let Some(visibility) = query_render_target.as_deref_mut() {
         if is_empty {
             **visibility = Visibility::Hidden;

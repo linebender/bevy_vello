@@ -8,10 +8,8 @@ use bevy::prelude::*;
 mod plugin;
 pub use plugin::VelloPlugin;
 
-mod diagnostics;
-pub use diagnostics::VelloDiagnosticsPlugin;
-
 pub mod debug;
+pub mod diagnostics;
 pub mod integrations;
 pub mod render;
 pub mod text;
@@ -82,7 +80,7 @@ pub struct VelloTextBundle {
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
 #[require(CoordinateSpace, Transform, Visibility)]
-pub struct VelloScene(Box<vello::Scene>);
+pub struct VelloScene(vello::Scene);
 
 impl VelloScene {
     pub fn new() -> Self {
@@ -92,6 +90,6 @@ impl VelloScene {
 
 impl From<vello::Scene> for VelloScene {
     fn from(scene: vello::Scene) -> Self {
-        Self(Box::new(scene))
+        Self(scene)
     }
 }
