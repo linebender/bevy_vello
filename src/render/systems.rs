@@ -221,7 +221,10 @@ pub fn render_frame(
         }
     }
 
+    frame_profile.n_paths = scene_buffer.encoding().n_paths;
     frame_profile.n_path_segs = scene_buffer.encoding().n_path_segments;
+    frame_profile.n_clips = scene_buffer.encoding().n_clips;
+    frame_profile.n_open_clips = scene_buffer.encoding().n_open_clips;
 
     renderer
         .lock()

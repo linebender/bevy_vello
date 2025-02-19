@@ -53,10 +53,16 @@ impl Plugin for VelloFrameProfileDiagnosticsPlugin {
 }
 
 impl VelloFrameProfileDiagnosticsPlugin {
+    pub const PATH_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_paths");
     pub const PATH_SEGMENTS_COUNT: DiagnosticPath =
         DiagnosticPath::const_new("vello_path_segments");
+    pub const CLIPS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_clips");
+    pub const OPEN_CLIPS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_open_clips");
 
     fn diagnostic_system(mut diagnostics: Diagnostics, data: Res<VelloFrameProfileData>) {
+        diagnostics.add_measurement(&Self::PATH_COUNT, || data.n_paths as f64);
         diagnostics.add_measurement(&Self::PATH_SEGMENTS_COUNT, || data.n_path_segs as f64);
+        diagnostics.add_measurement(&Self::CLIPS_COUNT, || data.n_clips as f64);
+        diagnostics.add_measurement(&Self::OPEN_CLIPS_COUNT, || data.n_open_clips as f64);
     }
 }

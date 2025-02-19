@@ -202,12 +202,18 @@ pub(crate) struct VelloEntityCountData {
     pub n_svgs: u32,
     /// Number of Lotties.
     #[cfg(feature = "lottie")]
-    pub n_lotties: usize,
+    pub n_lotties: u32,
 }
 
 /// Internally used for diagnostics.
 #[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloFrameProfileData {
+    /// Total number of paths rendered last frame.
+    pub n_paths: u32,
     /// Total number of path segments rendered last frame.
     pub n_path_segs: u32,
+    /// Total number of clips rendered last frame.
+    pub n_clips: u32,
+    /// Total number of open clips rendered last frame.
+    pub n_open_clips: u32,
 }
