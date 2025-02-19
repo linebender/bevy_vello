@@ -1,4 +1,4 @@
-use super::VelloFrameData;
+use super::{VelloEntityCountData, VelloFrameProfileData};
 use crate::prelude::*;
 use bevy::{
     prelude::*,
@@ -45,14 +45,13 @@ pub fn extract_scenes(
             Without<SkipEncoding>,
         >,
     >,
-    mut frame_data: ResMut<VelloFrameData>,
+    mut frame_data: ResMut<VelloEntityCountData>,
 ) {
     let mut n_scenes = 0;
 
-    // Respect camera ordering
-    let mut views: Vec<(&ExtractedCamera, Option<&RenderLayers>)> =
-        query_views.into_iter().collect();
-    views.sort_by(|(camera_a, _), (camera_b, _)| camera_a.order.cmp(&camera_b.order));
+    // Sort cameras by rendering order
+    let mut views: Vec<_> = query_views.iter().collect();
+    views.sort_unstable_by_key(|(camera, _)| camera.order);
 
     for (
         scene,
@@ -64,22 +63,25 @@ pub fn extract_scenes(
         render_layers,
     ) in query_scenes.iter()
     {
-        if view_visibility.get() && inherited_visibility.get() {
-            let asset_render_layers = render_layers.unwrap_or_default();
-            for (_, camera_render_layers) in views.iter() {
-                if asset_render_layers.intersects(camera_render_layers.unwrap_or_default()) {
-                    commands
-                        .spawn(ExtractedVelloScene {
-                            transform: *transform,
-                            render_mode: *coord_space,
-                            scene: scene.clone(),
-                            ui_node: ui_node.cloned(),
-                        })
-                        .insert(TemporaryRenderEntity);
-                    n_scenes += 1;
-                    break;
-                }
-            }
+        // Skip if visibility conditions are not met
+        if !view_visibility.get() || !inherited_visibility.get() {
+            continue;
+        }
+
+        // Check if any camera renders this asset
+        let asset_render_layers = render_layers.unwrap_or_default();
+        if views.iter().any(|(_, camera_layers)| {
+            asset_render_layers.intersects(camera_layers.unwrap_or_default())
+        }) {
+            commands
+                .spawn(ExtractedVelloScene {
+                    transform: *transform,
+                    render_mode: *coord_space,
+                    scene: scene.clone(),
+                    ui_node: ui_node.cloned(),
+                })
+                .insert(TemporaryRenderEntity);
+            n_scenes += 1;
         }
     }
 
@@ -114,14 +116,14 @@ pub fn extract_text(
             Without<SkipEncoding>,
         >,
     >,
-    mut frame_data: ResMut<VelloFrameData>,
+    fonts: Extract<Res<Assets<VelloFont>>>,
+    mut frame_data: ResMut<VelloEntityCountData>,
 ) {
     let mut n_texts = 0;
 
-    // Respect camera ordering
-    let mut views: Vec<(&ExtractedCamera, Option<&RenderLayers>)> =
-        query_views.into_iter().collect();
-    views.sort_by(|(camera_a, _), (camera_b, _)| camera_a.order.cmp(&camera_b.order));
+    // Sort cameras by rendering order
+    let mut views: Vec<_> = query_views.iter().collect();
+    views.sort_unstable_by_key(|(camera, _)| camera.order);
 
     for (
         text,
@@ -133,31 +135,44 @@ pub fn extract_text(
         render_layers,
     ) in query_scenes.iter()
     {
-        if view_visibility.get() && inherited_visibility.get() {
-            let text_render_layers = render_layers.unwrap_or_default();
-            for (_, camera_render_layers) in views.iter() {
-                if text_render_layers.intersects(camera_render_layers.unwrap_or_default()) {
-                    commands
-                        .spawn(ExtractedVelloText {
-                            text: text.clone(),
-                            text_anchor: *text_anchor,
-                            transform: *transform,
-                            render_space: *render_space,
-                        })
-                        .insert(TemporaryRenderEntity);
-                    n_texts += 1;
-                    break;
-                }
-            }
+        // Skip if visibility conditions are not met
+        if !view_visibility.get() || !inherited_visibility.get() {
+            continue;
+        }
+        // Skip if font isn't loaded.
+        let Some(_font) = fonts.get(text.style.font.id()) else {
+            continue;
+        };
+
+        // Check if any camera renders this asset
+        let asset_render_layers = render_layers.unwrap_or_default();
+        if views.iter().any(|(_, camera_layers)| {
+            asset_render_layers.intersects(camera_layers.unwrap_or_default())
+        }) {
+            commands
+                .spawn(ExtractedVelloText {
+                    text: text.clone(),
+                    text_anchor: *text_anchor,
+                    transform: *transform,
+                    render_space: *render_space,
+                })
+                .insert(TemporaryRenderEntity);
+            n_texts += 1;
         }
     }
 
     frame_data.n_texts = n_texts;
 }
 
-/// Synchronize the render world frame data back to the main world.
-pub fn sync_frame_data(render_data: Res<VelloFrameData>, mut world: ResMut<MainWorld>) {
-    let mut main_world_data = world.get_resource_mut::<VelloFrameData>().unwrap();
+/// Synchronize the entity count data back to the main world.
+pub fn sync_entity_count(render_data: Res<VelloEntityCountData>, mut world: ResMut<MainWorld>) {
+    let mut main_world_data = world.get_resource_mut::<VelloEntityCountData>().unwrap();
+    *main_world_data = render_data.clone();
+}
+
+/// Synchronize the frame profile data back to the main world.
+pub fn sync_frame_profile(render_data: Res<VelloFrameProfileData>, mut world: ResMut<MainWorld>) {
+    let mut main_world_data = world.get_resource_mut::<VelloFrameProfileData>().unwrap();
     *main_world_data = render_data.clone();
 }
 

@@ -4,8 +4,8 @@ use super::{
 };
 use crate::{
     render::{
-        extract::VelloExtractStep, VelloCanvasMaterial, VelloFrameData, VelloRenderQueue,
-        VelloRenderer, SSRT_SHADER_HANDLE,
+        extract::VelloExtractStep, VelloCanvasMaterial, VelloEntityCountData,
+        VelloFrameProfileData, VelloRenderQueue, VelloRenderer, SSRT_SHADER_HANDLE,
     },
     VelloFont, VelloScene, VelloTextSection, VelloView,
 };
@@ -40,8 +40,10 @@ impl Plugin for VelloRenderPlugin {
             Shader::from_wgsl
         );
 
-        app.register_type::<VelloFrameData>()
-            .init_resource::<VelloFrameData>();
+        app.register_type::<VelloEntityCountData>()
+            .init_resource::<VelloEntityCountData>();
+        app.register_type::<VelloFrameProfileData>()
+            .init_resource::<VelloFrameProfileData>();
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
@@ -50,7 +52,8 @@ impl Plugin for VelloRenderPlugin {
         render_app
             .insert_resource(self.render_settings.clone())
             .insert_resource(ExtractedPixelScale(1.0))
-            .init_resource::<VelloFrameData>()
+            .init_resource::<VelloEntityCountData>()
+            .init_resource::<VelloFrameProfileData>()
             .init_resource::<VelloRenderQueue>()
             .configure_sets(
                 ExtractSchedule,
@@ -67,7 +70,8 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 ExtractSchedule,
-                extract::sync_frame_data.in_set(VelloExtractStep::SyncData),
+                (extract::sync_frame_profile, extract::sync_entity_count)
+                    .in_set(VelloExtractStep::SyncData),
             )
             .add_systems(
                 Render,
