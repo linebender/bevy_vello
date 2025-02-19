@@ -4,7 +4,7 @@ use super::{
     VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
     VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer,
 };
-use crate::{render::extract::ExtractedVelloScene, CoordinateSpace, VelloFont};
+use crate::{render::extract::ExtractedVelloScene, VelloFont};
 use bevy::{
     prelude::*,
     render::{
@@ -64,12 +64,11 @@ pub fn sort_render_items(
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
 ) {
-    let mut render_queue: Vec<(f32, CoordinateSpace, VelloRenderItem)> = vec![];
+    let mut render_queue: Vec<(f32, VelloRenderItem)> = vec![];
     #[cfg(feature = "svg")]
     render_queue.extend(view_svgs.into_iter().map(|(&affine, asset)| {
         (
             asset.transform.translation().z,
-            asset.render_mode,
             VelloRenderItem::Svg {
                 affine: *affine,
                 item: asset.clone(),
@@ -80,7 +79,6 @@ pub fn sort_render_items(
     render_queue.extend(view_lotties.into_iter().map(|(&affine, asset)| {
         (
             asset.transform.translation().z,
-            asset.render_mode,
             VelloRenderItem::Lottie {
                 affine: *affine,
                 item: asset.clone(),
@@ -90,7 +88,6 @@ pub fn sort_render_items(
     render_queue.extend(view_scenes.iter().map(|(&affine, scene)| {
         (
             scene.transform.translation().z,
-            scene.render_mode,
             VelloRenderItem::Scene {
                 affine: *affine,
                 item: scene.clone(),
@@ -100,7 +97,6 @@ pub fn sort_render_items(
     render_queue.extend(view_text.iter().map(|(&affine, text)| {
         (
             text.transform.translation().z,
-            text.render_space,
             VelloRenderItem::Text {
                 affine: *affine,
                 item: text.clone(),
@@ -109,19 +105,15 @@ pub fn sort_render_items(
     }));
 
     // Sort by render mode with screen space on top, then by z-index
-    render_queue.sort_by(
-        |(a_z_index, a_coord_space, _), (b_z_index, b_coord_space, _)| {
-            let z_index = a_z_index
-                .partial_cmp(b_z_index)
-                .unwrap_or(std::cmp::Ordering::Equal);
-            let render_mode = a_coord_space.cmp(b_coord_space);
-            render_mode.then(z_index)
-        },
-    );
+    render_queue.sort_unstable_by(|(a_z_index, _), (b_z_index, _)| {
+        a_z_index
+            .partial_cmp(b_z_index)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     // Render queue is drained on render
     final_render_queue.clear();
-    final_render_queue.extend(render_queue.into_iter().map(|(_, _, r)| r));
+    final_render_queue.extend(render_queue.into_iter().map(|(_, r)| r));
 }
 
 /// Transforms all the vectors extracted from the game world and places them in

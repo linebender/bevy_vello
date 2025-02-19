@@ -34,6 +34,11 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 - `DotLottiePlayer` was renamed to `LottiePlayer`.
 - All render types (`VelloSvgHandle`, `VelloLottieHandle`, `VelloScene`, and `VelloTextSection`) now have required components as an alternative to their bundle counterparts.
 
+### Removed
+
+- Removed `CoordinateSpace`. If you wish to render scene or asset UI, insert a `Node` component. For more information, see the `scene_ui` example.
+- `VelloText` (with `CoordinateSpace::ScreenSpace`) can no longer render text in screen space. You should be using bevy's native `Text` for UI text, which is more feature rich and widely used.
+
 ### Fixed
 
 - We no longer bundle the default font twice when the `default_font` feature is active.

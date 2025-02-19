@@ -1,8 +1,7 @@
 use super::{
-    extract::{ExtractedPixelScale, ExtractedVelloScene, ExtractedVelloText},
+    extract::{ExtractedVelloScene, ExtractedVelloText},
     VelloView,
 };
-use crate::CoordinateSpace;
 use bevy::{
     prelude::*,
     render::{camera::ExtractedCamera, view::ExtractedView},
@@ -49,43 +48,35 @@ pub fn prepare_scene_affines(
 
             let world_transform = render_entity.transform;
 
-            let raw_transform = match render_entity.render_mode {
-                CoordinateSpace::ScreenSpace => {
-                    let mut model_matrix = world_transform.compute_matrix();
+            let raw_transform = if let Some(node) = &render_entity.ui_node {
+                let mut model_matrix = world_transform.compute_matrix();
 
-                    if let Some(node) = &render_entity.ui_node {
-                        // The Bevy Transform for a UI node seems to always have the origin
-                        // of the translation at the center of its bounding box. Here we
-                        // move the origin back to the top left, so that, e.g., drawing a
-                        // shape with center=(20,20) inside of a 40x40 UI node results in
-                        // the shape being centered within the node.
-                        let Vec2 { x, y } = node.size();
-                        model_matrix.w_axis.x -= x * 0.5;
-                        model_matrix.w_axis.y -= y * 0.5;
+                // The Bevy Transform for a UI node seems to always have the origin
+                // of the translation at the center of its bounding box. Here we
+                // move the origin back to the top left, so that, e.g., drawing a
+                // shape with center=(20,20) inside of a 40x40 UI node results in
+                // the shape being centered within the node.
+                let Vec2 { x, y } = node.size();
+                model_matrix.w_axis.x -= x * 0.5;
+                model_matrix.w_axis.y -= y * 0.5;
 
-                        // Note that there's no need to flip the Y axis in this case, as
-                        // Bevy handles it for us.
-                    } else {
-                        model_matrix.w_axis.y *= -1.0;
-                    }
+                // Note that there's no need to flip the Y axis in this case, as
+                // Bevy handles it for us.
+                model_matrix
+            } else {
+                let mut model_matrix = world_transform.compute_matrix();
+                model_matrix.w_axis.y *= -1.0;
 
-                    model_matrix
-                }
-                CoordinateSpace::WorldSpace => {
-                    let mut model_matrix = world_transform.compute_matrix();
-                    model_matrix.w_axis.y *= -1.0;
+                let (projection_mat, view_mat) = {
+                    let mut view_mat = view.world_from_view.compute_matrix();
+                    view_mat.w_axis.y *= -1.0;
 
-                    let (projection_mat, view_mat) = {
-                        let mut view_mat = view.world_from_view.compute_matrix();
-                        view_mat.w_axis.y *= -1.0;
+                    (view.clip_from_view, view_mat)
+                };
 
-                        (view.clip_from_view, view_mat)
-                    };
+                let view_proj_matrix = projection_mat * view_mat.inverse();
 
-                    let view_proj_matrix = projection_mat * view_mat.inverse();
-
-                    ndc_to_pixels_matrix * view_proj_matrix * model_matrix
-                }
+                ndc_to_pixels_matrix * view_proj_matrix * model_matrix
             };
 
             let transform: [f32; 16] = raw_transform.to_cols_array();
@@ -113,7 +104,6 @@ pub fn prepare_text_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
     render_entities: Query<(Entity, &ExtractedVelloText)>,
-    pixel_scale: Res<ExtractedPixelScale>,
 ) {
     for (camera, view) in views.iter() {
         let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
@@ -143,12 +133,7 @@ pub fn prepare_text_affines(
             let view_proj_matrix = projection_mat * view_mat.inverse();
             let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
 
-            let raw_transform = match render_entity.render_space {
-                CoordinateSpace::ScreenSpace => {
-                    world_transform.compute_matrix().mul_scalar(pixel_scale.0)
-                }
-                CoordinateSpace::WorldSpace => vello_matrix * model_matrix,
-            };
+            let raw_transform = vello_matrix * model_matrix;
 
             let transform: [f32; 16] = raw_transform.to_cols_array();
 

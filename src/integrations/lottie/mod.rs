@@ -36,7 +36,7 @@ pub use player_transition::PlayerTransition;
 mod theme;
 pub use theme::Theme;
 
-use crate::{debug::DebugVisualizations, CoordinateSpace};
+use crate::debug::DebugVisualizations;
 use bevy::prelude::*;
 
 #[cfg(feature = "lottie")]
@@ -46,8 +46,6 @@ pub struct VelloLottieBundle {
     pub asset: VelloLottieHandle,
     /// How the asset is positioned relative to its [`Transform`].
     pub asset_anchor: VelloLottieAnchor,
-    /// The coordinate space in which this vector should be rendered.
-    pub coordinate_space: CoordinateSpace,
     /// The current playhead for the animation
     pub playhead: Playhead,
     /// The playback options for the animation

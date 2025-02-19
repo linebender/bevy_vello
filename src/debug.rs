@@ -1,6 +1,6 @@
 //! Logic for rendering debug visualizations
 use crate::prelude::*;
-use bevy::{color::palettes::css, math::Vec3Swizzles, prelude::*};
+use bevy::{color::palettes::css, prelude::*};
 
 const RED_X_SIZE: f32 = 8.0;
 
@@ -36,58 +36,32 @@ fn render_svg_debug(
             &VelloSvgHandle,
             &VelloSvgAnchor,
             &GlobalTransform,
-            &CoordinateSpace,
             &DebugVisualizations,
         ),
         Without<Node>,
     >,
     assets: Res<Assets<VelloSvg>>,
-    query_cam: Query<
-        (&Camera, &GlobalTransform, &OrthographicProjection),
-        (With<Camera2d>, With<VelloView>),
-    >,
+    query_cam: Query<&OrthographicProjection, (With<Camera2d>, With<VelloView>)>,
     mut gizmos: Gizmos,
 ) {
-    let Ok((camera, view, projection)) = query_cam.get_single() else {
+    let Ok(projection) = query_cam.get_single() else {
         return;
     };
 
     // Show vectors
-    for (asset, asset_anchor, gtransform, space, _) in query_vectors
+    for (asset, asset_anchor, gtransform, _) in query_vectors
         .iter()
-        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(asset) = assets.get(asset.id()) {
-            match space {
-                CoordinateSpace::WorldSpace => {
-                    // Origin
-                    let origin = gtransform.translation().xy();
-                    draw_origin(&mut gizmos, projection, origin);
-                    // Bounding box
-                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
-                    let rect_center = gtransform.translation().xy();
-                    let rect = asset.bb_in_world_space(gtransform);
-                    draw_bounding_box(&mut gizmos, rect_center, rect.size());
-                }
-                CoordinateSpace::ScreenSpace => {
-                    // Origin
-                    let origin = gtransform.translation().xy();
-                    let Ok(origin) = camera.viewport_to_world_2d(view, origin) else {
-                        continue;
-                    };
-                    draw_origin(&mut gizmos, projection, origin);
-                    // Bounding box
-                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
-                    let rect_center = gtransform.translation().xy();
-                    let Ok(rect_center) = camera.viewport_to_world_2d(view, rect_center) else {
-                        continue;
-                    };
-                    let Some(rect) = asset.bb_in_screen_space(gtransform, camera, view) else {
-                        continue;
-                    };
-                    draw_bounding_box(&mut gizmos, rect_center, rect.size());
-                }
-            }
+            // Origin
+            let origin = gtransform.translation().xy();
+            draw_origin(&mut gizmos, projection, origin);
+            // Bounding box
+            let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
+            let rect_center = gtransform.translation().xy();
+            let rect = asset.bb_in_world_space(gtransform);
+            draw_bounding_box(&mut gizmos, rect_center, rect.size());
         }
     }
 }
@@ -100,55 +74,32 @@ fn render_lottie_debug(
             &VelloLottieHandle,
             &VelloLottieAnchor,
             &GlobalTransform,
-            &CoordinateSpace,
             &DebugVisualizations,
         ),
         Without<Node>,
     >,
     assets: Res<Assets<VelloLottie>>,
-    query_cam: Query<(&Camera, &GlobalTransform, &OrthographicProjection), With<Camera2d>>,
+    query_cam: Query<&OrthographicProjection, With<Camera2d>>,
     mut gizmos: Gizmos,
 ) {
-    let Ok((camera, view, projection)) = query_cam.get_single() else {
+    let Ok(projection) = query_cam.get_single() else {
         return;
     };
 
     // Show vectors
-    for (asset, asset_anchor, gtransform, space, _) in query_vectors
+    for (asset, asset_anchor, gtransform, _) in query_vectors
         .iter()
-        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(asset) = assets.get(asset.id()) {
-            match space {
-                CoordinateSpace::WorldSpace => {
-                    // Origin
-                    let origin = gtransform.translation().xy();
-                    draw_origin(&mut gizmos, projection, origin);
-                    // Bounding box
-                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
-                    let rect_center = gtransform.translation().xy();
-                    let rect = asset.bb_in_world_space(gtransform);
-                    draw_bounding_box(&mut gizmos, rect_center, rect.size());
-                }
-                CoordinateSpace::ScreenSpace => {
-                    // Origin
-                    let origin = gtransform.translation().xy();
-                    let Ok(origin) = camera.viewport_to_world_2d(view, origin) else {
-                        continue;
-                    };
-                    draw_origin(&mut gizmos, projection, origin);
-                    // Bounding box
-                    let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
-                    let rect_center = gtransform.translation().xy();
-                    let Ok(rect_center) = camera.viewport_to_world_2d(view, rect_center) else {
-                        continue;
-                    };
-                    let Some(rect) = asset.bb_in_screen_space(gtransform, camera, view) else {
-                        continue;
-                    };
-                    draw_bounding_box(&mut gizmos, rect_center, rect.size());
-                }
-            }
+            // Origin
+            let origin = gtransform.translation().xy();
+            draw_origin(&mut gizmos, projection, origin);
+            // Bounding box
+            let gtransform = &asset_anchor.compute(asset.width, asset.height, gtransform);
+            let rect_center = gtransform.translation().xy();
+            let rect = asset.bb_in_world_space(gtransform);
+            draw_bounding_box(&mut gizmos, rect_center, rect.size());
         }
     }
 }
@@ -160,124 +111,66 @@ fn render_text_debug(
             &VelloTextSection,
             &VelloTextAnchor,
             &GlobalTransform,
-            &CoordinateSpace,
             &DebugVisualizations,
         ),
         Without<Node>,
     >,
-    query_cam: Query<
-        (&Camera, &GlobalTransform, &OrthographicProjection),
-        (With<Camera2d>, With<VelloView>),
-    >,
+    query_cam: Query<&OrthographicProjection, (With<Camera2d>, With<VelloView>)>,
     fonts: Res<Assets<VelloFont>>,
     mut gizmos: Gizmos,
 ) {
-    let Ok((camera, view, projection)) = query_cam.get_single() else {
+    let Ok(projection) = query_cam.get_single() else {
         return;
     };
 
     // Show world-space vectors
-    for (text, text_anchor, gtransform, space, _) in query_world
+    for (text, text_anchor, gtransform, _) in query_world
         .iter()
-        .filter(|(_, _, _, _, d)| **d == DebugVisualizations::Visible)
+        .filter(|(_, _, _, d)| **d == DebugVisualizations::Visible)
     {
         if let Some(font) = fonts.get(text.style.font.id()) {
             let rect = text.bb_in_world_space(font, gtransform);
             let mut origin = gtransform.translation().xy();
-            match space {
-                CoordinateSpace::WorldSpace => {
-                    draw_origin(&mut gizmos, projection, origin);
-                    let size = rect.size();
-                    let (width, height) = size.into();
-                    match text_anchor {
-                        VelloTextAnchor::BottomLeft => {}
-                        VelloTextAnchor::Bottom => {
-                            origin.x += -width / 2.0;
-                        }
-                        VelloTextAnchor::BottomRight => {
-                            origin.x += -width;
-                        }
-                        VelloTextAnchor::TopLeft => {
-                            origin.y += -height;
-                        }
-                        VelloTextAnchor::Left => {
-                            origin.y += -height / 2.0;
-                        }
-                        VelloTextAnchor::Top => {
-                            origin.x += -width / 2.0;
-                            origin.y += -height;
-                        }
-                        VelloTextAnchor::Center => {
-                            origin.x += -width / 2.0;
-                            origin.y += -height / 2.0;
-                        }
-                        VelloTextAnchor::TopRight => {
-                            origin.x += -width;
-                            origin.y += -height;
-                        }
-                        VelloTextAnchor::Right => {
-                            origin.x += -width;
-                            origin.y += -height / 2.0;
-                        }
-                    };
-                    let rect_center = origin + rect.size() / 2.0;
-                    gizmos.rect_2d(
-                        Isometry2d::new(rect_center, Rot2::degrees(0.0)),
-                        rect.size(),
-                        css::WHITE,
-                    );
+            draw_origin(&mut gizmos, projection, origin);
+            let size = rect.size();
+            let (width, height) = size.into();
+            match text_anchor {
+                VelloTextAnchor::BottomLeft => {}
+                VelloTextAnchor::Bottom => {
+                    origin.x += -width / 2.0;
                 }
-                CoordinateSpace::ScreenSpace => {
-                    let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, view) else {
-                        continue;
-                    };
-                    let Ok(mut origin) =
-                        camera.viewport_to_world_2d(view, gtransform.translation().xy())
-                    else {
-                        continue;
-                    };
-                    draw_origin(&mut gizmos, projection, origin);
-                    let size = rect.size();
-                    let (width, height) = size.into();
-                    match text_anchor {
-                        VelloTextAnchor::BottomLeft => {}
-                        VelloTextAnchor::Bottom => {
-                            origin.x += -width / 2.0;
-                        }
-                        VelloTextAnchor::BottomRight => {
-                            origin.x += -width;
-                        }
-                        VelloTextAnchor::TopLeft => {
-                            origin.y += height;
-                        }
-                        VelloTextAnchor::Left => {
-                            origin.y += height / 2.0;
-                        }
-                        VelloTextAnchor::Top => {
-                            origin.x += -width / 2.0;
-                            origin.y += height;
-                        }
-                        VelloTextAnchor::Center => {
-                            origin.x += -width / 2.0;
-                            origin.y += height / 2.0;
-                        }
-                        VelloTextAnchor::TopRight => {
-                            origin.x += -width;
-                            origin.y += height;
-                        }
-                        VelloTextAnchor::Right => {
-                            origin.x += -width;
-                            origin.y += height / 2.0;
-                        }
-                    };
-                    let rect_center = origin + Vec2::new(rect.width() / 2.0, -rect.height() / 2.0);
-                    gizmos.rect_2d(
-                        Isometry2d::new(rect_center, Rot2::degrees(0.0)),
-                        rect.size() * Vec2::new(1.0, 1.0),
-                        css::WHITE,
-                    );
+                VelloTextAnchor::BottomRight => {
+                    origin.x += -width;
                 }
-            }
+                VelloTextAnchor::TopLeft => {
+                    origin.y += -height;
+                }
+                VelloTextAnchor::Left => {
+                    origin.y += -height / 2.0;
+                }
+                VelloTextAnchor::Top => {
+                    origin.x += -width / 2.0;
+                    origin.y += -height;
+                }
+                VelloTextAnchor::Center => {
+                    origin.x += -width / 2.0;
+                    origin.y += -height / 2.0;
+                }
+                VelloTextAnchor::TopRight => {
+                    origin.x += -width;
+                    origin.y += -height;
+                }
+                VelloTextAnchor::Right => {
+                    origin.x += -width;
+                    origin.y += -height / 2.0;
+                }
+            };
+            let rect_center = origin + rect.size() / 2.0;
+            gizmos.rect_2d(
+                Isometry2d::new(rect_center, Rot2::degrees(0.0)),
+                rect.size(),
+                css::WHITE,
+            );
         }
     }
 }

@@ -2,7 +2,7 @@ use bevy::{
     asset::{embedded_asset, AssetMetaCheck},
     prelude::*,
 };
-use bevy_vello::{prelude::*, text::VelloTextAnchor, vello::peniko, VelloPlugin};
+use bevy_vello::{prelude::*, text::VelloTextAnchor, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
@@ -49,23 +49,6 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 }
 
 fn setup_screenspace_text(mut commands: Commands) {
-    // Vello text
-    commands.spawn(VelloTextBundle {
-        text: VelloTextSection {
-            value: "Screen-space text rendered by Vello!".to_string(),
-            style: VelloTextStyle {
-                font_size: 24.0,
-                brush: peniko::Brush::Solid(peniko::Color::from_rgba8(255, 0, 0, 155)),
-                ..default()
-            },
-        },
-        text_anchor: bevy_vello::text::VelloTextAnchor::TopLeft,
-        transform: Transform::from_xyz(100.0, 85.0, 0.0),
-        coordinate_space: CoordinateSpace::ScreenSpace,
-        debug_visualizations: DebugVisualizations::Visible,
-        ..default()
-    });
-
     // Bevy text
     commands
         .spawn(Node {

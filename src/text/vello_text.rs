@@ -1,15 +1,9 @@
-use crate::{debug::DebugVisualizations, CoordinateSpace, VelloFont};
+use crate::{debug::DebugVisualizations, VelloFont};
 use bevy::prelude::*;
 use vello::peniko::{self, Brush};
 
 #[derive(Component, Default, Clone)]
-#[require(
-    VelloTextAnchor,
-    CoordinateSpace,
-    Transform,
-    DebugVisualizations,
-    Visibility
-)]
+#[require(VelloTextAnchor, Transform, DebugVisualizations, Visibility)]
 pub struct VelloTextSection {
     pub value: String,
     pub style: VelloTextStyle,

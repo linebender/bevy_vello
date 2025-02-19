@@ -27,7 +27,7 @@ pub mod prelude {
         debug::DebugVisualizations,
         render::{SkipEncoding, VelloRenderSettings, VelloView},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
-        CoordinateSpace, VelloScene, VelloSceneBundle, VelloTextBundle,
+        VelloScene, VelloSceneBundle, VelloTextBundle,
     };
 
     #[cfg(feature = "lottie")]
@@ -40,21 +40,10 @@ pub mod prelude {
     pub use crate::integrations::svg::{VelloSvg, VelloSvgAnchor, VelloSvgBundle, VelloSvgHandle};
 }
 
-/// Which coordinate space the transform is relative to.
-#[derive(PartialEq, Eq, PartialOrd, Ord, Component, Default, Copy, Clone, Debug, Reflect)]
-#[reflect(Component)]
-pub enum CoordinateSpace {
-    #[default]
-    WorldSpace,
-    ScreenSpace,
-}
-
 #[derive(Bundle, Default)]
 pub struct VelloSceneBundle {
     /// Scene to render
     pub scene: VelloScene,
-    /// The coordinate space in which this scene should be rendered.
-    pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this scene
     pub transform: Transform,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
@@ -67,8 +56,6 @@ pub struct VelloTextBundle {
     pub text: VelloTextSection,
     /// How the text is positioned relative to its [`Transform`].
     pub text_anchor: VelloTextAnchor,
-    /// The coordinate space in which this text should be rendered.
-    pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this text
     pub transform: Transform,
     /// Whether to render debug visualizations
@@ -79,7 +66,7 @@ pub struct VelloTextBundle {
 
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
-#[require(CoordinateSpace, Transform, Visibility)]
+#[require(Transform, Visibility)]
 pub struct VelloScene(Box<vello::Scene>);
 
 impl VelloScene {
