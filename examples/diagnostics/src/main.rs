@@ -93,7 +93,7 @@ fn update_scene_count_ui(
     };
 
     text.0 = format!(
-        "Total scenes: {}\nTotal segments: {}",
+        "Total scenes: {}\nTotal path segments: {}",
         scene_count.value, path_segs_count.value
     );
 }
