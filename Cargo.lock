@@ -3173,6 +3173,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "lottie_ui"
+version = "0.6.1"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4541,6 +4549,14 @@ name = "svg_fmt"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce5d813d71d82c4cbc1742135004e4a79fd870214c155443451c139c9470a0aa"
+
+[[package]]
+name = "svg_ui"
+version = "0.6.1"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
 
 [[package]]
 name = "svgtypes"
