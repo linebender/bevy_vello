@@ -36,7 +36,6 @@ pub use player_transition::PlayerTransition;
 mod theme;
 pub use theme::Theme;
 
-use crate::debug::DebugVisualizations;
 use bevy::prelude::*;
 
 #[cfg(feature = "lottie")]
@@ -54,8 +53,6 @@ pub struct VelloLottieBundle {
     pub player: LottiePlayer,
     /// A transform to apply to this vector
     pub transform: Transform,
-    /// Whether to render debug visualizations
-    pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
 }

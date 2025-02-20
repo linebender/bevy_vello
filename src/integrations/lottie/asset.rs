@@ -9,7 +9,6 @@ use std::sync::Arc;
     PlaybackOptions,
     LottiePlayer,
     Transform,
-    DebugVisualizations,
     Visibility
 )]
 pub struct VelloLottieHandle(pub Handle<VelloLottie>);

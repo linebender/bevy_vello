@@ -36,6 +36,7 @@ This release supports Bevy version 0.14 and has an [MSRV][] of 1.80.
 
 ### Removed
 
+- Removed `DebugVisualizations`. Now you should use `BorderColor` for UI Nodes and `Gizmos` for world assets. Several examples show this capability, such as the `svg` and `svg_ui` examples.
 - Removed `CoordinateSpace`. If you wish to render scene or asset UI, insert a `Node` component. For more information, see the `scene_ui`, `svg_ui`, or `lottie_ui` examples.
 - `VelloText` (with `CoordinateSpace::ScreenSpace`) can no longer render text in screen space. You should be using bevy's native `Text` for UI text, which is more feature rich and widely used.
 

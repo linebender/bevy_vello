@@ -11,7 +11,6 @@ pub use parse::{load_svg_from_bytes, load_svg_from_str};
 mod plugin;
 pub(crate) use plugin::SvgIntegrationPlugin;
 
-use crate::debug::DebugVisualizations;
 use bevy::prelude::*;
 #[derive(Bundle, Default)]
 pub struct VelloSvgBundle {
@@ -21,8 +20,6 @@ pub struct VelloSvgBundle {
     pub asset_anchor: VelloSvgAnchor,
     /// A transform to apply to this vector
     pub transform: Transform,
-    /// Whether to render debug visualizations
-    pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
 }

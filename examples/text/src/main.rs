@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{
     asset::{embedded_asset, AssetMetaCheck},
     prelude::*,
@@ -14,7 +16,8 @@ fn main() {
     .add_systems(
         Startup,
         (setup_camera, setup_screenspace_text, setup_worldspace_text),
-    );
+    )
+    .add_systems(Update, gizmos);
     embedded_asset!(app, "assets/Rubik-Medium.ttf");
     app.run();
 }
@@ -29,7 +32,6 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
             value: "Default font\nand multi-line support.".to_string(),
             ..default()
         })
-        .insert(DebugVisualizations::Visible)
         .insert(VelloTextAnchor::Center);
 
     commands.spawn(VelloTextBundle {
@@ -42,8 +44,8 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
             },
         },
         text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, -100.0, 0.0),
-        debug_visualizations: DebugVisualizations::Visible,
+        transform: Transform::from_xyz(0.0, -100.0, 0.0)
+            .with_rotation(Quat::from_rotation_z(PI / 12.0)),
         ..default()
     });
 }
@@ -63,4 +65,27 @@ fn setup_screenspace_text(mut commands: Commands) {
             ..default()
         })
         .insert(TextLayout::new_with_justify(JustifyText::Left));
+}
+
+fn gizmos(
+    texts: Query<(&VelloTextSection, &GlobalTransform)>,
+    assets: Res<Assets<VelloFont>>,
+    mut gizmos: Gizmos,
+) {
+    for (text, gtransform) in texts.iter() {
+        let Some(font) = assets.get(text.style.font.id()) else {
+            continue;
+        };
+
+        let bb_size = font.sizeof(text);
+
+        gizmos.rect_2d(
+            Isometry2d::new(
+                gtransform.translation().xy(),
+                Rot2::radians(gtransform.rotation().to_scaled_axis().z),
+            ),
+            bb_size * gtransform.scale().xy(),
+            Color::WHITE,
+        );
+    }
 }
