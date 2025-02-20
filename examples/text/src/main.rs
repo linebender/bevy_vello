@@ -57,7 +57,7 @@ fn setup_screenspace_text(mut commands: Commands) {
             left: Val::Px(100.0),
             ..default()
         })
-        .insert(Text::new("Screen-space text rendered by Bevy!"))
+        .insert(Text::new("Use bevy's Text for UI text!"))
         .insert(TextFont {
             font_size: 24.,
             ..default()
