@@ -33,7 +33,6 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
             ),
             transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
                 .with_scale(Vec3::splat(20.0)),
-            debug_visualizations: DebugVisualizations::Visible,
             ..default()
         })
         .insert(
