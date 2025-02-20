@@ -53,12 +53,15 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 fn setup_screenspace_text(mut commands: Commands) {
     // Bevy text
     commands
-        .spawn(Node {
-            position_type: PositionType::Absolute,
-            top: Val::Px(100.0),
-            left: Val::Px(100.0),
-            ..default()
-        })
+        .spawn((
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::Px(100.0),
+                left: Val::Px(100.0),
+                ..default()
+            },
+            BackgroundColor(Color::srgb(0.25, 0.25, 0.25)),
+        ))
         .insert(Text::new("Use bevy's Text for UI text!"))
         .insert(TextFont {
             font_size: 24.,
