@@ -11,7 +11,7 @@ pub use parse::{load_svg_from_bytes, load_svg_from_str};
 mod plugin;
 pub(crate) use plugin::SvgIntegrationPlugin;
 
-use crate::{debug::DebugVisualizations, CoordinateSpace};
+use crate::debug::DebugVisualizations;
 use bevy::prelude::*;
 #[derive(Bundle, Default)]
 pub struct VelloSvgBundle {
@@ -19,8 +19,6 @@ pub struct VelloSvgBundle {
     pub asset: VelloSvgHandle,
     /// How the asset is positioned relative to its [`Transform`].
     pub asset_anchor: VelloSvgAnchor,
-    /// The coordinate space in which this vector should be rendered.
-    pub coordinate_space: CoordinateSpace,
     /// A transform to apply to this vector
     pub transform: Transform,
     /// Whether to render debug visualizations

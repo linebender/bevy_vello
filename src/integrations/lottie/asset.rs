@@ -5,7 +5,6 @@ use std::sync::Arc;
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
 #[require(
     VelloLottieAnchor,
-    CoordinateSpace,
     Playhead,
     PlaybackOptions,
     LottiePlayer,

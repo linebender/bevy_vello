@@ -7,7 +7,7 @@ use crate::{
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
         VelloEntityCountData, VelloView,
     },
-    CoordinateSpace, SkipEncoding,
+    SkipEncoding,
 };
 use bevy::{
     prelude::*,
@@ -25,7 +25,6 @@ pub struct ExtractedLottieAsset {
     pub asset: VelloLottie,
     pub asset_anchor: VelloLottieAnchor,
     pub transform: GlobalTransform,
-    pub render_mode: CoordinateSpace,
     pub ui_node: Option<ComputedNode>,
     pub alpha: f32,
     pub theme: Option<Theme>,
@@ -43,7 +42,6 @@ pub fn extract_lottie_assets(
             (
                 &VelloLottieHandle,
                 &VelloLottieAnchor,
-                &CoordinateSpace,
                 &GlobalTransform,
                 &Playhead,
                 Option<&Theme>,
@@ -67,7 +65,6 @@ pub fn extract_lottie_assets(
     for (
         asset_handle,
         asset_anchor,
-        coord_space,
         transform,
         playhead,
         theme,
@@ -97,7 +94,6 @@ pub fn extract_lottie_assets(
                     transform: *transform,
                     asset_anchor: *asset_anchor,
                     theme: theme.cloned(),
-                    render_mode: *coord_space,
                     playhead: playhead.frame(),
                     alpha: asset.alpha,
                     ui_node: ui_node.cloned(),
@@ -144,50 +140,46 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
     ) -> PreparedAffine {
         let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
-        let raw_transform = match self.render_mode {
-            CoordinateSpace::ScreenSpace => {
-                let mut model_matrix = world_transform.compute_matrix();
+        let raw_transform = if let Some(node) = self.ui_node {
+            let mut model_matrix = world_transform.compute_matrix();
 
-                let asset_size = Vec2::new(self.asset.width, self.asset.height);
+            let asset_size = Vec2::new(self.asset.width, self.asset.height);
 
-                // Make the screen space vector instance sized to fill the
-                // entire UI Node box if it's bundled with a Node
-                if let Some(node) = &self.ui_node {
-                    let fill_scale = node.size() / asset_size;
-                    model_matrix.x_axis.x *= fill_scale.x;
-                    model_matrix.y_axis.y *= fill_scale.y;
-                }
+            // Make the screen space vector instance sized to fill the
+            // entire UI Node box if it's bundled with a Node
+            let fill_scale = node.size() / asset_size;
+            let scale_factor = fill_scale.x.min(fill_scale.y); // Maintain aspect ratio
+            model_matrix.x_axis.x *= scale_factor;
+            model_matrix.y_axis.y *= scale_factor;
 
-                let mut local_center_matrix = local_center_matrix;
-                local_center_matrix.w_axis.y *= -1.0;
-                model_matrix * local_center_matrix
-            }
-            CoordinateSpace::WorldSpace => {
-                let local_matrix = local_center_matrix;
+            let mut local_center_matrix = local_center_matrix;
+            local_center_matrix.w_axis.y *= -1.0;
+            model_matrix * local_center_matrix
+        } else {
+            let local_matrix = local_center_matrix;
 
-                let (pixels_x, pixels_y) = (viewport_size.x as f32, viewport_size.y as f32);
-                let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
-                    [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-                    [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
-                    [0.0, 0.0, 1.0, 0.0],
-                    [0.0, 0.0, 0.0, 1.0],
-                ])
-                .transpose();
+            let (pixels_x, pixels_y) = (viewport_size.x as f32, viewport_size.y as f32);
+            let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
+                [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
+                [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ])
+            .transpose();
 
-                let mut model_matrix = world_transform.compute_matrix() * local_matrix;
-                model_matrix.w_axis.y *= -1.0;
+            let mut model_matrix = world_transform.compute_matrix() * local_matrix;
+            model_matrix.w_axis.y *= -1.0;
 
-                let (projection_mat, view_mat) = {
-                    let mut view_mat = view.world_from_view.compute_matrix();
-                    view_mat.w_axis.y *= -1.0;
+            let (projection_mat, view_mat) = {
+                let mut view_mat = view.world_from_view.compute_matrix();
+                view_mat.w_axis.y *= -1.0;
 
-                    (view.clip_from_view, view_mat)
-                };
+                (view.clip_from_view, view_mat)
+            };
 
-                let view_proj_matrix = projection_mat * view_mat.inverse();
+            let view_proj_matrix = projection_mat * view_mat.inverse();
 
-                ndc_to_pixels_matrix * view_proj_matrix * model_matrix
-            }
+            ndc_to_pixels_matrix * view_proj_matrix * model_matrix
         };
 
         let transform: [f32; 16] = raw_transform.to_cols_array();

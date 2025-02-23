@@ -1,5 +1,5 @@
 use super::{
-    extract::{self, ExtractedPixelScale, SSRenderTarget},
+    extract::{self, SSRenderTarget},
     prepare, systems, VelloCanvasSettings, VelloRenderSettings,
 };
 use crate::{
@@ -51,17 +51,12 @@ impl Plugin for VelloRenderPlugin {
 
         render_app
             .insert_resource(self.render_settings.clone())
-            .insert_resource(ExtractedPixelScale(1.0))
             .init_resource::<VelloEntityCountData>()
             .init_resource::<VelloFrameProfileData>()
             .init_resource::<VelloRenderQueue>()
             .configure_sets(
                 ExtractSchedule,
                 (VelloExtractStep::ExtractAssets, VelloExtractStep::SyncData).chain(),
-            )
-            .add_systems(
-                ExtractSchedule,
-                extract::extract_pixel_scale.in_set(RenderSet::ExtractCommands),
             )
             .add_systems(
                 ExtractSchedule,

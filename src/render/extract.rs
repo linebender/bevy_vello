@@ -6,7 +6,6 @@ use bevy::{
         camera::ExtractedCamera, extract_component::ExtractComponent,
         sync_world::TemporaryRenderEntity, view::RenderLayers, Extract, MainWorld,
     },
-    window::PrimaryWindow,
 };
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -21,7 +20,6 @@ pub enum VelloExtractStep {
 pub struct ExtractedVelloScene {
     pub scene: VelloScene,
     pub transform: GlobalTransform,
-    pub render_mode: CoordinateSpace,
     pub ui_node: Option<ComputedNode>,
 }
 
@@ -35,7 +33,6 @@ pub fn extract_scenes(
         Query<
             (
                 &VelloScene,
-                &CoordinateSpace,
                 &GlobalTransform,
                 &ViewVisibility,
                 &InheritedVisibility,
@@ -53,15 +50,8 @@ pub fn extract_scenes(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (
-        scene,
-        coord_space,
-        transform,
-        view_visibility,
-        inherited_visibility,
-        ui_node,
-        render_layers,
-    ) in query_scenes.iter()
+    for (scene, transform, view_visibility, inherited_visibility, ui_node, render_layers) in
+        query_scenes.iter()
     {
         // Skip if visibility conditions are not met
         if !view_visibility.get() || !inherited_visibility.get() {
@@ -76,7 +66,6 @@ pub fn extract_scenes(
             commands
                 .spawn(ExtractedVelloScene {
                     transform: *transform,
-                    render_mode: *coord_space,
                     scene: scene.clone(),
                     ui_node: ui_node.cloned(),
                 })
@@ -93,7 +82,6 @@ pub struct ExtractedVelloText {
     pub text: VelloTextSection,
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
-    pub render_space: CoordinateSpace,
 }
 
 pub fn extract_text(
@@ -110,7 +98,6 @@ pub fn extract_text(
                 &GlobalTransform,
                 &ViewVisibility,
                 &InheritedVisibility,
-                &CoordinateSpace,
                 Option<&RenderLayers>,
             ),
             Without<SkipEncoding>,
@@ -125,15 +112,8 @@ pub fn extract_text(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (
-        text,
-        text_anchor,
-        transform,
-        view_visibility,
-        inherited_visibility,
-        render_space,
-        render_layers,
-    ) in query_scenes.iter()
+    for (text, text_anchor, transform, view_visibility, inherited_visibility, render_layers) in
+        query_scenes.iter()
     {
         // Skip if visibility conditions are not met
         if !view_visibility.get() || !inherited_visibility.get() {
@@ -154,7 +134,6 @@ pub fn extract_text(
                     text: text.clone(),
                     text_anchor: *text_anchor,
                     transform: *transform,
-                    render_space: *render_space,
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
@@ -192,18 +171,4 @@ impl ExtractComponent for SSRenderTarget {
     ) -> Option<Self> {
         Some(Self(ss_render_target.0.clone()))
     }
-}
-
-#[derive(Resource)]
-pub struct ExtractedPixelScale(pub f32);
-
-pub fn extract_pixel_scale(
-    mut pixel_scale: ResMut<ExtractedPixelScale>,
-    window: Extract<Option<Single<&Window, With<PrimaryWindow>>>>,
-) {
-    let scale_factor = window
-        .as_deref()
-        .map(|window| window.resolution.scale_factor())
-        .unwrap_or(1.0);
-    pixel_scale.0 = scale_factor;
 }
