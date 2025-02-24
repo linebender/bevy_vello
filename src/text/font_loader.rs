@@ -1,7 +1,7 @@
 use super::font::VelloFont;
 use crate::integrations::VectorLoaderError;
 use bevy::{
-    asset::{io::Reader, AssetLoader, LoadContext},
+    asset::{AssetLoader, LoadContext, io::Reader},
     utils::ConditionalSendFuture,
 };
 

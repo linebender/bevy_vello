@@ -1,4 +1,4 @@
-use crate::{debug::DebugVisualizations, VelloFont};
+use crate::{VelloFont, debug::DebugVisualizations};
 use bevy::prelude::*;
 use vello::peniko::{self, Brush};
 

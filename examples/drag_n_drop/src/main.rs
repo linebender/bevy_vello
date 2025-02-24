@@ -1,10 +1,10 @@
 use bevy::{
-    asset::{embedded_asset, AssetMetaCheck},
+    asset::{AssetMetaCheck, embedded_asset},
     color::palettes::css::RED,
     prelude::*,
 };
 use bevy_async_task::AsyncTaskRunner;
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*};
 use std::{ffi::OsStr, task::Poll};
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
@@ -167,10 +167,10 @@ fn cleanup_scene(
     query_lottie: Option<Single<Entity, With<VelloLottieHandle>>>,
     query_svg: Option<Single<Entity, With<VelloSvgHandle>>>,
 ) {
-    if let Some(ref svg) = query_svg {
-        commands.entity(**svg).despawn();
+    if let Some(svg) = query_svg {
+        commands.entity(*svg).despawn();
     }
-    if let Some(ref lottie) = query_lottie {
-        commands.entity(**lottie).despawn();
+    if let Some(lottie) = query_lottie {
+        commands.entity(*lottie).despawn();
     }
 }

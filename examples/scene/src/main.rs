@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*};
 use std::ops::DerefMut;
 
 fn main() {
@@ -18,7 +18,7 @@ fn setup_vector_graphics(mut commands: Commands) {
 
 fn simple_animation(mut query_scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
-    let (ref mut transform, ref mut scene) = query_scene.deref_mut();
+    let (transform, scene) = query_scene.deref_mut();
     // Reset scene every frame
     scene.reset();
 

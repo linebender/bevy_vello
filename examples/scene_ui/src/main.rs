@@ -1,5 +1,5 @@
 use bevy::{color::palettes::css, prelude::*};
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*};
 use std::{
     f64::consts::{FRAC_PI_4, SQRT_2},
     ops::DerefMut,
@@ -35,7 +35,7 @@ fn setup_ui(mut commands: Commands) {
 }
 
 fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut VelloScene)>) {
-    let (node, interaction, ref mut scene) = query.deref_mut();
+    let (node, interaction, scene) = query.deref_mut();
 
     let size = node.size();
     let dmin = f32::min(size.x, size.y);

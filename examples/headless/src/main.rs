@@ -1,8 +1,8 @@
 use bevy::{
     prelude::*,
-    render::view::screenshot::{save_to_disk, Screenshot, ScreenshotCaptured},
+    render::view::screenshot::{Screenshot, ScreenshotCaptured, save_to_disk},
 };
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
     let mut app = App::new();

@@ -1,9 +1,9 @@
 use bevy::{
-    asset::{embedded_asset, AssetMetaCheck},
+    asset::{AssetMetaCheck, embedded_asset},
     color::palettes::css,
     prelude::*,
 };
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
     let mut app = App::new();
