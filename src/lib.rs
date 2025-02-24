@@ -8,7 +8,6 @@ use bevy::prelude::*;
 mod plugin;
 pub use plugin::VelloPlugin;
 
-pub mod debug;
 pub mod diagnostics;
 pub mod integrations;
 pub mod render;
@@ -24,7 +23,6 @@ pub mod prelude {
     pub use vello::{self, kurbo, peniko};
 
     pub use crate::{
-        debug::DebugVisualizations,
         render::{SkipEncoding, VelloRenderSettings, VelloView},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
         VelloScene, VelloSceneBundle, VelloTextBundle,
@@ -58,8 +56,6 @@ pub struct VelloTextBundle {
     pub text_anchor: VelloTextAnchor,
     /// A transform to apply to this text
     pub transform: Transform,
-    /// Whether to render debug visualizations
-    pub debug_visualizations: DebugVisualizations,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
 }

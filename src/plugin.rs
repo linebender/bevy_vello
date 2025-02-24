@@ -1,5 +1,4 @@
 use crate::{
-    debug::DebugVisualizationsPlugin,
     render::{VelloCanvasSettings, VelloRenderPlugin},
     text::VelloFontLoader,
     VelloFont, VelloRenderSettings,
@@ -42,7 +41,6 @@ impl Plugin for VelloPlugin {
                 antialiasing: self.antialiasing,
             },
         })
-        .add_plugins(DebugVisualizationsPlugin)
         .init_asset::<VelloFont>()
         .init_asset_loader::<VelloFontLoader>();
         #[cfg(feature = "svg")]
