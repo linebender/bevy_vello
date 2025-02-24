@@ -34,7 +34,7 @@ fn gizmos(
     mut gizmos: Gizmos,
 ) {
     let (lottie, gtransform) = *svg;
-    let Some(lottie) = assets.get(svg.id()) else {
+    let Some(lottie) = assets.get(lottie.id()) else {
         return;
     };
 
