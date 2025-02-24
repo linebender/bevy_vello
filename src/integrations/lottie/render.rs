@@ -1,21 +1,21 @@
 use super::{
-    asset::{VelloLottie, VelloLottieHandle},
     Playhead, Theme, VelloLottieAnchor,
+    asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    render::{
-        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
-        VelloEntityCountData, VelloView,
-    },
     SkipEncoding,
+    render::{
+        VelloEntityCountData, VelloView,
+        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
+    },
 };
 use bevy::{
     prelude::*,
     render::{
+        Extract,
         camera::ExtractedCamera,
         sync_world::TemporaryRenderEntity,
         view::{ExtractedView, RenderLayers},
-        Extract,
     },
 };
 use vello::kurbo::Affine;

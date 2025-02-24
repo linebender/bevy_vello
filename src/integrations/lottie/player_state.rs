@@ -1,5 +1,5 @@
 use super::PlayerTransition;
-use crate::{integrations::lottie::asset::VelloLottieHandle, PlaybackOptions, Theme};
+use crate::{PlaybackOptions, Theme, integrations::lottie::asset::VelloLottieHandle};
 
 #[derive(Debug, Clone)]
 pub struct PlayerState {

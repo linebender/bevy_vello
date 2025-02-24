@@ -1,11 +1,11 @@
-use super::{vello_text::VelloTextSection, VelloTextAnchor};
+use super::{VelloTextAnchor, vello_text::VelloTextSection};
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use skrifa::{FontRef, MetadataProvider};
 use std::sync::Arc;
 use vello::{
+    Glyph, Scene,
     kurbo::Affine,
     peniko::{self, Blob, Font},
-    Glyph, Scene,
 };
 
 const VARIATIONS: &[(&str, f32)] = &[];

@@ -3,8 +3,8 @@ use crate::prelude::*;
 use bevy::{
     prelude::*,
     render::{
-        camera::ExtractedCamera, extract_component::ExtractComponent,
-        sync_world::TemporaryRenderEntity, view::RenderLayers, Extract, MainWorld,
+        Extract, MainWorld, camera::ExtractedCamera, extract_component::ExtractComponent,
+        sync_world::TemporaryRenderEntity, view::RenderLayers,
     },
 };
 

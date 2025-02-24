@@ -23,9 +23,9 @@ pub mod prelude {
     pub use vello::{self, kurbo, peniko};
 
     pub use crate::{
+        VelloScene, VelloSceneBundle, VelloTextBundle,
         render::{SkipEncoding, VelloRenderSettings, VelloView},
         text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
-        VelloScene, VelloSceneBundle, VelloTextBundle,
     };
 
     #[cfg(feature = "lottie")]

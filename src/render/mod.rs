@@ -16,7 +16,7 @@ use bevy::{
     sprite::{Material2d, Material2dKey},
 };
 use std::sync::{Arc, Mutex};
-use vello::{kurbo::Affine, AaConfig, AaSupport};
+use vello::{AaConfig, AaSupport, kurbo::Affine};
 
 mod plugin;
 mod systems;

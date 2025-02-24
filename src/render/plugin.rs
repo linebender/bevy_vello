@@ -1,23 +1,24 @@
 use super::{
+    VelloCanvasSettings, VelloRenderSettings,
     extract::{self, SSRenderTarget},
-    prepare, systems, VelloCanvasSettings, VelloRenderSettings,
+    prepare, systems,
 };
 use crate::{
-    render::{
-        extract::VelloExtractStep, VelloCanvasMaterial, VelloEntityCountData,
-        VelloFrameProfileData, VelloRenderQueue, VelloRenderer, SSRT_SHADER_HANDLE,
-    },
     VelloFont, VelloScene, VelloTextSection, VelloView,
+    render::{
+        SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
+        VelloRenderQueue, VelloRenderer, extract::VelloExtractStep,
+    },
 };
 use bevy::{
     asset::load_internal_asset,
     prelude::*,
     render::{
+        Render, RenderApp, RenderSet,
         extract_component::ExtractComponentPlugin,
         render_asset::RenderAssetPlugin,
         renderer::RenderDevice,
-        view::{check_visibility, VisibilitySystems},
-        Render, RenderApp, RenderSet,
+        view::{VisibilitySystems, check_visibility},
     },
     sprite::Material2dPlugin,
 };
