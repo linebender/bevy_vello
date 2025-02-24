@@ -1,6 +1,7 @@
 use bevy::{
     prelude::*,
     render::{
+        Render, RenderApp, RenderSet,
         extract_component::{ExtractComponent, ExtractComponentPlugin},
         render_asset::RenderAssets,
         render_resource::{
@@ -8,10 +9,9 @@ use bevy::{
         },
         renderer::{RenderDevice, RenderQueue},
         texture::GpuImage,
-        Render, RenderApp, RenderSet,
     },
 };
-use bevy_vello::{prelude::*, render::VelloRenderer, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*, render::VelloRenderer};
 
 #[derive(Component)]
 pub struct VelloTarget(Handle<Image>);

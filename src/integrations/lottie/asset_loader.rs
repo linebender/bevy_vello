@@ -1,7 +1,7 @@
 use super::asset::VelloLottie;
-use crate::integrations::{lottie::load_lottie_from_bytes, VectorLoaderError};
+use crate::integrations::{VectorLoaderError, lottie::load_lottie_from_bytes};
 use bevy::{
-    asset::{io::Reader, AssetLoader, LoadContext},
+    asset::{AssetLoader, LoadContext, io::Reader},
     prelude::*,
     utils::ConditionalSendFuture,
 };

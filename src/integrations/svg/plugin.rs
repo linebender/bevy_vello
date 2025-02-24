@@ -1,10 +1,10 @@
-use super::{asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render, VelloSvg};
+use super::{VelloSvg, asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render};
 use crate::render::extract::VelloExtractStep;
 use bevy::{
     prelude::*,
     render::{
-        view::{check_visibility, VisibilitySystems},
         Render, RenderApp, RenderSet,
+        view::{VisibilitySystems, check_visibility},
     },
 };
 

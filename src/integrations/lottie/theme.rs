@@ -5,8 +5,8 @@
 
 use bevy::{prelude::*, utils::HashMap};
 use velato::{
-    model::{Brush, Shape},
     Composition,
+    model::{Brush, Shape},
 };
 use vello::peniko::color::DynamicColor;
 

@@ -1,14 +1,14 @@
 use crate::{
-    integrations::lottie::PlaybackPlayMode, render::VelloView, PlaybackDirection,
-    PlaybackLoopBehavior, PlaybackOptions, Playhead,
+    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
+    integrations::lottie::PlaybackPlayMode, render::VelloView,
 };
 use bevy::{prelude::*, utils::Instant, window::PrimaryWindow};
 use std::time::Duration;
 use vello_svg::usvg::strict_num::Ulps;
 
 use super::{
-    asset::{VelloLottie, VelloLottieHandle},
     LottiePlayer, PlayerTransition,
+    asset::{VelloLottie, VelloLottieHandle},
 };
 
 /// Advance all playheads in the scene
@@ -56,7 +56,7 @@ pub fn advance_playheads(
         }
 
         // Handle intermissions
-        if let Some(ref mut intermission) = playhead.intermission {
+        if let Some(intermission) = playhead.intermission.as_mut() {
             intermission.tick(time.delta());
             if intermission.finished() {
                 playhead.intermission.take();

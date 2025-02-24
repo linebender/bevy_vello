@@ -1,8 +1,8 @@
 use crate::{
+    VelloFont, VelloRenderSettings,
     debug::DebugVisualizationsPlugin,
     render::{VelloCanvasSettings, VelloRenderPlugin},
     text::VelloFontLoader,
-    VelloFont, VelloRenderSettings,
 };
 use bevy::{prelude::*, render::view::RenderLayers};
 use vello::AaConfig;

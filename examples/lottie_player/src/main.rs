@@ -1,12 +1,12 @@
 mod ui;
 
 use bevy::{
-    asset::{embedded_asset, io::embedded::EmbeddedAssetRegistry, AssetMetaCheck},
+    asset::{AssetMetaCheck, embedded_asset, io::embedded::EmbeddedAssetRegistry},
     color::palettes::css,
     prelude::*,
 };
 use bevy_egui::EguiPlugin;
-use bevy_vello::{prelude::*, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
     let mut app = App::new();
