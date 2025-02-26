@@ -34,7 +34,6 @@ bevy = { version = "0.15.2", default-features = false, features = [
   "multi_threaded",
   "x11",
   "tonemapping_luts",
-  "bevy_gizmos",
 ] }
 
 [package]
