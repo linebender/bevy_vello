@@ -1,7 +1,8 @@
 use bevy::{diagnostic::DiagnosticsStore, prelude::*};
 use bevy_vello::{
-    VelloPlugin, diagnostics::VelloEntityCountDiagnosticsPlugin,
-    diagnostics::VelloFrameProfileDiagnosticsPlugin, prelude::*,
+    VelloPlugin,
+    diagnostics::{VelloEntityCountDiagnosticsPlugin, VelloFrameProfileDiagnosticsPlugin},
+    prelude::*,
 };
 
 const SCENE_COUNT: usize = 5;
