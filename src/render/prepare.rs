@@ -1,6 +1,6 @@
 use super::{
-    extract::{ExtractedVelloScene, ExtractedVelloText},
     VelloView,
+    extract::{ExtractedVelloScene, ExtractedVelloText},
 };
 use bevy::{
     prelude::*,

@@ -1,13 +1,12 @@
-use crate::render::{extract::VelloExtractStep, VelatoRenderer};
-
 use super::{
-    asset::VelloLottieHandle, asset_loader::VelloLottieLoader, render, systems, VelloLottie,
+    VelloLottie, asset::VelloLottieHandle, asset_loader::VelloLottieLoader, render, systems,
 };
+use crate::render::{VelatoRenderer, extract::VelloExtractStep};
 use bevy::{
     prelude::*,
     render::{
-        view::{check_visibility, VisibilitySystems},
         Render, RenderApp, RenderSet,
+        view::{VisibilitySystems, check_visibility},
     },
 };
 

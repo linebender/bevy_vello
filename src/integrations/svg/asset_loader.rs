@@ -1,7 +1,7 @@
 use super::asset::VelloSvg;
-use crate::integrations::{svg::load_svg_from_bytes, VectorLoaderError};
+use crate::integrations::{VectorLoaderError, svg::load_svg_from_bytes};
 use bevy::{
-    asset::{io::Reader, AssetLoader, LoadContext},
+    asset::{AssetLoader, LoadContext, io::Reader},
     prelude::*,
     utils::ConditionalSendFuture,
 };

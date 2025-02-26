@@ -1,21 +1,21 @@
 use super::{
-    asset::{VelloSvg, VelloSvgHandle},
     VelloSvgAnchor,
+    asset::{VelloSvg, VelloSvgHandle},
 };
 use crate::{
     prelude::*,
     render::{
-        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
         VelloEntityCountData,
+        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
     },
 };
 use bevy::{
     prelude::*,
     render::{
+        Extract,
         camera::ExtractedCamera,
         sync_world::TemporaryRenderEntity,
         view::{ExtractedView, RenderLayers},
-        Extract,
     },
 };
 use kurbo::Affine;

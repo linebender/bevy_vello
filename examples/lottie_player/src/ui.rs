@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::{
-    egui::{self, Color32},
     EguiContexts,
+    egui::{self, Color32},
 };
 use bevy_vello::{prelude::*, vello_svg::usvg::strict_num::Ulps};
 use std::time::Duration;
@@ -20,9 +20,7 @@ pub fn controls_ui(
     >,
     assets: Res<Assets<VelloLottie>>,
 ) {
-    let Some((ref mut player, ref mut playhead, ref mut options, ref mut theme, handle)) =
-        player.as_deref_mut()
-    else {
+    let Some((player, playhead, options, theme, handle)) = player.as_deref_mut() else {
         return;
     };
 

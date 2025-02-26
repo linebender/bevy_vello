@@ -1,10 +1,10 @@
 use super::{
-    extract::{ExtractedVelloText, SSRenderTarget},
-    prepare::PreparedAffine,
     VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
     VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer,
+    extract::{ExtractedVelloText, SSRenderTarget},
+    prepare::PreparedAffine,
 };
-use crate::{render::extract::ExtractedVelloScene, VelloFont};
+use crate::{VelloFont, render::extract::ExtractedVelloScene};
 use bevy::{
     prelude::*,
     render::{
@@ -158,14 +158,10 @@ pub fn render_frame(
                         &vello::kurbo::Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
                     );
                 }
+                let recolored = theme.as_ref().map(|cs| cs.recolor(&asset.composition));
+                let animation = recolored.as_ref().unwrap_or(&asset.composition);
                 velato_renderer.append(
-                    {
-                        theme
-                            .as_ref()
-                            .map(|cs| cs.recolor(&asset.composition))
-                            .as_ref()
-                            .unwrap_or(&asset.composition)
-                    },
+                    animation,
                     *playhead as f64,
                     *affine,
                     1.0,
