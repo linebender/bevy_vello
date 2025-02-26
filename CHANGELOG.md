@@ -15,7 +15,7 @@ You can find its changes [documented below](#070---2025-02-24).
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 
-## [0.7.0] - 2025-02-24
+## [0.7.0] - 2025-02-27
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 
