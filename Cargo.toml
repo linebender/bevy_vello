@@ -19,13 +19,13 @@ members = [
 
 [workspace.package]
 edition = "2024"
-version = "0.7.0"
+version = "0.7.1"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/linebender/bevy_vello"
 
 [workspace.dependencies]
-bevy = { version = "0.15.2", default-features = false, features = [
+bevy = { version = "0.15.3", default-features = false, features = [
   "bevy_asset",
   "bevy_winit",
   "bevy_window",
