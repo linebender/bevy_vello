@@ -15,6 +15,10 @@ You can find its changes [documented below](#070---2025-02-27).
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 
+### Fixed
+
+- A panic was removed for lotties that are still in the process of loading.
+
 ## [0.7.0] - 2025-02-27
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
