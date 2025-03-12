@@ -15,6 +15,10 @@ You can find its changes [documented below](#070---2025-02-27).
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 
+### Fixed
+
+- Render loop no longer attempts to render items with 0 opacity.
+
 ## [0.7.0] - 2025-02-27
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
