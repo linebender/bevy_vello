@@ -173,14 +173,14 @@ pub fn run_transitions(
             continue;
         }
 
-        let current_asset = assets
-            .get_mut(current_asset_handle.id())
-            .unwrap_or_else(|| {
-                panic!(
-                    "asset not found for state: '{}'",
-                    player.current_state.unwrap()
-                )
-            });
+        let Some(current_asset) = assets.get_mut(current_asset_handle.id()) else {
+            // Asset may not be loaded yet, or in progress. This is common in WASM.
+            warn!(
+                current_state = player.current_state,
+                "asset not loaded for state, waiting..."
+            );
+            continue;
+        };
 
         let is_inside = {
             match pointer_pos {
