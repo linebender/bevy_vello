@@ -150,6 +150,9 @@ pub fn render_frame(
                         ..
                     },
             } => {
+                if *alpha <= 0.0 {
+                    continue;
+                }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
                         vello::peniko::Mix::Normal,
@@ -176,6 +179,9 @@ pub fn render_frame(
                 affine,
                 item: ExtractedVelloSvg { asset, alpha, .. },
             } => {
+                if *alpha <= 0.0 {
+                    continue;
+                }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
                         vello::peniko::Mix::Normal,
