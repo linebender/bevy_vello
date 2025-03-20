@@ -1,18 +1,24 @@
 use std::cell::RefCell;
 
 use parley::{
+    fontique::{Collection, CollectionOptions, SourceCache},
     FontContext, LayoutContext,
-    fontique::{Collection, CollectionOptions},
 };
 use vello::peniko::Brush;
 
-thread_local! {
-    pub static FONT_CONTEXT: RefCell<FontContext> = RefCell::new(FontContext {
+static GLOBAL_FONT_CONTEXT: std::sync::OnceLock<FontContext> = std::sync::OnceLock::new();
+
+pub(crate) fn get_global_font_context() -> &'static FontContext {
+    GLOBAL_FONT_CONTEXT.get_or_init(|| FontContext {
         collection: Collection::new(CollectionOptions {
-            shared: false,
+            shared: true,
             system_fonts: false,
         }),
-        ..Default::default()
-    });
-    pub static LAYOUT_CONTEXT: RefCell<LayoutContext<Brush>> = RefCell::new(LayoutContext::new());
+        source_cache: SourceCache::new_shared(),
+    })
+}
+
+thread_local! {
+    pub static LOCAL_FONT_CONTEXT: RefCell<Option<FontContext>> = const { RefCell::new(None) };
+    pub static LOCAL_LAYOUT_CONTEXT: RefCell<LayoutContext<Brush>> = RefCell::new(LayoutContext::new());
 }

@@ -1,13 +1,11 @@
 use std::borrow::Cow;
 
-use super::{
-    VelloTextAnchor,
-    context::{FONT_CONTEXT, LAYOUT_CONTEXT},
-    vello_text::VelloTextSection,
-};
+use crate::text::context::{get_global_font_context, LOCAL_LAYOUT_CONTEXT};
+
+use super::{context::LOCAL_FONT_CONTEXT, vello_text::VelloTextSection, VelloTextAnchor};
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use parley::{FontWeight, InlineBox, PositionedLayoutItem, StyleProperty};
-use vello::{Scene, kurbo::Affine, peniko::Fill};
+use vello::{kurbo::Affine, peniko::Fill, Scene};
 
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {
@@ -37,24 +35,21 @@ impl VelloFont {
     }
 
     pub fn sizeof(&self, text: &VelloTextSection) -> Vec2 {
-        FONT_CONTEXT.with_borrow_mut(|font_context| {
-            debug!(
-                "Thread {:?} sizeof collection {:?}",
-                std::thread::current().id(),
-                font_context.collection.family_names().collect::<Vec<_>>()
-            );
+        LOCAL_FONT_CONTEXT.with_borrow_mut(|font_context| {
+            if font_context.is_none() {
+                *font_context = Some(get_global_font_context().clone());
+            }
+            let font_context = font_context.as_mut().unwrap();
 
-            LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
+            LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
                 // TODO: fix scale magic number
                 let mut builder = layout_context.ranged_builder(font_context, &text.value, 1.0);
 
                 if let Some(weight) = text.style.weight {
-                    // sets the font weight for the entire text
                     builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
                 }
 
                 if let Some(line_height) = text.style.line_height {
-                    // sets the line height for the entire text
                     builder.push_default(StyleProperty::LineHeight(line_height));
                 }
 
@@ -92,14 +87,13 @@ impl VelloFont {
         text: &VelloTextSection,
         text_anchor: VelloTextAnchor,
     ) {
-        FONT_CONTEXT.with_borrow_mut(|font_context| {
-            LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                debug!(
-                    "Thread {:?} render collection {:?}",
-                    std::thread::current().id(),
-                    font_context.collection.family_names().collect::<Vec<_>>()
-                );
+        LOCAL_FONT_CONTEXT.with_borrow_mut(|font_context| {
+            if font_context.is_none() {
+                *font_context = Some(get_global_font_context().clone());
+            }
+            let font_context = font_context.as_mut().unwrap();
 
+            LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
                 // TODO: fix scale magic number
                 let mut builder = layout_context.ranged_builder(font_context, &text.value, 1.0);
 
@@ -113,7 +107,6 @@ impl VelloFont {
                     builder.push_default(StyleProperty::LineHeight(line_height));
                 }
 
-                debug!("Family name: {:?}", self.family_name);
                 builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
                     parley::FontFamily::Named(Cow::Borrowed(&self.family_name)),
                 )));
@@ -171,7 +164,6 @@ impl VelloFont {
 
                 let width = layout.width() as f64;
                 let height = layout.height() as f64;
-                debug!("Width: {:?}, Height: {:?}", width, height);
 
                 match text_anchor {
                     VelloTextAnchor::TopLeft => {

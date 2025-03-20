@@ -1,69 +1,9 @@
-use std::{thread::sleep, time::Duration};
-
-use super::{context::FONT_CONTEXT, font::VelloFont};
-use crate::integrations::VectorLoaderError;
-use bevy::{
-    asset::{AssetLoader, LoadContext, io::Reader},
-    prelude::*,
-    tasks::ComputeTaskPool,
-};
+use super::{context::get_global_font_context, font::VelloFont};
+use crate::{integrations::VectorLoaderError, text::context::LOCAL_FONT_CONTEXT};
+use bevy::asset::{AssetLoader, LoadContext, io::Reader};
 
 #[derive(Default)]
 pub struct VelloFontLoader;
-
-pub struct VelloFontLoaderPlugin;
-
-impl Plugin for VelloFontLoaderPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            main_thread_and_compute_pool_font_context_update_system,
-        );
-    }
-}
-
-// Sync the font context with the bevy main thread and thread pools that needs to use it
-fn main_thread_and_compute_pool_font_context_update_system(world: &mut World) {
-    let asset_events = world
-        .get_resource::<Events<AssetEvent<VelloFont>>>()
-        .unwrap();
-
-    if asset_events.is_empty() {
-        return;
-    }
-
-    let vello_fonts = world.get_resource::<Assets<VelloFont>>().unwrap();
-
-    if let Some(compute_task_pool) = ComputeTaskPool::try_get() {
-        for (_handle, font) in vello_fonts.iter() {
-            let compute_threads = compute_task_pool.thread_num();
-
-            FONT_CONTEXT.with_borrow_mut(|font_context| {
-                font_context.collection.register_fonts(font.bytes.clone());
-            });
-
-            for _ in 0..compute_threads {
-                let font = font.clone();
-
-                compute_task_pool
-                    .spawn(async move {
-                        debug!(
-                            "Compute Thread {:?} registering font {:?}",
-                            std::thread::current().id(),
-                            font.family_name
-                        );
-                        FONT_CONTEXT.with_borrow_mut(|font_context| {
-                            font_context.collection.register_fonts(font.bytes.clone());
-                        });
-                        // TODO: investigate implementing thread local gen tracking instead of
-                        // sleeping
-                        sleep(Duration::from_millis(100));
-                    })
-                    .detach();
-            }
-        }
-    }
-}
 
 impl AssetLoader for VelloFontLoader {
     type Asset = VelloFont;
@@ -81,7 +21,12 @@ impl AssetLoader for VelloFontLoader {
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes).await?;
 
-        FONT_CONTEXT.with_borrow_mut(|font_context| {
+        LOCAL_FONT_CONTEXT.with_borrow_mut(|font_context| {
+            if font_context.is_none() {
+                *font_context = Some(get_global_font_context().clone());
+            }
+            let font_context = font_context.as_mut().unwrap();
+
             let registered_fonts = font_context.collection.register_fonts(bytes.clone());
             // TODO: handle multiple fonts in the same font file
             let (family_id, _font_info_vec) = registered_fonts.first().unwrap();
@@ -90,6 +35,7 @@ impl AssetLoader for VelloFontLoader {
                 family_name: family_name.to_string(),
                 bytes,
             };
+
             Ok(vello_font)
         })
     }
