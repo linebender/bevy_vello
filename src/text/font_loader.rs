@@ -1,3 +1,5 @@
+use std::{thread::sleep, time::Duration};
+
 use super::{context::FONT_CONTEXT, font::VelloFont};
 use crate::integrations::VectorLoaderError;
 use bevy::{
@@ -53,6 +55,9 @@ fn main_thread_and_compute_pool_font_context_update_system(world: &mut World) {
                         FONT_CONTEXT.with_borrow_mut(|font_context| {
                             font_context.collection.register_fonts(font.bytes.clone());
                         });
+                        // TODO: investigate implementing thread local gen tracking instead of
+                        // sleeping
+                        sleep(Duration::from_millis(100));
                     })
                     .detach();
             }
