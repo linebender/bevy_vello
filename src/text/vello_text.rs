@@ -14,6 +14,8 @@ pub struct VelloTextStyle {
     pub font: Handle<VelloFont>,
     pub font_size: f32,
     pub brush: Brush,
+    pub weight: Option<f32>,
+    pub line_height: Option<f32>,
 }
 
 impl Default for VelloTextStyle {
@@ -22,6 +24,8 @@ impl Default for VelloTextStyle {
             font: Default::default(),
             font_size: 24.0,
             brush: Brush::Solid(peniko::Color::WHITE),
+            weight: None,
+            line_height: None,
         }
     }
 }

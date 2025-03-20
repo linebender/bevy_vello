@@ -1,18 +1,18 @@
-use super::{VelloTextAnchor, vello_text::VelloTextSection};
-use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
-use skrifa::{FontRef, MetadataProvider};
-use std::sync::Arc;
-use vello::{
-    Glyph, Scene,
-    kurbo::Affine,
-    peniko::{self, Blob, Font},
-};
+use std::borrow::Cow;
 
-const VARIATIONS: &[(&str, f32)] = &[];
+use super::{
+    context::{FONT_CONTEXT, LAYOUT_CONTEXT},
+    vello_text::VelloTextSection,
+    VelloTextAnchor,
+};
+use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
+use parley::{FontWeight, InlineBox, PositionedLayoutItem, StyleProperty};
+use vello::{kurbo::Affine, peniko::Fill, Scene};
 
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {
-    pub font: peniko::Font,
+    pub family_name: String,
+    pub bytes: Vec<u8>,
 }
 
 impl RenderAsset for VelloFont {
@@ -31,40 +31,58 @@ impl RenderAsset for VelloFont {
 impl VelloFont {
     pub fn new(font_data: Vec<u8>) -> Self {
         Self {
-            font: Font::new(Blob::new(Arc::new(font_data)), 0),
+            bytes: font_data,
+            family_name: "".to_string(),
         }
     }
 
     pub fn sizeof(&self, text: &VelloTextSection) -> Vec2 {
-        let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
-        let font_size = skrifa::instance::Size::new(text.style.font_size);
-        let charmap = font.charmap();
-        let axes = font.axes();
-        // TODO: What do Variations here do? Any font nerds know? I'm definitely not doing this
-        // right.
-        let var_loc = axes.location(VARIATIONS);
-        let metrics = font.metrics(font_size, &var_loc);
-        let line_height = metrics.ascent - metrics.descent + metrics.leading;
-        let glyph_metrics = font.glyph_metrics(font_size, &var_loc);
+        FONT_CONTEXT.with_borrow_mut(|font_context| {
+            debug!(
+                "Thread {:?} sizeof collection {:?}",
+                std::thread::current().id(),
+                font_context.collection.family_names().collect::<Vec<_>>()
+            );
 
-        // TODO: Parley recently implemented type hinting, I should be handling this.
-        let mut pen_x = 0.0;
-        let mut pen_y: f32 = 0.0;
-        let mut width: f32 = 0.0;
-        for ch in text.value.chars() {
-            if ch == '\n' {
-                pen_y += line_height;
-                pen_x = 0.0;
-                continue;
-            }
-            let gid = charmap.map(ch).unwrap_or_default();
-            let advance = glyph_metrics.advance_width(gid).unwrap_or_default();
+            LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
+                // TODO: fix scale magic number
+                let mut builder = layout_context.ranged_builder(font_context, &text.value, 1.0);
 
-            pen_x += advance;
-            width = width.max(pen_x);
-        }
-        let height: f32 = metrics.cap_height.unwrap_or(line_height) + pen_y;
-        Vec2::new(width, height)
+                // if let Some(weight) = text.style.weight {
+                //     // sets the font weight for the entire text
+                //     builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
+                // }
+                //
+                // if let Some(line_height) = text.style.line_height {
+                //     // sets the line height for the entire text
+                //     builder.push_default(StyleProperty::LineHeight(line_height));
+                // }
+
+                builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
+                    parley::FontFamily::Named(Cow::Borrowed(&self.family_name)),
+                )));
+
+                builder.push_inline_box(InlineBox {
+                    id: 0,
+                    index: 5,
+                    width: 50.0,
+                    height: 50.0,
+                });
+
+                // TODO: "bb code" for text styling?
+                // can use builder.push(StyleProperty::FontWeight(FontWeight::new(700)), 11..42) to
+                // make the characters in the range bold;
+
+                let mut layout = builder.build(&text.value);
+
+                // break_all_lines is required to layout anything
+                layout.break_all_lines(None);
+
+                // layout.align(None, parley::Alignment::Middle, AlignmentOptions::default());
+
+                Vec2::new(layout.width(), layout.height())
+            })
+        })
     }
 
     pub(crate) fn render(
@@ -74,82 +92,117 @@ impl VelloFont {
         text: &VelloTextSection,
         text_anchor: VelloTextAnchor,
     ) {
-        let font = FontRef::new(self.font.data.data()).expect("Vello font creation error");
+        FONT_CONTEXT.with_borrow_mut(|font_context| {
+            LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
+                debug!(
+                    "Thread {:?} render collection {:?}",
+                    std::thread::current().id(),
+                    font_context.collection.family_names().collect::<Vec<_>>()
+                );
 
-        let font_size = skrifa::instance::Size::new(text.style.font_size);
-        let charmap = font.charmap();
-        let axes = font.axes();
-        let var_loc = axes.location(VARIATIONS);
-        let metrics = font.metrics(font_size, &var_loc);
-        let line_height = metrics.ascent - metrics.descent + metrics.leading;
-        let glyph_metrics = font.glyph_metrics(font_size, &var_loc);
+                // TODO: fix scale magic number
+                let mut builder = layout_context.ranged_builder(font_context, &text.value, 1.0);
 
-        let mut pen_x = 0f32;
-        let mut pen_y = 0f32;
-        let mut width = 0f32;
-        let glyphs: Vec<Glyph> = text
-            .value
-            .chars()
-            .filter_map(|ch| {
-                if ch == '\n' {
-                    pen_y += line_height;
-                    pen_x = 0.0;
-                    return None;
+                if let Some(weight) = text.style.weight {
+                    // sets the font weight for the entire text
+                    builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
                 }
-                let gid = charmap.map(ch).unwrap_or_default();
-                let advance = glyph_metrics.advance_width(gid).unwrap_or_default();
-                let x = pen_x;
-                pen_x += advance;
-                width = width.max(pen_x);
-                Some(Glyph {
-                    id: gid.to_u32(),
-                    x,
-                    y: pen_y,
-                })
-            })
-            .collect();
-        // Push up from pen_y
-        transform *= vello::kurbo::Affine::translate((0.0, -pen_y as f64));
 
-        // Alignment settings
-        let width = width as f64;
-        let height = (metrics.cap_height.unwrap_or(line_height) + pen_y) as f64;
-        match text_anchor {
-            VelloTextAnchor::TopLeft => {
-                transform *= vello::kurbo::Affine::translate((0.0, height));
-            }
-            VelloTextAnchor::Left => {
-                transform *= vello::kurbo::Affine::translate((0.0, height / 2.0));
-            }
-            VelloTextAnchor::BottomLeft => {
-                transform *= vello::kurbo::Affine::translate((0.0, 0.0));
-            }
-            VelloTextAnchor::Top => {
-                transform *= vello::kurbo::Affine::translate((-width / 2.0, height));
-            }
-            VelloTextAnchor::Center => {
-                transform *= vello::kurbo::Affine::translate((-width / 2.0, height / 2.0));
-            }
-            VelloTextAnchor::Bottom => {
-                transform *= vello::kurbo::Affine::translate((-width / 2.0, 0.0));
-            }
-            VelloTextAnchor::TopRight => {
-                transform *= vello::kurbo::Affine::translate((-width, height));
-            }
-            VelloTextAnchor::Right => {
-                transform *= vello::kurbo::Affine::translate((-width, height / 2.0));
-            }
-            VelloTextAnchor::BottomRight => {
-                transform *= vello::kurbo::Affine::translate((-width, 0.0));
-            }
-        }
+                if let Some(line_height) = text.style.line_height {
+                    // sets the line height for the entire text
+                    builder.push_default(StyleProperty::LineHeight(line_height));
+                }
 
-        scene
-            .draw_glyphs(&self.font)
-            .font_size(text.style.font_size)
-            .transform(transform)
-            .normalized_coords(bytemuck::cast_slice(var_loc.coords()))
-            .brush(&text.style.brush.clone())
-            .draw(vello::peniko::Fill::EvenOdd, glyphs.into_iter());
+                debug!("Family name: {:?}", self.family_name);
+                builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
+                    parley::FontFamily::Named(Cow::Borrowed(&self.family_name)),
+                )));
+
+                // TODO: "bb code" for text styling?
+                // can use builder.push(StyleProperty::FontWeight(FontWeight::new(700)), 11..42) to
+                // make the characters in the range bold;
+
+                let mut layout = builder.build(&text.value);
+
+                // break_all_lines is required to render anything
+                layout.break_all_lines(None);
+
+                //layout.align(None, parley::Alignment::Middle, AlignmentOptions::default());
+
+                for line in layout.lines() {
+                    for item in line.items() {
+                        let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
+                            continue;
+                        };
+
+                        let mut x = glyph_run.offset();
+                        let y = glyph_run.baseline();
+                        let run = glyph_run.run();
+                        let font = run.font();
+                        let font_size = run.font_size();
+                        let synthesis = run.synthesis();
+                        let glyph_xform = synthesis
+                            .skew()
+                            .map(|angle| Affine::skew(angle.to_radians().tan() as f64, 0.0));
+
+                        scene
+                            .draw_glyphs(font)
+                            .brush(&text.style.brush)
+                            .hint(true)
+                            .transform(transform)
+                            .glyph_transform(glyph_xform)
+                            .font_size(font_size)
+                            .normalized_coords(run.normalized_coords())
+                            .draw(
+                                Fill::NonZero,
+                                glyph_run.glyphs().map(|glyph| {
+                                    let gx = x + glyph.x;
+                                    let gy = y - glyph.y;
+                                    x += glyph.advance;
+                                    vello::Glyph {
+                                        id: glyph.id as _,
+                                        x: gx,
+                                        y: gy,
+                                    }
+                                }),
+                            );
+                    }
+                }
+
+                let width = layout.width() as f64;
+                let height = layout.height() as f64;
+                debug!("Width: {:?}, Height: {:?}", width, height);
+
+                match text_anchor {
+                    VelloTextAnchor::TopLeft => {
+                        transform *= vello::kurbo::Affine::translate((0.0, height));
+                    }
+                    VelloTextAnchor::Left => {
+                        transform *= vello::kurbo::Affine::translate((0.0, height / 2.0));
+                    }
+                    VelloTextAnchor::BottomLeft => {
+                        transform *= vello::kurbo::Affine::translate((0.0, 0.0));
+                    }
+                    VelloTextAnchor::Top => {
+                        transform *= vello::kurbo::Affine::translate((-width / 2.0, height));
+                    }
+                    VelloTextAnchor::Center => {
+                        transform *= vello::kurbo::Affine::translate((-width / 2.0, height / 2.0));
+                    }
+                    VelloTextAnchor::Bottom => {
+                        transform *= vello::kurbo::Affine::translate((-width / 2.0, 0.0));
+                    }
+                    VelloTextAnchor::TopRight => {
+                        transform *= vello::kurbo::Affine::translate((-width, height));
+                    }
+                    VelloTextAnchor::Right => {
+                        transform *= vello::kurbo::Affine::translate((-width, height / 2.0));
+                    }
+                    VelloTextAnchor::BottomRight => {
+                        transform *= vello::kurbo::Affine::translate((-width, 0.0));
+                    }
+                }
+            });
+        })
     }
 }
