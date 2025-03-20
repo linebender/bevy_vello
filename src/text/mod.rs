@@ -1,5 +1,6 @@
 //! Components and text logic.
 
+mod context;
 mod font;
 mod font_loader;
 mod vello_text;
