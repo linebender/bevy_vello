@@ -1,7 +1,7 @@
 use super::{context::FONT_CONTEXT, font::VelloFont};
 use crate::integrations::VectorLoaderError;
 use bevy::{
-    asset::{io::Reader, AssetLoader, LoadContext},
+    asset::{AssetLoader, LoadContext, io::Reader},
     prelude::*,
     tasks::ComputeTaskPool,
 };
@@ -13,46 +13,49 @@ pub struct VelloFontLoaderPlugin;
 
 impl Plugin for VelloFontLoaderPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Update, main_thread_and_compute_pool_font_context_update_system);
+        app.add_systems(
+            Update,
+            main_thread_and_compute_pool_font_context_update_system,
+        );
     }
 }
 
 // Sync the font context with the bevy main thread and thread pools that needs to use it
 fn main_thread_and_compute_pool_font_context_update_system(world: &mut World) {
-    let asset_events = world.get_resource::<Events<AssetEvent<VelloFont>>>().unwrap();
+    let asset_events = world
+        .get_resource::<Events<AssetEvent<VelloFont>>>()
+        .unwrap();
 
     if asset_events.is_empty() {
         return;
     }
 
-        let vello_fonts =  world.get_resource::<Assets<VelloFont>>().unwrap();
+    let vello_fonts = world.get_resource::<Assets<VelloFont>>().unwrap();
 
-        if let Some(compute_task_pool) = ComputeTaskPool::try_get() {
-            for (_handle, font) in vello_fonts.iter() {
-                let compute_threads = compute_task_pool.thread_num();
+    if let Some(compute_task_pool) = ComputeTaskPool::try_get() {
+        for (_handle, font) in vello_fonts.iter() {
+            let compute_threads = compute_task_pool.thread_num();
 
-                            FONT_CONTEXT.with_borrow_mut(|font_context| {
-                                font_context.collection.register_fonts(font.bytes.clone());
-                            });
+            FONT_CONTEXT.with_borrow_mut(|font_context| {
+                font_context.collection.register_fonts(font.bytes.clone());
+            });
 
             for _ in 0..compute_threads {
-                    let font = font.clone();
+                let font = font.clone();
 
-                    compute_task_pool
-                        .spawn(async move {
-                            debug!(
-                                "Compute Thread {:?} registering font {:?}",
-                                std::thread::current().id(),
-                                font.family_name
-                            );
-                            FONT_CONTEXT.with_borrow_mut(|font_context| {
-                                font_context.collection.register_fonts(font.bytes.clone());
-                            });
-                        })
-                        .detach();
-                }
-
+                compute_task_pool
+                    .spawn(async move {
+                        debug!(
+                            "Compute Thread {:?} registering font {:?}",
+                            std::thread::current().id(),
+                            font.family_name
+                        );
+                        FONT_CONTEXT.with_borrow_mut(|font_context| {
+                            font_context.collection.register_fonts(font.bytes.clone());
+                        });
+                    })
+                    .detach();
+            }
         }
     }
 }

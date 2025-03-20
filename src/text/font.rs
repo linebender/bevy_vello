@@ -1,13 +1,13 @@
 use std::borrow::Cow;
 
 use super::{
+    VelloTextAnchor,
     context::{FONT_CONTEXT, LAYOUT_CONTEXT},
     vello_text::VelloTextSection,
-    VelloTextAnchor,
 };
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use parley::{FontWeight, InlineBox, PositionedLayoutItem, StyleProperty};
-use vello::{kurbo::Affine, peniko::Fill, Scene};
+use vello::{Scene, kurbo::Affine, peniko::Fill};
 
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {
