@@ -19,7 +19,7 @@ pub use vello;
 pub use vello_svg;
 
 pub mod prelude {
-    pub use skrifa;
+    pub use parley;
     pub use vello::{self, kurbo, peniko};
 
     pub use crate::{
