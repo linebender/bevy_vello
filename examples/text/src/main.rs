@@ -17,8 +17,8 @@ fn main() {
         Startup,
         (setup_camera, setup_screenspace_text, setup_worldspace_text),
     )
-    .add_systems(Update, gizmos);
-    embedded_asset!(app, "assets/Rubik-Medium.ttf");
+    .add_systems(Update, (animate_axes, gizmos));
+    embedded_asset!(app, "assets/Rubik-VariableFont_wght.ttf");
     app.run();
 }
 
@@ -36,18 +36,26 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
-            value: "Rubik-Medium Font".to_string(),
+            value: "Rubik-VarableFont_wght".to_string(),
             style: VelloTextStyle {
-                font: asset_server.load("embedded://text/assets/Rubik-Medium.ttf"),
-                font_size: 100.0,
+                font: asset_server.load("embedded://text/assets/Rubik-VariableFont_wght.ttf"),
+                font_size: 48.0,
                 ..default()
             },
         },
         text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, -100.0, 0.0)
+        transform: Transform::from_xyz(0.0, 100.0, 0.0)
             .with_rotation(Quat::from_rotation_z(PI / 12.0)),
         ..default()
     });
+}
+
+fn animate_axes(time: Res<Time>, mut query: Query<&mut VelloTextSection>) {
+    let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
+    for mut text_section in query.iter_mut() {
+        let font_weight = sin_time.remap(0., 1., 300., 900.);
+        text_section.style.weight = Some(font_weight);
+    }
 }
 
 fn setup_screenspace_text(mut commands: Commands) {

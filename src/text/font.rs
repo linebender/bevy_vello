@@ -48,15 +48,15 @@ impl VelloFont {
                 // TODO: fix scale magic number
                 let mut builder = layout_context.ranged_builder(font_context, &text.value, 1.0);
 
-                // if let Some(weight) = text.style.weight {
-                //     // sets the font weight for the entire text
-                //     builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
-                // }
-                //
-                // if let Some(line_height) = text.style.line_height {
-                //     // sets the line height for the entire text
-                //     builder.push_default(StyleProperty::LineHeight(line_height));
-                // }
+                if let Some(weight) = text.style.weight {
+                    // sets the font weight for the entire text
+                    builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
+                }
+
+                if let Some(line_height) = text.style.line_height {
+                    // sets the line height for the entire text
+                    builder.push_default(StyleProperty::LineHeight(line_height));
+                }
 
                 builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
                     parley::FontFamily::Named(Cow::Borrowed(&self.family_name)),
