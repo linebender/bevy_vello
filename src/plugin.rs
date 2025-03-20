@@ -1,7 +1,7 @@
 use crate::{
     VelloFont, VelloRenderSettings,
     render::{VelloCanvasSettings, VelloRenderPlugin},
-    text::VelloFontLoader,
+    text::{VelloFontLoader, VelloFontLoaderPlugin},
 };
 use bevy::{prelude::*, render::view::RenderLayers};
 use vello::AaConfig;
@@ -32,15 +32,18 @@ impl Default for VelloPlugin {
 
 impl Plugin for VelloPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(VelloRenderPlugin {
-            canvas_settings: VelloCanvasSettings {
-                render_layers: self.canvas_render_layers.clone(),
+        app.add_plugins((
+            VelloRenderPlugin {
+                canvas_settings: VelloCanvasSettings {
+                    render_layers: self.canvas_render_layers.clone(),
+                },
+                render_settings: VelloRenderSettings {
+                    use_cpu: self.use_cpu,
+                    antialiasing: self.antialiasing,
+                },
             },
-            render_settings: VelloRenderSettings {
-                use_cpu: self.use_cpu,
-                antialiasing: self.antialiasing,
-            },
-        })
+            VelloFontLoaderPlugin,
+        ))
         .init_asset::<VelloFont>()
         .init_asset_loader::<VelloFontLoader>();
         #[cfg(feature = "svg")]
