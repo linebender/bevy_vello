@@ -4,7 +4,7 @@
 
 **A vector graphics rendering integration for [Bevy game engine](https://bevyengine.org) using [Vello](https://vello.dev).**
 
-[![Linebender Zulip](https://img.shields.io/badge/Linebender-%23gpu-blue?logo=Zulip)](https://xi.zulipchat.com/#narrow/stream/197075-gpu)
+[![Linebender Zulip](https://img.shields.io/badge/Linebender-%23vello-blue?logo=Zulip)](https://xi.zulipchat.com/#narrow/channel/197075-vello)
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
 [![Vello](https://img.shields.io/badge/vello-v0.4.0-purple.svg)](https://crates.io/crates/vello)
 [![Following released Bevy versions](https://img.shields.io/badge/bevy%20tracking-released%20version-lightblue)](https://bevyengine.org/learn/quick-start/plugin-development/#main-branch-tracking)\
@@ -75,7 +75,7 @@ There is also a web demo [available here](https://linebender.github.io/bevy_vell
 
 ## Community
 
-Discussion of Vello development happens in the [Linebender Zulip](https://xi.zulipchat.com/), specifically the [#gpu stream](https://xi.zulipchat.com/#narrow/stream/197075-gpu). All public content can be read without logging in.
+Discussion of Vello development happens in the [Linebender Zulip](https://xi.zulipchat.com/), specifically the [#vello channel](https://xi.zulipchat.com/#narrow/stream/197075-vello). All public content can be read without logging in.
 
 Contributions are welcome by pull request. The [Rust code of conduct](https://www.rust-lang.org/policies/code-of-conduct) applies.
 
