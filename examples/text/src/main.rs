@@ -1,10 +1,10 @@
 use std::f32::consts::PI;
 
 use bevy::{
-    asset::{AssetMetaCheck, embedded_asset},
+    asset::{embedded_asset, AssetMetaCheck},
     prelude::*,
 };
-use bevy_vello::{VelloPlugin, prelude::*, text::VelloTextAnchor};
+use bevy_vello::{prelude::*, text::VelloTextAnchor, VelloPlugin};
 
 fn main() {
     let mut app = App::new();
@@ -36,7 +36,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
-            value: "Rubik-VarableFont_wght".to_string(),
+            value: "Rubik-VariableFont_wght".to_string(),
             style: VelloTextStyle {
                 font: asset_server.load("embedded://text/assets/Rubik-VariableFont_wght.ttf"),
                 font_size: 48.0,
