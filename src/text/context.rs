@@ -1,8 +1,8 @@
 use std::cell::RefCell;
 
 use parley::{
-    fontique::{Collection, CollectionOptions, SourceCache},
     FontContext, LayoutContext,
+    fontique::{Collection, CollectionOptions, SourceCache},
 };
 use vello::peniko::Brush;
 
