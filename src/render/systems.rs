@@ -121,7 +121,7 @@ pub fn sort_render_items(
 #[allow(clippy::complexity)]
 pub fn render_frame(
     ss_render_target: Single<&SSRenderTarget>,
-    mut font_render_assets: ResMut<RenderAssets<VelloFont>>,
+    font_render_assets: Res<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
@@ -208,7 +208,7 @@ pub fn render_frame(
                         text, text_anchor, ..
                     },
             } => {
-                if let Some(font) = font_render_assets.get_mut(text.style.font.id()) {
+                if let Some(font) = font_render_assets.get(text.style.font.id()) {
                     font.render(&mut scene_buffer, *affine, text, *text_anchor);
                 }
             }
