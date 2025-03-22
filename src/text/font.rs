@@ -214,61 +214,61 @@ fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, text_section: &Vell
 fn apply_variable_axes(builder: &mut RangedBuilder<'_, Brush>, axes: &VelloFontAxes) {
     if let Some(weight) = axes.weight {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'wght' {}", weight).to_string()),
+            Cow::Owned(format!("'wght' {}", weight)),
         )));
     }
 
     if let Some(width) = axes.width {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'wdth' {}", width).to_string()),
+            Cow::Owned(format!("'wdth' {}", width)),
         )));
     }
 
     if let Some(optical_size) = axes.optical_size {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'opsz' {}", optical_size).to_string()),
+            Cow::Owned(format!("'opsz' {}", optical_size)),
         )));
     }
 
     if let Some(grade) = axes.grade {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'grad' {}", grade).to_string()),
+            Cow::Owned(format!("'grad' {}", grade)),
         )));
     }
 
     if let Some(thick_stroke) = axes.thick_stroke {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'XOPQ' {}", thick_stroke).to_string()),
+            Cow::Owned(format!("'XOPQ' {}", thick_stroke)),
         )));
     }
 
     if let Some(thin_stroke) = axes.thin_stroke {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YOPQ' {}", thin_stroke).to_string()),
+            Cow::Owned(format!("'YOPQ' {}", thin_stroke)),
         )));
     }
 
     if let Some(counter_width) = axes.counter_width {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'XTRA' {}", counter_width).to_string()),
+            Cow::Owned(format!("'XTRA' {}", counter_width)),
         )));
     }
 
     if let Some(uppercase_height) = axes.uppercase_height {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YTUC' {}", uppercase_height).to_string()),
+            Cow::Owned(format!("'YTUC' {}", uppercase_height)),
         )));
     }
 
     if let Some(lowercase_height) = axes.lowercase_height {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YTLC' {}", lowercase_height).to_string()),
+            Cow::Owned(format!("'YTLC' {}", lowercase_height)),
         )));
     }
 
     if let Some(ascender_height) = axes.ascender_height {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YTAS' {}", ascender_height).to_string()),
+            Cow::Owned(format!("'YTAS' {}", ascender_height)),
         )));
     }
 
