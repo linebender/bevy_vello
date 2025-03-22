@@ -1,9 +1,9 @@
 use bevy::{
-    asset::{embedded_asset, AssetMetaCheck},
+    asset::{AssetMetaCheck, embedded_asset},
     prelude::*,
     ui::ContentSize,
 };
-use bevy_vello::{prelude::*, text::VelloTextAnchor, VelloPlugin};
+use bevy_vello::{VelloPlugin, prelude::*, text::VelloTextAnchor};
 
 const EMBEDDED_FONT: &str = "embedded://text/assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf";
 
@@ -20,7 +20,10 @@ fn main() {
     )
     .add_systems(Update, (toggle_animations, animate_axes, gizmos).chain())
     .init_resource::<AnimationToggles>();
-    embedded_asset!(app, "assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf");
+    embedded_asset!(
+        app,
+        "assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf"
+    );
     app.run();
 }
 
