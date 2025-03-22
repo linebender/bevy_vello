@@ -52,8 +52,9 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 
 fn animate_axes(time: Res<Time>, mut query: Query<&mut VelloTextSection>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
+    let font_weight = sin_time.remap(0., 1., 300., 900.);
+
     for mut text_section in query.iter_mut() {
-        let font_weight = sin_time.remap(0., 1., 300., 900.);
         text_section.style.weight = Some(font_weight);
     }
 }
