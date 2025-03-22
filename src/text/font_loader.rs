@@ -26,7 +26,6 @@ impl AssetLoader for VelloFontLoader {
                 *font_context = Some(get_global_font_context().clone());
             }
             let font_context = font_context.as_mut().unwrap();
-
             let registered_fonts = font_context.collection.register_fonts(bytes.clone());
             // TODO: handle multiple fonts in the same font file
             let (family_id, _font_info_vec) = registered_fonts.first().unwrap();
