@@ -60,7 +60,7 @@ impl VelloFont {
                 apply_variable_axes(&mut builder, &text_section.style.font_axes);
 
                 builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
-                    parley::FontFamily::Named(Cow::Borrowed(&self.family_name)),
+                    parley::FontFamily::Named(Cow::Owned(self.family_name.clone())),
                 )));
 
                 let mut layout = builder.build(&text_section.value);
@@ -95,7 +95,7 @@ impl VelloFont {
                 apply_variable_axes(&mut builder, &text_section.style.font_axes);
 
                 builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
-                    parley::FontFamily::Named(Cow::Borrowed(&self.family_name)),
+                    parley::FontFamily::Named(Cow::Owned(self.family_name.clone())),
                 )));
 
                 let mut layout = builder.build(&text_section.value);
@@ -214,61 +214,61 @@ fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, text_section: &Vell
 fn apply_variable_axes(builder: &mut RangedBuilder<'_, Brush>, axes: &VelloFontAxes) {
     if let Some(weight) = axes.weight {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'wght' {}", weight).to_string()),
+            Cow::Owned(format!("'wght' {}", weight).to_string()),
         )));
     }
 
     if let Some(width) = axes.width {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'wdth' {}", width).to_string()),
+            Cow::Owned(format!("'wdth' {}", width).to_string()),
         )));
     }
 
     if let Some(optical_size) = axes.optical_size {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'opsz' {}", optical_size).to_string()),
+            Cow::Owned(format!("'opsz' {}", optical_size).to_string()),
         )));
     }
 
     if let Some(grade) = axes.grade {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'grad' {}", grade).to_string()),
+            Cow::Owned(format!("'grad' {}", grade).to_string()),
         )));
     }
 
     if let Some(thick_stroke) = axes.thick_stroke {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'XOPQ' {}", thick_stroke).to_string()),
+            Cow::Owned(format!("'XOPQ' {}", thick_stroke).to_string()),
         )));
     }
 
     if let Some(thin_stroke) = axes.thin_stroke {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'YOPQ' {}", thin_stroke).to_string()),
+            Cow::Owned(format!("'YOPQ' {}", thin_stroke).to_string()),
         )));
     }
 
     if let Some(counter_width) = axes.counter_width {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'XTRA' {}", counter_width).to_string()),
+            Cow::Owned(format!("'XTRA' {}", counter_width).to_string()),
         )));
     }
 
     if let Some(uppercase_height) = axes.uppercase_height {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'YTUC' {}", uppercase_height).to_string()),
+            Cow::Owned(format!("'YTUC' {}", uppercase_height).to_string()),
         )));
     }
 
     if let Some(lowercase_height) = axes.lowercase_height {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'YTLC' {}", lowercase_height).to_string()),
+            Cow::Owned(format!("'YTLC' {}", lowercase_height).to_string()),
         )));
     }
 
     if let Some(ascender_height) = axes.ascender_height {
         builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Borrowed(&format!("'YTAS' {}", ascender_height).to_string()),
+            Cow::Owned(format!("'YTAS' {}", ascender_height).to_string()),
         )));
     }
 
