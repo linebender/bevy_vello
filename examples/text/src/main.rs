@@ -140,39 +140,39 @@ fn animate_axes(
         }
 
         if animation_toggles.grade {
-            text_section.style.font_axes.grade = Some(grade as i32);
+            text_section.style.font_axes.grade = Some(grade);
         }
 
         if animation_toggles.thick_stroke {
-            text_section.style.font_axes.thick_stroke = Some(thick_stroke as i32);
+            text_section.style.font_axes.thick_stroke = Some(thick_stroke);
         }
 
         if animation_toggles.thin_stroke {
-            text_section.style.font_axes.thin_stroke = Some(thin_stroke as i32);
+            text_section.style.font_axes.thin_stroke = Some(thin_stroke);
         }
 
         if animation_toggles.counter_width {
-            text_section.style.font_axes.counter_width = Some(counter_width as i32);
+            text_section.style.font_axes.counter_width = Some(counter_width);
         }
 
         if animation_toggles.uppercase_height {
-            text_section.style.font_axes.uppercase_height = Some(uppercase_height as u32);
+            text_section.style.font_axes.uppercase_height = Some(uppercase_height);
         }
 
         if animation_toggles.lowercase_height {
-            text_section.style.font_axes.lowercase_height = Some(lowercase_height as u32);
+            text_section.style.font_axes.lowercase_height = Some(lowercase_height);
         }
 
         if animation_toggles.ascender_height {
-            text_section.style.font_axes.ascender_height = Some(ascender_height as u32);
+            text_section.style.font_axes.ascender_height = Some(ascender_height);
         }
 
         if animation_toggles.descender_depth {
-            text_section.style.font_axes.descender_depth = Some(descender_depth as i32);
+            text_section.style.font_axes.descender_depth = Some(descender_depth);
         }
 
         if animation_toggles.figure_height {
-            text_section.style.font_axes.figure_height = Some(figure_height as u32);
+            text_section.style.font_axes.figure_height = Some(figure_height);
         }
     }
 }
@@ -188,6 +188,7 @@ fn setup_screenspace_text(mut commands: Commands) {
             justify_content: JustifyContent::FlexEnd,
             row_gap: Val::Px(12.),
             column_gap: Val::Px(12.),
+            padding: UiRect::new(Val::Px(12.), Val::Px(12.), Val::Px(12.), Val::Px(12.)),
             ..default()
         },))
         .with_children(|parent| {
@@ -199,13 +200,13 @@ fn setup_screenspace_text(mut commands: Commands) {
                 },))
                 .with_children(|qwer| {
                     qwer.spawn(Node::default())
-                        .with_child(Text::new("Q toggles weight"));
+                        .with_child(Text::new("Q: weight"));
                     qwer.spawn(Node::default())
-                        .with_child(Text::new("W toggles width"));
+                        .with_child(Text::new("W: width"));
                     qwer.spawn(Node::default())
-                        .with_child(Text::new("E toggles slant"));
+                        .with_child(Text::new("E: slant"));
                     qwer.spawn(Node::default())
-                        .with_child(Text::new("R toggles grade"));
+                        .with_child(Text::new("R: grade"));
                 });
 
             parent
@@ -219,13 +220,13 @@ fn setup_screenspace_text(mut commands: Commands) {
                 ))
                 .with_children(|asdf| {
                     asdf.spawn(Node::default())
-                        .with_child(Text::new("A toggles thick stroke"));
+                        .with_child(Text::new("A: thick stroke"));
                     asdf.spawn(Node::default())
-                        .with_child(Text::new("S toggles thin stroke"));
+                        .with_child(Text::new("S: thin stroke"));
                     asdf.spawn(Node::default())
-                        .with_child(Text::new("D toggles counter width"));
+                        .with_child(Text::new("D: counter width"));
                     asdf.spawn(Node::default())
-                        .with_child(Text::new("F toggles uppercase height"));
+                        .with_child(Text::new("F: uppercase height"));
                 });
 
             parent
@@ -239,13 +240,13 @@ fn setup_screenspace_text(mut commands: Commands) {
                 ))
                 .with_children(|zxcv| {
                     zxcv.spawn(Node::default())
-                        .with_child(Text::new("Z toggles lowercase height"));
+                        .with_child(Text::new("Z: lowercase height"));
                     zxcv.spawn(Node::default())
-                        .with_child(Text::new("X toggles ascender height"));
+                        .with_child(Text::new("X: ascender height"));
                     zxcv.spawn(Node::default())
-                        .with_child(Text::new("C toggles descender depth"));
+                        .with_child(Text::new("C: descender depth"));
                     zxcv.spawn(Node::default())
-                        .with_child(Text::new("V toggles figure height"));
+                        .with_child(Text::new("V: figure height"));
                 });
         });
 }

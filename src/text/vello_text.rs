@@ -67,44 +67,44 @@ pub struct VelloFontAxes {
     /// grad variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/grade_axis
-    pub grade: Option<i32>,
+    pub grade: Option<f32>,
 
     /// XOPQ variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/xopq_axis
-    pub thick_stroke: Option<i32>,
+    pub thick_stroke: Option<f32>,
     /// yopq variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/yopq_axis
-    pub thin_stroke: Option<i32>,
+    pub thin_stroke: Option<f32>,
 
     /// XTRA variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/xtra_axis
-    pub counter_width: Option<i32>,
+    pub counter_width: Option<f32>,
 
     /// YTUC variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/ytuc_axis
-    pub uppercase_height: Option<u32>,
+    pub uppercase_height: Option<f32>,
     /// YTLC variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/ytlc_axis
-    pub lowercase_height: Option<u32>,
+    pub lowercase_height: Option<f32>,
 
     /// YTAS variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/ytas_axis
-    pub ascender_height: Option<u32>,
+    pub ascender_height: Option<f32>,
     /// YTDE variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/ytde_axis
-    pub descender_depth: Option<i32>,
+    pub descender_depth: Option<f32>,
 
     /// YTFI variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/ytfi_axis
-    pub figure_height: Option<u32>,
+    pub figure_height: Option<f32>,
 }
 
 /// Describes how the text is positioned relative to its [`Transform`]. It defaults to [`VelloTextAnchor::BottomLeft`].

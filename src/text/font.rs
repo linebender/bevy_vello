@@ -8,7 +8,9 @@ use super::{
     VelloTextAnchor,
 };
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
-use parley::{FontSettings, FontStyle, PositionedLayoutItem, RangedBuilder, StyleProperty};
+use parley::{
+    FontSettings, FontStyle, FontVariation, PositionedLayoutItem, RangedBuilder, StyleProperty,
+};
 use vello::{
     kurbo::Affine,
     peniko::{Brush, Fill},
@@ -212,64 +214,90 @@ fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, text_section: &Vell
 // YTDE - descender depth
 // YTFI - figure height
 fn apply_variable_axes(builder: &mut RangedBuilder<'_, Brush>, axes: &VelloFontAxes) {
+    let mut variable_axes: Vec<FontVariation> = vec![];
+
     if let Some(weight) = axes.weight {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'wght' {}", weight)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("wght"),
+            value: weight,
+        });
     }
 
     if let Some(width) = axes.width {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'wdth' {}", width)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("wdth"),
+            value: width,
+        });
     }
 
     if let Some(optical_size) = axes.optical_size {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'opsz' {}", optical_size)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("opsz"),
+            value: optical_size,
+        });
     }
 
     if let Some(grade) = axes.grade {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'grad' {}", grade)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("GRAD"),
+            value: grade,
+        });
     }
 
     if let Some(thick_stroke) = axes.thick_stroke {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'XOPQ' {}", thick_stroke)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("XOPQ"),
+            value: thick_stroke,
+        });
     }
 
     if let Some(thin_stroke) = axes.thin_stroke {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YOPQ' {}", thin_stroke)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("YOPQ"),
+            value: thin_stroke,
+        });
     }
 
     if let Some(counter_width) = axes.counter_width {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'XTRA' {}", counter_width)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("XTRA"),
+            value: counter_width,
+        });
     }
 
     if let Some(uppercase_height) = axes.uppercase_height {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YTUC' {}", uppercase_height)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("YTUC"),
+            value: uppercase_height,
+        });
     }
 
     if let Some(lowercase_height) = axes.lowercase_height {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YTLC' {}", lowercase_height)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("YTLC"),
+            value: lowercase_height,
+        });
     }
 
     if let Some(ascender_height) = axes.ascender_height {
-        builder.push_default(StyleProperty::FontVariations(FontSettings::Source(
-            Cow::Owned(format!("'YTAS' {}", ascender_height)),
-        )));
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("YTAS"),
+            value: ascender_height,
+        });
+    }
+
+    if let Some(descender_depth) = axes.descender_depth {
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("YTDE"),
+            value: descender_depth,
+        });
+    }
+
+    if let Some(figure_height) = axes.figure_height {
+        variable_axes.push(parley::swash::Setting {
+            tag: parley::swash::tag_from_str_lossy("YTFI"),
+            value: figure_height,
+        });
     }
 
     if axes.italic {
@@ -277,4 +305,8 @@ fn apply_variable_axes(builder: &mut RangedBuilder<'_, Brush>, axes: &VelloFontA
     } else if axes.slant.is_some() {
         builder.push_default(StyleProperty::FontStyle(FontStyle::Oblique(axes.slant)));
     }
+
+    builder.push_default(StyleProperty::FontVariations(FontSettings::List(
+        variable_axes.into(),
+    )));
 }
