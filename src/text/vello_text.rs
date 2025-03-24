@@ -64,7 +64,7 @@ pub struct VelloFontAxes {
     /// https://fonts.google.com/knowledge/glossary/slant_axis
     pub slant: Option<f32>,
 
-    /// grad variable axis only if the font supports it
+    /// GRAD variable axis only if the font supports it
     ///
     /// https://fonts.google.com/knowledge/glossary/grade_axis
     pub grade: Option<f32>,

@@ -199,7 +199,7 @@ fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, text_section: &Vell
 // opsz - optical size
 // ital - italic
 // slnt - slant
-// grad - grade
+// GRAD - grade
 // XOPQ - thick stroke
 // YOPQ - thin stroke
 // YTUC - uppercase height
