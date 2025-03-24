@@ -1,9 +1,9 @@
 use bevy::{
-    asset::{AssetMetaCheck, embedded_asset},
+    asset::{embedded_asset, AssetMetaCheck},
     prelude::*,
     ui::ContentSize,
 };
-use bevy_vello::{VelloPlugin, prelude::*, text::VelloTextAnchor};
+use bevy_vello::{prelude::*, text::VelloTextAnchor, VelloPlugin};
 
 const EMBEDDED_FONT: &str = "embedded://text/assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf";
 
@@ -67,53 +67,37 @@ fn toggle_animations(
     mut toggles: ResMut<AnimationToggles>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::KeyQ) {
-        toggles.weight = !toggles.weight;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyW) {
-        toggles.width = !toggles.width;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyE) {
-        toggles.slant = !toggles.slant;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyR) {
-        toggles.grade = !toggles.grade;
-        println!("grade: {}", toggles.grade);
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyA) {
-        toggles.thick_stroke = !toggles.thick_stroke;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyS) {
-        toggles.thin_stroke = !toggles.thin_stroke;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyD) {
-        toggles.counter_width = !toggles.counter_width;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyF) {
-        toggles.uppercase_height = !toggles.uppercase_height;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyZ) {
-        toggles.lowercase_height = !toggles.lowercase_height;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyX) {
-        toggles.ascender_height = !toggles.ascender_height;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyC) {
-        toggles.descender_depth = !toggles.descender_depth;
-    }
-
-    if keyboard_input.just_pressed(KeyCode::KeyV) {
-        toggles.figure_height = !toggles.figure_height;
+    if keyboard_input.any_just_pressed([
+        KeyCode::KeyQ,
+        KeyCode::KeyW,
+        KeyCode::KeyE,
+        KeyCode::KeyR,
+        KeyCode::KeyA,
+        KeyCode::KeyS,
+        KeyCode::KeyD,
+        KeyCode::KeyF,
+        KeyCode::KeyZ,
+        KeyCode::KeyX,
+        KeyCode::KeyC,
+        KeyCode::KeyV,
+    ]) {
+        for key in keyboard_input.get_just_pressed() {
+            match key {
+                KeyCode::KeyQ => toggles.weight = !toggles.weight,
+                KeyCode::KeyW => toggles.width = !toggles.width,
+                KeyCode::KeyE => toggles.slant = !toggles.slant,
+                KeyCode::KeyR => toggles.grade = !toggles.grade,
+                KeyCode::KeyA => toggles.thick_stroke = !toggles.thick_stroke,
+                KeyCode::KeyS => toggles.thin_stroke = !toggles.thin_stroke,
+                KeyCode::KeyD => toggles.counter_width = !toggles.counter_width,
+                KeyCode::KeyF => toggles.uppercase_height = !toggles.uppercase_height,
+                KeyCode::KeyZ => toggles.lowercase_height = !toggles.lowercase_height,
+                KeyCode::KeyX => toggles.ascender_height = !toggles.ascender_height,
+                KeyCode::KeyC => toggles.descender_depth = !toggles.descender_depth,
+                KeyCode::KeyV => toggles.figure_height = !toggles.figure_height,
+                _ => (),
+            }
+        }
     }
 }
 
