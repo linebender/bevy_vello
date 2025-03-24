@@ -30,7 +30,6 @@ impl AssetLoader for VelloFontLoader {
             }
             let font_context = font_context.as_mut().unwrap();
             let registered_fonts = font_context.collection.register_fonts(bytes.clone());
-            // TODO: handle multiple fonts in the same font file
             let maybe_font = registered_fonts.first();
             if maybe_font.is_none() {
                 warn!("Failed to register default font");

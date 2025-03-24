@@ -53,8 +53,6 @@ impl VelloFont {
             let font_context = font_context.as_mut().unwrap();
 
             LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                // TODO: fix scale magic number
-                // TODO: store and reuse the builder?
                 let mut builder =
                     layout_context.ranged_builder(font_context, &text_section.value, 1.0);
 
@@ -88,8 +86,6 @@ impl VelloFont {
             let font_context = font_context.as_mut().unwrap();
 
             LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                // TODO: fix scale magic number
-                // TODO: store and reuse the builder?
                 let mut builder =
                     layout_context.ranged_builder(font_context, &text_section.value, 1.0);
 
@@ -108,8 +104,6 @@ impl VelloFont {
 
                 // NOTE: Parley aligns differently than our previous skrifa implementation
                 //      so we need to adjust the transform to match the previous behavior
-                //
-                // TODO: manually adjust the transform instead of this hack
                 transform *= vello::kurbo::Affine::translate((0.0, -height));
 
                 match text_anchor {
