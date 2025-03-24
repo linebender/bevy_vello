@@ -9,7 +9,7 @@ pub struct VelloTextSection {
     pub style: VelloTextStyle,
 }
 
-#[derive(Component, Clone)]
+#[derive(Clone)]
 pub struct VelloTextStyle {
     pub font: Handle<VelloFont>,
     pub font_size: f32,

@@ -34,7 +34,20 @@ fn setup_camera(mut commands: Commands) {
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
-            value: "Whereas recognition of the inherent dignity".to_string(),
+            value: "Bevy's default font".to_string(),
+            style: VelloTextStyle {
+                font_size: 24.0,
+                ..default()
+            },
+        },
+        text_anchor: VelloTextAnchor::Center,
+        transform: Transform::from_xyz(0.0, -100.0, 0.0),
+        ..default()
+    });
+
+    commands.spawn(VelloTextBundle {
+        text: VelloTextSection {
+            value: "RobotoFlex-VariableFont".to_string(),
             style: VelloTextStyle {
                 font: asset_server.load(EMBEDDED_FONT),
                 font_size: 48.0,
@@ -42,7 +55,6 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
             },
         },
         text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, 100.0, 0.0),
         ..default()
     });
 }
