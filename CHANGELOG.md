@@ -22,7 +22,6 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 - A `parley::FontContext` and `parley::LayoutContext` has been added in a lazy load multi threaded capacity.
 - Replaces `Rubik-Medium.ttf` from the `text` example with variable font `RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf`.
 - Updates the `text` example with an interactive, keyboard controlled, variable font example.
-- Adds `DefaultFontPlugin` behind `default_font` feature that loads Bevy's default font into a `VelloFont` and adds it to any `VelloTextSection` that does not have a font.
 
 ## [0.7.1] - 2025-03-12
 
