@@ -1,9 +1,9 @@
 use bevy::{
-    asset::{AssetMetaCheck, embedded_asset},
+    asset::{embedded_asset, AssetMetaCheck},
     prelude::*,
     ui::ContentSize,
 };
-use bevy_vello::{VelloPlugin, prelude::*, text::VelloTextAnchor};
+use bevy_vello::{prelude::*, text::VelloTextAnchor, VelloPlugin};
 
 const EMBEDDED_FONT: &str = "embedded://text/assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf";
 
@@ -287,7 +287,7 @@ fn gizmos(
                 Rot2::radians(gtransform.rotation().to_scaled_axis().z),
             ),
             bb_size * gtransform.scale().xy(),
-            Color::srgba(1.0, 1.0, 0.0, 0.2),
+            Color::WHITE,
         );
     }
 }
