@@ -48,6 +48,15 @@ impl Plugin for VelloPlugin {
         #[cfg(feature = "lottie")]
         app.add_plugins(crate::integrations::lottie::LottieIntegrationPlugin);
         #[cfg(feature = "default_font")]
-        app.add_plugins(crate::text::DefaultFontPlugin);
+        {
+            let mut fonts = app
+                .world_mut()
+                .get_resource_mut::<Assets<VelloFont>>()
+                .unwrap();
+            fonts.insert(
+                Handle::default().id(),
+                VelloFont::new(bevy::text::DEFAULT_FONT_DATA.to_vec()),
+            );
+        }
     }
 }
