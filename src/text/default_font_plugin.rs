@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use super::{
+    context::{get_global_font_context, LOCAL_FONT_CONTEXT},
     VelloFont, VelloTextSection,
-    context::{LOCAL_FONT_CONTEXT, get_global_font_context},
 };
 
 pub(crate) struct DefaultFontPlugin;
@@ -30,7 +30,6 @@ fn setup_default_font(mut commands: Commands, asset_server: Res<AssetServer>) {
         if maybe_font.is_none() {
             warn!("Failed to register default font");
         }
-        println!("Registered default font");
         let (family_id, _font_info_vec) = maybe_font.unwrap();
         let family_name = font_context.collection.family_name(*family_id).unwrap();
         let default_font_handle = asset_server.add(VelloFont {
