@@ -53,9 +53,10 @@ impl Plugin for VelloPlugin {
                 .world_mut()
                 .get_resource_mut::<Assets<VelloFont>>()
                 .unwrap();
+
             fonts.insert(
                 Handle::default().id(),
-                VelloFont::new(bevy::text::DEFAULT_FONT_DATA.to_vec()),
+                crate::text::load_into_font_context(bevy::text::DEFAULT_FONT_DATA.to_vec()),
             );
         }
     }
