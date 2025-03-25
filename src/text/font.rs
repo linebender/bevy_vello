@@ -19,7 +19,7 @@ use vello::{
 
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {
-    /// Defaults to Bevy's bevy_text default font family name from
+    /// Defaults to Bevy's bevy_text default font family name.
     ///
     /// https://github.com/bevyengine/bevy/tree/v0.15.3/crates/bevy_text/src/FiraMono-subset.ttf
     pub(crate) family_name: String,
