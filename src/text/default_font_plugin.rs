@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use super::{
-    context::{get_global_font_context, LOCAL_FONT_CONTEXT},
     VelloFont, VelloTextSection,
+    context::{LOCAL_FONT_CONTEXT, get_global_font_context},
 };
 
 pub(crate) struct DefaultFontPlugin;

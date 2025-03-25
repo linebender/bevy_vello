@@ -12,9 +12,14 @@ pub struct VelloTextSection {
 #[derive(Clone)]
 pub struct VelloTextStyle {
     pub font: Handle<VelloFont>,
-    pub font_size: f32,
-    pub line_height: Option<f32>,
     pub brush: Brush,
+    pub font_size: f32,
+    /// Line height multiplier.
+    pub line_height: f32,
+    /// Extra spacing between words.
+    pub word_spacing: f32,
+    /// Extra spacing between letters.
+    pub letter_spacing: f32,
     pub font_axes: VelloFontAxes,
 }
 
@@ -22,9 +27,11 @@ impl Default for VelloTextStyle {
     fn default() -> Self {
         Self {
             font: Default::default(),
-            font_size: 24.0,
-            line_height: None,
             brush: Brush::Solid(peniko::Color::WHITE),
+            font_size: 24.0,
+            line_height: 1.0,
+            word_spacing: 0.0,
+            letter_spacing: 0.0,
             font_axes: Default::default(),
         }
     }

@@ -45,11 +45,17 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
         ..default()
     });
 
+    let brush = vello::peniko::Brush::Solid(vello::peniko::Color::WHITE);
+
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
             value: "bevy_vello using RobotoFlex-VariableFont".to_string(),
             style: VelloTextStyle {
                 font: asset_server.load(EMBEDDED_FONT),
+                brush,
+                line_height: 1.5,
+                word_spacing: 2.0,
+                letter_spacing: 2.0,
                 font_size: 48.0,
                 ..default()
             },
@@ -281,7 +287,7 @@ fn gizmos(
                 Rot2::radians(gtransform.rotation().to_scaled_axis().z),
             ),
             bb_size * gtransform.scale().xy(),
-            Color::WHITE,
+            Color::srgba(1.0, 1.0, 0.0, 0.2),
         );
     }
 }

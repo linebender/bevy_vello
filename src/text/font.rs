@@ -180,33 +180,36 @@ impl VelloFont {
     }
 }
 
-// Applies the font styles to the text
-//
-// font - font asset
-// line_height - line height
+/// Applies the font styles to the text
+///
+/// font_size - font size
+/// line_height - line height
+/// word_spacing - extra spacing between words
+/// letter_spacing - extra spacing between letters
 fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, text_section: &VelloTextSection) {
     builder.push_default(StyleProperty::FontSize(text_section.style.font_size));
-
-    if let Some(line_height) = text_section.style.line_height {
-        builder.push_default(StyleProperty::LineHeight(line_height));
-    }
+    builder.push_default(StyleProperty::LineHeight(text_section.style.line_height));
+    builder.push_default(StyleProperty::WordSpacing(text_section.style.word_spacing));
+    builder.push_default(StyleProperty::LetterSpacing(
+        text_section.style.letter_spacing,
+    ));
 }
 
-// Applies the variable axes to the text
-//
-// wght - font weight
-// wdth - font width
-// opsz - optical size
-// ital - italic
-// slnt - slant
-// GRAD - grade
-// XOPQ - thick stroke
-// YOPQ - thin stroke
-// YTUC - uppercase height
-// YTLC - lowercase height
-// YTAS - ascender height
-// YTDE - descender depth
-// YTFI - figure height
+/// Applies the variable axes to the text
+///
+/// wght - font weight
+/// wdth - font width
+/// opsz - optical size
+/// ital - italic
+/// slnt - slant
+/// GRAD - grade
+/// XOPQ - thick stroke
+/// YOPQ - thin stroke
+/// YTUC - uppercase height
+/// YTLC - lowercase height
+/// YTAS - ascender height
+/// YTDE - descender depth
+/// YTFI - figure height
 fn apply_variable_axes(builder: &mut RangedBuilder<'_, Brush>, axes: &VelloFontAxes) {
     let mut variable_axes: Vec<FontVariation> = vec![];
 
