@@ -156,7 +156,7 @@ struct WithAnimatedFont;
 
 fn animate_axes(
     time: Res<Time>,
-    mut query: Query<&mut VelloTextSection, With<WithAnimatedFont>>,
+    mut text_section: Single<&mut VelloTextSection, With<WithAnimatedFont>>,
     animation_toggles: Res<AnimationToggles>,
 ) {
     let sin_time = (time.elapsed_secs() * ANIMATION_SPEED)
@@ -177,54 +177,52 @@ fn animate_axes(
     let descender_depth = sin_time.remap(0., 1., -98., -305.);
     let figure_height = sin_time.remap(0., 1., 560., 788.);
 
-    for mut text_section in query.iter_mut() {
-        if animation_toggles.weight {
-            text_section.style.font_axes.weight = Some(font_weight);
-        }
+    if animation_toggles.weight {
+        text_section.style.font_axes.weight = Some(font_weight);
+    }
 
-        if animation_toggles.width {
-            text_section.style.font_axes.width = Some(font_width);
-        }
+    if animation_toggles.width {
+        text_section.style.font_axes.width = Some(font_width);
+    }
 
-        if animation_toggles.slant {
-            text_section.style.font_axes.slant = Some(slant);
-        }
+    if animation_toggles.slant {
+        text_section.style.font_axes.slant = Some(slant);
+    }
 
-        if animation_toggles.grade {
-            text_section.style.font_axes.grade = Some(grade);
-        }
+    if animation_toggles.grade {
+        text_section.style.font_axes.grade = Some(grade);
+    }
 
-        if animation_toggles.thick_stroke {
-            text_section.style.font_axes.thick_stroke = Some(thick_stroke);
-        }
+    if animation_toggles.thick_stroke {
+        text_section.style.font_axes.thick_stroke = Some(thick_stroke);
+    }
 
-        if animation_toggles.thin_stroke {
-            text_section.style.font_axes.thin_stroke = Some(thin_stroke);
-        }
+    if animation_toggles.thin_stroke {
+        text_section.style.font_axes.thin_stroke = Some(thin_stroke);
+    }
 
-        if animation_toggles.counter_width {
-            text_section.style.font_axes.counter_width = Some(counter_width);
-        }
+    if animation_toggles.counter_width {
+        text_section.style.font_axes.counter_width = Some(counter_width);
+    }
 
-        if animation_toggles.uppercase_height {
-            text_section.style.font_axes.uppercase_height = Some(uppercase_height);
-        }
+    if animation_toggles.uppercase_height {
+        text_section.style.font_axes.uppercase_height = Some(uppercase_height);
+    }
 
-        if animation_toggles.lowercase_height {
-            text_section.style.font_axes.lowercase_height = Some(lowercase_height);
-        }
+    if animation_toggles.lowercase_height {
+        text_section.style.font_axes.lowercase_height = Some(lowercase_height);
+    }
 
-        if animation_toggles.ascender_height {
-            text_section.style.font_axes.ascender_height = Some(ascender_height);
-        }
+    if animation_toggles.ascender_height {
+        text_section.style.font_axes.ascender_height = Some(ascender_height);
+    }
 
-        if animation_toggles.descender_depth {
-            text_section.style.font_axes.descender_depth = Some(descender_depth);
-        }
+    if animation_toggles.descender_depth {
+        text_section.style.font_axes.descender_depth = Some(descender_depth);
+    }
 
-        if animation_toggles.figure_height {
-            text_section.style.font_axes.figure_height = Some(figure_height);
-        }
+    if animation_toggles.figure_height {
+        text_section.style.font_axes.figure_height = Some(figure_height);
     }
 }
 
