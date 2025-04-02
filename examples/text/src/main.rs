@@ -76,7 +76,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
 
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
-            value: "Justified text along a width\n but the last line is not justified".to_string(),
+            value: "Justified text along a width\nbut the last line is not justified".to_string(),
             text_align: VelloTextAlign::Justified,
             width: Some(720.0),
             style: VelloTextStyle {
