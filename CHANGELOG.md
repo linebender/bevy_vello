@@ -15,6 +15,14 @@ You can find its changes [documented below](#071---2025-03-12).
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 
+### Changed
+
+- Replaces `skrifa` with `parley`, which is the preferred shaping library in the linebender ecosystem.
+- Changes `VelloFont` struct internals.
+- A `parley::FontContext` and `parley::LayoutContext` has been added in a lazy load multi threaded capacity.
+- Replaces `Rubik-Medium.ttf` from the `text` example with variable font `RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf`.
+- Updates the `text` example with an interactive, keyboard controlled, variable font example.
+
 ## [0.7.1] - 2025-03-12
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
