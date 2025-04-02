@@ -143,7 +143,7 @@ pub enum VelloTextAnchor {
 }
 
 /// Alignment of a parley layout.
-#[derive(Default, Component, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub enum VelloTextAlign {
     /// This is [`parley::Alignment::Left`] for LTR text and [`parley::Alignment::Right`] for RTL text.
     #[default]
