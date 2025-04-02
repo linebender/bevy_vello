@@ -3,7 +3,11 @@ use bevy::{
     prelude::*,
     ui::ContentSize,
 };
-use bevy_vello::{VelloPlugin, prelude::*, text::VelloTextAnchor};
+use bevy_vello::{
+    VelloPlugin,
+    prelude::*,
+    text::{VelloTextAlign, VelloTextAnchor},
+};
 
 const EMBEDDED_FONT: &str = "embedded://text/assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf";
 
@@ -32,6 +36,30 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+    let brush = vello::peniko::Brush::Solid(vello::peniko::Color::WHITE);
+
+    commands.spawn((
+        VelloTextBundle {
+            text: VelloTextSection {
+                value: "bevy_vello using RobotoFlex-VariableFont".to_string(),
+                style: VelloTextStyle {
+                    font: asset_server.load(EMBEDDED_FONT),
+                    brush: brush.clone(),
+                    line_height: 1.5,
+                    word_spacing: 2.0,
+                    letter_spacing: 2.0,
+                    font_size: 32.0,
+                    ..default()
+                },
+                ..default()
+            },
+            text_anchor: VelloTextAnchor::Center,
+            transform: Transform::from_xyz(0.0, 150.0, 0.0),
+            ..default()
+        },
+        WithAnimatedFont,
+    ));
+
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
             value: "bevy_vello using Bevy's default font".to_string(),
@@ -39,28 +67,30 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
                 font_size: 24.0,
                 ..default()
             },
+            ..default()
         },
         text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, -100.0, 0.0),
+        transform: Transform::from_xyz(0.0, 40.0, 0.0),
         ..default()
     });
 
-    let brush = vello::peniko::Brush::Solid(vello::peniko::Color::WHITE);
-
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
-            value: "bevy_vello using RobotoFlex-VariableFont".to_string(),
+            value: "Justified text along a width\n but the last line is not justified".to_string(),
+            text_align: VelloTextAlign::Justified,
+            width: Some(720.0),
             style: VelloTextStyle {
                 font: asset_server.load(EMBEDDED_FONT),
                 brush,
                 line_height: 1.5,
                 word_spacing: 2.0,
                 letter_spacing: 2.0,
-                font_size: 48.0,
+                font_size: 32.0,
                 ..default()
             },
         },
         text_anchor: VelloTextAnchor::Center,
+        transform: Transform::from_xyz(0.0, -100.0, 0.0),
         ..default()
     });
 }
@@ -121,9 +151,12 @@ fn toggle_animations(
 
 const ANIMATION_SPEED: f32 = 5.0;
 
+#[derive(Component)]
+struct WithAnimatedFont;
+
 fn animate_axes(
     time: Res<Time>,
-    mut query: Query<&mut VelloTextSection>,
+    mut query: Query<&mut VelloTextSection, With<WithAnimatedFont>>,
     animation_toggles: Res<AnimationToggles>,
 ) {
     let sin_time = (time.elapsed_secs() * ANIMATION_SPEED)
