@@ -3,7 +3,11 @@ use bevy::{
     prelude::*,
     ui::ContentSize,
 };
-use bevy_vello::{VelloPlugin, prelude::*, text::VelloTextAnchor};
+use bevy_vello::{
+    VelloPlugin,
+    prelude::*,
+    text::{VelloTextAlign, VelloTextAnchor},
+};
 
 const EMBEDDED_FONT: &str = "embedded://text/assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf";
 
@@ -32,6 +36,30 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+    let brush = vello::peniko::Brush::Solid(vello::peniko::Color::WHITE);
+
+    commands.spawn((
+        VelloTextBundle {
+            text: VelloTextSection {
+                value: "bevy_vello using RobotoFlex-VariableFont".to_string(),
+                style: VelloTextStyle {
+                    font: asset_server.load(EMBEDDED_FONT),
+                    brush: brush.clone(),
+                    line_height: 1.5,
+                    word_spacing: 2.0,
+                    letter_spacing: 2.0,
+                    font_size: 32.0,
+                    ..default()
+                },
+                ..default()
+            },
+            text_anchor: VelloTextAnchor::Center,
+            transform: Transform::from_xyz(0.0, 150.0, 0.0),
+            ..default()
+        },
+        WithAnimatedFont,
+    ));
+
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
             value: "bevy_vello using Bevy's default font".to_string(),
@@ -39,28 +67,30 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
                 font_size: 24.0,
                 ..default()
             },
+            ..default()
         },
         text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, -100.0, 0.0),
+        transform: Transform::from_xyz(0.0, 40.0, 0.0),
         ..default()
     });
 
-    let brush = vello::peniko::Brush::Solid(vello::peniko::Color::WHITE);
-
     commands.spawn(VelloTextBundle {
         text: VelloTextSection {
-            value: "bevy_vello using RobotoFlex-VariableFont".to_string(),
+            value: "Justified text along a width\nbut the last line is not justified".to_string(),
+            text_align: VelloTextAlign::Justified,
+            width: Some(720.0),
             style: VelloTextStyle {
                 font: asset_server.load(EMBEDDED_FONT),
                 brush,
                 line_height: 1.5,
                 word_spacing: 2.0,
                 letter_spacing: 2.0,
-                font_size: 48.0,
+                font_size: 32.0,
                 ..default()
             },
         },
         text_anchor: VelloTextAnchor::Center,
+        transform: Transform::from_xyz(0.0, -100.0, 0.0),
         ..default()
     });
 }
@@ -121,9 +151,12 @@ fn toggle_animations(
 
 const ANIMATION_SPEED: f32 = 5.0;
 
+#[derive(Component)]
+struct WithAnimatedFont;
+
 fn animate_axes(
     time: Res<Time>,
-    mut query: Query<&mut VelloTextSection>,
+    mut text_section: Single<&mut VelloTextSection, With<WithAnimatedFont>>,
     animation_toggles: Res<AnimationToggles>,
 ) {
     let sin_time = (time.elapsed_secs() * ANIMATION_SPEED)
@@ -144,54 +177,52 @@ fn animate_axes(
     let descender_depth = sin_time.remap(0., 1., -98., -305.);
     let figure_height = sin_time.remap(0., 1., 560., 788.);
 
-    for mut text_section in query.iter_mut() {
-        if animation_toggles.weight {
-            text_section.style.font_axes.weight = Some(font_weight);
-        }
+    if animation_toggles.weight {
+        text_section.style.font_axes.weight = Some(font_weight);
+    }
 
-        if animation_toggles.width {
-            text_section.style.font_axes.width = Some(font_width);
-        }
+    if animation_toggles.width {
+        text_section.style.font_axes.width = Some(font_width);
+    }
 
-        if animation_toggles.slant {
-            text_section.style.font_axes.slant = Some(slant);
-        }
+    if animation_toggles.slant {
+        text_section.style.font_axes.slant = Some(slant);
+    }
 
-        if animation_toggles.grade {
-            text_section.style.font_axes.grade = Some(grade);
-        }
+    if animation_toggles.grade {
+        text_section.style.font_axes.grade = Some(grade);
+    }
 
-        if animation_toggles.thick_stroke {
-            text_section.style.font_axes.thick_stroke = Some(thick_stroke);
-        }
+    if animation_toggles.thick_stroke {
+        text_section.style.font_axes.thick_stroke = Some(thick_stroke);
+    }
 
-        if animation_toggles.thin_stroke {
-            text_section.style.font_axes.thin_stroke = Some(thin_stroke);
-        }
+    if animation_toggles.thin_stroke {
+        text_section.style.font_axes.thin_stroke = Some(thin_stroke);
+    }
 
-        if animation_toggles.counter_width {
-            text_section.style.font_axes.counter_width = Some(counter_width);
-        }
+    if animation_toggles.counter_width {
+        text_section.style.font_axes.counter_width = Some(counter_width);
+    }
 
-        if animation_toggles.uppercase_height {
-            text_section.style.font_axes.uppercase_height = Some(uppercase_height);
-        }
+    if animation_toggles.uppercase_height {
+        text_section.style.font_axes.uppercase_height = Some(uppercase_height);
+    }
 
-        if animation_toggles.lowercase_height {
-            text_section.style.font_axes.lowercase_height = Some(lowercase_height);
-        }
+    if animation_toggles.lowercase_height {
+        text_section.style.font_axes.lowercase_height = Some(lowercase_height);
+    }
 
-        if animation_toggles.ascender_height {
-            text_section.style.font_axes.ascender_height = Some(ascender_height);
-        }
+    if animation_toggles.ascender_height {
+        text_section.style.font_axes.ascender_height = Some(ascender_height);
+    }
 
-        if animation_toggles.descender_depth {
-            text_section.style.font_axes.descender_depth = Some(descender_depth);
-        }
+    if animation_toggles.descender_depth {
+        text_section.style.font_axes.descender_depth = Some(descender_depth);
+    }
 
-        if animation_toggles.figure_height {
-            text_section.style.font_axes.figure_height = Some(figure_height);
-        }
+    if animation_toggles.figure_height {
+        text_section.style.font_axes.figure_height = Some(figure_height);
     }
 }
 

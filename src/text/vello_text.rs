@@ -7,6 +7,8 @@ use vello::peniko::{self, Brush};
 pub struct VelloTextSection {
     pub value: String,
     pub style: VelloTextStyle,
+    pub text_align: VelloTextAlign,
+    pub width: Option<f32>,
 }
 
 #[derive(Clone)]
@@ -138,6 +140,43 @@ pub enum VelloTextAnchor {
     Top,
     /// Bounds start from the render position and advance down and to the left.
     TopRight,
+}
+
+/// Alignment of a parley layout.
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
+pub enum VelloTextAlign {
+    /// This is [`parley::Alignment::Left`] for LTR text and [`parley::Alignment::Right`] for RTL text.
+    #[default]
+    Start,
+    /// This is [`parley::Alignment::Right`] for LTR text and [`parley::Alignment::Left`] for RTL text.
+    End,
+    /// Align content to the left edge.
+    ///
+    /// For alignment that should be aware of text direction, use [`parley::Alignment::Start`] or
+    /// [`parley::Alignment::End`] instead.
+    Left,
+    /// Align each line centered within the container.
+    Middle,
+    /// Align content to the right edge.
+    ///
+    /// For alignment that should be aware of text direction, use [`parley::Alignment::Start`] or
+    /// [`parley::Alignment::End`] instead.
+    Right,
+    /// Justify each line by spacing out content, except for the last line.
+    Justified,
+}
+
+impl From<VelloTextAlign> for parley::Alignment {
+    fn from(value: VelloTextAlign) -> Self {
+        match value {
+            VelloTextAlign::Start => parley::Alignment::Start,
+            VelloTextAlign::End => parley::Alignment::End,
+            VelloTextAlign::Left => parley::Alignment::Left,
+            VelloTextAlign::Middle => parley::Alignment::Middle,
+            VelloTextAlign::Right => parley::Alignment::Right,
+            VelloTextAlign::Justified => parley::Alignment::Justified,
+        }
+    }
 }
 
 impl VelloTextSection {
