@@ -22,6 +22,8 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 - A `parley::FontContext` and `parley::LayoutContext` has been added in a lazy load multi threaded capacity.
 - Replaces `Rubik-Medium.ttf` from the `text` example with variable font `RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf`.
 - Updates the `text` example with an interactive, keyboard controlled, variable font example.
+- Adds `text_align` and `width` to `VelloTextSection` for controlling text alignment and width.
+- Adds `VelloTextAlign` enum for controlling text alignment.
 
 ## [0.7.1] - 2025-03-12
 
