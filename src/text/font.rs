@@ -75,7 +75,13 @@ impl VelloFont {
                     parley::AlignmentOptions::default(),
                 );
 
-                Vec2::new(layout.width(), layout.height())
+                let width = if text_section.width.is_some() {
+                    text_section.width.unwrap()
+                } else {
+                    layout.width()
+                };
+
+                Vec2::new(width, layout.height())
             })
         })
     }
@@ -114,7 +120,12 @@ impl VelloFont {
                     parley::AlignmentOptions::default(),
                 );
 
-                let width = layout.width() as f64;
+                let width = if text_section.width.is_some() {
+                    text_section.width.unwrap()
+                } else {
+                    layout.width()
+                } as f64;
+
                 let height = layout.height() as f64;
 
                 // NOTE: Parley aligns differently than our previous skrifa implementation
