@@ -24,6 +24,11 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 - Updates the `text` example with an interactive, keyboard controlled, variable font example.
 - Adds `text_align` and `width` to `VelloTextSection` for controlling text alignment and width.
 - Adds `VelloTextAlign` enum for controlling text alignment.
+- `VelloSvgHandle` now derives `Reflect`.
+- `VelloSvgAnchor` now derives `Debug` and `Reflect`.
+- `VelloLottieHandle` now derives `Reflect`.
+- `VelloLottieAnchor` now derives `Debug` and `Reflect`.
+- `PlaybackOptions` now derives `Reflect`.
 
 ## [0.7.1] - 2025-03-12
 
