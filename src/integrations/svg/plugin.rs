@@ -1,4 +1,6 @@
-use super::{VelloSvg, asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render};
+use super::{
+    VelloSvg, VelloSvgAnchor, asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render,
+};
 use crate::render::extract::VelloExtractStep;
 use bevy::{
     prelude::*,
@@ -14,6 +16,8 @@ impl Plugin for SvgIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset_loader::<VelloSvgLoader>()
             .init_asset::<VelloSvg>()
+            .register_type::<VelloSvgHandle>()
+            .register_type::<VelloSvgAnchor>()
             .add_systems(
                 PostUpdate,
                 check_visibility::<With<VelloSvgHandle>>.in_set(VisibilitySystems::CheckVisibility),
