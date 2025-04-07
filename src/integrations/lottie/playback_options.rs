@@ -45,6 +45,7 @@ impl Default for PlaybackOptions {
 
 /// The direction to play the segments of a lottie animation.
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
+#[reflect(Component)]
 pub enum PlaybackDirection {
     /// Play in the default direction, first frame to last frame.
     #[default]
@@ -55,6 +56,7 @@ pub enum PlaybackDirection {
 
 /// How often to loop.
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
+#[reflect(Component)]
 pub enum PlaybackLoopBehavior {
     /// Do not loop. This is equivalent to `PlaybackLoopBehavior::Amount(0)`.
     DoNotLoop,
@@ -68,6 +70,7 @@ pub enum PlaybackLoopBehavior {
 /// Whether to reset (normal) the playhead every loop or to reverse directions
 /// (bounce).
 #[derive(PartialEq, Component, Default, Clone, Copy, Debug, Reflect)]
+#[reflect(Component)]
 pub enum PlaybackPlayMode {
     /// Reset the playhead every loop.
     #[default]

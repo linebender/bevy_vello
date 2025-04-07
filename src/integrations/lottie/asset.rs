@@ -2,7 +2,7 @@ use crate::prelude::*;
 use bevy::{prelude::*, reflect::TypePath};
 use std::sync::Arc;
 
-#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq)]
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     VelloLottieAnchor,
     Playhead,
@@ -11,6 +11,7 @@ use std::sync::Arc;
     Transform,
     Visibility
 )]
+#[reflect(Component)]
 pub struct VelloLottieHandle(pub Handle<VelloLottie>);
 
 #[derive(Asset, TypePath, Clone)]
