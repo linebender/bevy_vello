@@ -1346,8 +1346,6 @@ name = "bevy_vello"
 version = "0.7.1"
 dependencies = [
  "bevy",
- "bytemuck",
- "once_cell",
  "parley",
  "thiserror 2.0.12",
  "velato",

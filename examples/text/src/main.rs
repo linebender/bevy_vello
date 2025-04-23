@@ -3,11 +3,7 @@ use bevy::{
     prelude::*,
     ui::ContentSize,
 };
-use bevy_vello::{
-    VelloPlugin,
-    prelude::*,
-    text::{VelloTextAlign, VelloTextAnchor},
-};
+use bevy_vello::{VelloPlugin, prelude::*};
 
 const EMBEDDED_FONT: &str = "embedded://text/assets/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf";
 

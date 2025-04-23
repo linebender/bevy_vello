@@ -10,5 +10,8 @@ pub mod svg;
 #[cfg(feature = "lottie")]
 pub mod lottie;
 
+#[cfg(feature = "text")]
+pub mod text;
+
 mod error;
 pub use error::VectorLoaderError;

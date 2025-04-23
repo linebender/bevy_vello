@@ -17,6 +17,7 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 
 ### Changed
 
+- All text rendering is now locked behind the `text` cargo feature. See the text example for help.
 - Replaces `skrifa` with `parley`, which is the preferred shaping library in the linebender ecosystem.
 - Changes `VelloFont` struct internals.
 - A `parley::FontContext` and `parley::LayoutContext` has been added in a lazy load multi threaded capacity.
@@ -29,6 +30,11 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.
 - `VelloLottieHandle` now derives `Reflect`.
 - `VelloLottieAnchor` now derives `Debug` and `Reflect`.
 - `PlaybackOptions` now derives `Reflect`.
+
+### Fixed
+
+- `vello_svg` is now only brought in when the `svg` feature is active.
+- `velato` is now only brought in when the `lottie` feature is active.
 
 ## [0.7.1] - 2025-03-12
 

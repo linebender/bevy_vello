@@ -11,21 +11,22 @@ pub use plugin::VelloPlugin;
 pub mod diagnostics;
 pub mod integrations;
 pub mod render;
-pub mod text;
 
 // Re-exports
+#[cfg(feature = "text")]
+pub use parley;
+#[cfg(feature = "lottie")]
 pub use velato;
 pub use vello;
+#[cfg(feature = "svg")]
 pub use vello_svg;
 
 pub mod prelude {
-    pub use parley;
     pub use vello::{self, kurbo, peniko};
 
     pub use crate::{
-        VelloScene, VelloSceneBundle, VelloTextBundle,
+        VelloScene, VelloSceneBundle,
         render::{SkipEncoding, VelloRenderSettings, VelloView},
-        text::{VelloFont, VelloTextAnchor, VelloTextSection, VelloTextStyle},
     };
 
     #[cfg(feature = "lottie")]
@@ -36,6 +37,11 @@ pub mod prelude {
     };
     #[cfg(feature = "svg")]
     pub use crate::integrations::svg::{VelloSvg, VelloSvgAnchor, VelloSvgBundle, VelloSvgHandle};
+    #[cfg(feature = "text")]
+    pub use crate::integrations::text::{
+        VelloFont, VelloTextAlign, VelloTextAnchor, VelloTextBundle, VelloTextSection,
+        VelloTextStyle,
+    };
 }
 
 #[derive(Bundle, Default)]
@@ -43,18 +49,6 @@ pub struct VelloSceneBundle {
     /// Scene to render
     pub scene: VelloScene,
     /// A transform to apply to this scene
-    pub transform: Transform,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub visibility: Visibility,
-}
-
-#[derive(Bundle, Default)]
-pub struct VelloTextBundle {
-    /// Text to render
-    pub text: VelloTextSection,
-    /// How the text is positioned relative to its [`Transform`].
-    pub text_anchor: VelloTextAnchor,
-    /// A transform to apply to this text
     pub transform: Transform,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,

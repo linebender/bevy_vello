@@ -4,7 +4,7 @@ use super::{
     prepare, systems,
 };
 use crate::{
-    VelloFont, VelloScene, VelloTextSection, VelloView,
+    VelloScene, VelloView,
     render::{
         SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
         VelloRenderQueue, VelloRenderer, extract::VelloExtractStep,
@@ -16,7 +16,6 @@ use bevy::{
     render::{
         Render, RenderApp, RenderSet,
         extract_component::ExtractComponentPlugin,
-        render_asset::RenderAssetPlugin,
         renderer::RenderDevice,
         view::{VisibilitySystems, check_visibility},
     },
@@ -61,8 +60,7 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 ExtractSchedule,
-                (extract::extract_scenes, extract::extract_text)
-                    .in_set(VelloExtractStep::ExtractAssets),
+                extract::extract_scenes.in_set(VelloExtractStep::ExtractAssets),
             )
             .add_systems(
                 ExtractSchedule,
@@ -71,11 +69,7 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 Render,
-                (
-                    prepare::prepare_scene_affines,
-                    prepare::prepare_text_affines,
-                )
-                    .in_set(RenderSet::Prepare),
+                prepare::prepare_scene_affines.in_set(RenderSet::Prepare),
             )
             .add_systems(
                 Render,
@@ -95,7 +89,6 @@ impl Plugin for VelloRenderPlugin {
             .add_plugins((
                 Material2dPlugin::<VelloCanvasMaterial>::default(),
                 ExtractComponentPlugin::<SSRenderTarget>::default(),
-                RenderAssetPlugin::<VelloFont>::default(),
             ))
             .add_systems(Startup, systems::setup_ss_rendertarget)
             .add_systems(
@@ -104,8 +97,7 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 PostUpdate,
-                check_visibility::<Or<(With<VelloScene>, With<VelloTextSection>)>>
-                    .in_set(VisibilitySystems::CheckVisibility),
+                check_visibility::<With<VelloScene>>.in_set(VisibilitySystems::CheckVisibility),
             );
     }
 

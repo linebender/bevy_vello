@@ -180,9 +180,10 @@ pub(crate) enum VelloRenderItem {
         affine: Affine,
         item: extract::ExtractedVelloScene,
     },
+    #[cfg(feature = "text")]
     Text {
         affine: Affine,
-        item: extract::ExtractedVelloText,
+        item: crate::integrations::text::render::ExtractedVelloText,
     },
 }
 
@@ -196,6 +197,7 @@ pub(crate) struct VelloEntityCountData {
     /// Number of scenes.
     pub n_scenes: u32,
     /// Number of text sections.
+    #[cfg(feature = "text")]
     pub n_texts: u32,
     /// Number of SVGs.
     #[cfg(feature = "svg")]
