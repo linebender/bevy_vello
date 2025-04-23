@@ -27,7 +27,7 @@ use crate::integrations::lottie::render::ExtractedLottieAsset;
 #[cfg(feature = "svg")]
 use crate::integrations::svg::render::ExtractedVelloSvg;
 #[cfg(feature = "text")]
-use crate::integrations::text::render::ExtractedVelloText;
+use crate::integrations::text::{VelloFont, render::ExtractedVelloText};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -123,7 +123,7 @@ pub fn sort_render_items(
 #[allow(clippy::complexity)]
 pub fn render_frame(
     ss_render_target: Single<&SSRenderTarget>,
-    #[cfg(feature = "text")] font_render_assets: Res<RenderAssets<crate::prelude::VelloFont>>,
+    #[cfg(feature = "text")] font_render_assets: Res<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
