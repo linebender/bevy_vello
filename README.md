@@ -41,7 +41,8 @@ cargo run -p <example name>
 
 |Cargo feature|Description|Default?|
 |---|---|----|
-|`default_font`|Include a default font, containing only ASCII characters, at the cost of a 20kB binary size increase|Yes|
+|`text`|Render text from `.ttf` fonts with [`parley`](https://github.com/linebender/parley)|No|
+|`default_font`|Include Bevy's default font, containing only ASCII characters, at the cost of a 20kB binary size increase|No|
 |`svg`|Render `.svg` files with [`vello_svg`](https://github.com/linebender/vello_svg)|No|
 |`lottie`|Render `.json` Lottie files with [`velato`](https://github.com/linebender/velato)|No|
 

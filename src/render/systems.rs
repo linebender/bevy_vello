@@ -1,10 +1,9 @@
 use super::{
     VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
-    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer,
-    extract::{ExtractedVelloText, SSRenderTarget},
+    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
     prepare::PreparedAffine,
 };
-use crate::{VelloFont, render::extract::ExtractedVelloScene};
+use crate::render::extract::ExtractedVelloScene;
 use bevy::{
     prelude::*,
     render::{
@@ -27,6 +26,8 @@ use vello::{RenderParams, Scene};
 use crate::integrations::lottie::render::ExtractedLottieAsset;
 #[cfg(feature = "svg")]
 use crate::integrations::svg::render::ExtractedVelloSvg;
+#[cfg(feature = "text")]
+use crate::integrations::text::{VelloFont, render::ExtractedVelloText};
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
@@ -59,7 +60,7 @@ pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Han
 
 pub fn sort_render_items(
     view_scenes: Query<(&PreparedAffine, &ExtractedVelloScene)>,
-    view_text: Query<(&PreparedAffine, &ExtractedVelloText)>,
+    #[cfg(feature = "text")] view_text: Query<(&PreparedAffine, &ExtractedVelloText)>,
     #[cfg(feature = "svg")] view_svgs: Query<(&PreparedAffine, &ExtractedVelloSvg)>,
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
@@ -94,6 +95,7 @@ pub fn sort_render_items(
             },
         )
     }));
+    #[cfg(feature = "text")]
     render_queue.extend(view_text.iter().map(|(&affine, text)| {
         (
             text.transform.translation().z,
@@ -121,7 +123,7 @@ pub fn sort_render_items(
 #[allow(clippy::complexity)]
 pub fn render_frame(
     ss_render_target: Single<&SSRenderTarget>,
-    font_render_assets: Res<RenderAssets<VelloFont>>,
+    #[cfg(feature = "text")] font_render_assets: Res<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
@@ -201,6 +203,7 @@ pub fn render_frame(
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
+            #[cfg(feature = "text")]
             VelloRenderItem::Text {
                 affine,
                 item:
@@ -342,7 +345,9 @@ pub fn hide_when_empty(
     mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
     entity_count: Res<VelloEntityCountData>,
 ) {
-    let is_empty = entity_count.n_scenes == 0 && entity_count.n_texts == 0;
+    let is_empty = entity_count.n_scenes == 0;
+    #[cfg(feature = "text")]
+    let is_empty = is_empty && entity_count.n_texts == 0;
     #[cfg(feature = "svg")]
     let is_empty = is_empty && entity_count.n_svgs == 0;
     #[cfg(feature = "lottie")]

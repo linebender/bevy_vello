@@ -1,7 +1,4 @@
-use super::{
-    VelloView,
-    extract::{ExtractedVelloScene, ExtractedVelloText},
-};
+use super::{VelloView, extract::ExtractedVelloScene};
 use bevy::{
     prelude::*,
     render::{camera::ExtractedCamera, view::ExtractedView},
@@ -78,62 +75,6 @@ pub fn prepare_scene_affines(
 
                 ndc_to_pixels_matrix * view_proj_matrix * model_matrix
             };
-
-            let transform: [f32; 16] = raw_transform.to_cols_array();
-
-            // | a c e |
-            // | b d f |
-            // | 0 0 1 |
-            let transform: [f64; 6] = [
-                transform[0] as f64,  // a
-                -transform[1] as f64, // b
-                -transform[4] as f64, // c
-                transform[5] as f64,  // d
-                transform[12] as f64, // e
-                transform[13] as f64, // f
-            ];
-
-            commands
-                .entity(entity)
-                .insert(PreparedAffine(Affine::new(transform)));
-        }
-    }
-}
-
-pub fn prepare_text_affines(
-    mut commands: Commands,
-    views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
-    render_entities: Query<(Entity, &ExtractedVelloText)>,
-) {
-    for (camera, view) in views.iter() {
-        let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
-        let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-
-        for (entity, render_entity) in render_entities.iter() {
-            let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
-                [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-                [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0],
-            ])
-            .transpose();
-
-            let world_transform = render_entity.transform;
-
-            let mut model_matrix = world_transform.compute_matrix();
-            model_matrix.w_axis.y *= -1.0;
-
-            let (projection_mat, view_mat) = {
-                let mut view_mat = view.world_from_view.compute_matrix();
-                view_mat.w_axis.y *= -1.0;
-
-                (view.clip_from_view, view_mat)
-            };
-
-            let view_proj_matrix = projection_mat * view_mat.inverse();
-            let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
-
-            let raw_transform = vello_matrix * model_matrix;
 
             let transform: [f32; 16] = raw_transform.to_cols_array();
 
