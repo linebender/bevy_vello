@@ -3,7 +3,7 @@ use bevy_egui::{
     EguiContexts,
     egui::{self, Color32},
 };
-use bevy_vello::{prelude::*, vello_svg::usvg::strict_num::Ulps};
+use bevy_vello::prelude::*;
 use std::time::Duration;
 
 #[expect(clippy::type_complexity)]
@@ -41,7 +41,7 @@ pub fn controls_ui(
                 .add(egui::Slider::new(
                     &mut frame,
                     options.segments.start.max(composition.frames.start)
-                        ..=options.segments.end.min(composition.frames.end).prev(),
+                        ..=options.segments.end.min(composition.frames.end),
                 ))
                 .changed()
             {

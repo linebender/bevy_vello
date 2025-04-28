@@ -1,15 +1,30 @@
+use super::{
+    LottiePlayer, PlayerTransition,
+    asset::{VelloLottie, VelloLottieHandle},
+};
 use crate::{
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
     integrations::lottie::PlaybackPlayMode, render::VelloView,
 };
 use bevy::{prelude::*, utils::Instant, window::PrimaryWindow};
 use std::time::Duration;
-use vello_svg::usvg::strict_num::Ulps;
 
-use super::{
-    LottiePlayer, PlayerTransition,
-    asset::{VelloLottie, VelloLottieHandle},
-};
+/// Helper function to get the next smallest representable f64.
+/// For example, prev_f64(3.0) == 2.9999999999999996
+#[inline(always)]
+fn prev_f64(x: f64) -> f64 {
+    let u = x.to_bits();
+    let new_u = if u == 0x0000_0000_0000_0000 {
+        0x8000_0000_0000_0000 // +0.0 -> -0.0
+    } else if u == 0xFFF0_0000_0000_0000 {
+        u // -inf -> -inf
+    } else if x <= -0.0 {
+        u + 1
+    } else {
+        u - 1
+    };
+    f64::from_bits(new_u)
+}
 
 /// Advance all playheads in the scene
 pub fn advance_playheads(
@@ -29,12 +44,9 @@ pub fn advance_playheads(
         };
 
         // Keep playhead bounded
+
         let start_frame = options.segments.start.max(asset.composition.frames.start);
-        let end_frame = options
-            .segments
-            .end
-            .min(asset.composition.frames.end)
-            .prev();
+        let end_frame = prev_f64(options.segments.end.min(asset.composition.frames.end));
         playhead.frame = playhead.frame.clamp(start_frame, end_frame);
 
         // Check if we are stopped
@@ -220,11 +232,12 @@ pub fn run_transitions(
                     };
                     match options.direction {
                         PlaybackDirection::Normal => {
-                            let end_frame = options
-                                .segments
-                                .end
-                                .min(current_asset.composition.frames.end)
-                                .prev();
+                            let end_frame = prev_f64(
+                                options
+                                    .segments
+                                    .end
+                                    .min(current_asset.composition.frames.end),
+                            );
                             if playhead.frame == end_frame
                                 && loops_needed
                                     .is_some_and(|needed| playhead.loops_completed >= needed)
@@ -329,11 +342,12 @@ pub fn transition_state(
                         .segments
                         .start
                         .max(asset.composition.frames.start),
-                    PlaybackDirection::Reverse => target_options
-                        .segments
-                        .end
-                        .min(asset.composition.frames.end)
-                        .prev(),
+                    PlaybackDirection::Reverse => prev_f64(
+                        target_options
+                            .segments
+                            .end
+                            .min(asset.composition.frames.end),
+                    ),
                 };
                 playhead.seek(frame);
             }
