@@ -29,7 +29,8 @@ cargo run -p <example name>
 
 |bevy|bevy_vello|vello|
 |---|---|---|
-|0.15|0.7,main|0.4|
+|0.16|Not yet ready|Not yet ready|
+|0.15|0.7-0.8,main|0.4|
 |0.14|0.5-0.6|0.3|
 |0.13|0.1-0.4|0.2|
 |< 0.13| unsupported | |
