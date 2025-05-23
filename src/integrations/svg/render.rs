@@ -43,8 +43,6 @@ pub fn extract_svg_assets(
                 &GlobalTransform,
                 Option<&ComputedNode>,
                 Option<&RenderLayers>,
-                &ViewVisibility,
-                &InheritedVisibility,
             ),
             Without<SkipEncoding>,
         >,
@@ -58,20 +56,7 @@ pub fn extract_svg_assets(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (
-        asset_handle,
-        asset_anchor,
-        transform,
-        ui_node,
-        render_layers,
-        view_visibility,
-        inherited_visibility,
-    ) in query_vectors.iter()
-    {
-        // Skip if visibility conditions are not met
-        if !view_visibility.get() || !inherited_visibility.get() {
-            continue;
-        }
+    for (asset_handle, asset_anchor, transform, ui_node, render_layers) in query_vectors.iter() {
         // Skip if asset isn't loaded.
         let Some(asset) = assets.get(asset_handle.id()) else {
             continue;

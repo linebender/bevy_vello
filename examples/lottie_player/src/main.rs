@@ -14,7 +14,9 @@ fn main() {
         meta_check: AssetMetaCheck::Never,
         ..default()
     }))
-    .add_plugins(EguiPlugin)
+    .add_plugins(EguiPlugin {
+        enable_multipass_for_primary_context: false,
+    })
     .add_plugins(VelloPlugin::default())
     .init_resource::<EmbeddedAssetRegistry>()
     .add_plugins(bevy_pancam::PanCamPlugin)
@@ -79,7 +81,7 @@ fn print_metadata(
     for ev in asset_ev.read() {
         if let AssetEvent::LoadedWithDependencies { id } = ev {
             let asset = assets.get(*id).unwrap();
-            info!(
+            tracing::info!(
                 "Animated asset loaded. Layers:\n{:#?}",
                 asset.composition.as_ref().get_layers().collect::<Vec<_>>()
             );

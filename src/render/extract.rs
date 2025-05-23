@@ -34,8 +34,6 @@ pub fn extract_scenes(
             (
                 &VelloScene,
                 &GlobalTransform,
-                &ViewVisibility,
-                &InheritedVisibility,
                 Option<&ComputedNode>,
                 Option<&RenderLayers>,
             ),
@@ -50,14 +48,7 @@ pub fn extract_scenes(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (scene, transform, view_visibility, inherited_visibility, ui_node, render_layers) in
-        query_scenes.iter()
-    {
-        // Skip if visibility conditions are not met
-        if !view_visibility.get() || !inherited_visibility.get() {
-            continue;
-        }
-
+    for (scene, transform, ui_node, render_layers) in query_scenes.iter() {
         // Check if any camera renders this asset
         let asset_render_layers = render_layers.unwrap_or_default();
         if views.iter().any(|(_, camera_layers)| {

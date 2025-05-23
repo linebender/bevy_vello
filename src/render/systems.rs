@@ -1,6 +1,6 @@
 use super::{
-    VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
-    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
+    VelloCanvasMaterial, VelloCanvasSettings, VelloFrameProfileData, VelloRenderItem,
+    VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
     prepare::PreparedAffine,
 };
 use crate::render::extract::ExtractedVelloScene;
@@ -233,8 +233,8 @@ pub fn render_frame(
             &gpu_image.texture_view,
             &RenderParams {
                 base_color: vello::peniko::Color::TRANSPARENT,
-                width: gpu_image.size.x,
-                height: gpu_image.size.y,
+                width: gpu_image.size.width,
+                height: gpu_image.size.height,
                 antialiasing_method: render_settings.antialiasing,
             },
         )
@@ -267,7 +267,7 @@ pub fn resize_rendertargets(
                 target.0 = image.clone();
                 mat.texture = image;
             }
-            debug!(
+            tracing::debug!(
                 size = format!(
                     "Resized Vello render image to {:?}",
                     (size.width, size.height)
@@ -334,29 +334,8 @@ pub fn render_settings_change_detection(
 ) {
     if render_settings.is_changed() && !render_settings.is_added() {
         // Replace renderer
-        info!("Render settings changed, re-initializing vello...");
+        tracing::info!("Render settings changed, re-initializing vello...");
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
-    }
-}
-
-/// Hide the render target canvas if there is nothing to render
-pub fn hide_when_empty(
-    mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
-    entity_count: Res<VelloEntityCountData>,
-) {
-    let is_empty = entity_count.n_scenes == 0;
-    #[cfg(feature = "text")]
-    let is_empty = is_empty && entity_count.n_texts == 0;
-    #[cfg(feature = "svg")]
-    let is_empty = is_empty && entity_count.n_svgs == 0;
-    #[cfg(feature = "lottie")]
-    let is_empty = is_empty && entity_count.n_lotties == 0;
-    if let Some(visibility) = query_render_target.as_deref_mut() {
-        if is_empty {
-            **visibility = Visibility::Hidden;
-        } else {
-            **visibility = Visibility::Inherited;
-        }
     }
 }

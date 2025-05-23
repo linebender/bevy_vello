@@ -5,10 +5,7 @@ use super::{
 use crate::render::{VelatoRenderer, extract::VelloExtractStep};
 use bevy::{
     prelude::*,
-    render::{
-        Render, RenderApp, RenderSet,
-        view::{VisibilitySystems, check_visibility},
-    },
+    render::{Render, RenderApp, RenderSet},
 };
 
 pub struct LottieIntegrationPlugin;
@@ -24,11 +21,6 @@ impl Plugin for LottieIntegrationPlugin {
             .add_systems(
                 Last,
                 (systems::run_transitions, systems::transition_state).chain(),
-            )
-            .add_systems(
-                PostUpdate,
-                check_visibility::<With<VelloLottieHandle>>
-                    .in_set(VisibilitySystems::CheckVisibility),
             );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {

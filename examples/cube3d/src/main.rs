@@ -143,8 +143,8 @@ fn render_texture(
     let gpu_image = gpu_images.get(target.0.id()).unwrap();
     let params = vello::RenderParams {
         base_color: vello::peniko::Color::WHITE,
-        width: gpu_image.size.x,
-        height: gpu_image.size.y,
+        width: gpu_image.size.width,
+        height: gpu_image.size.height,
         antialiasing_method: render_settings.antialiasing,
     };
     renderer

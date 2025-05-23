@@ -43,5 +43,5 @@ fn screenshot(mut commands: Commands) {
 }
 
 fn exit_system(_trigger: Trigger<ScreenshotCaptured>, mut exit: EventWriter<AppExit>) {
-    exit.send(AppExit::Success);
+    exit.write(AppExit::Success);
 }
