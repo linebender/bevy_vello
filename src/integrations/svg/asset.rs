@@ -3,7 +3,7 @@ use bevy::{prelude::*, reflect::TypePath};
 use std::sync::Arc;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(VelloSvgAnchor, Transform, Visibility)]
+#[require(VelloSvgAnchor, Transform)]
 #[reflect(Component)]
 pub struct VelloSvgHandle(pub Handle<VelloSvg>);
 

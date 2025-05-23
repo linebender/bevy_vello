@@ -27,6 +27,10 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.86.
 - updates `vello_svg` to 0.7.0
 - updates `parley` to 0.4.0
 
+### Removed
+
+- visibility logic removed pending new implementation
+
 ## [0.8.0] - 2025-04-29
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.

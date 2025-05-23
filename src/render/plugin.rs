@@ -89,10 +89,7 @@ impl Plugin for VelloRenderPlugin {
                 ExtractComponentPlugin::<SSRenderTarget>::default(),
             ))
             .add_systems(Startup, systems::setup_ss_rendertarget)
-            .add_systems(
-                Update,
-                (systems::resize_rendertargets, systems::hide_when_empty),
-            );
+            .add_systems(Update, systems::resize_rendertargets);
     }
 
     fn finish(&self, app: &mut App) {

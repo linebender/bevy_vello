@@ -3,14 +3,7 @@ use bevy::{prelude::*, reflect::TypePath};
 use std::sync::Arc;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(
-    VelloLottieAnchor,
-    Playhead,
-    PlaybackOptions,
-    LottiePlayer,
-    Transform,
-    Visibility
-)]
+#[require(VelloLottieAnchor, Playhead, PlaybackOptions, LottiePlayer, Transform)]
 #[reflect(Component)]
 pub struct VelloLottieHandle(pub Handle<VelloLottie>);
 

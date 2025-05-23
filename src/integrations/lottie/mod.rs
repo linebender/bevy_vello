@@ -53,8 +53,6 @@ pub struct VelloLottieBundle {
     pub player: LottiePlayer,
     /// A transform to apply to this vector
     pub transform: Transform,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub visibility: Visibility,
 }
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].
