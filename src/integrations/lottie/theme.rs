@@ -3,7 +3,7 @@
 //! A long-term vision here is a selector-styled language, but now is just color swapping by layer
 //! name.
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{platform::collections::HashMap, prelude::*};
 use velato::{
     Composition,
     model::{Brush, Shape},

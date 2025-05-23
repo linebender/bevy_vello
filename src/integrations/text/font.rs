@@ -31,6 +31,7 @@ impl RenderAsset for VelloFont {
 
     fn prepare_asset(
         source_asset: Self::SourceAsset,
+        _asset_id: AssetId<Self::SourceAsset>,
         _param: &mut bevy::ecs::system::SystemParamItem<Self::Param>,
     ) -> Result<Self, bevy::render::render_asset::PrepareAssetError<Self::SourceAsset>> {
         Ok(source_asset)
@@ -54,8 +55,10 @@ impl VelloFont {
             let font_context = font_context.as_mut().unwrap();
 
             LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
+                // TODO: fourth argument is new in parley 0.4.0, should perhaps be defaulted to
+                // false and also be configurable
                 let mut builder =
-                    layout_context.ranged_builder(font_context, &text_section.value, 1.0);
+                    layout_context.ranged_builder(font_context, &text_section.value, 1.0, true);
 
                 apply_font_styles(&mut builder, text_section);
                 apply_variable_axes(&mut builder, &text_section.style.font_axes);
@@ -99,8 +102,10 @@ impl VelloFont {
             let font_context = font_context.as_mut().unwrap();
 
             LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
+                // TODO: fourth argument is new in parley 0.4.0, should perhaps be defaulted to
+                // false and also be configurable
                 let mut builder =
-                    layout_context.ranged_builder(font_context, &text_section.value, 1.0);
+                    layout_context.ranged_builder(font_context, &text_section.value, 1.0, true);
 
                 apply_font_styles(&mut builder, text_section);
                 apply_variable_axes(&mut builder, &text_section.style.font_axes);

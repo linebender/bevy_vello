@@ -1,4 +1,4 @@
-use bevy::utils::hashbrown::HashSet;
+use bevy::platform::collections::HashSet;
 use velato::Composition;
 
 /// Extension methods used for debugging.

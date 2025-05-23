@@ -6,7 +6,7 @@ use crate::{
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
     integrations::lottie::PlaybackPlayMode, render::VelloView,
 };
-use bevy::{prelude::*, utils::Instant, window::PrimaryWindow};
+use bevy::{platform::time::Instant, prelude::*, window::PrimaryWindow};
 use std::time::Duration;
 
 /// Helper function to get the next smallest representable f64.
@@ -167,7 +167,7 @@ pub fn run_transitions(
         // We only support rendering to the primary window right now.
         return;
     };
-    let Ok((camera, view)) = query_view.get_single() else {
+    let Ok((camera, view)) = query_view.single() else {
         return;
     };
 
@@ -187,7 +187,7 @@ pub fn run_transitions(
 
         let Some(current_asset) = assets.get_mut(current_asset_handle.id()) else {
             // Asset may not be loaded yet, or in progress. This is common in WASM.
-            warn!(
+            tracing::warn!(
                 current_state = player.current_state,
                 "asset not loaded for state, waiting..."
             );
@@ -310,7 +310,7 @@ pub fn transition_state(
             continue;
         }
 
-        info!("animation controller transitioning to={next_state}");
+        tracing::info!("animation controller transitioning to={next_state}");
         let target_state = player
             .states
             .get(&next_state)
@@ -333,7 +333,7 @@ pub fn transition_state(
             let target_asset = target_state.asset.as_ref();
             if let Some(target_asset) = target_asset {
                 let Some(asset) = assets.get(target_asset.id()) else {
-                    warn!("not ready for state transition, re-queueing {next_state}...");
+                    tracing::warn!("not ready for state transition, re-queueing {next_state}...");
                     player.next_state = Some(next_state);
                     continue;
                 };

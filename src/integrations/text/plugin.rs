@@ -1,13 +1,9 @@
 use crate::render::extract::VelloExtractStep;
 
-use super::{VelloFont, VelloTextSection, font_loader::VelloFontLoader, render};
+use super::{VelloFont, font_loader::VelloFontLoader, render};
 use bevy::{
     prelude::*,
-    render::{
-        Render, RenderApp, RenderSet,
-        render_asset::RenderAssetPlugin,
-        view::{VisibilitySystems, check_visibility},
-    },
+    render::{Render, RenderApp, RenderSet, render_asset::RenderAssetPlugin},
 };
 
 pub struct VelloTextIntegrationPlugin;
@@ -16,12 +12,8 @@ impl Plugin for VelloTextIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>()
-            .add_plugins(RenderAssetPlugin::<VelloFont>::default())
-            .add_systems(
-                PostUpdate,
-                check_visibility::<With<VelloTextSection>>
-                    .in_set(VisibilitySystems::CheckVisibility),
-            );
+            .add_plugins(RenderAssetPlugin::<VelloFont>::default());
+
         #[cfg(feature = "default_font")]
         {
             let mut fonts = app
