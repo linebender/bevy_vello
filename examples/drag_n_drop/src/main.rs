@@ -3,7 +3,7 @@ use bevy::{
     color::palettes::css::RED,
     prelude::*,
 };
-use bevy_async_task::AsyncTaskRunner;
+use bevy_async_task::TaskRunner;
 use bevy_vello::{VelloPlugin, prelude::*};
 use std::{ffi::OsStr, task::Poll};
 
@@ -75,7 +75,7 @@ fn button_system(
         (&Interaction, &mut BackgroundColor, &mut BorderColor),
         (Changed<Interaction>, With<Button>),
     >,
-    mut task_runner: AsyncTaskRunner<Option<(String, Vec<u8>)>>,
+    mut task_runner: TaskRunner<Option<(String, Vec<u8>)>>,
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
 ) {
@@ -105,12 +105,12 @@ fn button_system(
         }
     }
 
-    if let Poll::Ready(Ok(Some((file_name, file)))) = task_runner.poll() {
+    if let Poll::Ready(Some((file_name, file))) = task_runner.poll() {
         if file_name.ends_with(".svg") {
             let svg = match bevy_vello::integrations::svg::load_svg_from_bytes(&file) {
                 Ok(svg) => svg,
                 Err(e) => {
-                    error!("{e:?}");
+                    tracing::error!("{e:?}");
                     return;
                 }
             };
@@ -121,7 +121,7 @@ fn button_system(
             let lottie = match bevy_vello::integrations::lottie::load_lottie_from_bytes(&file) {
                 Ok(lottie) => lottie,
                 Err(e) => {
-                    error!("{e:?}");
+                    tracing::error!("{e:?}");
                     return;
                 }
             };
