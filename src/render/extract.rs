@@ -36,6 +36,7 @@ pub fn extract_scenes(
                 &GlobalTransform,
                 Option<&ComputedNode>,
                 Option<&RenderLayers>,
+                &ViewVisibility,
             ),
             Without<SkipEncoding>,
         >,
@@ -48,7 +49,12 @@ pub fn extract_scenes(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (scene, transform, ui_node, render_layers) in query_scenes.iter() {
+    for (scene, transform, ui_node, render_layers, view_visibility) in query_scenes.iter() {
+        // Skip if visibility conditions are not met
+        if !view_visibility.get() {
+            continue;
+        }
+
         // Check if any camera renders this asset
         let asset_render_layers = render_layers.unwrap_or_default();
         if views.iter().any(|(_, camera_layers)| {

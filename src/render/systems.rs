@@ -1,6 +1,6 @@
 use super::{
-    VelloCanvasMaterial, VelloCanvasSettings, VelloFrameProfileData, VelloRenderItem,
-    VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
+    VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
+    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
     prepare::PreparedAffine,
 };
 use crate::render::extract::ExtractedVelloScene;
@@ -337,5 +337,26 @@ pub fn render_settings_change_detection(
         tracing::info!("Render settings changed, re-initializing vello...");
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
+    }
+}
+
+/// Hide the render target canvas if there is nothing to render
+pub fn hide_when_empty(
+    mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
+    entity_count: Res<VelloEntityCountData>,
+) {
+    let is_empty = entity_count.n_scenes == 0;
+    #[cfg(feature = "text")]
+    let is_empty = is_empty && entity_count.n_texts == 0;
+    #[cfg(feature = "svg")]
+    let is_empty = is_empty && entity_count.n_svgs == 0;
+    #[cfg(feature = "lottie")]
+    let is_empty = is_empty && entity_count.n_lotties == 0;
+    if let Some(visibility) = query_render_target.as_deref_mut() {
+        if is_empty {
+            **visibility = Visibility::Hidden;
+        } else {
+            **visibility = Visibility::Inherited;
+        }
     }
 }

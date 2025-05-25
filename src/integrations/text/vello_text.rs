@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use vello::peniko::{self, Brush};
 
 #[derive(Component, Default, Clone)]
-#[require(VelloTextAnchor, Transform)]
+#[require(VelloTextAnchor, Transform, ViewVisibility)]
 pub struct VelloTextSection {
     pub value: String,
     pub style: VelloTextStyle,

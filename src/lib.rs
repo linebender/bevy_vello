@@ -50,11 +50,13 @@ pub struct VelloSceneBundle {
     pub scene: VelloScene,
     /// A transform to apply to this scene
     pub transform: Transform,
+    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
+    pub view_visibility: ViewVisibility,
 }
 
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
-#[require(Transform)]
+#[require(Transform, ViewVisibility)]
 pub struct VelloScene(Box<vello::Scene>);
 
 impl VelloScene {

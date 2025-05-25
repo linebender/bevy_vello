@@ -22,4 +22,6 @@ pub struct VelloTextBundle {
     pub text_anchor: VelloTextAnchor,
     /// A transform to apply to this text
     pub transform: Transform,
+    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
+    pub view_visibility: ViewVisibility,
 }
