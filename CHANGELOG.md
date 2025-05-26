@@ -17,19 +17,19 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.86.
 
 ### Added
 
-- adds `tracing` crate as bevy removed built-in tracing macros
+- Adds `tracing` crate as bevy removed built-in tracing macros
 
 ### Changed
 
-- updates `bevy` to 0.16
-- updates `vello` to 0.5.0
-- updates `velato` to 0.6.0
-- updates `vello_svg` to 0.7.0
-- updates `parley` to 0.4.0
+- Updates `bevy` to 0.16
+- Updates `vello` to 0.5.0
+- Updates `velato` to 0.6.0
+- Updates `vello_svg` to 0.7.0
+- Updates `parley` to 0.4.0
 
 ### Removed
 
-- visibility logic removed pending new implementation
+- Visibility logic removed pending new implementation
 
 ## [0.8.0] - 2025-04-29
 
