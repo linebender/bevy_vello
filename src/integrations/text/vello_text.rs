@@ -1,9 +1,9 @@
 use crate::VelloFont;
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::VisibilityClass};
 use vello::peniko::{self, Brush};
 
 #[derive(Component, Default, Clone)]
-#[require(VelloTextAnchor, Transform, ViewVisibility)]
+#[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
 pub struct VelloTextSection {
     pub value: String,
     pub style: VelloTextStyle,

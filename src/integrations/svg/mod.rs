@@ -11,7 +11,7 @@ pub use parse::{load_svg_from_bytes, load_svg_from_str};
 mod plugin;
 pub(crate) use plugin::SvgIntegrationPlugin;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::VisibilityClass};
 #[derive(Bundle, Default)]
 pub struct VelloSvgBundle {
     /// Asset data to render
@@ -21,7 +21,9 @@ pub struct VelloSvgBundle {
     /// A transform to apply to this vector
     pub transform: Transform,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub view_visibility: ViewVisibility,
+    pub view_visibility: Visibility,
+    /// A bucket into which we group entities for the purposes of visibility.
+    pub visibility_class: VisibilityClass,
 }
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].

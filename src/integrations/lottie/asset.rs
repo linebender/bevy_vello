@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::{prelude::*, reflect::TypePath, render::view::VisibilityClass};
 use std::sync::Arc;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
@@ -9,7 +9,8 @@ use std::sync::Arc;
     PlaybackOptions,
     LottiePlayer,
     Transform,
-    ViewVisibility
+    Visibility,
+    VisibilityClass
 )]
 #[reflect(Component)]
 pub struct VelloLottieHandle(pub Handle<VelloLottie>);

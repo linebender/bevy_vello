@@ -1,9 +1,9 @@
 use crate::prelude::*;
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::{prelude::*, reflect::TypePath, render::view::VisibilityClass};
 use std::sync::Arc;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(VelloSvgAnchor, Transform, ViewVisibility)]
+#[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
 #[reflect(Component)]
 pub struct VelloSvgHandle(pub Handle<VelloSvg>);
 
