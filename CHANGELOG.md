@@ -34,10 +34,6 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.86.
 - Updates `parley` to 0.4.0
 - Moves `hide_when_empty` system into `CheckVisibility` system set.
 
-### Removed
-
-- InheritedVisibility logic removed pending new implementation
-
 ## [0.8.0] - 2025-04-29
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.

@@ -37,6 +37,7 @@ pub fn extract_scenes(
                 Option<&ComputedNode>,
                 Option<&RenderLayers>,
                 &ViewVisibility,
+                &InheritedVisibility,
             ),
             Without<SkipEncoding>,
         >,
@@ -49,9 +50,11 @@ pub fn extract_scenes(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (scene, transform, ui_node, render_layers, view_visibility) in query_scenes.iter() {
+    for (scene, transform, ui_node, render_layers, view_visibility, inherited_visibility) in
+        query_scenes.iter()
+    {
         // Skip if visibility conditions are not met
-        if !view_visibility.get() {
+        if !view_visibility.get() || !inherited_visibility.get() {
             continue;
         }
 

@@ -32,6 +32,7 @@ pub fn extract_text(
                 &GlobalTransform,
                 Option<&RenderLayers>,
                 &ViewVisibility,
+                &InheritedVisibility,
             ),
             Without<SkipEncoding>,
         >,
@@ -45,9 +46,11 @@ pub fn extract_text(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (text, text_anchor, transform, render_layers, view_visibility) in query_scenes.iter() {
+    for (text, text_anchor, transform, render_layers, view_visibility, inherited_visibility) in
+        query_scenes.iter()
+    {
         // Skip if visibility conditions are not met
-        if !view_visibility.get() {
+        if !view_visibility.get() || !inherited_visibility.get() {
             continue;
         }
 

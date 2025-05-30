@@ -48,6 +48,7 @@ pub fn extract_lottie_assets(
                 Option<&ComputedNode>,
                 Option<&RenderLayers>,
                 &ViewVisibility,
+                &InheritedVisibility,
             ),
             Without<SkipEncoding>,
         >,
@@ -70,10 +71,11 @@ pub fn extract_lottie_assets(
         ui_node,
         render_layers,
         view_visibility,
+        inherited_visibility,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
-        if !view_visibility.get() {
+        if !view_visibility.get() || !inherited_visibility.get() {
             continue;
         }
 
