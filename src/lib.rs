@@ -3,7 +3,10 @@
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 use crate::prelude::*;
-use bevy::{prelude::*, render::view::VisibilityClass};
+use bevy::{
+    prelude::*,
+    render::view::{self, VisibilityClass},
+};
 
 mod plugin;
 pub use plugin::VelloPlugin;
@@ -59,6 +62,7 @@ pub struct VelloSceneBundle {
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
 #[require(Transform, Visibility, VisibilityClass)]
+#[component(on_add = view::add_visibility_class::<VelloScene>)]
 pub struct VelloScene(Box<vello::Scene>);
 
 impl VelloScene {
