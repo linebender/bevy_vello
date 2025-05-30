@@ -39,48 +39,25 @@ fn main() {
 }
 
 fn log_visibility(
-    scene_q: Query<&ViewVisibility, (Changed<ViewVisibility>, With<VelloScene>)>,
-    lottie_q: Query<&ViewVisibility, (Changed<ViewVisibility>, With<VelloLottieHandle>)>,
-    svg_q: Query<&ViewVisibility, (Changed<ViewVisibility>, With<VelloSvgHandle>)>,
-    text_q: Query<&ViewVisibility, (Changed<ViewVisibility>, With<VelloTextSection>)>,
+    scene: Single<&ViewVisibility, With<VelloScene>>,
+    lottie: Single<&ViewVisibility, With<VelloLottieHandle>>,
+    svg: Single<&ViewVisibility, With<VelloSvgHandle>>,
+    text: Single<&ViewVisibility, With<VelloTextSection>>,
 ) {
-    for view_visibility in &scene_q {
-        if view_visibility.get() {
-            println!("Scene is visible");
-        } else {
-            println!("Scene is not visible");
-        }
-    }
+    let visible_status = format!(
+        "{{\n  scene: {},\n  lottie: {},\n  svg: {},\n  text: {}\n}}",
+        scene.get(),
+        lottie.get(),
+        svg.get(),
+        text.get()
+    );
 
-    for view_visibility in &lottie_q {
-        if view_visibility.get() {
-            println!("Lottie is visible");
-        } else {
-            println!("Lottie is not visible");
-        }
-    }
-
-    for view_visibility in &svg_q {
-        if view_visibility.get() {
-            println!("SVG is visible");
-        } else {
-            println!("SVG is not visible");
-        }
-    }
-
-    for view_visibility in &text_q {
-        if view_visibility.get() {
-            println!("Text is visible");
-        } else {
-            println!("Text is not visible");
-        }
-    }
+    println!("{}", visible_status);
 }
 
 fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2d, VelloView));
 
-    // TODO: add bb_in_screen_space and bb_in_world_space to VelloScene
     commands
         .spawn(VelloScene::new())
         .insert(RightLeft)
@@ -123,61 +100,37 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
 }
 
 fn update_lottie_aab(
-    camera: Single<(&Camera, &GlobalTransform), With<Camera2d>>,
     lottie_assets: Res<Assets<VelloLottie>>,
     mut lottie_q: Query<(&GlobalTransform, &VelloLottieHandle, &mut Aabb), Added<Aabb>>,
 ) {
-    let (camera, camera_transform) = *camera;
-
     for (lottie_transform, handle, mut aabb) in &mut lottie_q {
         if let Some(vello_lottie) = lottie_assets.get(&handle.0) {
-            if let Some(bb) =
-                vello_lottie.bb_in_screen_space(lottie_transform, camera, camera_transform)
-            {
-                *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
-            } else {
-                *aabb = Aabb::default();
-            }
+            let bb = vello_lottie.bb_in_world_space(lottie_transform);
+            *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
         }
     }
 }
 
 fn update_svg_aab(
-    camera: Single<(&Camera, &GlobalTransform), With<Camera2d>>,
     svg_assets: Res<Assets<VelloSvg>>,
     mut svg_q: Query<(&GlobalTransform, &VelloSvgHandle, &mut Aabb), Added<Aabb>>,
 ) {
-    let (camera, camera_transform) = *camera;
-
     for (svg_transform, handle, mut aabb) in &mut svg_q {
         if let Some(vello_svg) = svg_assets.get(&handle.0) {
-            if let Some(bb) = vello_svg.bb_in_screen_space(svg_transform, camera, camera_transform)
-            {
-                println!("SVG bounding box in screen space: {:?}", bb);
-                *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
-            } else {
-                *aabb = Aabb::default();
-            }
+            let bb = vello_svg.bb_in_world_space(svg_transform);
+            *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
         }
     }
 }
 
 fn update_text_aab(
-    camera: Single<(&Camera, &GlobalTransform), With<Camera2d>>,
     font_assets: Res<Assets<VelloFont>>,
     mut text_q: Query<(&GlobalTransform, &VelloTextSection, &mut Aabb), Added<Aabb>>,
 ) {
-    let (camera, camera_transform) = *camera;
-
     for (text_transform, text_section, mut aabb) in &mut text_q {
         if let Some(font) = font_assets.get(&text_section.style.font) {
-            if let Some(bb) =
-                text_section.bb_in_screen_space(font, text_transform, camera, camera_transform)
-            {
-                *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
-            } else {
-                *aabb = Aabb::default();
-            }
+            let bb = text_section.bb_in_world_space(font, text_transform);
+            *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
         }
     }
 }
