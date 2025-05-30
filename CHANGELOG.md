@@ -17,6 +17,11 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.86.
 
 ### Added
 
+- Adds support for Bevy's view culling using `VisibilityClass` and `add_visibility_class` system.
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloScene`
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloSvgHandle`
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloLottieHandle`
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloTextSection`
 - Adds `tracing` crate as bevy removed built-in tracing macros
 
 ### Changed
@@ -26,10 +31,11 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.86.
 - Updates `velato` to 0.6.0
 - Updates `vello_svg` to 0.7.0
 - Updates `parley` to 0.4.0
+- Moves `hide_when_empty` system into `CheckVisibility` system set.
 
 ### Removed
 
-- Visibility logic removed pending new implementation
+- InheritedVisibility logic removed pending new implementation
 
 ## [0.8.0] - 2025-04-29
 
@@ -317,9 +323,7 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 - Initial release
 
 [#77]: https://github.com/linebender/bevy_vello/pull/77
-
 [@simbleau]: https://github.com/simbleau
-
 [Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.8.0...HEAD
 [0.8.0]: https://github.com/linebender/bevy_vello/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/linebender/bevy_vello/compare/v0.7.0...v0.7.1
@@ -341,5 +345,4 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 [0.1.2]: https://github.com/linebender/bevy_vello/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/linebender/bevy_vello/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/linebender/bevy_vello/releases/tag/v0.1.0
-
 [MSRV]: README.md#minimum-supported-rust-version-msrv
