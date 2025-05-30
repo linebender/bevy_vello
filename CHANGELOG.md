@@ -17,6 +17,7 @@ This release supports Bevy version 0.15 and has an [MSRV][] of 1.86.
 
 ### Added
 
+- Adds `view_culling` example demonstrating view culling with Bevy's `Aabb` component.
 - Adds support for Bevy's view culling using `VisibilityClass` and `add_visibility_class` system.
 - Adds `VisibilityClass` and `add_visibility_class` hook to `VelloScene`
 - Adds `VisibilityClass` and `add_visibility_class` hook to `VelloSvgHandle`

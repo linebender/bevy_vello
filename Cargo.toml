@@ -15,6 +15,7 @@ members = [
   "examples/cube3d",
   "examples/headless",
   "examples/diagnostics",
+  "examples/view_culling",
 ]
 
 [workspace.package]
