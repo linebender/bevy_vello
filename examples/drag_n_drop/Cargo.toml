@@ -9,8 +9,8 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy_vello = { path = "../../", features = ["svg", "lottie"] }
-bevy = { workspace = true }
+bevy = { workspace = true, features = ["default_font"] }
 bevy_pancam = "0.18.0"
-bevy_async_task = "0.6.0"
+bevy_async_task = "0.8.0"
 rfd = "0.15.2"
 tracing = "0.1.41"
