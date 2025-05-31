@@ -13,13 +13,13 @@ You can find its changes [documented below](#090---2025-05-31).
 
 ## [Unreleased]
 
-This release supports Bevy version 0.16 and has an [MSRV][] of 1.86.
+This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 - Nothing yet!
 
 ## [0.9.0] - 2025-05-31
 
-This release supports Bevy version 0.16 and has an [MSRV][] of 1.86.
+This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 ### Added
 
