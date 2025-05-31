@@ -55,8 +55,6 @@ impl VelloFont {
             let font_context = font_context.as_mut().unwrap();
 
             LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                // TODO: fourth argument is new in parley 0.4.0, should perhaps be defaulted to
-                // false and also be configurable
                 let mut builder =
                     layout_context.ranged_builder(font_context, &text_section.value, 1.0, true);
 
@@ -102,8 +100,6 @@ impl VelloFont {
             let font_context = font_context.as_mut().unwrap();
 
             LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                // TODO: fourth argument is new in parley 0.4.0, should perhaps be defaulted to
-                // false and also be configurable
                 let mut builder =
                     layout_context.ranged_builder(font_context, &text_section.value, 1.0, true);
 

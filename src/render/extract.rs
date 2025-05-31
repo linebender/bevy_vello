@@ -34,10 +34,10 @@ pub fn extract_scenes(
             (
                 &VelloScene,
                 &GlobalTransform,
-                Option<&ComputedNode>,
-                Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
+                Option<&ComputedNode>,
+                Option<&RenderLayers>,
             ),
             Without<SkipEncoding>,
         >,
@@ -50,7 +50,7 @@ pub fn extract_scenes(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (scene, transform, ui_node, render_layers, view_visibility, inherited_visibility) in
+    for (scene, transform, view_visibility, inherited_visibility, ui_node, render_layers) in
         query_scenes.iter()
     {
         // Skip if visibility conditions are not met

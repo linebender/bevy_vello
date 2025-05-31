@@ -78,7 +78,6 @@ pub fn extract_lottie_assets(
         if !view_visibility.get() || !inherited_visibility.get() {
             continue;
         }
-
         // Skip if asset isn't loaded.
         let Some(asset) = assets.get(asset_handle.id()) else {
             continue;
