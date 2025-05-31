@@ -23,10 +23,10 @@ fn main() {
             right_left,
             down_up,
             simple_animation,
+            update_lottie_aabb,
+            update_svg_aabb,
+            update_text_aabb,
             draw_aabb_gizmos,
-            update_lottie_aab,
-            update_svg_aab,
-            update_text_aab,
             log_visibility,
         )
             .chain(),
@@ -99,7 +99,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
         .insert(Aabb::default());
 }
 
-fn update_lottie_aab(
+fn update_lottie_aabb(
     lottie_assets: Res<Assets<VelloLottie>>,
     mut lottie_q: Query<(&GlobalTransform, &VelloLottieHandle, &mut Aabb), Added<Aabb>>,
 ) {
@@ -111,7 +111,7 @@ fn update_lottie_aab(
     }
 }
 
-fn update_svg_aab(
+fn update_svg_aabb(
     svg_assets: Res<Assets<VelloSvg>>,
     mut svg_q: Query<(&GlobalTransform, &VelloSvgHandle, &mut Aabb), Added<Aabb>>,
 ) {
@@ -123,7 +123,7 @@ fn update_svg_aab(
     }
 }
 
-fn update_text_aab(
+fn update_text_aabb(
     font_assets: Res<Assets<VelloFont>>,
     mut text_q: Query<(&GlobalTransform, &VelloTextSection, &mut Aabb), Added<Aabb>>,
 ) {
