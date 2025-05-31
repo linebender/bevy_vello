@@ -36,7 +36,7 @@ pub use player_transition::PlayerTransition;
 mod theme;
 pub use theme::Theme;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::VisibilityClass};
 
 #[cfg(feature = "lottie")]
 #[derive(Bundle, Default)]
@@ -55,6 +55,8 @@ pub struct VelloLottieBundle {
     pub transform: Transform,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
+    /// A bucket into which we group entities for the purposes of visibility.
+    pub visibility_class: VisibilityClass,
 }
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].

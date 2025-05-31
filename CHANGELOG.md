@@ -15,6 +15,25 @@ You can find its changes [documented below](#080---2025-04-29).
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.86.
 
+### Added
+
+- Adds `view_culling` example demonstrating view culling with Bevy's `Aabb` component.
+- Adds support for Bevy's view culling using `VisibilityClass` and `add_visibility_class` system.
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloScene`
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloSvgHandle`
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloLottieHandle`
+- Adds `VisibilityClass` and `add_visibility_class` hook to `VelloTextSection`
+- Adds `tracing` crate as bevy removed built-in tracing macros
+
+### Changed
+
+- Updates `bevy` to 0.16
+- Updates `vello` to 0.5.0
+- Updates `velato` to 0.6.0
+- Updates `vello_svg` to 0.7.0
+- Updates `parley` to 0.4.0
+- Moves `hide_when_empty` system into `CheckVisibility` system set.
+
 ## [0.8.0] - 2025-04-29
 
 This release supports Bevy version 0.15 and has an [MSRV][] of 1.85.

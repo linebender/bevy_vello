@@ -1,6 +1,7 @@
 //! Components and logic for rendering.
 
 use bevy::{
+    asset::weak_handle,
     prelude::*,
     render::{
         extract_component::ExtractComponent,
@@ -27,7 +28,7 @@ pub(crate) mod prepare;
 pub(crate) use plugin::VelloRenderPlugin;
 
 /// A handle to the screen space render target shader.
-pub const SSRT_SHADER_HANDLE: Handle<Shader> = Handle::weak_from_u128(2314894693238056781);
+pub const SSRT_SHADER_HANDLE: Handle<Shader> = weak_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
 
 /// A component that should be added to the camera that will render Vello assets.
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]
@@ -90,11 +91,11 @@ impl VelloRenderer {
         vello::Renderer::new(
             device,
             vello::RendererOptions {
-                surface_format: None,
                 use_cpu: settings.use_cpu,
                 // TODO: Vello doesn't currently allow adding additional AA support after initialization, so we need to use all support modes here instead.
                 antialiasing_support: AaSupport::all(),
                 num_init_threads: None,
+                pipeline_cache: None,
             },
         )
         .map(Mutex::new)
@@ -111,7 +112,9 @@ impl FromWorld for VelloRenderer {
         ) {
             Ok(r) => r,
             Err(e) => {
-                error!("Attempting safe-mode fallback, failed to initialize renderer: {e:}");
+                tracing::error!(
+                    "Attempting safe-mode fallback, failed to initialize renderer: {e:}"
+                );
                 {
                     let mut settings = world.get_resource_mut::<VelloRenderSettings>().unwrap();
                     settings.use_cpu = true;

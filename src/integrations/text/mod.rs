@@ -13,7 +13,7 @@ pub use vello_text::{VelloTextAlign, VelloTextAnchor, VelloTextSection, VelloTex
 mod plugin;
 pub(crate) use plugin::VelloTextIntegrationPlugin;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::VisibilityClass};
 #[derive(Bundle, Default)]
 pub struct VelloTextBundle {
     /// Text to render
@@ -24,4 +24,6 @@ pub struct VelloTextBundle {
     pub transform: Transform,
     /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
     pub visibility: Visibility,
+    /// A bucket into which we group entities for the purposes of visibility.
+    pub visibility_class: VisibilityClass,
 }

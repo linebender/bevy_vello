@@ -3,7 +3,7 @@ use crate::integrations::{VectorLoaderError, lottie::load_lottie_from_bytes};
 use bevy::{
     asset::{AssetLoader, LoadContext, io::Reader},
     prelude::*,
-    utils::ConditionalSendFuture,
+    tasks::ConditionalSendFuture,
 };
 
 #[derive(Default)]
@@ -34,11 +34,11 @@ impl AssetLoader for VelloLottieLoader {
                         "Invalid file extension",
                     )))?;
 
-            debug!("parsing {}...", load_context.path().display());
+            tracing::debug!("parsing {}...", load_context.path().display());
             match ext {
                 "json" => {
                     let asset = load_lottie_from_bytes(&bytes)?;
-                    info!(
+                    tracing::info!(
                         path = format!("{}", load_context.path().display()),
                         size = format!("{:?}", (asset.width, asset.height)),
                         "finished parsing lottie json asset"

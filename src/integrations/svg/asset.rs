@@ -1,10 +1,15 @@
 use crate::prelude::*;
-use bevy::{prelude::*, reflect::TypePath};
+use bevy::{
+    prelude::*,
+    reflect::TypePath,
+    render::view::{self, VisibilityClass},
+};
 use std::sync::Arc;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(VelloSvgAnchor, Transform, Visibility)]
+#[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
 #[reflect(Component)]
+#[component(on_add = view::add_visibility_class::<VelloSvgHandle>)]
 pub struct VelloSvgHandle(pub Handle<VelloSvg>);
 
 #[derive(Asset, TypePath, Clone)]

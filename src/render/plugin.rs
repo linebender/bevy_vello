@@ -4,7 +4,7 @@ use super::{
     prepare, systems,
 };
 use crate::{
-    VelloScene, VelloView,
+    VelloView,
     render::{
         SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
         VelloRenderQueue, VelloRenderer, extract::VelloExtractStep,
@@ -14,10 +14,8 @@ use bevy::{
     asset::load_internal_asset,
     prelude::*,
     render::{
-        Render, RenderApp, RenderSet,
-        extract_component::ExtractComponentPlugin,
+        Render, RenderApp, RenderSet, extract_component::ExtractComponentPlugin,
         renderer::RenderDevice,
-        view::{VisibilitySystems, check_visibility},
     },
     sprite::Material2dPlugin,
 };
@@ -94,10 +92,6 @@ impl Plugin for VelloRenderPlugin {
             .add_systems(
                 Update,
                 (systems::resize_rendertargets, systems::hide_when_empty),
-            )
-            .add_systems(
-                PostUpdate,
-                check_visibility::<With<VelloScene>>.in_set(VisibilitySystems::CheckVisibility),
             );
     }
 

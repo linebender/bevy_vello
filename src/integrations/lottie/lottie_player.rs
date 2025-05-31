@@ -1,5 +1,5 @@
 use super::PlayerState;
-use bevy::{prelude::*, utils::hashbrown::HashMap};
+use bevy::{platform::collections::HashMap, prelude::*};
 
 /// A lottie player that allows runtime manipulation of Lottie animations.
 ///

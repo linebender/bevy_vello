@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::Instant};
+use bevy::{platform::time::Instant, prelude::*};
 
 /// The playhead for a vello asset. This cannot be constructed by the user, it is created
 /// automatically and available on the first frame.

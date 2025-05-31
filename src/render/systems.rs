@@ -233,8 +233,8 @@ pub fn render_frame(
             &gpu_image.texture_view,
             &RenderParams {
                 base_color: vello::peniko::Color::TRANSPARENT,
-                width: gpu_image.size.x,
-                height: gpu_image.size.y,
+                width: gpu_image.size.width,
+                height: gpu_image.size.height,
                 antialiasing_method: render_settings.antialiasing,
             },
         )
@@ -267,7 +267,7 @@ pub fn resize_rendertargets(
                 target.0 = image.clone();
                 mat.texture = image;
             }
-            debug!(
+            tracing::debug!(
                 size = format!(
                     "Resized Vello render image to {:?}",
                     (size.width, size.height)
@@ -334,7 +334,7 @@ pub fn render_settings_change_detection(
 ) {
     if render_settings.is_changed() && !render_settings.is_added() {
         // Replace renderer
-        info!("Render settings changed, re-initializing vello...");
+        tracing::info!("Render settings changed, re-initializing vello...");
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
     }
