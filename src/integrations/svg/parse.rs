@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
+use bevy::transform::components::Transform;
+use vello_svg::usvg::{self};
+
 use super::asset::VelloSvg;
 use crate::integrations::VectorLoaderError;
-use bevy::transform::components::Transform;
-use std::sync::Arc;
-use vello_svg::usvg::{self};
 
 /// Deserialize an SVG file from bytes.
 pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloSvg, VectorLoaderError> {

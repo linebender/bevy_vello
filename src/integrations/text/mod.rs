@@ -11,9 +11,8 @@ pub use font::VelloFont;
 pub use vello_text::{VelloTextAlign, VelloTextAnchor, VelloTextSection, VelloTextStyle};
 
 mod plugin;
-pub(crate) use plugin::VelloTextIntegrationPlugin;
-
 use bevy::{prelude::*, render::view::VisibilityClass};
+pub(crate) use plugin::VelloTextIntegrationPlugin;
 #[derive(Bundle, Default)]
 pub struct VelloTextBundle {
     /// Text to render

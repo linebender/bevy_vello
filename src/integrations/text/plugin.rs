@@ -1,10 +1,10 @@
-use crate::render::extract::VelloExtractStep;
-
-use super::{VelloFont, font_loader::VelloFontLoader, render};
 use bevy::{
     prelude::*,
     render::{Render, RenderApp, RenderSet, render_asset::RenderAssetPlugin},
 };
+
+use super::{VelloFont, font_loader::VelloFontLoader, render};
+use crate::render::extract::VelloExtractStep;
 
 pub struct VelloTextIntegrationPlugin;
 

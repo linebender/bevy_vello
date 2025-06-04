@@ -9,9 +9,8 @@ mod parse;
 pub use parse::{load_svg_from_bytes, load_svg_from_str};
 
 mod plugin;
-pub(crate) use plugin::SvgIntegrationPlugin;
-
 use bevy::{prelude::*, render::view::VisibilityClass};
+pub(crate) use plugin::SvgIntegrationPlugin;
 #[derive(Bundle, Default)]
 pub struct VelloSvgBundle {
     /// Asset data to render
@@ -26,7 +25,8 @@ pub struct VelloSvgBundle {
     pub visibility_class: VisibilityClass,
 }
 
-/// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].
+/// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
+/// [`VelloAssetAnchor::Center`].
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
 pub enum VelloSvgAnchor {

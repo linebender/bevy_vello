@@ -1,5 +1,7 @@
 //! Components and logic for rendering.
 
+use std::sync::{Arc, Mutex};
+
 use bevy::{
     asset::weak_handle,
     prelude::*,
@@ -16,7 +18,6 @@ use bevy::{
     },
     sprite::{Material2d, Material2dKey},
 };
-use std::sync::{Arc, Mutex};
 use vello::{AaConfig, AaSupport, kurbo::Affine};
 
 mod plugin;
@@ -92,7 +93,8 @@ impl VelloRenderer {
             device,
             vello::RendererOptions {
                 use_cpu: settings.use_cpu,
-                // TODO: Vello doesn't currently allow adding additional AA support after initialization, so we need to use all support modes here instead.
+                // TODO: Vello doesn't currently allow adding additional AA support after
+                // initialization, so we need to use all support modes here instead.
                 antialiasing_support: AaSupport::all(),
                 num_init_threads: None,
                 pipeline_cache: None,

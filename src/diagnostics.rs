@@ -1,8 +1,9 @@
-use crate::render::{VelloEntityCountData, VelloFrameProfileData};
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
     prelude::*,
 };
+
+use crate::render::{VelloEntityCountData, VelloFrameProfileData};
 
 /// Adds Vello entity counting diagnostics to an App.
 #[derive(Default)]

@@ -1,3 +1,13 @@
+use bevy::{
+    asset::load_internal_asset,
+    prelude::*,
+    render::{
+        Render, RenderApp, RenderSet, extract_component::ExtractComponentPlugin,
+        renderer::RenderDevice,
+    },
+    sprite::Material2dPlugin,
+};
+
 use super::{
     VelloCanvasSettings, VelloRenderSettings,
     extract::{self, SSRenderTarget},
@@ -9,15 +19,6 @@ use crate::{
         SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
         VelloRenderQueue, VelloRenderer, extract::VelloExtractStep,
     },
-};
-use bevy::{
-    asset::load_internal_asset,
-    prelude::*,
-    render::{
-        Render, RenderApp, RenderSet, extract_component::ExtractComponentPlugin,
-        renderer::RenderDevice,
-    },
-    sprite::Material2dPlugin,
 };
 
 #[derive(Default)]

@@ -1,9 +1,10 @@
-use bevy::{color::palettes::css, prelude::*};
-use bevy_vello::{VelloPlugin, prelude::*};
 use std::{
     f64::consts::{FRAC_PI_4, SQRT_2},
     ops::DerefMut,
 };
+
+use bevy::{color::palettes::css, prelude::*};
+use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
     App::new()

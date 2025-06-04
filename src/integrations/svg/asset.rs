@@ -1,10 +1,12 @@
-use crate::prelude::*;
+use std::sync::Arc;
+
 use bevy::{
     prelude::*,
     reflect::TypePath,
     render::view::{self, VisibilityClass},
 };
-use std::sync::Arc;
+
+use crate::prelude::*;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]

@@ -1,9 +1,10 @@
-use super::{VelloView, extract::ExtractedVelloScene};
 use bevy::{
     prelude::*,
     render::{camera::ExtractedCamera, view::ExtractedView},
 };
 use vello::kurbo::Affine;
+
+use super::{VelloView, extract::ExtractedVelloScene};
 
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedAffine(pub Affine);

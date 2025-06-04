@@ -1,5 +1,3 @@
-use super::{VelloEntityCountData, VelloFrameProfileData};
-use crate::prelude::*;
 use bevy::{
     prelude::*,
     render::{
@@ -7,6 +5,9 @@ use bevy::{
         sync_world::TemporaryRenderEntity, view::RenderLayers,
     },
 };
+
+use super::{VelloEntityCountData, VelloFrameProfileData};
+use crate::prelude::*;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum VelloExtractStep {

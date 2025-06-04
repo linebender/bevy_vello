@@ -1,9 +1,10 @@
+use bevy::{prelude::*, render::view::RenderLayers};
+use vello::AaConfig;
+
 use crate::{
     VelloRenderSettings,
     render::{VelloCanvasSettings, VelloRenderPlugin},
 };
-use bevy::{prelude::*, render::view::RenderLayers};
-use vello::AaConfig;
 
 #[derive(Clone)]
 pub struct VelloPlugin {
