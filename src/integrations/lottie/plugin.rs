@@ -1,12 +1,13 @@
+use bevy::{
+    prelude::*,
+    render::{Render, RenderApp, RenderSet},
+};
+
 use super::{
     PlaybackOptions, VelloLottie, VelloLottieAnchor, asset::VelloLottieHandle,
     asset_loader::VelloLottieLoader, render, systems,
 };
 use crate::render::{VelatoRenderer, extract::VelloExtractStep};
-use bevy::{
-    prelude::*,
-    render::{Render, RenderApp, RenderSet},
-};
 
 pub struct LottieIntegrationPlugin;
 

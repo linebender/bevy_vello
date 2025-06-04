@@ -1,6 +1,7 @@
+use std::ops::DerefMut;
+
 use bevy::prelude::*;
 use bevy_vello::{VelloPlugin, prelude::*};
-use std::ops::DerefMut;
 
 fn main() {
     App::new()

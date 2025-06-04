@@ -1,6 +1,8 @@
 max_width = 100
-# TODO: comment_width = 100 - Wait for this to be stable
-# TODO: wrap_comments = true - Wait for this to be stable
 use_field_init_shorthand = true
 newline_style = "Unix"
-# TODO: imports_granularity = "Crate" - Wait for this to be stable.
+# TODO: Enable - Currently nightly only :(
+# group_imports = "StdExternalCrate"
+# wrap_comments = true
+# comment_width = 100
+# imports_granularity = "Crate"

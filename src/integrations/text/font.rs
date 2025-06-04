@@ -1,19 +1,21 @@
+use std::borrow::Cow;
+
+use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
+use parley::{
+    FontSettings, FontStyle, FontVariation, PositionedLayoutItem, RangedBuilder, StyleProperty,
+};
+use vello::{
+    Scene,
+    kurbo::Affine,
+    peniko::{Brush, Fill},
+};
+
 use super::{
     VelloTextAnchor,
     context::LOCAL_FONT_CONTEXT,
     vello_text::{VelloFontAxes, VelloTextSection},
 };
 use crate::integrations::text::context::{LOCAL_LAYOUT_CONTEXT, get_global_font_context};
-use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
-use parley::{
-    FontSettings, FontStyle, FontVariation, PositionedLayoutItem, RangedBuilder, StyleProperty,
-};
-use std::borrow::Cow;
-use vello::{
-    Scene,
-    kurbo::Affine,
-    peniko::{Brush, Fill},
-};
 
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {

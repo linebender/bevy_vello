@@ -2,11 +2,12 @@
 // #![deny(missing_docs)] -- This would be great! But we are far away.
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-use crate::prelude::*;
 use bevy::{
     prelude::*,
     render::view::{self, VisibilityClass},
 };
+
+use crate::prelude::*;
 
 mod plugin;
 pub use plugin::VelloPlugin;
@@ -27,11 +28,6 @@ pub use vello_svg;
 pub mod prelude {
     pub use vello::{self, kurbo, peniko};
 
-    pub use crate::{
-        VelloScene, VelloSceneBundle,
-        render::{SkipEncoding, VelloRenderSettings, VelloView},
-    };
-
     #[cfg(feature = "lottie")]
     pub use crate::integrations::lottie::{
         LottieExt, LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
@@ -44,6 +40,10 @@ pub mod prelude {
     pub use crate::integrations::text::{
         VelloFont, VelloTextAlign, VelloTextAnchor, VelloTextBundle, VelloTextSection,
         VelloTextStyle,
+    };
+    pub use crate::{
+        VelloScene, VelloSceneBundle,
+        render::{SkipEncoding, VelloRenderSettings, VelloView},
     };
 }
 

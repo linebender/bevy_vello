@@ -1,6 +1,7 @@
-use super::{context::get_global_font_context, font::VelloFont};
-use crate::{integrations::VectorLoaderError, integrations::text::context::LOCAL_FONT_CONTEXT};
 use bevy::asset::{AssetLoader, LoadContext, io::Reader};
+
+use super::{context::get_global_font_context, font::VelloFont};
+use crate::integrations::{VectorLoaderError, text::context::LOCAL_FONT_CONTEXT};
 
 #[derive(Default)]
 pub struct VelloFontLoader;

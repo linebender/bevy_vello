@@ -1,7 +1,9 @@
+use std::sync::Arc;
+
+use bevy::prelude::*;
+
 use super::asset::VelloLottie;
 use crate::integrations::VectorLoaderError;
-use bevy::prelude::*;
-use std::sync::Arc;
 
 /// Deserialize a Lottie file from bytes.
 pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloLottie, VectorLoaderError> {

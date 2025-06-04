@@ -1,10 +1,11 @@
-use super::asset::VelloLottie;
-use crate::integrations::{VectorLoaderError, lottie::load_lottie_from_bytes};
 use bevy::{
     asset::{AssetLoader, LoadContext, io::Reader},
     prelude::*,
     tasks::ConditionalSendFuture,
 };
+
+use super::asset::VelloLottie;
+use crate::integrations::{VectorLoaderError, lottie::load_lottie_from_bytes};
 
 #[derive(Default)]
 pub struct VelloLottieLoader;

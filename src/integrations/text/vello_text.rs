@@ -1,9 +1,10 @@
-use crate::VelloFont;
 use bevy::{
     prelude::*,
     render::view::{self, VisibilityClass},
 };
 use vello::peniko::{self, Brush};
+
+use crate::VelloFont;
 
 #[derive(Component, Default, Clone)]
 #[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
@@ -120,7 +121,8 @@ pub struct VelloFontAxes {
     pub figure_height: Option<f32>,
 }
 
-/// Describes how the text is positioned relative to its [`Transform`]. It defaults to [`VelloTextAnchor::BottomLeft`].
+/// Describes how the text is positioned relative to its [`Transform`]. It defaults to
+/// [`VelloTextAnchor::BottomLeft`].
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
 pub enum VelloTextAnchor {
     /// Bounds start from the render position and advance up and to the right.
@@ -149,10 +151,12 @@ pub enum VelloTextAnchor {
 /// Alignment of a parley layout.
 #[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub enum VelloTextAlign {
-    /// This is [`parley::Alignment::Left`] for LTR text and [`parley::Alignment::Right`] for RTL text.
+    /// This is [`parley::Alignment::Left`] for LTR text and [`parley::Alignment::Right`] for RTL
+    /// text.
     #[default]
     Start,
-    /// This is [`parley::Alignment::Right`] for LTR text and [`parley::Alignment::Left`] for RTL text.
+    /// This is [`parley::Alignment::Right`] for LTR text and [`parley::Alignment::Left`] for RTL
+    /// text.
     End,
     /// Align content to the left edge.
     ///

@@ -1,3 +1,5 @@
+use std::{ffi::OsStr, task::Poll};
+
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
     color::palettes::css::RED,
@@ -5,7 +7,6 @@ use bevy::{
 };
 use bevy_async_task::TaskRunner;
 use bevy_vello::{VelloPlugin, prelude::*};
-use std::{ffi::OsStr, task::Poll};
 
 const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);

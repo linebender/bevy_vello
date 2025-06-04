@@ -34,9 +34,8 @@ mod player_transition;
 pub use player_transition::PlayerTransition;
 
 mod theme;
-pub use theme::Theme;
-
 use bevy::{prelude::*, render::view::VisibilityClass};
+pub use theme::Theme;
 
 #[cfg(feature = "lottie")]
 #[derive(Bundle, Default)]
@@ -59,7 +58,8 @@ pub struct VelloLottieBundle {
     pub visibility_class: VisibilityClass,
 }
 
-/// Describes how the asset is positioned relative to its [`Transform`]. It defaults to [`VelloAssetAnchor::Center`].
+/// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
+/// [`VelloAssetAnchor::Center`].
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
 pub enum VelloLottieAnchor {

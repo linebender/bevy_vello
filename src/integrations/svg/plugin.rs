@@ -1,11 +1,12 @@
-use super::{
-    VelloSvg, VelloSvgAnchor, asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render,
-};
-use crate::render::extract::VelloExtractStep;
 use bevy::{
     prelude::*,
     render::{Render, RenderApp, RenderSet},
 };
+
+use super::{
+    VelloSvg, VelloSvgAnchor, asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render,
+};
+use crate::render::extract::VelloExtractStep;
 
 pub struct SvgIntegrationPlugin;
 

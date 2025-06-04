@@ -1,3 +1,7 @@
+use std::time::Duration;
+
+use bevy::{platform::time::Instant, prelude::*, window::PrimaryWindow};
+
 use super::{
     LottiePlayer, PlayerTransition,
     asset::{VelloLottie, VelloLottieHandle},
@@ -6,8 +10,6 @@ use crate::{
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
     integrations::lottie::PlaybackPlayMode, render::VelloView,
 };
-use bevy::{platform::time::Instant, prelude::*, window::PrimaryWindow};
-use std::time::Duration;
 
 /// Helper function to get the next smallest representable f64.
 /// For example, prev_f64(3.0) == 2.9999999999999996

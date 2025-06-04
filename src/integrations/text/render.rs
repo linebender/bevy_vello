@@ -1,5 +1,3 @@
-use super::{VelloFont, VelloTextAnchor, VelloTextSection};
-use crate::render::{SkipEncoding, VelloEntityCountData, VelloView, prepare::PreparedAffine};
 use bevy::{
     prelude::*,
     render::{
@@ -10,6 +8,9 @@ use bevy::{
     },
 };
 use vello::kurbo::Affine;
+
+use super::{VelloFont, VelloTextAnchor, VelloTextSection};
+use crate::render::{SkipEncoding, VelloEntityCountData, VelloView, prepare::PreparedAffine};
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloText {

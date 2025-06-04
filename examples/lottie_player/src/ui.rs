@@ -1,10 +1,11 @@
+use std::time::Duration;
+
 use bevy::prelude::*;
 use bevy_egui::{
     EguiContexts,
     egui::{self, Color32},
 };
 use bevy_vello::prelude::*;
-use std::time::Duration;
 
 #[expect(clippy::type_complexity)]
 pub fn controls_ui(

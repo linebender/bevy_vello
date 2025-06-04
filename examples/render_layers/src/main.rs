@@ -1,8 +1,9 @@
 //! Shows how to use render layers.
 
+use std::ops::DerefMut;
+
 use bevy::{color::palettes::css, prelude::*, render::view::RenderLayers};
 use bevy_vello::{VelloPlugin, prelude::*};
-use std::ops::DerefMut;
 
 fn main() {
     App::new()

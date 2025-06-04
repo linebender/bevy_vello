@@ -1,3 +1,14 @@
+use bevy::{
+    prelude::*,
+    render::{
+        Extract,
+        camera::ExtractedCamera,
+        sync_world::TemporaryRenderEntity,
+        view::{ExtractedView, RenderLayers},
+    },
+};
+use kurbo::Affine;
+
 use super::{
     VelloSvgAnchor,
     asset::{VelloSvg, VelloSvgHandle},
@@ -9,16 +20,6 @@ use crate::{
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
     },
 };
-use bevy::{
-    prelude::*,
-    render::{
-        Extract,
-        camera::ExtractedCamera,
-        sync_world::TemporaryRenderEntity,
-        view::{ExtractedView, RenderLayers},
-    },
-};
-use kurbo::Affine;
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloSvg {

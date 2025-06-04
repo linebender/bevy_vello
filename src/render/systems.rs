@@ -1,9 +1,3 @@
-use super::{
-    VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
-    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
-    prepare::PreparedAffine,
-};
-use crate::render::extract::ExtractedVelloScene;
 use bevy::{
     prelude::*,
     render::{
@@ -22,12 +16,18 @@ use bevy::{
 };
 use vello::{RenderParams, Scene};
 
+use super::{
+    VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
+    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
+    prepare::PreparedAffine,
+};
 #[cfg(feature = "lottie")]
 use crate::integrations::lottie::render::ExtractedLottieAsset;
 #[cfg(feature = "svg")]
 use crate::integrations::svg::render::ExtractedVelloSvg;
 #[cfg(feature = "text")]
 use crate::integrations::text::{VelloFont, render::ExtractedVelloText};
+use crate::render::extract::ExtractedVelloScene;
 
 pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
     let size = Extent3d {
