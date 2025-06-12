@@ -33,6 +33,7 @@ bevy = { version = "0.16.1", default-features = false, features = [
   "bevy_core_pipeline",
   "bevy_render",
   "bevy_ui",
+  "bevy_picking",
   "multi_threaded",
   "x11",
   "tonemapping_luts",
@@ -79,4 +80,5 @@ default = []
 svg = ["vello_svg"]
 lottie = ["velato"]
 text = ["parley"]
+picking = ["bevy/bevy_picking"]
 default_font = ["bevy/default_font", "text"]

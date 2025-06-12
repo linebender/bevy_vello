@@ -24,6 +24,7 @@ mod plugin;
 mod systems;
 
 pub(crate) mod extract;
+pub(crate) mod picking;
 pub(crate) mod prepare;
 
 pub(crate) use plugin::VelloRenderPlugin;
