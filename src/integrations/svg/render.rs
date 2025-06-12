@@ -17,7 +17,7 @@ use crate::{
     VelloScreenSpace,
     prelude::*,
     render::{
-        VelloEntityCountData,
+        NoVelloScale, VelloEntityCountData, VelloScreenScale, VelloWorldScale,
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
     },
 };
@@ -30,6 +30,7 @@ pub struct ExtractedVelloSvg {
     pub ui_node: Option<ComputedNode>,
     pub alpha: f32,
     pub screen_space: Option<VelloScreenSpace>,
+    pub no_scaling: Option<NoVelloScale>,
 }
 
 pub fn extract_svg_assets(
@@ -49,6 +50,7 @@ pub fn extract_svg_assets(
                 &ViewVisibility,
                 &InheritedVisibility,
                 Option<&VelloScreenSpace>,
+                Option<&NoVelloScale>,
             ),
             Without<SkipEncoding>,
         >,
@@ -71,6 +73,7 @@ pub fn extract_svg_assets(
         view_visibility,
         inherited_visibility,
         screen_space,
+        no_scaling,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
@@ -95,6 +98,7 @@ pub fn extract_svg_assets(
                     ui_node: ui_node.cloned(),
                     alpha: asset.alpha,
                     screen_space: screen_space.cloned(),
+                    no_scaling: no_scaling.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_svgs += 1;
@@ -108,13 +112,21 @@ pub fn prepare_asset_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
     mut render_entities: Query<(Entity, &ExtractedVelloSvg)>,
+    world_scale: Res<VelloWorldScale>,
+    screen_scale: Res<VelloScreenScale>,
 ) {
     for (camera, view) in views.iter() {
         let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
         for (entity, render_entity) in render_entities.iter_mut() {
             // Prepare render data needed for the subsequent render system
             let final_transform = render_entity.final_transform();
-            let affine = render_entity.scene_affine(view, *final_transform, viewport_size);
+            let affine = render_entity.scene_affine(
+                view,
+                *final_transform,
+                viewport_size,
+                world_scale.0,
+                screen_scale.0,
+            );
             commands.entity(entity).insert((affine, final_transform));
         }
     }
@@ -134,6 +146,8 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         view: &ExtractedView,
         world_transform: GlobalTransform,
         viewport_size: UVec2,
+        world_scale: f32,
+        screen_scale: f32,
     ) -> PreparedAffine {
         let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
@@ -149,11 +163,22 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             model_matrix.x_axis.x *= scale_factor;
             model_matrix.y_axis.y *= scale_factor;
 
+            if self.no_scaling.is_none() {
+                model_matrix.x_axis.x *= screen_scale;
+                model_matrix.y_axis.y *= screen_scale;
+            }
+
             let mut local_center_matrix = local_center_matrix;
             local_center_matrix.w_axis.y *= -1.0;
             model_matrix * local_center_matrix
         } else if self.screen_space.is_some() {
-            let model_matrix = world_transform.compute_matrix();
+            let mut model_matrix = world_transform.compute_matrix();
+
+            if self.no_scaling.is_none() {
+                model_matrix.x_axis.x *= screen_scale;
+                model_matrix.y_axis.y *= screen_scale;
+            }
+
             let mut local_center_matrix = local_center_matrix;
             local_center_matrix.w_axis.y *= -1.0;
             model_matrix * local_center_matrix
@@ -171,6 +196,11 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
 
             let mut model_matrix = world_transform.compute_matrix() * local_matrix;
             model_matrix.w_axis.y *= -1.0;
+
+            if self.no_scaling.is_none() {
+                model_matrix.x_axis.x *= world_scale;
+                model_matrix.y_axis.y *= world_scale;
+            }
 
             let (projection_mat, view_mat) = {
                 let mut view_mat = view.world_from_view.compute_matrix();

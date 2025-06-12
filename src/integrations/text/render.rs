@@ -12,7 +12,10 @@ use vello::kurbo::Affine;
 use super::{VelloFont, VelloTextAnchor, VelloTextSection};
 use crate::{
     VelloScreenSpace,
-    render::{SkipEncoding, VelloEntityCountData, VelloView, prepare::PreparedAffine},
+    render::{
+        NoVelloScale, SkipEncoding, VelloEntityCountData, VelloScreenScale, VelloView,
+        VelloWorldScale, prepare::PreparedAffine,
+    },
 };
 
 #[derive(Component, Clone)]
@@ -22,6 +25,7 @@ pub struct ExtractedVelloText {
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
     pub screen_space: Option<VelloScreenSpace>,
+    pub no_scaling: Option<NoVelloScale>,
 }
 
 pub fn extract_text(
@@ -41,6 +45,7 @@ pub fn extract_text(
                 Option<&RenderLayers>,
                 Option<&ComputedNode>,
                 Option<&VelloScreenSpace>,
+                Option<&NoVelloScale>,
             ),
             Without<SkipEncoding>,
         >,
@@ -63,6 +68,7 @@ pub fn extract_text(
         render_layers,
         ui_node,
         screen_space,
+        no_scaling,
     ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met
@@ -86,6 +92,7 @@ pub fn extract_text(
                     transform: *transform,
                     ui_node: ui_node.cloned(),
                     screen_space: screen_space.cloned(),
+                    no_scaling: no_scaling.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
@@ -99,6 +106,8 @@ pub fn prepare_text_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
     render_entities: Query<(Entity, &ExtractedVelloText)>,
+    world_scale: Res<VelloWorldScale>,
+    screen_scale: Res<VelloScreenScale>,
 ) {
     for (camera, view) in views.iter() {
         let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
@@ -118,8 +127,17 @@ pub fn prepare_text_affines(
 
             let raw_transform =
                 if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
+                    if render_entity.no_scaling.is_none() {
+                        model_matrix.x_axis.x *= screen_scale.0;
+                        model_matrix.y_axis.y *= screen_scale.0;
+                    }
                     model_matrix
                 } else {
+                    if render_entity.no_scaling.is_none() {
+                        model_matrix.x_axis.x *= world_scale.0;
+                        model_matrix.y_axis.y *= world_scale.0;
+                    }
+
                     model_matrix.w_axis.y *= -1.0;
 
                     let (projection_mat, view_mat) = {

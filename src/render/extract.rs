@@ -6,8 +6,8 @@ use bevy::{
     },
 };
 
-use super::{VelloEntityCountData, VelloFrameProfileData};
-use crate::{VelloScreenSpace, prelude::*};
+use super::{NoVelloScale, VelloEntityCountData, VelloFrameProfileData};
+use crate::prelude::*;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum VelloExtractStep {
@@ -23,6 +23,7 @@ pub struct ExtractedVelloScene {
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
     pub screen_space: Option<VelloScreenSpace>,
+    pub no_scaling: Option<NoVelloScale>,
 }
 
 pub fn extract_scenes(
@@ -41,6 +42,7 @@ pub fn extract_scenes(
                 Option<&ComputedNode>,
                 Option<&RenderLayers>,
                 Option<&VelloScreenSpace>,
+                Option<&NoVelloScale>,
             ),
             Without<SkipEncoding>,
         >,
@@ -61,6 +63,7 @@ pub fn extract_scenes(
         ui_node,
         render_layers,
         screen_space,
+        no_scaling,
     ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met
@@ -79,6 +82,7 @@ pub fn extract_scenes(
                     scene: scene.clone(),
                     ui_node: ui_node.cloned(),
                     screen_space: screen_space.cloned(),
+                    no_scaling: no_scaling.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_scenes += 1;

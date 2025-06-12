@@ -4,7 +4,7 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{VelloView, extract::ExtractedVelloScene};
+use super::{VelloScreenScale, VelloView, VelloWorldScale, extract::ExtractedVelloScene};
 
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedAffine(pub Affine);
@@ -22,6 +22,8 @@ pub trait PrepareRenderInstance {
         view: &ExtractedView,
         world_transform: GlobalTransform,
         viewport_size: UVec2,
+        world_scale: f32,
+        screen_scale: f32,
     ) -> PreparedAffine;
 }
 
@@ -29,6 +31,8 @@ pub fn prepare_scene_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
     render_entities: Query<(Entity, &ExtractedVelloScene)>,
+    world_scale: Res<VelloWorldScale>,
+    screen_scale: Res<VelloScreenScale>,
 ) {
     for (camera, view) in views.iter() {
         let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
@@ -62,10 +66,20 @@ pub fn prepare_scene_affines(
                 // Bevy handles it for us.
                 model_matrix
             } else if render_entity.screen_space.is_some() {
-                world_transform.compute_matrix()
+                let mut model_matrix = world_transform.compute_matrix();
+                if render_entity.no_scaling.is_none() {
+                    model_matrix.x_axis.x *= screen_scale.0;
+                    model_matrix.y_axis.y *= screen_scale.0;
+                }
+                model_matrix
             } else {
                 let mut model_matrix = world_transform.compute_matrix();
                 model_matrix.w_axis.y *= -1.0;
+
+                if render_entity.no_scaling.is_none() {
+                    model_matrix.x_axis.x *= world_scale.0;
+                    model_matrix.y_axis.y *= world_scale.0;
+                }
 
                 let (projection_mat, view_mat) = {
                     let mut view_mat = view.world_from_view.compute_matrix();
