@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use bevy::{
     prelude::*,
     render::view::{self, VisibilityClass},
@@ -5,7 +7,10 @@ use bevy::{
 };
 use vello::peniko::{self, Brush};
 
-use crate::{VelloFont, render::VelloView};
+use crate::{
+    VelloFont,
+    render::{VelloScreenScale, VelloView},
+};
 
 #[derive(Component, Default, Clone)]
 #[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
@@ -224,13 +229,14 @@ impl VelloTextSection {
     }
 }
 
-pub fn calculate_text_content_size(
+pub fn calculate_text_section_content_size_on_change(
     mut button_q: Query<
         (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
         Changed<VelloTextSection>,
     >,
     camera: Single<(&Camera, &GlobalTransform), With<VelloView>>,
     fonts: Res<Assets<VelloFont>>,
+    screen_scale: Res<VelloScreenScale>,
 ) {
     let (camera, camera_transform) = *camera;
 
@@ -242,8 +248,37 @@ pub fn calculate_text_content_size(
             camera_transform,
         ) {
             let size = rect.size();
-            let width = text.width.unwrap_or(size.x.abs());
-            let height = text.height.unwrap_or(size.y.abs());
+            let width = text.width.unwrap_or(size.x.abs().mul(screen_scale.0));
+            let height = text.height.unwrap_or(size.y.abs().mul(screen_scale.0));
+            let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
+                size: Vec2::new(width, height),
+            });
+            cs.set(measure);
+        }
+    }
+}
+
+pub fn calculate_text_section_content_size(
+    mut button_q: Query<
+        (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
+        With<VelloTextSection>,
+    >,
+    camera: Single<(&Camera, &GlobalTransform), With<VelloView>>,
+    fonts: Res<Assets<VelloFont>>,
+    screen_scale: Res<VelloScreenScale>,
+) {
+    let (camera, camera_transform) = *camera;
+
+    for (mut cs, text, gtransform) in button_q.iter_mut() {
+        if let Some(rect) = text.bb_in_screen_space(
+            fonts.get(&text.style.font).unwrap(),
+            gtransform,
+            camera,
+            camera_transform,
+        ) {
+            let size = rect.size();
+            let width = text.width.unwrap_or(size.x.abs().mul(screen_scale.0));
+            let height = text.height.unwrap_or(size.y.abs().mul(screen_scale.0));
             let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
                 size: Vec2::new(width, height),
             });
