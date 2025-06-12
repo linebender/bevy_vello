@@ -15,7 +15,20 @@ You can find its changes [documented below](#090---2025-05-31).
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
-- Nothing yet!
+### Added
+
+- Adds `VelloScreenSpace` component.
+- Adds `VelloScreenSpace` to `bevy_vello::prelude`.
+- Adds `calculate_text_content_size` system that calculates the content size of `VelloTextSection` if it has a `ContentSize` component.
+
+### Changed
+
+- `VelloScene` can now be placed in screen space independent of bevy_ui by adding a `VelloScreenSpace` component.
+- `VelloTextSection` now supports `VelloScreenSpace` to render text in screen space independent of bevy_ui.
+- `VelloTextSection` now supports `Node` to render text in screen space with bevy_ui.
+- `VelloTextSection` now supports `ContentSize` to calculate the content size of the text for bevy_ui.
+- `VelloSvgHandle` now supports `VelloScreenSpace` to render SVGs in screen space independent of bevy_ui.
+- `VelloLottieHandle` now supports `VelloScreenSpace` to render Lotties in screen space independent of bevy_ui.
 
 ## [0.9.0] - 2025-05-31
 

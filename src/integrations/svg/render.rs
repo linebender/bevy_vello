@@ -14,6 +14,7 @@ use super::{
     asset::{VelloSvg, VelloSvgHandle},
 };
 use crate::{
+    VelloScreenSpace,
     prelude::*,
     render::{
         VelloEntityCountData,
@@ -28,6 +29,7 @@ pub struct ExtractedVelloSvg {
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
     pub alpha: f32,
+    pub screen_space: Option<VelloScreenSpace>,
 }
 
 pub fn extract_svg_assets(
@@ -46,6 +48,7 @@ pub fn extract_svg_assets(
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
+                Option<&VelloScreenSpace>,
             ),
             Without<SkipEncoding>,
         >,
@@ -67,6 +70,7 @@ pub fn extract_svg_assets(
         render_layers,
         view_visibility,
         inherited_visibility,
+        screen_space,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
@@ -90,6 +94,7 @@ pub fn extract_svg_assets(
                     asset_anchor: *asset_anchor,
                     ui_node: ui_node.cloned(),
                     alpha: asset.alpha,
+                    screen_space: screen_space.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_svgs += 1;
@@ -144,6 +149,11 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             model_matrix.x_axis.x *= scale_factor;
             model_matrix.y_axis.y *= scale_factor;
 
+            let mut local_center_matrix = local_center_matrix;
+            local_center_matrix.w_axis.y *= -1.0;
+            model_matrix * local_center_matrix
+        } else if self.screen_space.is_some() {
+            let model_matrix = world_transform.compute_matrix();
             let mut local_center_matrix = local_center_matrix;
             local_center_matrix.w_axis.y *= -1.0;
             model_matrix * local_center_matrix

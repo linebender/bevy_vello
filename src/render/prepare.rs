@@ -61,6 +61,8 @@ pub fn prepare_scene_affines(
                 // Note that there's no need to flip the Y axis in this case, as
                 // Bevy handles it for us.
                 model_matrix
+            } else if render_entity.screen_space.is_some() {
+                world_transform.compute_matrix()
             } else {
                 let mut model_matrix = world_transform.compute_matrix();
                 model_matrix.w_axis.y *= -1.0;

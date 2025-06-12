@@ -14,7 +14,7 @@ use super::{
     asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    SkipEncoding,
+    SkipEncoding, VelloScreenSpace,
     render::{
         VelloEntityCountData, VelloView,
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
@@ -30,6 +30,7 @@ pub struct ExtractedLottieAsset {
     pub alpha: f32,
     pub theme: Option<Theme>,
     pub playhead: f64,
+    pub screen_space: Option<VelloScreenSpace>,
 }
 
 pub fn extract_lottie_assets(
@@ -50,6 +51,7 @@ pub fn extract_lottie_assets(
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
+                Option<&VelloScreenSpace>,
             ),
             Without<SkipEncoding>,
         >,
@@ -73,6 +75,7 @@ pub fn extract_lottie_assets(
         render_layers,
         view_visibility,
         inherited_visibility,
+        screen_space,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
@@ -98,6 +101,7 @@ pub fn extract_lottie_assets(
                     playhead: playhead.frame(),
                     alpha: asset.alpha,
                     ui_node: ui_node.cloned(),
+                    screen_space: screen_space.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_lotties += 1;
@@ -153,6 +157,11 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
             model_matrix.x_axis.x *= scale_factor;
             model_matrix.y_axis.y *= scale_factor;
 
+            let mut local_center_matrix = local_center_matrix;
+            local_center_matrix.w_axis.y *= -1.0;
+            model_matrix * local_center_matrix
+        } else if self.screen_space.is_some() {
+            let model_matrix = world_transform.compute_matrix();
             let mut local_center_matrix = local_center_matrix;
             local_center_matrix.w_axis.y *= -1.0;
             model_matrix * local_center_matrix

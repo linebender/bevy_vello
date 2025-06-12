@@ -1,10 +1,11 @@
 use bevy::{
     prelude::*,
     render::view::{self, VisibilityClass},
+    ui::{ContentSize, NodeMeasure},
 };
 use vello::peniko::{self, Brush};
 
-use crate::VelloFont;
+use crate::{VelloFont, render::VelloView};
 
 #[derive(Component, Default, Clone)]
 #[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
@@ -14,6 +15,7 @@ pub struct VelloTextSection {
     pub style: VelloTextStyle,
     pub text_align: VelloTextAlign,
     pub width: Option<f32>,
+    pub height: Option<f32>,
 }
 
 #[derive(Clone)]
@@ -219,5 +221,33 @@ impl VelloTextSection {
             .ok()
             .zip(camera.viewport_to_world_2d(camera_transform, max).ok())
             .map(|(min, max)| Rect { min, max })
+    }
+}
+
+pub fn calculate_text_content_size(
+    mut button_q: Query<
+        (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
+        Changed<VelloTextSection>,
+    >,
+    camera: Single<(&Camera, &GlobalTransform), With<VelloView>>,
+    fonts: Res<Assets<VelloFont>>,
+) {
+    let (camera, camera_transform) = *camera;
+
+    for (mut cs, text, gtransform) in button_q.iter_mut() {
+        if let Some(rect) = text.bb_in_screen_space(
+            fonts.get(&text.style.font).unwrap(),
+            gtransform,
+            camera,
+            camera_transform,
+        ) {
+            let size = rect.size();
+            let width = text.width.unwrap_or(size.x.abs());
+            let height = text.height.unwrap_or(size.y.abs());
+            let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
+                size: Vec2::new(width, height),
+            });
+            cs.set(measure);
+        }
     }
 }

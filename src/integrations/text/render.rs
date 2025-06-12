@@ -10,13 +10,18 @@ use bevy::{
 use vello::kurbo::Affine;
 
 use super::{VelloFont, VelloTextAnchor, VelloTextSection};
-use crate::render::{SkipEncoding, VelloEntityCountData, VelloView, prepare::PreparedAffine};
+use crate::{
+    VelloScreenSpace,
+    render::{SkipEncoding, VelloEntityCountData, VelloView, prepare::PreparedAffine},
+};
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloText {
     pub text: VelloTextSection,
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
+    pub ui_node: Option<ComputedNode>,
+    pub screen_space: Option<VelloScreenSpace>,
 }
 
 pub fn extract_text(
@@ -34,6 +39,8 @@ pub fn extract_text(
                 &ViewVisibility,
                 &InheritedVisibility,
                 Option<&RenderLayers>,
+                Option<&ComputedNode>,
+                Option<&VelloScreenSpace>,
             ),
             Without<SkipEncoding>,
         >,
@@ -47,8 +54,16 @@ pub fn extract_text(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (text, text_anchor, transform, view_visibility, inherited_visibility, render_layers) in
-        query_scenes.iter()
+    for (
+        text,
+        text_anchor,
+        transform,
+        view_visibility,
+        inherited_visibility,
+        render_layers,
+        ui_node,
+        screen_space,
+    ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met
         if !view_visibility.get() || !inherited_visibility.get() {
@@ -69,6 +84,8 @@ pub fn extract_text(
                     text: text.clone(),
                     text_anchor: *text_anchor,
                     transform: *transform,
+                    ui_node: ui_node.cloned(),
+                    screen_space: screen_space.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
@@ -97,21 +114,26 @@ pub fn prepare_text_affines(
             .transpose();
 
             let world_transform = render_entity.transform;
-
             let mut model_matrix = world_transform.compute_matrix();
-            model_matrix.w_axis.y *= -1.0;
 
-            let (projection_mat, view_mat) = {
-                let mut view_mat = view.world_from_view.compute_matrix();
-                view_mat.w_axis.y *= -1.0;
+            let raw_transform =
+                if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
+                    model_matrix
+                } else {
+                    model_matrix.w_axis.y *= -1.0;
 
-                (view.clip_from_view, view_mat)
-            };
+                    let (projection_mat, view_mat) = {
+                        let mut view_mat = view.world_from_view.compute_matrix();
+                        view_mat.w_axis.y *= -1.0;
 
-            let view_proj_matrix = projection_mat * view_mat.inverse();
-            let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
+                        (view.clip_from_view, view_mat)
+                    };
 
-            let raw_transform = vello_matrix * model_matrix;
+                    let view_proj_matrix = projection_mat * view_mat.inverse();
+                    let vello_matrix = ndc_to_pixels_matrix * view_proj_matrix;
+
+                    vello_matrix * model_matrix
+                };
 
             let transform: [f32; 16] = raw_transform.to_cols_array();
 
