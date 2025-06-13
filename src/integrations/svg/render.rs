@@ -151,7 +151,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
     ) -> PreparedAffine {
         let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
-        let raw_transform = if let Some(node) = self.ui_node {
+        let transform: [f64; 6] = if let Some(node) = self.ui_node {
             let mut model_matrix = world_transform.compute_matrix();
 
             let asset_size = Vec2::new(self.asset.width, self.asset.height);
@@ -170,7 +170,20 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
 
             let mut local_center_matrix = local_center_matrix;
             local_center_matrix.w_axis.y *= -1.0;
-            model_matrix * local_center_matrix
+            let raw_transform = model_matrix * local_center_matrix;
+            let transform = raw_transform.to_cols_array();
+
+            // | a c e |
+            // | b d f |
+            // | 0 0 1 |
+            [
+                transform[0] as f64,  // a
+                -transform[1] as f64, // b
+                -transform[4] as f64, // c
+                transform[5] as f64,  // d
+                transform[12] as f64, // e
+                transform[13] as f64, // f
+            ]
         } else if self.screen_space.is_some() {
             let mut model_matrix = world_transform.compute_matrix();
 
@@ -181,7 +194,20 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
 
             let mut local_center_matrix = local_center_matrix;
             local_center_matrix.w_axis.y *= -1.0;
-            model_matrix * local_center_matrix
+            let raw_transform = model_matrix * local_center_matrix;
+            let transform = raw_transform.to_cols_array();
+
+            // | a c e |
+            // | b d f |
+            // | 0 0 1 |
+            [
+                transform[0] as f64,  // a
+                -transform[1] as f64, // b
+                -transform[4] as f64, // c
+                transform[5] as f64,  // d
+                transform[12] as f64, // e
+                transform[13] as f64, // f
+            ]
         } else {
             let local_matrix = local_center_matrix;
 
@@ -211,22 +237,21 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
 
             let view_proj_matrix = projection_mat * view_mat.inverse();
 
-            ndc_to_pixels_matrix * view_proj_matrix * model_matrix
+            let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+            let transform = raw_transform.to_cols_array();
+
+            // | a c e |
+            // | b d f |
+            // | 0 0 1 |
+            [
+                transform[0] as f64,  // a
+                -transform[1] as f64, // b
+                -transform[4] as f64, // c
+                transform[5] as f64,  // d
+                transform[12] as f64, // e
+                transform[13] as f64, // f
+            ]
         };
-
-        let transform: [f32; 16] = raw_transform.to_cols_array();
-
-        // | a c e |
-        // | b d f |
-        // | 0 0 1 |
-        let transform: [f64; 6] = [
-            transform[0] as f64,  // a
-            -transform[1] as f64, // b
-            -transform[4] as f64, // c
-            transform[5] as f64,  // d
-            transform[12] as f64, // e
-            transform[13] as f64, // f
-        ];
 
         PreparedAffine(Affine::new(transform))
     }
