@@ -19,7 +19,7 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 - Adds `VelloScreenScale` resource to control the scale of screen space rendering.
 - Adds `VelloWorldScale` resource to control the scale of world space rendering.
-- Adds `NoVelloScale` component to disable scaling for specific entities.
+- Adds `SkipScaling` component to disable scaling for specific entities.
 - Adds `VelloScreenSpace` component.
 - Adds `VelloScreenSpace` to `bevy_vello::prelude`.
 - Adds functionality that automatically calculates the content size of `VelloTextSection` if it has a `ContentSize` component which is also `VelloScreenScale` aware.
