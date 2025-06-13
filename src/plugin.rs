@@ -47,5 +47,7 @@ impl Plugin for VelloPlugin {
         app.add_plugins(crate::integrations::lottie::LottieIntegrationPlugin);
         #[cfg(feature = "text")]
         app.add_plugins(crate::integrations::text::VelloTextIntegrationPlugin);
+        #[cfg(feature = "picking")]
+        app.add_plugins(crate::render::picking::VelloPickingPlugin);
     }
 }
