@@ -72,7 +72,7 @@ impl ExtractResource for VelloScreenScale {
 }
 
 #[derive(Component, Debug, Clone)]
-pub struct NoVelloScale;
+pub struct SkipScaling;
 
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
 #[derive(AsBindGroup, TypePath, Asset, Clone)]

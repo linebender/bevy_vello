@@ -16,7 +16,7 @@ use super::{
 use crate::{
     SkipEncoding, VelloScreenSpace,
     render::{
-        NoVelloScale, VelloEntityCountData, VelloScreenScale, VelloView, VelloWorldScale,
+        SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView, VelloWorldScale,
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
     },
 };
@@ -31,7 +31,7 @@ pub struct ExtractedLottieAsset {
     pub theme: Option<Theme>,
     pub playhead: f64,
     pub screen_space: Option<VelloScreenSpace>,
-    pub no_scaling: Option<NoVelloScale>,
+    pub no_scaling: Option<SkipScaling>,
 }
 
 pub fn extract_lottie_assets(
@@ -53,7 +53,7 @@ pub fn extract_lottie_assets(
                 &ViewVisibility,
                 &InheritedVisibility,
                 Option<&VelloScreenSpace>,
-                Option<&NoVelloScale>,
+                Option<&SkipScaling>,
             ),
             Without<SkipEncoding>,
         >,

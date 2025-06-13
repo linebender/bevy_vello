@@ -17,7 +17,7 @@ use crate::{
     VelloScreenSpace,
     prelude::*,
     render::{
-        NoVelloScale, VelloEntityCountData, VelloScreenScale, VelloWorldScale,
+        SkipScaling, VelloEntityCountData, VelloScreenScale, VelloWorldScale,
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
     },
 };
@@ -30,7 +30,7 @@ pub struct ExtractedVelloSvg {
     pub ui_node: Option<ComputedNode>,
     pub alpha: f32,
     pub screen_space: Option<VelloScreenSpace>,
-    pub no_scaling: Option<NoVelloScale>,
+    pub no_scaling: Option<SkipScaling>,
 }
 
 pub fn extract_svg_assets(
@@ -50,7 +50,7 @@ pub fn extract_svg_assets(
                 &ViewVisibility,
                 &InheritedVisibility,
                 Option<&VelloScreenSpace>,
-                Option<&NoVelloScale>,
+                Option<&SkipScaling>,
             ),
             Without<SkipEncoding>,
         >,

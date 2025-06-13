@@ -13,7 +13,7 @@ use super::{VelloFont, VelloTextAnchor, VelloTextSection};
 use crate::{
     VelloScreenSpace,
     render::{
-        NoVelloScale, SkipEncoding, VelloEntityCountData, VelloScreenScale, VelloView,
+        SkipEncoding, SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView,
         VelloWorldScale, prepare::PreparedAffine,
     },
 };
@@ -25,7 +25,7 @@ pub struct ExtractedVelloText {
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
     pub screen_space: Option<VelloScreenSpace>,
-    pub no_scaling: Option<NoVelloScale>,
+    pub no_scaling: Option<SkipScaling>,
 }
 
 pub fn extract_text(
@@ -45,7 +45,7 @@ pub fn extract_text(
                 Option<&RenderLayers>,
                 Option<&ComputedNode>,
                 Option<&VelloScreenSpace>,
-                Option<&NoVelloScale>,
+                Option<&SkipScaling>,
             ),
             Without<SkipEncoding>,
         >,

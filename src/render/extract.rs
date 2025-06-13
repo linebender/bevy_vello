@@ -6,7 +6,7 @@ use bevy::{
     },
 };
 
-use super::{NoVelloScale, VelloEntityCountData, VelloFrameProfileData};
+use super::{SkipScaling, VelloEntityCountData, VelloFrameProfileData};
 use crate::prelude::*;
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
@@ -23,7 +23,7 @@ pub struct ExtractedVelloScene {
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
     pub screen_space: Option<VelloScreenSpace>,
-    pub no_scaling: Option<NoVelloScale>,
+    pub no_scaling: Option<SkipScaling>,
 }
 
 pub fn extract_scenes(
@@ -42,7 +42,7 @@ pub fn extract_scenes(
                 Option<&ComputedNode>,
                 Option<&RenderLayers>,
                 Option<&VelloScreenSpace>,
-                Option<&NoVelloScale>,
+                Option<&SkipScaling>,
             ),
             Without<SkipEncoding>,
         >,
