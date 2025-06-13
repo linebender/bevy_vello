@@ -5742,6 +5742,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "verify_transforms"
+version = "0.9.0"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "version-compare"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
