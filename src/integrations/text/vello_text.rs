@@ -230,7 +230,7 @@ impl VelloTextSection {
 }
 
 pub fn calculate_text_section_content_size_on_change(
-    mut button_q: Query<
+    mut text_q: Query<
         (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
         Changed<VelloTextSection>,
     >,
@@ -240,7 +240,7 @@ pub fn calculate_text_section_content_size_on_change(
 ) {
     let (camera, camera_transform) = *camera;
 
-    for (mut cs, text, gtransform) in button_q.iter_mut() {
+    for (mut content_size, text, gtransform) in text_q.iter_mut() {
         if let Some(rect) = text.bb_in_screen_space(
             fonts.get(&text.style.font).unwrap(),
             gtransform,
@@ -253,13 +253,13 @@ pub fn calculate_text_section_content_size_on_change(
             let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
                 size: Vec2::new(width, height),
             });
-            cs.set(measure);
+            content_size.set(measure);
         }
     }
 }
 
 pub fn calculate_text_section_content_size(
-    mut button_q: Query<
+    mut text_q: Query<
         (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
         With<VelloTextSection>,
     >,
@@ -269,7 +269,7 @@ pub fn calculate_text_section_content_size(
 ) {
     let (camera, camera_transform) = *camera;
 
-    for (mut cs, text, gtransform) in button_q.iter_mut() {
+    for (mut content_size, text, gtransform) in text_q.iter_mut() {
         if let Some(rect) = text.bb_in_screen_space(
             fonts.get(&text.style.font).unwrap(),
             gtransform,
@@ -282,7 +282,7 @@ pub fn calculate_text_section_content_size(
             let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
                 size: Vec2::new(width, height),
             });
-            cs.set(measure);
+            content_size.set(measure);
         }
     }
 }
