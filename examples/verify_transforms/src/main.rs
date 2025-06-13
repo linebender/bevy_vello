@@ -1,9 +1,14 @@
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
+    color::palettes::css,
     prelude::*,
     ui::ContentSize,
 };
-use bevy_vello::{VelloPlugin, prelude::*};
+use bevy_vello::{
+    VelloPlugin,
+    prelude::*,
+    render::{VelloScreenScale, VelloWorldScale},
+};
 
 fn main() {
     let mut app = App::new();
@@ -13,6 +18,8 @@ fn main() {
     }))
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, spawn_all_the_things)
+    // .insert_resource(VelloScreenScale(2.0))
+    // .insert_resource(VelloWorldScale(2.0))
     .add_systems(Update, (rotate, gizmos));
     embedded_asset!(app, "assets/fountain.svg");
     app.run();
@@ -28,7 +35,7 @@ fn spawn_all_the_things(mut commands: Commands, asset_server: ResMut<AssetServer
     commands
         .spawn((
             VelloSvgHandle(asset_server.load("embedded://verify_transforms/assets/fountain.svg")),
-            Transform::from_xyz(0.0, SCREEN_HEIGHT / 3., 0.0),
+            Transform::from_xyz(0.0, SCREEN_HEIGHT / 4., 0.0),
             RotateThing,
         ))
         .with_children(|parent| {
@@ -39,7 +46,7 @@ fn spawn_all_the_things(mut commands: Commands, asset_server: ResMut<AssetServer
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, 50.0, 0.0),
+                Transform::from_xyz(0.0, -50., 0.0),
             ));
         });
 
@@ -58,12 +65,14 @@ fn spawn_all_the_things(mut commands: Commands, asset_server: ResMut<AssetServer
                         position_type: PositionType::Absolute,
                         top: Val::Px(SCREEN_HEIGHT / 4.),
                         left: Val::Px(SCREEN_WIDTH / 4.),
+                        border: UiRect::all(Val::Px(2.0)),
                         ..default()
                     },
                     VelloSvgHandle(
                         asset_server.load("embedded://verify_transforms/assets/fountain.svg"),
                     ),
                     RotateThing,
+                    BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
                 ))
                 .with_children(|parent| {
                     parent.spawn((
@@ -113,22 +122,24 @@ fn rotate(mut rotate_q: Query<&mut Transform, With<RotateThing>>, time: Res<Time
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn gizmos(
-    svg: Single<(&VelloSvgHandle, &GlobalTransform)>,
+    svg: Query<(&VelloSvgHandle, &GlobalTransform), (Without<Node>, Without<VelloScreenSpace>)>,
     assets: Res<Assets<VelloSvg>>,
     mut gizmos: Gizmos,
 ) {
-    let (svg, gtransform) = *svg;
-    let Some(svg) = assets.get(svg.id()) else {
-        return;
-    };
+    for (svg, gtransform) in svg.iter() {
+        let Some(svg) = assets.get(svg.id()) else {
+            continue;
+        };
 
-    gizmos.rect_2d(
-        Isometry2d::new(
-            gtransform.translation().xy(),
-            Rot2::radians(gtransform.rotation().to_scaled_axis().z),
-        ),
-        Vec2::new(svg.width, svg.height) * gtransform.scale().xy(),
-        Color::WHITE,
-    );
+        gizmos.rect_2d(
+            Isometry2d::new(
+                gtransform.translation().xy(),
+                Rot2::radians(gtransform.rotation().to_scaled_axis().z),
+            ),
+            Vec2::new(svg.width, svg.height) * gtransform.scale().xy(),
+            Color::WHITE,
+        );
+    }
 }

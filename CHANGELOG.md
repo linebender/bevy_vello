@@ -26,6 +26,7 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 ### Changed
 
+- Vello rendering in **screen space** now rotates clockwise instead of counter-clockwise to match Bevy's coordinate system.
 - `VelloScene` can now be placed in screen space independent of bevy_ui by adding a `VelloScreenSpace` component.
 - `VelloTextSection` now supports `VelloScreenSpace` to render text in screen space independent of bevy_ui.
 - `VelloTextSection` now supports `Node` to render text in screen space with bevy_ui.

@@ -151,13 +151,25 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
     ) -> PreparedAffine {
         let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
+        // | scale_x sheer_x translate_x |
+        // | sheer_y scale_y translate_y |
+        // | sheer_z sheer_z scale_z |
+        //
+        // rotate (z)
+        // | cos(θ) -sin(θ) translate_x |
+        // | sin(θ) cos(θ) translate_y |
+        // | sheer_z sheer_z scale_z |
+        //
+        // | a c e |
+        // | b d f | => a transposed (flipped over its diagonal) PostScript matrix
+        // | 0 0 1 |
         let transform: [f64; 6] = if let Some(node) = self.ui_node {
             let mut model_matrix = world_transform.compute_matrix();
+            let mut local_center_matrix = local_center_matrix;
+            local_center_matrix.w_axis.y *= -1.0;
 
+            // Fill the bevy_ui Node with the asset size
             let asset_size = Vec2::new(self.asset.width, self.asset.height);
-
-            // Make the screen space vector instance sized to fill the
-            // entire UI Node box if it's bundled with a Node
             let fill_scale = node.size() / asset_size;
             let scale_factor = fill_scale.x.min(fill_scale.y); // Maintain aspect ratio
             model_matrix.x_axis.x *= scale_factor;
@@ -168,48 +180,39 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
                 model_matrix.y_axis.y *= screen_scale;
             }
 
-            let mut local_center_matrix = local_center_matrix;
-            local_center_matrix.w_axis.y *= -1.0;
             let raw_transform = model_matrix * local_center_matrix;
             let transform = raw_transform.to_cols_array();
-
-            // | a c e |
-            // | b d f |
-            // | 0 0 1 |
             [
                 transform[0] as f64,  // a
-                -transform[1] as f64, // b
-                -transform[4] as f64, // c
+                transform[1] as f64,  // b
+                transform[4] as f64,  // c
                 transform[5] as f64,  // d
                 transform[12] as f64, // e
                 transform[13] as f64, // f
             ]
         } else if self.screen_space.is_some() {
             let mut model_matrix = world_transform.compute_matrix();
+            let mut local_center_matrix = local_center_matrix;
+            local_center_matrix.w_axis.y *= -1.0;
 
             if self.no_scaling.is_none() {
                 model_matrix.x_axis.x *= screen_scale;
                 model_matrix.y_axis.y *= screen_scale;
             }
 
-            let mut local_center_matrix = local_center_matrix;
-            local_center_matrix.w_axis.y *= -1.0;
             let raw_transform = model_matrix * local_center_matrix;
             let transform = raw_transform.to_cols_array();
-
-            // | a c e |
-            // | b d f |
-            // | 0 0 1 |
             [
                 transform[0] as f64,  // a
-                -transform[1] as f64, // b
-                -transform[4] as f64, // c
+                transform[1] as f64,  // b
+                transform[4] as f64,  // c
                 transform[5] as f64,  // d
                 transform[12] as f64, // e
                 transform[13] as f64, // f
             ]
         } else {
-            let local_matrix = local_center_matrix;
+            let mut model_matrix = world_transform.compute_matrix() * local_center_matrix;
+            model_matrix.w_axis.y *= -1.0;
 
             let (pixels_x, pixels_y) = (viewport_size.x as f32, viewport_size.y as f32);
             let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
@@ -220,9 +223,6 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             ])
             .transpose();
 
-            let mut model_matrix = world_transform.compute_matrix() * local_matrix;
-            model_matrix.w_axis.y *= -1.0;
-
             if self.no_scaling.is_none() {
                 model_matrix.x_axis.x *= world_scale;
                 model_matrix.y_axis.y *= world_scale;
@@ -231,22 +231,16 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             let (projection_mat, view_mat) = {
                 let mut view_mat = view.world_from_view.compute_matrix();
                 view_mat.w_axis.y *= -1.0;
-
                 (view.clip_from_view, view_mat)
             };
 
             let view_proj_matrix = projection_mat * view_mat.inverse();
-
             let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
             let transform = raw_transform.to_cols_array();
-
-            // | a c e |
-            // | b d f |
-            // | 0 0 1 |
             [
                 transform[0] as f64,  // a
-                -transform[1] as f64, // b
-                -transform[4] as f64, // c
+                -transform[1] as f64, // b, flipped for y-up world, rotation is counter-clockwise
+                -transform[4] as f64, // c, flipped for y-up world, rotation is counter-clockwise
                 transform[5] as f64,  // d
                 transform[12] as f64, // e
                 transform[13] as f64, // f
