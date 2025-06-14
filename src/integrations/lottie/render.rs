@@ -173,6 +173,13 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
         // | cos(θ) -sin(θ) translate_x |
         // | sin(θ) cos(θ) translate_y |
         // | sheer_z sheer_z scale_z |
+        //
+        // The order of operations is important, as it affects the final transformation matrix.
+        //
+        // Order of operations:
+        // 1. Scale
+        // 2. Rotate
+        // 3. Translate
         let transform: [f64; 6] = if let Some(node) = self.ui_node {
             local_center_matrix.w_axis.y *= -1.0;
             let mut model_matrix = world_transform.compute_matrix();

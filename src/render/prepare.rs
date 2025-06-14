@@ -65,6 +65,13 @@ pub fn prepare_scene_affines(
             // | cos(θ) -sin(θ) translate_x |
             // | sin(θ) cos(θ) translate_y |
             // | sheer_z sheer_z scale_z |
+            //
+            // The order of operations is important, as it affects the final transformation matrix.
+            //
+            // Order of operations:
+            // 1. Scale
+            // 2. Rotate
+            // 3. Translate
             let transform: [f64; 6] = if let Some(node) = render_entity.ui_node {
                 let mut model_matrix = world_transform.compute_matrix();
                 let Vec2 { x, y } = node.size();

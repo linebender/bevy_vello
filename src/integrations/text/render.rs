@@ -140,6 +140,13 @@ pub fn prepare_text_affines(
             // | cos(θ) -sin(θ) translate_x |
             // | sin(θ) cos(θ) translate_y |
             // | sheer_z sheer_z scale_z |
+            //
+            // The order of operations is important, as it affects the final transformation matrix.
+            //
+            // Order of operations:
+            // 1. Scale
+            // 2. Rotate
+            // 3. Translate
             let transform: [f64; 6] =
                 if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
                     let mut model_matrix = world_transform.compute_matrix();
