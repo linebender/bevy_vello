@@ -19,16 +19,15 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 - `VelloScreenScale` resource added to control the scale of screen space rendering.
 - `VelloWorldScale` resource added to control the scale of world space rendering.
-- `SkipScaling` component added to disable scaling for specific entities.
-- `VelloScreenSpace` component added.
-- `VelloScreenSpace` added to `bevy_vello::prelude`.
-- Functionality that automatically calculates the content size of `VelloTextSection` if it has a `ContentSize` component which is also `VelloScreenScale` aware.
+- `SkipScaling` component added and exported to `bevy_vello::prelude` for disabling scaling for specific entities.
+- `VelloScreenSpace` component added and exported to `bevy_vello::prelude`.
+- Added systems that calculates the content size of `VelloTextSection` if it has a `ContentSize` component which is also `VelloScreenScale` aware.
 - Example demonstrating scaling added to `examples/scaling`.
 
 ### Changed
 
 - Fixes rotation and scale matrix calculations for prepared affines in all spaces for all assets.
-- Vello rendering in **screen space** now rotates clockwise instead of counter-clockwise to match Bevy's coordinate system.
+- Vello rendering in screen space now rotates clockwise instead of counter-clockwise to match Bevy's coordinate system.
 - `VelloScene` can now be placed in screen space independent of bevy_ui by adding a `VelloScreenSpace` component.
 - `VelloTextSection` now supports `VelloScreenSpace` to render text in screen space independent of bevy_ui.
 - `VelloTextSection` now supports `Node` to render text in screen space with bevy_ui.
