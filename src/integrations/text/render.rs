@@ -109,12 +109,15 @@ pub fn prepare_text_affines(
     world_scale: Res<VelloWorldScale>,
     screen_scale: Res<VelloScreenScale>,
 ) {
+    let screen_scale_matrix = Mat4::from_scale(Vec3::new(screen_scale.0, screen_scale.0, 1.0));
+    let world_scale_matrix = Mat4::from_scale(Vec3::new(world_scale.0, -world_scale.0, 1.0));
+
     for (camera, view) in views.iter() {
         let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
         let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
         let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
             [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
+            [0.0, -pixels_y / 2.0, 0.0, pixels_y / 2.0], // Flip Y axis for world space
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ])
@@ -123,6 +126,40 @@ pub fn prepare_text_affines(
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
 
+            let raw_transform =
+                if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
+                    let mut model_matrix = world_transform.compute_matrix();
+
+                    if render_entity.no_scaling.is_none() {
+                        model_matrix *= screen_scale_matrix;
+                    }
+
+                    model_matrix
+                } else {
+                    let mut model_matrix = world_transform.compute_matrix();
+
+                    if render_entity.no_scaling.is_none() {
+                        model_matrix *= world_scale_matrix;
+                    }
+
+                    let (projection_mat, view_mat) = {
+                        let mut view_mat = view.world_from_view.compute_matrix();
+                        view_mat.w_axis.y *= -1.0;
+                        (view.clip_from_view, view_mat)
+                    };
+                    let view_proj_matrix = projection_mat * view_mat.inverse();
+
+                    ndc_to_pixels_matrix * view_proj_matrix * model_matrix
+                };
+
+            let transform: [f32; 16] = raw_transform.to_cols_array();
+
+            // A transposed (flipped over its diagonal) PostScript matrix is:
+            // | a c e |
+            // | b d f |
+            // | 0 0 1 |
+            //
+            // Components
             // | scale_x sheer_x translate_x |
             // | sheer_y scale_y translate_y |
             // | sheer_z sheer_z scale_z |
@@ -131,79 +168,14 @@ pub fn prepare_text_affines(
             // | cos(θ) -sin(θ) translate_x |
             // | sin(θ) cos(θ) translate_y |
             // | sheer_z sheer_z scale_z |
-            //
-            // | a c e |
-            // | b d f | => a transposed (flipped over its diagonal) PostScript matrix
-            // | 0 0 1 |
-            let transform: [f64; 6] = if let Some(_node) = render_entity.ui_node {
-                let model_matrix = world_transform.compute_matrix();
-
-                // Fill the bevy_ui Node with the asset size
-                // let asset_size = Vec2::new(self.asset.width, self.asset.height);
-                // let fill_scale = node.size() / asset_size;
-                // Maintain aspect ratio
-                // let scale_factor = fill_scale.x.min(fill_scale.y);
-                // model_matrix.x_axis.x *= scale_factor;
-                // model_matrix.y_axis.y *= scale_factor;
-                //
-                // if self.no_scaling.is_none() {
-                //     model_matrix.x_axis.x *= screen_scale;
-                //     model_matrix.y_axis.y *= screen_scale;
-                // }
-
-                let transform = model_matrix.to_cols_array();
-                [
-                    transform[0] as f64,  // a
-                    transform[1] as f64,  // b
-                    transform[4] as f64,  // c
-                    transform[5] as f64,  // d
-                    transform[12] as f64, // e
-                    transform[13] as f64, // f
-                ]
-            } else if render_entity.screen_space.is_some() {
-                let model_matrix = world_transform.compute_matrix();
-
-                // if self.no_scaling.is_none() {
-                //     model_matrix.x_axis.x *= screen_scale;
-                //     model_matrix.y_axis.y *= screen_scale;
-                // }
-
-                let transform = model_matrix.to_cols_array();
-                [
-                    transform[0] as f64,  // a
-                    transform[1] as f64,  // b
-                    transform[4] as f64,  // c
-                    transform[5] as f64,  // d
-                    transform[12] as f64, // e
-                    transform[13] as f64, // f
-                ]
-            } else {
-                let mut model_matrix = world_transform.compute_matrix();
-                model_matrix.w_axis.y *= -1.0;
-
-                // if self.no_scaling.is_none() {
-                //     model_matrix.x_axis.x *= world_scale;
-                //     model_matrix.y_axis.y *= world_scale;
-                // }
-
-                let (projection_mat, view_mat) = {
-                    let mut view_mat = view.world_from_view.compute_matrix();
-                    view_mat.w_axis.y *= -1.0;
-                    (view.clip_from_view, view_mat)
-                };
-
-                let view_proj_matrix = projection_mat * view_mat.inverse();
-                let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
-                let transform = raw_transform.to_cols_array();
-                [
-                    transform[0] as f64,  // a
-                    -transform[1] as f64, // b
-                    -transform[4] as f64, // c
-                    transform[5] as f64,  // d
-                    transform[12] as f64, // e
-                    transform[13] as f64, // f
-                ]
-            };
+            let transform: [f64; 6] = [
+                transform[0] as f64,  // a
+                transform[1] as f64,  // b
+                transform[4] as f64,  // c
+                transform[5] as f64,  // d
+                transform[12] as f64, // e
+                transform[13] as f64, // f
+            ];
 
             commands
                 .entity(entity)
