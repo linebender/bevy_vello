@@ -164,23 +164,25 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         // | b d f | => a transposed (flipped over its diagonal) PostScript matrix
         // | 0 0 1 |
         let transform: [f64; 6] = if let Some(node) = self.ui_node {
-            let mut model_matrix = world_transform.compute_matrix();
-            let mut local_center_matrix = local_center_matrix;
-            local_center_matrix.w_axis.y *= -1.0;
+            // let mut local_center_mat = local_center_matrix;
+            // // local_center_mat.w_axis.y *= -1.0;
+
+            let mut model_mat = world_transform.compute_matrix();
+            // model_mat *= local_center_mat;
 
             // Fill the bevy_ui Node with the asset size
             let asset_size = Vec2::new(self.asset.width, self.asset.height);
             let fill_scale = node.size() / asset_size;
             let scale_factor = fill_scale.x.min(fill_scale.y); // Maintain aspect ratio
-            model_matrix.x_axis.x *= scale_factor;
-            model_matrix.y_axis.y *= scale_factor;
+            let fact_mat = Mat4::from_scale(Vec3::new(scale_factor, scale_factor, 1.0));
+            model_mat *= fact_mat;
 
             if self.no_scaling.is_none() {
-                model_matrix.x_axis.x *= screen_scale;
-                model_matrix.y_axis.y *= screen_scale;
+                let scale_mat = Mat4::from_scale(Vec3::new(screen_scale, screen_scale, 1.0));
+                model_mat *= scale_mat;
             }
 
-            let raw_transform = model_matrix * local_center_matrix;
+            let raw_transform = model_mat * local_center_matrix;
             let transform = raw_transform.to_cols_array();
             [
                 transform[0] as f64,  // a
