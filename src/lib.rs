@@ -42,8 +42,11 @@ pub mod prelude {
         VelloTextStyle,
     };
     pub use crate::{
+        render::{
+            SkipEncoding, SkipScaling, VelloRenderSettings, VelloScreenScale, VelloView,
+            VelloWorldScale,
+        },
         VelloScene, VelloSceneBundle, VelloScreenSpace,
-        render::{SkipEncoding, SkipScaling, VelloRenderSettings, VelloView},
     };
 }
 
