@@ -35,14 +35,14 @@ pub fn prepare_scene_affines(
     screen_scale: Res<VelloScreenScale>,
 ) {
     let screen_scale_matrix = Mat4::from_scale(Vec3::new(screen_scale.0, screen_scale.0, 1.0));
-    let world_scale_matrix = Mat4::from_scale(Vec3::new(world_scale.0, -world_scale.0, 1.0));
+    let world_scale_matrix = Mat4::from_scale(Vec3::new(world_scale.0, world_scale.0, 1.0));
 
     for (camera, view) in views.iter() {
         let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
         let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
         let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
             [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-            [0.0, -pixels_y / 2.0, 0.0, pixels_y / 2.0], // Flip Y axis for world space
+            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ])
@@ -51,45 +51,7 @@ pub fn prepare_scene_affines(
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
 
-            let raw_transform = if let Some(node) = render_entity.ui_node {
-                let mut model_matrix = world_transform.compute_matrix();
-                let Vec2 { x, y } = node.size();
-                let local_center_matrix =
-                    Mat4::from_translation(Vec3::new(x / 2.0, y / 2.0, 0.0)).inverse();
-
-                if render_entity.no_scaling.is_none() {
-                    model_matrix *= screen_scale_matrix;
-                }
-
-                model_matrix * local_center_matrix
-            } else if render_entity.screen_space.is_some() {
-                let mut model_matrix = world_transform.compute_matrix();
-
-                if render_entity.no_scaling.is_none() {
-                    model_matrix *= screen_scale_matrix;
-                }
-
-                model_matrix
-            } else {
-                let mut model_matrix = world_transform.compute_matrix();
-
-                if render_entity.no_scaling.is_none() {
-                    model_matrix *= world_scale_matrix;
-                }
-
-                let (projection_mat, view_mat) = {
-                    let mut view_mat = view.world_from_view.compute_matrix();
-                    view_mat.w_axis.y *= -1.0;
-                    (view.clip_from_view, view_mat)
-                };
-                let view_proj_matrix = projection_mat * view_mat.inverse();
-
-                ndc_to_pixels_matrix * view_proj_matrix * model_matrix
-            };
-
-            let transform: [f32; 16] = raw_transform.to_cols_array();
-
-            // A transposed (flipped over its diagonal) PostScript matrix is:
+            // A transposed (flipped over its diagonal) PostScript matrix
             // | a c e |
             // | b d f |
             // | 0 0 1 |
@@ -103,14 +65,71 @@ pub fn prepare_scene_affines(
             // | cos(θ) -sin(θ) translate_x |
             // | sin(θ) cos(θ) translate_y |
             // | sheer_z sheer_z scale_z |
-            let transform: [f64; 6] = [
-                transform[0] as f64,  // a
-                transform[1] as f64,  // b
-                transform[4] as f64,  // c
-                transform[5] as f64,  // d
-                transform[12] as f64, // e
-                transform[13] as f64, // f
-            ];
+            let transform: [f64; 6] = if let Some(node) = render_entity.ui_node {
+                let mut model_matrix = world_transform.compute_matrix();
+                let Vec2 { x, y } = node.size();
+                let local_center_matrix =
+                    Mat4::from_translation(Vec3::new(x / 2.0, y / 2.0, 0.0)).inverse();
+
+                if render_entity.no_scaling.is_none() {
+                    model_matrix *= screen_scale_matrix;
+                }
+
+                let raw_transform = model_matrix * local_center_matrix;
+                let transform = raw_transform.to_cols_array();
+                [
+                    transform[0] as f64,  // a
+                    transform[1] as f64,  // b
+                    transform[4] as f64,  // c
+                    transform[5] as f64,  // d
+                    transform[12] as f64, // e
+                    transform[13] as f64, // f
+                ]
+            } else if render_entity.screen_space.is_some() {
+                let mut model_matrix = world_transform.compute_matrix();
+
+                if render_entity.no_scaling.is_none() {
+                    model_matrix *= screen_scale_matrix;
+                }
+
+                let raw_transform = model_matrix;
+                let transform = raw_transform.to_cols_array();
+                [
+                    transform[0] as f64,  // a
+                    transform[1] as f64,  // b
+                    transform[4] as f64,  // c
+                    transform[5] as f64,  // d
+                    transform[12] as f64, // e
+                    transform[13] as f64, // f
+                ]
+            } else {
+                let mut model_matrix = world_transform.compute_matrix();
+
+                if render_entity.no_scaling.is_none() {
+                    model_matrix *= world_scale_matrix;
+                }
+
+                model_matrix.w_axis.y *= -1.0;
+
+                let (projection_mat, view_mat) = {
+                    let mut view_mat = view.world_from_view.compute_matrix();
+                    view_mat.w_axis.y *= -1.0;
+                    (view.clip_from_view, view_mat)
+                };
+                let view_proj_matrix = projection_mat * view_mat.inverse();
+
+                let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+                let transform = raw_transform.to_cols_array();
+
+                [
+                    transform[0] as f64,  // a
+                    -transform[1] as f64, // b
+                    -transform[4] as f64, // c
+                    transform[5] as f64,  // d
+                    transform[12] as f64, // e
+                    transform[13] as f64, // f
+                ]
+            };
 
             commands
                 .entity(entity)

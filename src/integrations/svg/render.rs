@@ -151,6 +151,12 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
     ) -> PreparedAffine {
         let mut local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
+        // A transposed (flipped over its diagonal) PostScript matrix
+        // | a c e |
+        // | b d f |
+        // | 0 0 1 |
+        //
+        // Components
         // | scale_x sheer_x translate_x |
         // | sheer_y scale_y translate_y |
         // | sheer_z sheer_z scale_z |
@@ -159,11 +165,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         // | cos(θ) -sin(θ) translate_x |
         // | sin(θ) cos(θ) translate_y |
         // | sheer_z sheer_z scale_z |
-        //
-        // | a c e |
-        // | b d f | => a transposed (flipped over its diagonal) PostScript matrix
-        // | 0 0 1 |
-        let raw_transform = if let Some(node) = self.ui_node {
+        let transform: [f64; 6] = if let Some(node) = self.ui_node {
             local_center_matrix.w_axis.y *= -1.0;
             let mut model_mat = world_transform.compute_matrix();
 
@@ -179,7 +181,16 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
                 model_mat *= scale_mat;
             }
 
-            model_mat * local_center_matrix
+            let raw_transform = model_mat * local_center_matrix;
+            let transform = raw_transform.to_cols_array();
+            [
+                transform[0] as f64,  // a
+                transform[1] as f64,  // b
+                transform[4] as f64,  // c
+                transform[5] as f64,  // d
+                transform[12] as f64, // e
+                transform[13] as f64, // f
+            ]
         } else if self.screen_space.is_some() {
             let mut model_matrix = world_transform.compute_matrix();
             local_center_matrix.w_axis.y *= -1.0;
@@ -189,17 +200,26 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
                 model_matrix *= scale_mat;
             }
 
-            model_matrix * local_center_matrix
+            let raw_transform = model_matrix * local_center_matrix;
+            let transform = raw_transform.to_cols_array();
+            [
+                transform[0] as f64,  // a
+                transform[1] as f64,  // b
+                transform[4] as f64,  // c
+                transform[5] as f64,  // d
+                transform[12] as f64, // e
+                transform[13] as f64, // f
+            ]
         } else {
             let mut model_matrix = world_transform.compute_matrix();
-            local_center_matrix.w_axis.y *= -1.0;
 
             if self.no_scaling.is_none() {
-                let scale_mat = Mat4::from_scale(Vec3::new(world_scale, -world_scale, 1.0));
+                let scale_mat = Mat4::from_scale(Vec3::new(world_scale, world_scale, 1.0));
                 model_matrix *= scale_mat;
             }
 
             model_matrix *= local_center_matrix;
+            model_matrix.w_axis.y *= -1.0;
 
             let (projection_mat, view_mat) = {
                 let mut view_mat = view.world_from_view.compute_matrix();
@@ -211,39 +231,24 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             let (pixels_x, pixels_y) = (viewport_size.x as f32, viewport_size.y as f32);
             let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
                 [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-                [0.0, -pixels_y / 2.0, 0.0, pixels_y / 2.0], // Flip Y axis for world space
+                [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
                 [0.0, 0.0, 1.0, 0.0],
                 [0.0, 0.0, 0.0, 1.0],
             ])
             .transpose();
 
-            ndc_to_pixels_matrix * view_proj_matrix * model_matrix
+            let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+            let transform = raw_transform.to_cols_array();
+
+            [
+                transform[0] as f64,  // a
+                -transform[1] as f64, // b
+                -transform[4] as f64, // c
+                transform[5] as f64,  // d
+                transform[12] as f64, // e
+                transform[13] as f64, // f
+            ]
         };
-
-        let transform: [f32; 16] = raw_transform.to_cols_array();
-
-        // A transposed (flipped over its diagonal) PostScript matrix is:
-        // | a c e |
-        // | b d f |
-        // | 0 0 1 |
-        //
-        // Components
-        // | scale_x sheer_x translate_x |
-        // | sheer_y scale_y translate_y |
-        // | sheer_z sheer_z scale_z |
-        //
-        // rotate (z)
-        // | cos(θ) -sin(θ) translate_x |
-        // | sin(θ) cos(θ) translate_y |
-        // | sheer_z sheer_z scale_z |
-        let transform: [f64; 6] = [
-            transform[0] as f64,  // a
-            transform[1] as f64,  // b
-            transform[4] as f64,  // c
-            transform[5] as f64,  // d
-            transform[12] as f64, // e
-            transform[13] as f64, // f
-        ];
 
         PreparedAffine(Affine::new(transform))
     }
