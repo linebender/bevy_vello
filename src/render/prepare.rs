@@ -4,7 +4,7 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{extract::ExtractedVelloScene, VelloScreenScale, VelloView, VelloWorldScale};
+use super::{VelloScreenScale, VelloView, VelloWorldScale, extract::ExtractedVelloScene};
 
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedAffine(pub Affine);
