@@ -51,31 +51,41 @@ pub fn prepare_scene_affines(
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
 
-            let raw_transform =
-                if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
-                    let mut model_matrix = world_transform.compute_matrix();
+            let raw_transform = if let Some(node) = render_entity.ui_node {
+                let mut model_matrix = world_transform.compute_matrix();
+                let Vec2 { x, y } = node.size();
+                model_matrix.w_axis.x -= x * 0.5;
+                model_matrix.w_axis.y -= y * 0.5;
 
-                    if render_entity.no_scaling.is_none() {
-                        model_matrix *= screen_scale_matrix;
-                    }
+                if render_entity.no_scaling.is_none() {
+                    model_matrix *= screen_scale_matrix;
+                }
 
-                    model_matrix
-                } else {
-                    let mut model_matrix = world_transform.compute_matrix();
+                model_matrix
+            } else if render_entity.screen_space.is_some() {
+                let mut model_matrix = world_transform.compute_matrix();
 
-                    if render_entity.no_scaling.is_none() {
-                        model_matrix *= world_scale_matrix;
-                    }
+                if render_entity.no_scaling.is_none() {
+                    model_matrix *= screen_scale_matrix;
+                }
 
-                    let (projection_mat, view_mat) = {
-                        let mut view_mat = view.world_from_view.compute_matrix();
-                        view_mat.w_axis.y *= -1.0;
-                        (view.clip_from_view, view_mat)
-                    };
-                    let view_proj_matrix = projection_mat * view_mat.inverse();
+                model_matrix
+            } else {
+                let mut model_matrix = world_transform.compute_matrix();
 
-                    ndc_to_pixels_matrix * view_proj_matrix * model_matrix
+                if render_entity.no_scaling.is_none() {
+                    model_matrix *= world_scale_matrix;
+                }
+
+                let (projection_mat, view_mat) = {
+                    let mut view_mat = view.world_from_view.compute_matrix();
+                    view_mat.w_axis.y *= -1.0;
+                    (view.clip_from_view, view_mat)
                 };
+                let view_proj_matrix = projection_mat * view_mat.inverse();
+
+                ndc_to_pixels_matrix * view_proj_matrix * model_matrix
+            };
 
             let transform: [f32; 16] = raw_transform.to_cols_array();
 
