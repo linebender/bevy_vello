@@ -30,7 +30,16 @@ fn main() {
     )
     .insert_resource(VelloScreenScale(1.))
     .insert_resource(VelloWorldScale(1.))
-    .add_systems(Update, (rotate, gizmos, simple_animation, scale_control));
+    .add_systems(
+        Update,
+        (
+            rotate,
+            gizmos,
+            simple_ui_animation,
+            simple_non_ui_animation,
+            scale_control,
+        ),
+    );
     embedded_asset!(app, "assets/svg/fountain.svg");
     embedded_asset!(app, "assets/lottie/Tiger.json");
     app.run();
@@ -368,7 +377,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         });
 }
 
-fn simple_animation(mut scene_q: Query<&mut VelloScene>, time: Res<Time>) {
+fn simple_non_ui_animation(mut scene_q: Query<&mut VelloScene, Without<Node>>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
     for mut scene in scene_q.iter_mut() {
         // Reset scene every frame
@@ -388,6 +397,30 @@ fn simple_animation(mut scene_q: Query<&mut VelloScene>, time: Res<Time>) {
             peniko::Color::new([c.x, c.y, c.z, 1.]),
             None,
             &kurbo::RoundedRect::new(-25.0, -25.0, 25.0, 25.0, (sin_time as f64) * 25.0),
+        );
+    }
+}
+
+fn simple_ui_animation(mut scene_q: Query<&mut VelloScene>, time: Res<Time>) {
+    let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
+    for mut scene in scene_q.iter_mut() {
+        // Reset scene every frame
+        scene.reset();
+
+        // Animate color green to blue
+        let c = Vec3::lerp(
+            Vec3::new(-1.0, 1.0, -1.0),
+            Vec3::new(-1.0, 1.0, 1.0),
+            sin_time + 0.5,
+        );
+
+        // Animate the corner radius
+        scene.fill(
+            peniko::Fill::NonZero,
+            kurbo::Affine::default(),
+            peniko::Color::new([c.x, c.y, c.z, 1.]),
+            None,
+            &kurbo::RoundedRect::new(0., 0., 50.0, 50.0, (sin_time as f64) * 25.0),
         );
     }
 }
