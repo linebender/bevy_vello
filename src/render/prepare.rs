@@ -4,7 +4,7 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{VelloScreenScale, VelloView, VelloWorldScale, extract::ExtractedVelloScene};
+use super::{extract::ExtractedVelloScene, VelloScreenScale, VelloView, VelloWorldScale};
 
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedAffine(pub Affine);
@@ -54,14 +54,14 @@ pub fn prepare_scene_affines(
             let raw_transform = if let Some(node) = render_entity.ui_node {
                 let mut model_matrix = world_transform.compute_matrix();
                 let Vec2 { x, y } = node.size();
-                model_matrix.w_axis.x -= x * 0.5;
-                model_matrix.w_axis.y -= y * 0.5;
+                let local_center_matrix =
+                    Mat4::from_translation(Vec3::new(x / 2.0, y / 2.0, 0.0)).inverse();
 
                 if render_entity.no_scaling.is_none() {
                     model_matrix *= screen_scale_matrix;
                 }
 
-                model_matrix
+                model_matrix * local_center_matrix
             } else if render_entity.screen_space.is_some() {
                 let mut model_matrix = world_transform.compute_matrix();
 
