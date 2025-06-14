@@ -4775,6 +4775,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "scaling"
+version = "0.9.0"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "scene"
 version = "0.9.0"
 dependencies = [
@@ -5739,14 +5747,6 @@ dependencies = [
  "thiserror 2.0.12",
  "usvg",
  "vello",
-]
-
-[[package]]
-name = "verify_transforms"
-version = "0.9.0"
-dependencies = [
- "bevy",
- "bevy_vello",
 ]
 
 [[package]]

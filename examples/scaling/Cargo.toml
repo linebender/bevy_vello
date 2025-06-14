@@ -1,5 +1,5 @@
 [package]
-name = "verify_transforms"
+name = "scaling"
 version.workspace = true
 license.workspace = true
 edition.workspace = true

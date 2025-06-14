@@ -151,8 +151,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             ..default()
                         },
                         VelloSvgHandle(
-                            asset_server
-                                .load("embedded://verify_transforms/assets/svg/fountain.svg"),
+                            asset_server.load("embedded://scaling/assets/svg/fountain.svg"),
                         ),
                         BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
                     ));
@@ -198,8 +197,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             ..default()
                         },
                         VelloLottieHandle(
-                            asset_server
-                                .load("embedded://verify_transforms/assets/lottie/Tiger.json"),
+                            asset_server.load("embedded://scaling/assets/lottie/Tiger.json"),
                         ),
                         BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
                     ));
@@ -255,9 +253,7 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
     commands
         .spawn((
             VelloScreenSpace,
-            VelloSvgHandle(
-                asset_server.load("embedded://verify_transforms/assets/svg/fountain.svg"),
-            ),
+            VelloSvgHandle(asset_server.load("embedded://scaling/assets/svg/fountain.svg")),
             Transform::from_xyz(CELL_WIDTH * 2., SCREEN_HEIGHT / 2., 0.0),
             RotateThing,
         ))
@@ -281,9 +277,7 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
     commands
         .spawn((
             VelloScreenSpace,
-            VelloLottieHandle(
-                asset_server.load("embedded://verify_transforms/assets/lottie/Tiger.json"),
-            ),
+            VelloLottieHandle(asset_server.load("embedded://scaling/assets/lottie/Tiger.json")),
             Transform::from_xyz(CELL_WIDTH * 3., SCREEN_HEIGHT / 2., 0.0)
                 .with_scale(Vec3::splat(0.1)),
             RotateThing,
@@ -331,9 +325,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 
     commands
         .spawn((
-            VelloSvgHandle(
-                asset_server.load("embedded://verify_transforms/assets/svg/fountain.svg"),
-            ),
+            VelloSvgHandle(asset_server.load("embedded://scaling/assets/svg/fountain.svg")),
             Transform::from_xyz(0.0, -CELL_HEIGHT, 0.0),
             RotateThing,
         ))
@@ -355,9 +347,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 
     commands
         .spawn((
-            VelloLottieHandle(
-                asset_server.load("embedded://verify_transforms/assets/lottie/Tiger.json"),
-            ),
+            VelloLottieHandle(asset_server.load("embedded://scaling/assets/lottie/Tiger.json")),
             RotateThing,
             Transform::from_xyz(CELL_WIDTH, -CELL_HEIGHT, 0.0).with_scale(Vec3::splat(0.1)),
         ))

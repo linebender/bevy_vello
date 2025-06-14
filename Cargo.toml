@@ -16,7 +16,7 @@ members = [
   "examples/headless",
   "examples/diagnostics",
   "examples/view_culling",
-  "examples/verify_transforms",
+  "examples/scaling",
 ]
 
 [workspace.package]
