@@ -117,7 +117,7 @@ pub fn prepare_text_affines(
         let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
         let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
             [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0], // Flip Y axis for world space
+            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
             [0.0, 0.0, 1.0, 0.0],
             [0.0, 0.0, 0.0, 1.0],
         ])
@@ -166,7 +166,7 @@ pub fn prepare_text_affines(
                         model_matrix *= world_scale_matrix;
                     }
 
-                    model_matrix.w_axis.y *= -1.0; // Flip Y axis for world space
+                    model_matrix.w_axis.y *= -1.0;
 
                     let (projection_mat, view_mat) = {
                         let mut view_mat = view.world_from_view.compute_matrix();
