@@ -42,7 +42,7 @@ pub mod prelude {
         VelloTextStyle,
     };
     pub use crate::{
-        VelloScene, VelloSceneBundle,
+        VelloScene, VelloSceneBundle, VelloScreenSpace,
         render::{SkipEncoding, VelloRenderSettings, VelloView},
     };
 }
@@ -64,6 +64,10 @@ pub struct VelloSceneBundle {
 #[require(Transform, Visibility, VisibilityClass)]
 #[component(on_add = view::add_visibility_class::<VelloScene>)]
 pub struct VelloScene(Box<vello::Scene>);
+
+/// A simple marker component to use screen space coordinates for rendering.
+#[derive(Component, Default, Clone)]
+pub struct VelloScreenSpace;
 
 impl VelloScene {
     pub fn new() -> Self {

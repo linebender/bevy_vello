@@ -14,9 +14,9 @@ use super::{
     asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    SkipEncoding,
+    SkipEncoding, VelloScreenSpace,
     render::{
-        VelloEntityCountData, VelloView,
+        SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView, VelloWorldScale,
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
     },
 };
@@ -30,6 +30,8 @@ pub struct ExtractedLottieAsset {
     pub alpha: f32,
     pub theme: Option<Theme>,
     pub playhead: f64,
+    pub screen_space: Option<VelloScreenSpace>,
+    pub no_scaling: Option<SkipScaling>,
 }
 
 pub fn extract_lottie_assets(
@@ -50,6 +52,8 @@ pub fn extract_lottie_assets(
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
+                Option<&VelloScreenSpace>,
+                Option<&SkipScaling>,
             ),
             Without<SkipEncoding>,
         >,
@@ -73,6 +77,8 @@ pub fn extract_lottie_assets(
         render_layers,
         view_visibility,
         inherited_visibility,
+        screen_space,
+        no_scaling,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
@@ -98,6 +104,8 @@ pub fn extract_lottie_assets(
                     playhead: playhead.frame(),
                     alpha: asset.alpha,
                     ui_node: ui_node.cloned(),
+                    screen_space: screen_space.cloned(),
+                    no_scaling: no_scaling.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_lotties += 1;
@@ -111,13 +119,21 @@ pub fn prepare_asset_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), With<Camera2d>>,
     mut render_entities: Query<(Entity, &ExtractedLottieAsset)>,
+    world_scale: Res<VelloWorldScale>,
+    screen_scale: Res<VelloScreenScale>,
 ) {
     for (camera, view) in views.iter() {
         let viewport_size: UVec2 = camera.physical_viewport_size.unwrap();
         for (entity, render_entity) in render_entities.iter_mut() {
             // Prepare render data needed for the subsequent render system
             let final_transform = render_entity.final_transform();
-            let affine = render_entity.scene_affine(view, *final_transform, viewport_size);
+            let affine = render_entity.scene_affine(
+                view,
+                *final_transform,
+                viewport_size,
+                world_scale.0,
+                screen_scale.0,
+            );
 
             commands.entity(entity).insert((affine, final_transform));
         }
@@ -138,60 +154,100 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
         view: &ExtractedView,
         world_transform: GlobalTransform,
         viewport_size: UVec2,
+        world_scale: f32,
+        screen_scale: f32,
     ) -> PreparedAffine {
-        let local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
+        let mut local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
 
+        // | scale_x sheer_x translate_x |
+        // | sheer_y scale_y translate_y |
+        // | sheer_z sheer_z scale_z |
+        //
+        // rotate (z)
+        // | cos(θ) -sin(θ) translate_x |
+        // | sin(θ) cos(θ) translate_y |
+        // | sheer_z sheer_z scale_z |
+        //
+        // | a c e |
+        // | b d f | => a transposed (flipped over its diagonal) PostScript matrix
+        // | 0 0 1 |
         let raw_transform = if let Some(node) = self.ui_node {
-            let mut model_matrix = world_transform.compute_matrix();
+            local_center_matrix.w_axis.y *= -1.0;
+            let mut model_mat = world_transform.compute_matrix();
 
+            // Fill the bevy_ui Node with the asset size
             let asset_size = Vec2::new(self.asset.width, self.asset.height);
-
-            // Make the screen space vector instance sized to fill the
-            // entire UI Node box if it's bundled with a Node
             let fill_scale = node.size() / asset_size;
             let scale_factor = fill_scale.x.min(fill_scale.y); // Maintain aspect ratio
-            model_matrix.x_axis.x *= scale_factor;
-            model_matrix.y_axis.y *= scale_factor;
+            let scale_fact_mat = Mat4::from_scale(Vec3::new(scale_factor, scale_factor, 1.0));
+            model_mat *= scale_fact_mat;
 
-            let mut local_center_matrix = local_center_matrix;
+            if self.no_scaling.is_none() {
+                let scale_mat = Mat4::from_scale(Vec3::new(screen_scale, screen_scale, 1.0));
+                model_mat *= scale_mat;
+            }
+
+            model_mat * local_center_matrix
+        } else if self.screen_space.is_some() {
+            let mut model_matrix = world_transform.compute_matrix();
             local_center_matrix.w_axis.y *= -1.0;
+
+            if self.no_scaling.is_none() {
+                let scale_mat = Mat4::from_scale(Vec3::new(screen_scale, screen_scale, 1.0));
+                model_matrix *= scale_mat;
+            }
+
             model_matrix * local_center_matrix
         } else {
-            let local_matrix = local_center_matrix;
+            let mut model_matrix = world_transform.compute_matrix();
+            local_center_matrix.w_axis.y *= -1.0;
 
-            let (pixels_x, pixels_y) = (viewport_size.x as f32, viewport_size.y as f32);
-            let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
-                [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-                [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
-                [0.0, 0.0, 1.0, 0.0],
-                [0.0, 0.0, 0.0, 1.0],
-            ])
-            .transpose();
+            if self.no_scaling.is_none() {
+                let scale_mat = Mat4::from_scale(Vec3::new(world_scale, -world_scale, 1.0));
+                model_matrix *= scale_mat;
+            }
 
-            let mut model_matrix = world_transform.compute_matrix() * local_matrix;
-            model_matrix.w_axis.y *= -1.0;
+            model_matrix *= local_center_matrix;
 
             let (projection_mat, view_mat) = {
                 let mut view_mat = view.world_from_view.compute_matrix();
                 view_mat.w_axis.y *= -1.0;
-
                 (view.clip_from_view, view_mat)
             };
-
             let view_proj_matrix = projection_mat * view_mat.inverse();
+
+            let (pixels_x, pixels_y) = (viewport_size.x as f32, viewport_size.y as f32);
+            let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
+                [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
+                [0.0, -pixels_y / 2.0, 0.0, pixels_y / 2.0], // Flip Y axis for world space
+                [0.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ])
+            .transpose();
 
             ndc_to_pixels_matrix * view_proj_matrix * model_matrix
         };
 
         let transform: [f32; 16] = raw_transform.to_cols_array();
 
+        // A transposed (flipped over its diagonal) PostScript matrix is:
         // | a c e |
         // | b d f |
         // | 0 0 1 |
+        //
+        // Components
+        // | scale_x sheer_x translate_x |
+        // | sheer_y scale_y translate_y |
+        // | sheer_z sheer_z scale_z |
+        //
+        // rotate (z)
+        // | cos(θ) -sin(θ) translate_x |
+        // | sin(θ) cos(θ) translate_y |
+        // | sheer_z sheer_z scale_z |
         let transform: [f64; 6] = [
             transform[0] as f64,  // a
-            -transform[1] as f64, // b
-            -transform[4] as f64, // c
+            transform[1] as f64,  // b
+            transform[4] as f64,  // c
             transform[5] as f64,  // d
             transform[12] as f64, // e
             transform[13] as f64, // f
