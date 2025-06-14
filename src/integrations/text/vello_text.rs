@@ -8,8 +8,8 @@ use bevy::{
 use vello::peniko::{self, Brush};
 
 use crate::{
-    render::{VelloScreenScale, VelloView},
     VelloFont,
+    render::{VelloScreenScale, VelloView},
 };
 
 #[derive(Component, Default, Clone)]

@@ -1,24 +1,24 @@
 use bevy::{
     prelude::*,
     render::{
+        Extract,
         camera::ExtractedCamera,
         sync_world::TemporaryRenderEntity,
         view::{ExtractedView, RenderLayers},
-        Extract,
     },
 };
 use vello::kurbo::Affine;
 
 use super::{
-    asset::{VelloLottie, VelloLottieHandle},
     Playhead, Theme, VelloLottieAnchor,
+    asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    render::{
-        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
-        SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView, VelloWorldScale,
-    },
     SkipEncoding, VelloScreenSpace,
+    render::{
+        SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView, VelloWorldScale,
+        prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
+    },
 };
 
 #[derive(Component, Clone)]

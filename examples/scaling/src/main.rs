@@ -1,14 +1,14 @@
 use bevy::{
-    asset::{embedded_asset, AssetMetaCheck},
+    asset::{AssetMetaCheck, embedded_asset},
     color::palettes::css,
-    input::{keyboard::KeyboardInput, ButtonState},
+    input::{ButtonState, keyboard::KeyboardInput},
     prelude::*,
     ui::ContentSize,
 };
 use bevy_vello::{
+    VelloPlugin,
     prelude::*,
     render::{SkipScaling, VelloScreenScale, VelloWorldScale},
-    VelloPlugin,
 };
 
 fn main() {
