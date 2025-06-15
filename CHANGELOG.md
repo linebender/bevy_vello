@@ -15,7 +15,29 @@ You can find its changes [documented below](#090---2025-05-31).
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
-- Nothing yet!
+### Added
+
+- `VelloScreenScale` resource added to control the scale of screen space rendering and is exported via prelude.
+- `VelloWorldScale` resource added to control the scale of world space rendering and is exported via prelude.
+- `SkipScaling` component added for disabling scaling for specific entities and is exported via prelude.
+- `VelloScreenSpace` component added and exported via prelude.
+- Added systems that calculates the content size of `VelloTextSection` if it has a `ContentSize` component which is also `VelloScreenScale` aware.
+- Example demonstrating scaling added to `examples/scaling`.
+
+### Changed
+
+- `VelloScene` can now be placed in screen space independent of bevy_ui by adding a `VelloScreenSpace` component.
+- `VelloTextSection` now supports `VelloScreenSpace` to render text in screen space independent of bevy_ui.
+- `VelloTextSection` now supports `Node` to render text in screen space with bevy_ui.
+- `VelloTextSection` now supports `ContentSize` to calculate the content size of the text for bevy_ui.
+- `VelloSvgHandle` now supports `VelloScreenSpace` to render SVGs in screen space independent of bevy_ui.
+- `VelloLottieHandle` now supports `VelloScreenSpace` to render Lotties in screen space independent of bevy_ui.
+- Adds comment to `VelloScene` regarding drawing based on `bevy::prelude::Node` size.
+
+### Fixed
+
+- Fixes rotation and scale matrix calculations for prepared affines in all spaces for all assets.
+- Vello rendering in screen space now rotates clockwise instead of counter-clockwise to match Bevy's coordinate system.
 
 ## [0.9.0] - 2025-05-31
 
