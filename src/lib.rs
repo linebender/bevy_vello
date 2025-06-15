@@ -63,6 +63,9 @@ pub struct VelloSceneBundle {
 }
 
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
+///
+/// If you render a [`VelloScene`] based on a [`bevy::ui::Node`]'s size, you should also
+/// add [`SkipScaling`] to the entity to prevent drawing larger than the UI Node.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
 #[require(Transform, Visibility, VisibilityClass)]
 #[component(on_add = view::add_visibility_class::<VelloScene>)]

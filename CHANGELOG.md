@@ -32,6 +32,7 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 - `VelloTextSection` now supports `ContentSize` to calculate the content size of the text for bevy_ui.
 - `VelloSvgHandle` now supports `VelloScreenSpace` to render SVGs in screen space independent of bevy_ui.
 - `VelloLottieHandle` now supports `VelloScreenSpace` to render Lotties in screen space independent of bevy_ui.
+- Adds comment to `VelloScene` regarding drawing based on `bevy::prelude::Node` size.
 
 ### Fixed
 
