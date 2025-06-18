@@ -7,7 +7,7 @@ use super::{
     asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
+    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VelloScreenSpace,
     integrations::lottie::PlaybackPlayMode, render::VelloView,
 };
 
@@ -158,6 +158,8 @@ pub fn run_transitions(
         &PlaybackOptions,
         &GlobalTransform,
         &mut VelloLottieHandle,
+        Option<&VelloScreenSpace>,
+        Option<&ComputedNode>,
     )>,
     mut assets: ResMut<Assets<VelloLottie>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
@@ -178,7 +180,8 @@ pub fn run_transitions(
         .and_then(|cursor| camera.viewport_to_world(view, cursor).ok())
         .map(|ray| ray.origin.truncate());
 
-    for (mut player, playhead, options, gtransform, current_asset_handle) in query_player.iter_mut()
+    for (mut player, playhead, options, gtransform, current_asset_handle, screen_space, ui_node) in
+        query_player.iter_mut()
     {
         if player.stopped {
             continue;
@@ -208,10 +211,17 @@ pub fn run_transitions(
                         .inverse()
                         .transform_point3(pointer_pos.extend(0.0));
 
-                    mouse_local.x <= current_asset.width
-                        && mouse_local.x >= 0.0
-                        && mouse_local.y >= current_asset.height
-                        && mouse_local.y <= 0.0
+                    if ui_node.is_some() || screen_space.is_some() {
+                        mouse_local.x <= current_asset.width
+                            && mouse_local.x >= 0.0
+                            && mouse_local.y >= current_asset.height
+                            && mouse_local.y <= 0.0
+                    } else {
+                        mouse_local.x <= current_asset.width
+                            && mouse_local.x >= 0.0
+                            && mouse_local.y >= -current_asset.height
+                            && mouse_local.y <= 0.0
+                    }
                 }
                 None => false,
             }
