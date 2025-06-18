@@ -157,14 +157,14 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         // | 0 0 1 |
         //
         // Components
-        // | scale_x sheer_x translate_x |
-        // | sheer_y scale_y translate_y |
-        // | sheer_z sheer_z scale_z |
+        // | scale_x skew_x translate_x |
+        // | skew_y scale_y translate_y |
+        // | skew_z skew_z scale_z |
         //
         // rotate (z)
         // | cos(θ) -sin(θ) translate_x |
         // | sin(θ) cos(θ) translate_y |
-        // | sheer_z sheer_z scale_z |
+        // | skew_z skew_z scale_z |
         //
         // The order of operations is important, as it affects the final transformation matrix.
         //
