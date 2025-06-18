@@ -200,12 +200,12 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
             let transform = raw_transform.to_cols_array();
 
             [
-                transform[0] as f64,  // a
-                transform[1] as f64,  // b
-                transform[4] as f64,  // c
-                transform[5] as f64,  // d
-                transform[12] as f64, // e
-                transform[13] as f64, // f
+                transform[0] as f64,  // a // scale_x
+                transform[1] as f64,  // b // skew_y
+                transform[4] as f64,  // c // skew_x
+                transform[5] as f64,  // d // scale_y
+                transform[12] as f64, // e // translate_x
+                transform[13] as f64, // f // translate_y
             ]
         } else if self.screen_space.is_some() {
             let mut model_matrix = world_transform.compute_matrix();
@@ -220,12 +220,12 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
             let transform = raw_transform.to_cols_array();
 
             [
-                transform[0] as f64,  // a
-                transform[1] as f64,  // b
-                transform[4] as f64,  // c
-                transform[5] as f64,  // d
-                transform[12] as f64, // e
-                transform[13] as f64, // f
+                transform[0] as f64,  // a // scale_x
+                transform[1] as f64,  // b // skew_y
+                transform[4] as f64,  // c // skew_x
+                transform[5] as f64,  // d // scale_y
+                transform[12] as f64, // e // translate_x
+                transform[13] as f64, // f // translate_y
             ]
         } else {
             let mut model_matrix = world_transform.compute_matrix();
@@ -257,13 +257,14 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
             let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
             let transform = raw_transform.to_cols_array();
 
+            // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
             [
-                transform[0] as f64,  // a
-                -transform[1] as f64, // b
-                -transform[4] as f64, // c
-                transform[5] as f64,  // d
-                transform[12] as f64, // e
-                transform[13] as f64, // f
+                transform[0] as f64,  // a // scale_x
+                -transform[1] as f64, // b // skew_y
+                -transform[4] as f64, // c // skew_x
+                transform[5] as f64,  // d // scale_y
+                transform[12] as f64, // e // translate_x
+                transform[13] as f64, // f // translate_y
             ]
         };
 
