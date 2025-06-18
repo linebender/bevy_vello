@@ -173,11 +173,15 @@ pub fn prepare_text_affines(
                         model_matrix *= world_scale_matrix;
                     }
 
+                    // Flip Y-axis to match Vello's y-down coordinate space
                     model_matrix.w_axis.y *= -1.0;
 
                     let (projection_mat, view_mat) = {
                         let mut view_mat = view.world_from_view.compute_matrix();
+
+                        // Flip Y-axis to match Vello's y-down coordinate space
                         view_mat.w_axis.y *= -1.0;
+
                         (view.clip_from_view, view_mat)
                     };
                     let view_proj_matrix = projection_mat * view_mat.inverse();

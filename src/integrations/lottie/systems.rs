@@ -207,9 +207,10 @@ pub fn run_transitions(
                     let mouse_local = transform
                         .inverse()
                         .transform_point3(pointer_pos.extend(0.0));
+
                     mouse_local.x <= current_asset.width
                         && mouse_local.x >= 0.0
-                        && mouse_local.y >= -current_asset.height
+                        && mouse_local.y >= current_asset.height
                         && mouse_local.y <= 0.0
                 }
                 None => false,

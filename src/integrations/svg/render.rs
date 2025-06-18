@@ -173,7 +173,6 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         // 2. Rotate
         // 3. Translate
         let transform: [f64; 6] = if let Some(node) = self.ui_node {
-            local_center_matrix.w_axis.y *= -1.0;
             let mut model_mat = world_transform.compute_matrix();
 
             // Fill the bevy_ui Node with the asset size
@@ -200,7 +199,6 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             ]
         } else if self.screen_space.is_some() {
             let mut model_matrix = world_transform.compute_matrix();
-            local_center_matrix.w_axis.y *= -1.0;
 
             if self.no_scaling.is_none() {
                 let scale_mat = Mat4::from_scale(Vec3::new(screen_scale, screen_scale, 1.0));
@@ -225,12 +223,19 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
                 model_matrix *= scale_mat;
             }
 
+            // Flip Y-axis to center with Bevy's y-up world coordinate space
+            local_center_matrix.w_axis.y *= -1.0;
             model_matrix *= local_center_matrix;
+
+            // Flip Y-axis to match Vello's y-down coordinate space
             model_matrix.w_axis.y *= -1.0;
 
             let (projection_mat, view_mat) = {
                 let mut view_mat = view.world_from_view.compute_matrix();
+
+                // Flip Y-axis to match Vello's y-down coordinate space
                 view_mat.w_axis.y *= -1.0;
+
                 (view.clip_from_view, view_mat)
             };
             let view_proj_matrix = projection_mat * view_mat.inverse();
