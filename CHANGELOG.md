@@ -32,12 +32,11 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 - `VelloTextSection` now supports `ContentSize` to calculate the content size of the text for bevy_ui.
 - `VelloSvgHandle` now supports `VelloScreenSpace` to render SVGs in screen space independent of bevy_ui.
 - `VelloLottieHandle` now supports `VelloScreenSpace` to render Lotties in screen space independent of bevy_ui.
-- Adds comment to `VelloScene` regarding drawing based on `bevy::prelude::Node` size.
+- `local_transform_matrix` for lotties and svgs no longer defaults to y-up to reduce complexity of y-axis flips.
 
 ### Fixed
 
 - Fixes rotation and scale matrix calculations for prepared affines in all spaces for all assets.
-- Vello rendering in screen space now rotates clockwise instead of counter-clockwise to match Bevy's coordinate system.
 
 ## [0.9.0] - 2025-05-31
 
