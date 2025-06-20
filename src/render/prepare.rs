@@ -50,6 +50,7 @@ pub fn prepare_scene_affines(
 
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
+            let is_scaled = render_entity.skip_scaling.is_none();
 
             // A transposed (flipped over its diagonal) PostScript matrix
             // | a c e |
@@ -78,7 +79,7 @@ pub fn prepare_scene_affines(
                 let local_center_matrix =
                     Mat4::from_translation(Vec3::new(x / 2.0, y / 2.0, 0.0)).inverse();
 
-                if render_entity.no_scaling.is_none() {
+                if is_scaled {
                     model_matrix *= screen_scale_matrix;
                 }
 
@@ -95,7 +96,7 @@ pub fn prepare_scene_affines(
             } else if render_entity.screen_space.is_some() {
                 let mut model_matrix = world_transform.compute_matrix();
 
-                if render_entity.no_scaling.is_none() {
+                if is_scaled {
                     model_matrix *= screen_scale_matrix;
                 }
 
@@ -112,7 +113,7 @@ pub fn prepare_scene_affines(
             } else {
                 let mut model_matrix = world_transform.compute_matrix();
 
-                if render_entity.no_scaling.is_none() {
+                if is_scaled {
                     model_matrix *= world_scale_matrix;
                 }
 

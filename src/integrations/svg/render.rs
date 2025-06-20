@@ -30,7 +30,7 @@ pub struct ExtractedVelloSvg {
     pub ui_node: Option<ComputedNode>,
     pub alpha: f32,
     pub screen_space: Option<VelloScreenSpace>,
-    pub no_scaling: Option<SkipScaling>,
+    pub skip_scaling: Option<SkipScaling>,
 }
 
 pub fn extract_svg_assets(
@@ -73,7 +73,7 @@ pub fn extract_svg_assets(
         view_visibility,
         inherited_visibility,
         screen_space,
-        no_scaling,
+        skip_scaling,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
@@ -98,7 +98,7 @@ pub fn extract_svg_assets(
                     ui_node: ui_node.cloned(),
                     alpha: asset.alpha,
                     screen_space: screen_space.cloned(),
-                    no_scaling: no_scaling.cloned(),
+                    skip_scaling: skip_scaling.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_svgs += 1;
@@ -150,6 +150,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         screen_scale: f32,
     ) -> PreparedAffine {
         let mut local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
+        let is_scaled = self.skip_scaling.is_none();
 
         // A transposed (flipped over its diagonal) PostScript matrix
         // | a c e |
@@ -182,7 +183,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             let scale_fact_mat = Mat4::from_scale(Vec3::new(scale_factor, scale_factor, 1.0));
             model_mat *= scale_fact_mat;
 
-            if self.no_scaling.is_none() {
+            if is_scaled {
                 let scale_mat = Mat4::from_scale(Vec3::new(screen_scale, screen_scale, 1.0));
                 model_mat *= scale_mat;
             }
@@ -200,7 +201,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         } else if self.screen_space.is_some() {
             let mut model_matrix = world_transform.compute_matrix();
 
-            if self.no_scaling.is_none() {
+            if is_scaled {
                 let scale_mat = Mat4::from_scale(Vec3::new(screen_scale, screen_scale, 1.0));
                 model_matrix *= scale_mat;
             }
@@ -218,7 +219,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         } else {
             let mut model_matrix = world_transform.compute_matrix();
 
-            if self.no_scaling.is_none() {
+            if is_scaled {
                 let scale_mat = Mat4::from_scale(Vec3::new(world_scale, world_scale, 1.0));
                 model_matrix *= scale_mat;
             }

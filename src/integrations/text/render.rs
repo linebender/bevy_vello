@@ -25,7 +25,7 @@ pub struct ExtractedVelloText {
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
     pub screen_space: Option<VelloScreenSpace>,
-    pub no_scaling: Option<SkipScaling>,
+    pub skip_scaling: Option<SkipScaling>,
 }
 
 pub fn extract_text(
@@ -68,7 +68,7 @@ pub fn extract_text(
         render_layers,
         ui_node,
         screen_space,
-        no_scaling,
+        skip_scaling,
     ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met
@@ -92,7 +92,7 @@ pub fn extract_text(
                     transform: *transform,
                     ui_node: ui_node.cloned(),
                     screen_space: screen_space.cloned(),
-                    no_scaling: no_scaling.cloned(),
+                    skip_scaling: skip_scaling.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
@@ -125,6 +125,7 @@ pub fn prepare_text_affines(
 
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
+            let is_scaled = render_entity.skip_scaling.is_none();
 
             // A transposed (flipped over its diagonal) PostScript matrix
             // | a c e |
@@ -151,7 +152,7 @@ pub fn prepare_text_affines(
                 if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
                     let mut model_matrix = world_transform.compute_matrix();
 
-                    if render_entity.no_scaling.is_none() {
+                    if is_scaled {
                         model_matrix *= screen_scale_matrix;
                     }
 
@@ -169,7 +170,7 @@ pub fn prepare_text_affines(
                 } else {
                     let mut model_matrix = world_transform.compute_matrix();
 
-                    if render_entity.no_scaling.is_none() {
+                    if is_scaled {
                         model_matrix *= world_scale_matrix;
                     }
 
