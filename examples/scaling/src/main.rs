@@ -1,14 +1,14 @@
 use bevy::{
-    asset::{AssetMetaCheck, embedded_asset},
+    asset::{embedded_asset, AssetMetaCheck},
     color::palettes::css,
-    input::{ButtonState, keyboard::KeyboardInput},
+    input::{keyboard::KeyboardInput, ButtonState},
     prelude::*,
     ui::ContentSize,
 };
 use bevy_vello::{
-    VelloPlugin,
     prelude::*,
     render::{SkipScaling, VelloScreenScale, VelloWorldScale},
+    VelloPlugin,
 };
 
 fn main() {
@@ -246,7 +246,7 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
             parent.spawn((
                 VelloScreenSpace,
                 VelloTextSection {
-                    value: "Lottie in screen space".to_string(),
+                    value: "Scene in screen space".to_string(),
                     text_align: VelloTextAlign::Middle,
                     style: VelloTextStyle {
                         font_size: 14.,
