@@ -18,7 +18,7 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloLottie, VectorLoaderE
         local_transform_center: {
             let mut transform = Transform::default();
             transform.translation.x = width / 2.0;
-            transform.translation.y = -height / 2.0;
+            transform.translation.y = height / 2.0;
             transform
         },
         width,
