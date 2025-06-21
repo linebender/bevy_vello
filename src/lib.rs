@@ -42,8 +42,11 @@ pub mod prelude {
         VelloTextStyle,
     };
     pub use crate::{
-        VelloScene, VelloSceneBundle,
-        render::{SkipEncoding, VelloRenderSettings, VelloView},
+        VelloScene, VelloSceneBundle, VelloScreenSpace,
+        render::{
+            SkipEncoding, SkipScaling, VelloRenderSettings, VelloScreenScale, VelloView,
+            VelloWorldScale,
+        },
     };
 }
 
@@ -60,10 +63,17 @@ pub struct VelloSceneBundle {
 }
 
 /// A simple newtype component wrapper for [`vello::Scene`] for rendering.
+///
+/// If you render a [`VelloScene`] based on a [`bevy::ui::Node`] size, you may want to also add
+/// [`SkipScaling`] to the entity to prevent scaling the scene beyond the node size.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
 #[require(Transform, Visibility, VisibilityClass)]
 #[component(on_add = view::add_visibility_class::<VelloScene>)]
 pub struct VelloScene(Box<vello::Scene>);
+
+/// A simple marker component to use screen space coordinates for rendering.
+#[derive(Component, Default, Clone)]
+pub struct VelloScreenSpace;
 
 impl VelloScene {
     pub fn new() -> Self {

@@ -3,8 +3,15 @@ use bevy::{
     render::{Render, RenderApp, RenderSet, render_asset::RenderAssetPlugin},
 };
 
-use super::{VelloFont, font_loader::VelloFontLoader, render};
-use crate::render::extract::VelloExtractStep;
+use super::{
+    VelloFont,
+    font_loader::VelloFontLoader,
+    render,
+    vello_text::{
+        calculate_text_section_content_size, calculate_text_section_content_size_on_change,
+    },
+};
+use crate::render::{VelloScreenScale, extract::VelloExtractStep};
 
 pub struct VelloTextIntegrationPlugin;
 
@@ -12,7 +19,12 @@ impl Plugin for VelloTextIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>()
-            .add_plugins(RenderAssetPlugin::<VelloFont>::default());
+            .add_plugins(RenderAssetPlugin::<VelloFont>::default())
+            .add_systems(Update, calculate_text_section_content_size_on_change)
+            .add_systems(
+                Update,
+                calculate_text_section_content_size.run_if(resource_changed::<VelloScreenScale>),
+            );
 
         #[cfg(feature = "default_font")]
         {

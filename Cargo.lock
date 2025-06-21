@@ -4775,6 +4775,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "scaling"
+version = "0.9.0"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "scene"
 version = "0.9.0"
 dependencies = [

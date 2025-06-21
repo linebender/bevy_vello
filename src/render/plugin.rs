@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
     render::{
         Render, RenderApp, RenderSet, extract_component::ExtractComponentPlugin,
-        renderer::RenderDevice,
+        extract_resource::ExtractResourcePlugin, renderer::RenderDevice,
     },
     sprite::Material2dPlugin,
 };
@@ -17,7 +17,8 @@ use crate::{
     VelloView,
     render::{
         SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
-        VelloRenderQueue, VelloRenderer, extract::VelloExtractStep,
+        VelloRenderQueue, VelloRenderer, VelloScreenScale, VelloWorldScale,
+        extract::VelloExtractStep,
     },
 };
 
@@ -43,6 +44,12 @@ impl Plugin for VelloRenderPlugin {
             .init_resource::<VelloEntityCountData>();
         app.register_type::<VelloFrameProfileData>()
             .init_resource::<VelloFrameProfileData>();
+
+        app.insert_resource(VelloWorldScale::default())
+            .add_plugins(ExtractResourcePlugin::<VelloWorldScale>::default());
+
+        app.insert_resource(VelloScreenScale::default())
+            .add_plugins(ExtractResourcePlugin::<VelloScreenScale>::default());
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;

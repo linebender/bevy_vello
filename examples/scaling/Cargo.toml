@@ -1,0 +1,12 @@
+[package]
+name = "scaling"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+bevy_vello = { path = "../../", features = ["svg", "lottie", "text", "default_font"] }
+bevy = { workspace = true, features = ["bevy_gizmos"] }

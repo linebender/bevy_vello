@@ -35,6 +35,45 @@ pub const SSRT_SHADER_HANDLE: Handle<Shader> = weak_handle!("e7235b72-1181-4e18-
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]
 pub struct VelloView;
 
+/// A resource that holds the scale factor for Vello world coordinates.
+#[derive(Resource, Clone)]
+pub struct VelloWorldScale(pub f32);
+
+impl Default for VelloWorldScale {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
+
+impl ExtractResource for VelloWorldScale {
+    type Source = VelloWorldScale;
+
+    fn extract_resource(source: &Self::Source) -> Self {
+        source.clone()
+    }
+}
+
+/// A resource that holds the scale factor for Vello screen coordinates.
+#[derive(Resource, Clone)]
+pub struct VelloScreenScale(pub f32);
+
+impl Default for VelloScreenScale {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
+
+impl ExtractResource for VelloScreenScale {
+    type Source = VelloScreenScale;
+
+    fn extract_resource(source: &Self::Source) -> Self {
+        source.clone()
+    }
+}
+
+#[derive(Component, Debug, Clone)]
+pub struct SkipScaling;
+
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
 #[derive(AsBindGroup, TypePath, Asset, Clone)]
 pub struct VelloCanvasMaterial {

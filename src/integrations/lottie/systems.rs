@@ -7,7 +7,7 @@ use super::{
     asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
+    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VelloScreenSpace,
     integrations::lottie::PlaybackPlayMode, render::VelloView,
 };
 
@@ -158,6 +158,8 @@ pub fn run_transitions(
         &PlaybackOptions,
         &GlobalTransform,
         &mut VelloLottieHandle,
+        Option<&VelloScreenSpace>,
+        Option<&ComputedNode>,
     )>,
     mut assets: ResMut<Assets<VelloLottie>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
@@ -173,12 +175,14 @@ pub fn run_transitions(
         return;
     };
 
-    let pointer_pos = window
+    let pointer_screen_pos = window.cursor_position();
+    let pointer_world_pos = window
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world(view, cursor).ok())
         .map(|ray| ray.origin.truncate());
 
-    for (mut player, playhead, options, gtransform, current_asset_handle) in query_player.iter_mut()
+    for (mut player, playhead, options, gtransform, current_asset_handle, screen_space, ui_node) in
+        query_player.iter_mut()
     {
         if player.stopped {
             continue;
@@ -196,21 +200,45 @@ pub fn run_transitions(
             continue;
         };
 
-        let is_inside = {
-            match pointer_pos {
+        let is_inside = if ui_node.is_some() || screen_space.is_some() {
+            match pointer_screen_pos {
                 Some(pointer_pos) => {
-                    let local_transform = current_asset
+                    let local_center_matrix = current_asset
                         .local_transform_center
                         .compute_matrix()
                         .inverse();
-                    let transform = gtransform.compute_matrix() * local_transform;
+
+                    let transform = gtransform.compute_matrix() * local_center_matrix;
+
                     let mouse_local = transform
                         .inverse()
                         .transform_point3(pointer_pos.extend(0.0));
+
                     mouse_local.x <= current_asset.width
                         && mouse_local.x >= 0.0
-                        && mouse_local.y >= -current_asset.height
-                        && mouse_local.y <= 0.0
+                        && mouse_local.y <= current_asset.height
+                        && mouse_local.y >= 0.0
+                }
+                None => false,
+            }
+        } else {
+            match pointer_world_pos {
+                Some(pointer_pos) => {
+                    let local_center_matrix = current_asset
+                        .local_transform_center
+                        .compute_matrix()
+                        .inverse();
+
+                    let model_matrix = gtransform.compute_matrix() * local_center_matrix;
+
+                    let mouse_local = model_matrix
+                        .inverse()
+                        .transform_point3(pointer_pos.extend(0.0));
+
+                    mouse_local.x <= current_asset.width
+                        && mouse_local.x >= 0.0
+                        && mouse_local.y <= current_asset.height
+                        && mouse_local.y >= 0.0
                 }
                 None => false,
             }
