@@ -1,7 +1,6 @@
 use bevy::{
     prelude::*,
     render::{camera::ExtractedCamera, view::ExtractedView},
-    window::PrimaryWindow,
 };
 use vello::kurbo::Affine;
 
@@ -34,14 +33,7 @@ pub fn prepare_scene_affines(
     render_entities: Query<(Entity, &ExtractedVelloScene)>,
     world_scale: Res<VelloWorldScale>,
     screen_scale: Res<VelloScreenScale>,
-    window: Option<Single<&Window, With<PrimaryWindow>>>,
 ) {
-    let scale_factor_matrix = if let Some(window) = window {
-        Mat4::from_scale(Vec3::splat(window.scale_factor()))
-    } else {
-        Mat4::from_scale(Vec3::splat(1.))
-    };
-
     let screen_scale_matrix = Mat4::from_scale(Vec3::new(screen_scale.0, screen_scale.0, 1.0));
     let world_scale_matrix = Mat4::from_scale(Vec3::new(world_scale.0, world_scale.0, 1.0));
 
@@ -87,9 +79,6 @@ pub fn prepare_scene_affines(
                 let local_center_matrix =
                     Mat4::from_translation(Vec3::new(x / 2.0, y / 2.0, 0.0)).inverse();
 
-                // Respect scale factor such as DPI
-                model_matrix *= scale_factor_matrix;
-
                 if is_scaled {
                     model_matrix *= screen_scale_matrix;
                 }
@@ -107,9 +96,6 @@ pub fn prepare_scene_affines(
             } else if render_entity.screen_space.is_some() {
                 let mut model_matrix = world_transform.compute_matrix();
 
-                // Respect scale factor such as DPI
-                model_matrix *= scale_factor_matrix;
-
                 if is_scaled {
                     model_matrix *= screen_scale_matrix;
                 }
@@ -126,9 +112,6 @@ pub fn prepare_scene_affines(
                 ]
             } else {
                 let mut model_matrix = world_transform.compute_matrix();
-
-                // Respect scale factor such as DPI
-                model_matrix *= scale_factor_matrix;
 
                 if is_scaled {
                     model_matrix *= world_scale_matrix;
