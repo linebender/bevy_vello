@@ -34,10 +34,11 @@ pub fn prepare_scene_affines(
     render_entities: Query<(Entity, &ExtractedVelloScene)>,
     world_scale: Res<VelloWorldScale>,
     screen_scale: Res<VelloScreenScale>,
-    window: Option<Single<&Window, With<PrimaryWindow>>>,
+    camera: Single<&Camera, With<VelloView>>,
+    // window: Option<Single<&Window, With<PrimaryWindow>>>,
 ) {
-    let scale_factor_matrix = if let Some(window) = window {
-        Mat4::from_scale(Vec3::splat(window.scale_factor()))
+    let scale_factor_matrix = if let Some(scale_factor) = camera.target_scaling_factor() {
+        Mat4::from_scale(Vec2::splat(scale_factor).extend(1.0))
     } else {
         Mat4::from_scale(Vec3::splat(1.))
     };
