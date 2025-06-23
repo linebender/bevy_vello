@@ -8,10 +8,14 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-The latest published Bevy Vello release is [0.9.0](#090---2025-05-31) which was released on 2025-05-31.
-You can find its changes [documented below](#090---2025-05-31).
+The latest published Bevy Vello release is [0.10.0](#0100---2025-06-23) which was released on 2025-06-23.
+You can find its changes [documented below](#0100---2025-06-23).
 
 ## [Unreleased]
+
+This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
+
+## [0.10.0] - 2025-06-23
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
