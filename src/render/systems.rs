@@ -241,7 +241,7 @@ pub fn render_frame(
         .unwrap();
 }
 
-// Returns the width and heigh of the available viewport space;
+// Returns the width and height of the available viewport space;
 // camera viewport size if present, otherwise default to window size
 pub fn get_viewport_size(
     camera_query: Query<&Camera, With<VelloView>>,
