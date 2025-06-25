@@ -12,7 +12,7 @@ use bevy::{
         view::NoFrustumCulling,
     },
     sprite::MeshMaterial2d,
-    window::{PrimaryWindow, WindowResized, WindowResolution},
+    window::{PrimaryWindow, WindowResized},
 };
 use vello::{RenderParams, Scene};
 
@@ -27,12 +27,12 @@ use crate::integrations::lottie::render::ExtractedLottieAsset;
 use crate::integrations::svg::render::ExtractedVelloSvg;
 #[cfg(feature = "text")]
 use crate::integrations::text::{VelloFont, render::ExtractedVelloText};
-use crate::render::extract::ExtractedVelloScene;
+use crate::render::{VelloView, extract::ExtractedVelloScene};
 
-pub fn setup_image(images: &mut Assets<Image>, window: &WindowResolution) -> Handle<Image> {
+pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handle<Image> {
     let size = Extent3d {
-        width: window.physical_width(),
-        height: window.physical_height(),
+        width,
+        height,
         ..default()
     };
 
@@ -241,42 +241,65 @@ pub fn render_frame(
         .unwrap();
 }
 
+// Returns the width and height of the available viewport space;
+// camera viewport size if present, otherwise default to window size
+pub fn get_viewport_size(
+    camera_query: Query<&Camera, With<VelloView>>,
+    window: Option<Single<&Window, With<PrimaryWindow>>>,
+) -> (u32, u32) {
+    if let Ok(camera) = camera_query.single() {
+        if let Some(viewport) = &camera.viewport {
+            return (viewport.physical_size.x, viewport.physical_size.y);
+        }
+    }
+
+    let Some(window) = window.as_deref() else {
+        panic!("We only support rendering to the primary window right now.");
+    };
+    (
+        window.resolution.physical_width(),
+        window.resolution.physical_height(),
+    )
+}
+
 pub fn resize_rendertargets(
-    mut window_resize_events: EventReader<WindowResized>,
+    window_resize_events: EventReader<WindowResized>,
     mut query: Query<(&mut SSRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
+    camera_query: Query<&Camera, With<VelloView>>,
 ) {
-    let Some(window) = window.as_deref() else {
-        // We only support rendering to the primary window right now.
+    if window_resize_events.is_empty() {
         return;
+    }
+
+    let (width, height) = get_viewport_size(camera_query, window);
+
+    let size = Extent3d {
+        width,
+        height,
+        ..default()
     };
-    if window_resize_events.read().last().is_some() {
-        let size = Extent3d {
-            width: window.resolution.physical_width(),
-            height: window.resolution.physical_height(),
-            ..default()
-        };
-        if size.width == 0 || size.height == 0 {
-            return;
+    if size.width == 0 || size.height == 0 {
+        return;
+    }
+    for (mut target, target_mat_handle) in query.iter_mut() {
+        let image = setup_image(&mut images, width, height);
+        if let Some(mat) = target_materials.get_mut(target_mat_handle.id()) {
+            target.0 = image.clone();
+            mat.texture = image;
         }
-        for (mut target, target_mat_handle) in query.iter_mut() {
-            let image = setup_image(&mut images, &window.resolution);
-            if let Some(mat) = target_materials.get_mut(target_mat_handle.id()) {
-                target.0 = image.clone();
-                mat.texture = image;
-            }
-            tracing::debug!(
-                size = format!(
-                    "Resized Vello render image to {:?}",
-                    (size.width, size.height)
-                )
-            );
-        }
+        tracing::debug!(
+            size = format!(
+                "Resized Vello render image to {:?}",
+                (size.width, size.height)
+            )
+        );
     }
 }
 
+#[allow(clippy::complexity)]
 pub fn setup_ss_rendertarget(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -285,11 +308,10 @@ pub fn setup_ss_rendertarget(
     window: Option<Single<&Window, With<PrimaryWindow>>>,
     mut render_target_mesh_handle: Local<Option<Handle<Mesh>>>,
     settings: Res<VelloCanvasSettings>,
+    camera_query: Query<&Camera, With<VelloView>>,
 ) {
-    let Some(window) = window.as_deref() else {
-        // We only support rendering to the primary window right now.
-        return;
-    };
+    let (width, height) = get_viewport_size(camera_query, window);
+
     let mesh_handle = render_target_mesh_handle.get_or_insert_with(|| {
         let mut rendertarget_quad = Mesh::new(
             PrimitiveTopology::TriangleList,
@@ -313,7 +335,7 @@ pub fn setup_ss_rendertarget(
 
         meshes.add(rendertarget_quad)
     });
-    let texture_image = setup_image(&mut images, &window.resolution);
+    let texture_image = setup_image(&mut images, width, height);
 
     commands
         .spawn((

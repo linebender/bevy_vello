@@ -15,8 +15,14 @@ You can find its changes [documented below](#0100---2025-06-23).
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
+### Added
 
-- Nothing yet!
+- `get_viewport_size` gets the correct camera viewport size (defaulting to window size if not present) which should be used when creating the render texture
+
+### Changed
+
+- `resize_rendertargets` now uses `get_viewport_size` when resizing the render texture
+- `setup_ss_rendertarget` now uses `get_viewport_size` when creating the render texture
 
 ## [0.10.0] - 2025-06-23
 
@@ -354,9 +360,7 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 - Initial release
 
 [#77]: https://github.com/linebender/bevy_vello/pull/77
-
 [@simbleau]: https://github.com/simbleau
-
 [Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.10.0...HEAD
 [0.10.0]: https://github.com/linebender/bevy_vello/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/linebender/bevy_vello/compare/v0.8.0...v0.9.0
@@ -380,5 +384,4 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 [0.1.2]: https://github.com/linebender/bevy_vello/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/linebender/bevy_vello/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/linebender/bevy_vello/releases/tag/v0.1.0
-
 [MSRV]: README.md#minimum-supported-rust-version-msrv
