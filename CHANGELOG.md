@@ -18,13 +18,16 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 ### Added
 
 - `get_viewport_size` gets the correct camera viewport size (defaulting to window size if not present) which should be used when creating the render texture
-- adds `ZIndex` support to vello render items that have either a bevy_ui `Node` or `VelloScreenSpace` component.
 
 ### Changed
 
 - `resize_rendertargets` now uses `get_viewport_size` when resizing the render texture
 - `setup_ss_rendertarget` now uses `get_viewport_size` when creating the render texture
 - world and screen render items are now sorted separately and then combined, to render world items first and screen items last.
+
+### Fixed
+
+- `ZIndex` is now respected by vello render items that have a `Node` or `VelloScreenSpace` component.
 
 ## [0.10.0] - 2025-06-23
 
