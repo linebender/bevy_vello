@@ -8,10 +8,14 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-The latest published Bevy Vello release is [0.10.0](#0100---2025-06-23) which was released on 2025-06-23.
-You can find its changes [documented below](#0100---2025-06-23).
+The latest published Bevy Vello release is [0.10.1](#0101---2025-06-27) which was released on 2025-06-27.
+You can find its changes [documented below](#0101---2025-06-27).
 
 ## [Unreleased]
+
+This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
+
+## [0.10.1] - 2025-06-27
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
@@ -360,7 +364,8 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 [@simbleau]: https://github.com/simbleau
 
-[Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/linebender/bevy_vello/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/linebender/bevy_vello/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/linebender/bevy_vello/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/linebender/bevy_vello/compare/v0.7.1...v0.8.0
