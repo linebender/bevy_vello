@@ -64,9 +64,15 @@ pub fn sort_render_items(
     #[cfg(feature = "svg")] view_svgs: Query<(&PreparedAffine, &ExtractedVelloSvg)>,
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
+    frame_data: ResMut<VelloEntityCountData>,
 ) {
-    let mut world_render_queue: Vec<(f32, VelloRenderItem)> = vec![];
-    let mut screen_render_queue: Vec<(f32, VelloRenderItem)> = vec![];
+    let n_render_items: usize =
+        (frame_data.n_scenes + frame_data.n_texts + frame_data.n_svgs + frame_data.n_lotties)
+            as usize;
+
+    // Reserve space for the render queues to avoid reallocations
+    let mut world_render_queue: Vec<(f32, VelloRenderItem)> = Vec::with_capacity(n_render_items);
+    let mut screen_render_queue: Vec<(f32, VelloRenderItem)> = Vec::with_capacity(n_render_items);
 
     #[cfg(feature = "svg")]
     for (&affine, asset) in view_svgs.iter() {
