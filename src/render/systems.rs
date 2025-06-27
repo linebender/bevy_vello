@@ -66,9 +66,22 @@ pub fn sort_render_items(
     mut final_render_queue: ResMut<VelloRenderQueue>,
     frame_data: ResMut<VelloEntityCountData>,
 ) {
-    let n_render_items: usize =
-        (frame_data.n_scenes + frame_data.n_texts + frame_data.n_svgs + frame_data.n_lotties)
-            as usize;
+    let mut n_render_items: usize = frame_data.n_scenes as usize;
+
+    #[cfg(feature = "text")]
+    {
+        n_render_items += frame_data.n_texts as usize;
+    }
+
+    #[cfg(feature = "svg")]
+    {
+        n_render_items += frame_data.n_svgs as usize;
+    }
+
+    #[cfg(feature = "lottie")]
+    {
+        n_render_items += frame_data.n_lotties as usize;
+    }
 
     // Reserve space for the render queues to avoid reallocations
     let mut world_render_queue: Vec<(f32, VelloRenderItem)> = Vec::with_capacity(n_render_items);
