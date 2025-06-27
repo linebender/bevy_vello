@@ -26,6 +26,7 @@ pub struct ExtractedVelloText {
     pub ui_node: Option<ComputedNode>,
     pub screen_space: Option<VelloScreenSpace>,
     pub skip_scaling: Option<SkipScaling>,
+    pub z_index: Option<ZIndex>,
 }
 
 pub fn extract_text(
@@ -46,6 +47,7 @@ pub fn extract_text(
                 Option<&ComputedNode>,
                 Option<&VelloScreenSpace>,
                 Option<&SkipScaling>,
+                Option<&ZIndex>,
             ),
             Without<SkipEncoding>,
         >,
@@ -69,6 +71,7 @@ pub fn extract_text(
         ui_node,
         screen_space,
         skip_scaling,
+        z_index,
     ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met
@@ -93,6 +96,7 @@ pub fn extract_text(
                     ui_node: ui_node.cloned(),
                     screen_space: screen_space.cloned(),
                     skip_scaling: skip_scaling.cloned(),
+                    z_index: z_index.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
