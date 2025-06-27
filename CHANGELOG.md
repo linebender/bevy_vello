@@ -24,7 +24,7 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 - `resize_rendertargets` now uses `get_viewport_size` when resizing the render texture
 - `setup_ss_rendertarget` now uses `get_viewport_size` when creating the render texture
-- world and screen render items are now sorted seperately and then combined, to render world items first and screen items last.
+- world and screen render items are now sorted separately and then combined, to render world items first and screen items last.
 
 ## [0.10.0] - 2025-06-23
 
