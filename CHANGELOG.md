@@ -12,22 +12,13 @@ The latest published Bevy Vello release is [0.10.0](#0100---2025-06-23) which wa
 You can find its changes [documented below](#0100---2025-06-23).
 
 ## [Unreleased]
-
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
-
-### Added
-
-- `get_viewport_size` gets the correct camera viewport size (defaulting to window size if not present) which should be used when creating the render texture
-
-### Changed
-
-- `resize_rendertargets` now uses `get_viewport_size` when resizing the render texture
-- `setup_ss_rendertarget` now uses `get_viewport_size` when creating the render texture
-- world and screen render items are now sorted separately and then combined, world first and screen last.
 
 ### Fixed
 
 - `ZIndex` is now respected by vello render items that have a `Node` or `VelloScreenSpace` component.
+- Screen space items (those with `Node` or `VelloScreenSpace`) now always render on top.
+- The vello canvas now respects the correct camera viewport size (defaulting to window size if not present) which should be used when creating the render texture
 
 ## [0.10.0] - 2025-06-23
 
