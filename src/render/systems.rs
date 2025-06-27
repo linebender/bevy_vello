@@ -180,8 +180,7 @@ pub fn sort_render_items(
     final_render_queue.clear();
 
     // Reserve space for the final render queue to avoid reallocations
-    let total = world_render_queue.len() + screen_render_queue.len();
-    final_render_queue.reserve(total);
+    final_render_queue.reserve(n_render_items);
     final_render_queue.extend(
         world_render_queue
             .into_iter()
