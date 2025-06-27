@@ -31,6 +31,7 @@ pub struct ExtractedVelloSvg {
     pub alpha: f32,
     pub screen_space: Option<VelloScreenSpace>,
     pub skip_scaling: Option<SkipScaling>,
+    pub z_index: Option<ZIndex>,
 }
 
 pub fn extract_svg_assets(
@@ -51,6 +52,7 @@ pub fn extract_svg_assets(
                 &InheritedVisibility,
                 Option<&VelloScreenSpace>,
                 Option<&SkipScaling>,
+                Option<&ZIndex>,
             ),
             Without<SkipEncoding>,
         >,
@@ -74,6 +76,7 @@ pub fn extract_svg_assets(
         inherited_visibility,
         screen_space,
         skip_scaling,
+        z_index,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
@@ -99,6 +102,7 @@ pub fn extract_svg_assets(
                     alpha: asset.alpha,
                     screen_space: screen_space.cloned(),
                     skip_scaling: skip_scaling.cloned(),
+                    z_index: z_index.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_svgs += 1;
