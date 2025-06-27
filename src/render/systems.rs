@@ -66,7 +66,9 @@ pub fn sort_render_items(
     mut final_render_queue: ResMut<VelloRenderQueue>,
     frame_data: ResMut<VelloEntityCountData>,
 ) {
-    let mut n_render_items: usize = frame_data.n_scenes as usize;
+    let mut n_render_items: usize = 0;
+
+    n_render_items += frame_data.n_scenes as usize;
 
     #[cfg(feature = "text")]
     {
