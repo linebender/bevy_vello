@@ -10,10 +10,9 @@ use super::{
     vello_text::{
         calculate_text_section_content_size_on_change,
         calculate_text_section_content_size_on_screen_scale_change,
-        calculate_text_section_content_size_on_world_scale_change,
     },
 };
-use crate::render::{VelloScreenScale, VelloWorldScale, extract::VelloExtractStep};
+use crate::render::{VelloScreenScale, extract::VelloExtractStep};
 
 pub struct VelloTextIntegrationPlugin;
 
@@ -31,8 +30,6 @@ impl Plugin for VelloTextIntegrationPlugin {
                 calculate_text_section_content_size_on_change,
                 calculate_text_section_content_size_on_screen_scale_change
                     .run_if(resource_changed::<VelloScreenScale>),
-                calculate_text_section_content_size_on_world_scale_change
-                    .run_if(resource_changed::<VelloWorldScale>),
             ),
         );
 
