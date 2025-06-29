@@ -24,7 +24,7 @@ impl Plugin for VelloTextIntegrationPlugin {
             .add_plugins(RenderAssetPlugin::<VelloFont>::default());
 
         // PostUpdate is used to ensure that the font handles are available if the consumer
-        // of the API is createing a font handle in the same frame.
+        // of the API is creating a font handle in the same frame.
         app.add_systems(
             PostUpdate,
             (
