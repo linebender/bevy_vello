@@ -8,7 +8,7 @@ use bevy::{
 use vello::peniko::{self, Brush};
 
 use crate::{
-    VelloFont,
+    VelloFont, VelloScreenSpace,
     render::{VelloScreenScale, VelloView, VelloWorldScale},
 };
 
@@ -259,7 +259,10 @@ pub fn calculate_text_section_content_size_on_change(
 }
 
 pub fn calculate_text_section_content_size_on_screen_scale_change(
-    mut text_q: Query<(&mut ContentSize, &mut VelloTextSection, &GlobalTransform)>,
+    mut text_q: Query<
+        (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
+        Or<(With<VelloScreenSpace>, With<bevy::ui::Node>)>,
+    >,
     camera: Single<(&Camera, &GlobalTransform), With<VelloView>>,
     fonts: Res<Assets<VelloFont>>,
     screen_scale: Res<VelloScreenScale>,
@@ -285,7 +288,10 @@ pub fn calculate_text_section_content_size_on_screen_scale_change(
 }
 
 pub fn calculate_text_section_content_size_on_world_scale_change(
-    mut text_q: Query<(&mut ContentSize, &mut VelloTextSection, &GlobalTransform)>,
+    mut text_q: Query<
+        (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
+        (Without<VelloScreenSpace>, Without<bevy::ui::Node>),
+    >,
     fonts: Res<Assets<VelloFont>>,
     world_scale: Res<VelloWorldScale>,
 ) {
