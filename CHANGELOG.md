@@ -15,6 +15,14 @@ You can find its changes [documented below](#0101---2025-06-27).
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
+### Added
+
+- System to calculate the content size of `VelloTextSection` when `VelloWorldScale` is changed.
+
+### Fixed
+
+- Systems that calculate the content size of `VelloTextSection` now run in the `PostUpdate` system set to ensure that all `Handle<VelloFont>` that are created in the same frame are loaded before calculating the content size.
+
 ## [0.10.1] - 2025-06-27
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
