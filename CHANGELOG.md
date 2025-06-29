@@ -17,7 +17,7 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 ### Fixed
 
-- Systems that calculate the content size of `VelloTextSection` now run in the `PostUpdate` system set to ensure that all `Handle<VelloFont>` that are created in the same frame are loaded before calculating the content size.
+- Systems that calculate the content size of `VelloTextSection` now run in the `PostUpdate` schedule to ensure that all `Handle<VelloFont>` are loaded before calculating the content size.
 
 ## [0.10.1] - 2025-06-27
 
