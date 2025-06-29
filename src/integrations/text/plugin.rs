@@ -8,10 +8,12 @@ use super::{
     font_loader::VelloFontLoader,
     render,
     vello_text::{
-        calculate_text_section_content_size, calculate_text_section_content_size_on_change,
+        calculate_text_section_content_size_on_change,
+        calculate_text_section_content_size_on_screen_scale_change,
+        calculate_text_section_content_size_on_world_scale_change,
     },
 };
-use crate::render::{VelloScreenScale, extract::VelloExtractStep};
+use crate::render::{VelloScreenScale, VelloWorldScale, extract::VelloExtractStep};
 
 pub struct VelloTextIntegrationPlugin;
 
@@ -19,12 +21,20 @@ impl Plugin for VelloTextIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>()
-            .add_plugins(RenderAssetPlugin::<VelloFont>::default())
-            .add_systems(Update, calculate_text_section_content_size_on_change)
-            .add_systems(
-                Update,
-                calculate_text_section_content_size.run_if(resource_changed::<VelloScreenScale>),
-            );
+            .add_plugins(RenderAssetPlugin::<VelloFont>::default());
+
+        // PostUpdate is used to ensure that the font handles are available if the consumer
+        // of the API is createing a font handle in the same frame.
+        app.add_systems(
+            PostUpdate,
+            (
+                calculate_text_section_content_size_on_change,
+                calculate_text_section_content_size_on_screen_scale_change
+                    .run_if(resource_changed::<VelloScreenScale>),
+                calculate_text_section_content_size_on_world_scale_change
+                    .run_if(resource_changed::<VelloWorldScale>),
+            ),
+        );
 
         #[cfg(feature = "default_font")]
         {

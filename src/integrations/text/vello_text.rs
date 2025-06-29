@@ -9,7 +9,7 @@ use vello::peniko::{self, Brush};
 
 use crate::{
     VelloFont,
-    render::{VelloScreenScale, VelloView},
+    render::{VelloScreenScale, VelloView, VelloWorldScale},
 };
 
 #[derive(Component, Default, Clone)]
@@ -258,7 +258,7 @@ pub fn calculate_text_section_content_size_on_change(
     }
 }
 
-pub fn calculate_text_section_content_size(
+pub fn calculate_text_section_content_size_on_screen_scale_change(
     mut text_q: Query<(&mut ContentSize, &mut VelloTextSection, &GlobalTransform)>,
     camera: Single<(&Camera, &GlobalTransform), With<VelloView>>,
     fonts: Res<Assets<VelloFont>>,
@@ -281,5 +281,26 @@ pub fn calculate_text_section_content_size(
             });
             content_size.set(measure);
         }
+    }
+}
+
+pub fn calculate_text_section_content_size_on_world_scale_change(
+    mut text_q: Query<(&mut ContentSize, &mut VelloTextSection, &GlobalTransform)>,
+    fonts: Res<Assets<VelloFont>>,
+    world_scale: Res<VelloWorldScale>,
+) {
+    for (mut content_size, text, gtransform) in text_q.iter_mut() {
+        let Some(font) = fonts.get(&text.style.font) else {
+            continue;
+        };
+
+        let rect = text.bb_in_world_space(font, gtransform);
+        let size = rect.size();
+        let width = text.width.unwrap_or(size.x.abs().mul(world_scale.0));
+        let height = text.height.unwrap_or(size.y.abs().mul(world_scale.0));
+        let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
+            size: Vec2::new(width, height),
+        });
+        content_size.set(measure);
     }
 }
