@@ -241,12 +241,12 @@ pub fn calculate_text_section_content_size_on_change(
     let (camera, camera_transform) = *camera;
 
     for (mut content_size, text, gtransform) in text_q.iter_mut() {
-        if let Some(rect) = text.bb_in_screen_space(
-            fonts.get(&text.style.font).unwrap(),
-            gtransform,
-            camera,
-            camera_transform,
-        ) {
+        let Some(font) = fonts.get(&text.style.font) else {
+            warn!("VelloTextSection: font {:?} not found", text.style.font);
+            continue;
+        };
+
+        if let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, camera_transform) {
             let size = rect.size();
             let width = text.width.unwrap_or(size.x.abs().mul(screen_scale.0));
             let height = text.height.unwrap_or(size.y.abs().mul(screen_scale.0));
@@ -267,12 +267,12 @@ pub fn calculate_text_section_content_size(
     let (camera, camera_transform) = *camera;
 
     for (mut content_size, text, gtransform) in text_q.iter_mut() {
-        if let Some(rect) = text.bb_in_screen_space(
-            fonts.get(&text.style.font).unwrap(),
-            gtransform,
-            camera,
-            camera_transform,
-        ) {
+        let Some(font) = fonts.get(&text.style.font) else {
+            warn!("VelloTextSection: font {:?} not found", text.style.font);
+            continue;
+        };
+
+        if let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, camera_transform) {
             let size = rect.size();
             let width = text.width.unwrap_or(size.x.abs().mul(screen_scale.0));
             let height = text.height.unwrap_or(size.y.abs().mul(screen_scale.0));
