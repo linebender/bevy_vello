@@ -23,8 +23,8 @@ impl Plugin for VelloTextIntegrationPlugin {
             .init_asset_loader::<VelloFontLoader>()
             .add_plugins(RenderAssetPlugin::<VelloFont>::default());
 
-        // PostUpdate is used to ensure that the font handles are available if the consumer
-        // of the API is creating a font handle in the same frame.
+        // Intentionally run in `PostUpdate` due to race condition behavior when modifying
+        // `VelloTextStyle` font in the same frame.
         app.add_systems(
             PostUpdate,
             (
