@@ -8,7 +8,8 @@ use super::{
     font_loader::VelloFontLoader,
     render,
     vello_text::{
-        calculate_text_section_content_size, calculate_text_section_content_size_on_change,
+        calculate_text_section_content_size_on_change,
+        calculate_text_section_content_size_on_screen_scale_change,
     },
 };
 use crate::render::{VelloScreenScale, extract::VelloExtractStep};
@@ -19,12 +20,18 @@ impl Plugin for VelloTextIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>()
-            .add_plugins(RenderAssetPlugin::<VelloFont>::default())
-            .add_systems(Update, calculate_text_section_content_size_on_change)
-            .add_systems(
-                Update,
-                calculate_text_section_content_size.run_if(resource_changed::<VelloScreenScale>),
-            );
+            .add_plugins(RenderAssetPlugin::<VelloFont>::default());
+
+        // Intentionally run in `PostUpdate` due to race condition behavior when modifying
+        // `VelloTextStyle` font in the same frame.
+        app.add_systems(
+            PostUpdate,
+            (
+                calculate_text_section_content_size_on_change,
+                calculate_text_section_content_size_on_screen_scale_change
+                    .run_if(resource_changed::<VelloScreenScale>),
+            ),
+        );
 
         #[cfg(feature = "default_font")]
         {
