@@ -1417,7 +1417,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_vello"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "parley",
@@ -2006,7 +2006,7 @@ dependencies = [
 
 [[package]]
 name = "cube3d"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -2059,7 +2059,7 @@ checksum = "edf215dbb8cb1409cca7645aaed35f9e39fb0a21855bba1ac48bc0334903bf66"
 
 [[package]]
 name = "diagnostics"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -2148,7 +2148,7 @@ checksum = "f25c0e292a7ca6d6498557ff1df68f32c99850012b6ea401cf8daf771f22ff53"
 
 [[package]]
 name = "drag_n_drop"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_async_task",
@@ -2879,7 +2879,7 @@ dependencies = [
 
 [[package]]
 name = "headless"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -3413,7 +3413,7 @@ dependencies = [
 
 [[package]]
 name = "lottie"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -3421,7 +3421,7 @@ dependencies = [
 
 [[package]]
 name = "lottie_player"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_egui",
@@ -3432,7 +3432,7 @@ dependencies = [
 
 [[package]]
 name = "lottie_ui"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -4604,7 +4604,7 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "render_layers"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -4776,7 +4776,7 @@ dependencies = [
 
 [[package]]
 name = "scaling"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -4784,7 +4784,7 @@ dependencies = [
 
 [[package]]
 name = "scene"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -4792,7 +4792,7 @@ dependencies = [
 
 [[package]]
 name = "scene_ui"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -5084,7 +5084,7 @@ dependencies = [
 
 [[package]]
 name = "svg"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -5098,7 +5098,7 @@ checksum = "ce5d813d71d82c4cbc1742135004e4a79fd870214c155443451c139c9470a0aa"
 
 [[package]]
 name = "svg_ui"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -5211,7 +5211,7 @@ dependencies = [
 
 [[package]]
 name = "text"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
@@ -5763,7 +5763,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "view_culling"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "bevy",
  "bevy_vello",
