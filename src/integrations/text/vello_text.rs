@@ -5,6 +5,7 @@ use bevy::{
     render::view::{self, VisibilityClass},
     ui::{ContentSize, NodeMeasure},
 };
+use tracing::warn;
 use vello::peniko::{self, Brush};
 
 use crate::{
