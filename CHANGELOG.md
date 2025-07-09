@@ -17,7 +17,7 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 - Nothing yet
 
-## [0.10.3] - 2025-07-08
+## [0.10.3] - 2025-07-09
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
@@ -25,7 +25,7 @@ This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
 - Fixes a compile issue in the `text` cargo feature.
 
-## [0.10.2] - 2025-06-29
+## [0.10.2] - 2025-06-29 (YANKED)
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
