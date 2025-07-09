@@ -209,6 +209,7 @@ pub struct SkipEncoding;
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
+#[allow(clippy::large_enum_variant, reason = "Deferred for later")]
 pub(crate) enum VelloRenderItem {
     #[cfg(feature = "svg")]
     Svg {
