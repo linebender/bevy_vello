@@ -52,7 +52,7 @@ fn log_visibility(
         text.get()
     );
 
-    println!("{}", visible_status);
+    println!("{visible_status}");
 }
 
 fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) {

@@ -344,7 +344,7 @@ pub fn transition_state(
         let target_state = player
             .states
             .get(&next_state)
-            .unwrap_or_else(|| panic!("state not found: '{}'", next_state));
+            .unwrap_or_else(|| panic!("state not found: '{next_state}'"));
         let target_options = target_state
             .options
             .as_ref()
