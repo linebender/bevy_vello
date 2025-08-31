@@ -87,7 +87,7 @@ impl VelloFont {
         })
     }
 
-    pub(crate) fn render(
+    pub fn render(
         &self,
         scene: &mut Scene,
         mut transform: Affine,
