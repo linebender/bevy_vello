@@ -9,6 +9,7 @@ use super::{VelloScreenScale, VelloView, VelloWorldScale, extract::ExtractedVell
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedAffine(pub Affine);
 
+#[allow(dead_code)]
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedTransform(pub GlobalTransform);
 
