@@ -1,17 +1,20 @@
 use bevy::{
     prelude::*,
     render::{
-        mesh::Indices,
-        render_asset::{RenderAssetUsages, RenderAssets},
+        //mesh::Indices,
+        render_asset::{/*RenderAssetUsages,*/ RenderAssets},
         render_resource::{
             Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension, TextureFormat,
             TextureUsages,
         },
         renderer::{RenderDevice, RenderQueue},
         texture::GpuImage,
-        view::NoFrustumCulling,
+        //view::NoFrustumCulling,
     },
-    sprite::MeshMaterial2d,
+    asset::RenderAssetUsages,
+    mesh::Indices,
+    camera::visibility::NoFrustumCulling,
+    sprite_render::MeshMaterial2d,
     window::{PrimaryWindow, WindowResized},
 };
 use vello::{RenderParams, Scene};

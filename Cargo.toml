@@ -2,21 +2,21 @@
 resolver = "2"
 members = [
   "examples/run_wasm",
-  "examples/lottie_player",
-  "examples/drag_n_drop",
+  #"examples/lottie_player",
+  #"examples/drag_n_drop",
   "examples/text",
   "examples/scene",
   "examples/scene_ui",
-  "examples/lottie",
-  "examples/lottie_ui",
+  #"examples/lottie",
+  #"examples/lottie_ui",
   "examples/svg",
   "examples/svg_ui",
   "examples/render_layers",
   "examples/cube3d",
   "examples/headless",
   "examples/diagnostics",
-  "examples/view_culling",
-  "examples/scaling",
+  #"examples/view_culling",
+  #"examples/scaling",
 ]
 
 [workspace.package]
@@ -27,7 +27,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/linebender/bevy_vello"
 
 [workspace.dependencies]
-bevy = { version = "0.16.1", default-features = false, features = [
+bevy = { version = "0.17.1", default-features = false, features = [
   "bevy_asset",
   "bevy_winit",
   "bevy_window",
@@ -37,6 +37,9 @@ bevy = { version = "0.16.1", default-features = false, features = [
   "multi_threaded",
   "x11",
   "tonemapping_luts",
+  "zstd_rust",
+  "bevy_sprite",
+  "bevy_sprite_render",
 ] }
 
 [package]
@@ -61,14 +64,14 @@ bevy = { workspace = true }
 vello = "0.5.0"
 thiserror = "2.0.11"
 vello_svg = { version = "0.7.1", optional = true }
-velato = { version = "0.6.0", optional = true }
+#velato = { version = "0.6.0", optional = true }
 tracing = "0.1.41"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-parley = { version = "0.4.0", optional = true, features = ["system"] }
+parley = { version = "0.5.0", optional = true, features = ["system"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-parley = { version = "0.4.0", optional = true, default-features = false, features = [
+parley = { version = "0.5.0", optional = true, default-features = false, features = [
   "std",
 ] }
 
@@ -78,6 +81,6 @@ wasm-bindgen-test = "0.3.50"
 [features]
 default = []
 svg = ["vello_svg"]
-lottie = ["velato"]
+#lottie = ["velato"]
 text = ["parley"]
 default_font = ["bevy/default_font", "text"]

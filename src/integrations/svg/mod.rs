@@ -72,7 +72,7 @@ impl VelloSvgAnchor {
             Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
             Self::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
         };
-        let new_translation: Vec3 = (transform.compute_matrix() * adjustment.extend(1.0)).xyz();
+        let new_translation: Vec3 = (transform.to_matrix() * adjustment.extend(1.0)).xyz();
         GlobalTransform::from(
             transform
                 .compute_transform()

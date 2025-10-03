@@ -8,15 +8,21 @@ use bevy::{
     render::{
         extract_component::ExtractComponent,
         extract_resource::ExtractResource,
-        mesh::MeshVertexBufferLayoutRef,
+        //mesh::MeshVertexBufferLayoutRef,
+        
         render_resource::{
-            AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
-            VertexBufferLayout, VertexFormat, VertexStepMode,
+            AsBindGroup, RenderPipelineDescriptor, /*ShaderRef,*/ SpecializedMeshPipelineError,
+            /*VertexBufferLayout,*/ VertexFormat, VertexStepMode,
         },
+        
         renderer::RenderDevice,
-        view::RenderLayers,
+        //view::RenderLayers,
     },
-    sprite::{Material2d, Material2dKey},
+    mesh::MeshVertexBufferLayoutRef,
+    camera::visibility::RenderLayers,
+    shader::ShaderRef,
+    mesh::VertexBufferLayout,
+    sprite_render::{Material2d, Material2dKey},
 };
 use vello::{AaConfig, AaSupport, kurbo::Affine};
 

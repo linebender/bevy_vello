@@ -19,7 +19,7 @@ use crate::prelude::*;
     VisibilityClass
 )]
 #[reflect(Component)]
-#[component(on_add = view::add_visibility_class::<VelloLottieHandle>)]
+#[component(on_add = visibility::add_visibility_class::<VelloLottieHandle>)]
 pub struct VelloLottieHandle(pub Handle<VelloLottie>);
 
 #[derive(Asset, TypePath, Clone)]
@@ -38,8 +38,8 @@ impl VelloLottie {
         let local_min = Vec3::new(-self.width / 2.0, -self.height / 2.0, 0.0).extend(1.0);
         let local_max = Vec3::new(self.width / 2.0, self.height / 2.0, 0.0).extend(1.0);
 
-        let min_world = gtransform.compute_matrix() * local_min;
-        let max_world = gtransform.compute_matrix() * local_max;
+        let min_world = gtransform.to_matrix() * local_min;
+        let max_world = gtransform.to_matrix() * local_max;
 
         // Calculate the distance between the vertices to get the size in world space
         let min = Vec2::new(min_world.x, min_world.y);

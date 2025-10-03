@@ -5,7 +5,7 @@ use bevy::{
         Render, RenderApp, RenderSet, extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin, renderer::RenderDevice,
     },
-    sprite::Material2dPlugin,
+    sprite_render::Material2dPlugin,
 };
 
 use super::{

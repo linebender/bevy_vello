@@ -4,8 +4,9 @@ use bevy::{
         Extract,
         camera::ExtractedCamera,
         sync_world::TemporaryRenderEntity,
-        view::{ExtractedView, RenderLayers},
+        view::{ExtractedView/*, RenderLayers*/},
     },
+    camera::visibility::RenderLayers,
 };
 use vello::kurbo::Affine;
 
@@ -154,7 +155,7 @@ pub fn prepare_text_affines(
             // 3. Translate
             let transform: [f64; 6] =
                 if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
-                    let mut model_matrix = world_transform.compute_matrix();
+                    let mut model_matrix = world_transform.to_matrix();
 
                     if is_scaled {
                         model_matrix *= screen_scale_matrix;
@@ -172,7 +173,7 @@ pub fn prepare_text_affines(
                         transform[13] as f64, // f // translate_y
                     ]
                 } else {
-                    let mut model_matrix = world_transform.compute_matrix();
+                    let mut model_matrix = world_transform.to_matrix();
 
                     if is_scaled {
                         model_matrix *= world_scale_matrix;
@@ -182,7 +183,7 @@ pub fn prepare_text_affines(
                     model_matrix.w_axis.y *= -1.0;
 
                     let (projection_mat, view_mat) = {
-                        let mut view_mat = view.world_from_view.compute_matrix();
+                        let mut view_mat = view.world_from_view.to_matrix();
 
                         // Flip Y-axis to match Vello's y-down coordinate space
                         view_mat.w_axis.y *= -1.0;

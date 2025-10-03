@@ -2,8 +2,9 @@ use std::ops::Mul;
 
 use bevy::{
     prelude::*,
-    render::view::{self, VisibilityClass},
+    //render::view::{self, VisibilityClass},
     ui::{ContentSize, NodeMeasure},
+    camera::visibility::{self,VisibilityClass},
 };
 use tracing::warn;
 use vello::peniko::{self, Brush};
@@ -15,7 +16,7 @@ use crate::{
 
 #[derive(Component, Default, Clone)]
 #[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
-#[component(on_add = view::add_visibility_class::<VelloTextSection>)]
+#[component(on_add = visibility::add_visibility_class::<VelloTextSection>)]
 pub struct VelloTextSection {
     pub value: String,
     pub style: VelloTextStyle,
@@ -188,9 +189,9 @@ impl From<VelloTextAlign> for parley::Alignment {
             VelloTextAlign::Start => parley::Alignment::Start,
             VelloTextAlign::End => parley::Alignment::End,
             VelloTextAlign::Left => parley::Alignment::Left,
-            VelloTextAlign::Middle => parley::Alignment::Middle,
+            VelloTextAlign::Middle => parley::Alignment::Center,
             VelloTextAlign::Right => parley::Alignment::Right,
-            VelloTextAlign::Justified => parley::Alignment::Justified,
+            VelloTextAlign::Justified => parley::Alignment::Justify,
         }
     }
 }
@@ -204,8 +205,8 @@ impl VelloTextSection {
         let local_min = Vec3::new(0.0, 0.0, 0.0).extend(1.0);
         let local_max = Vec3::new(size.x, size.y, 0.0).extend(1.0);
 
-        let min_world = gtransform.compute_matrix() * local_min;
-        let max_world = gtransform.compute_matrix() * local_max;
+        let min_world = gtransform.to_matrix() * local_min;
+        let max_world = gtransform.to_matrix() * local_max;
 
         // Calculate the distance between the vertices to get the size in world space
         let min = Vec2::new(min_world.x, min_world.y);
