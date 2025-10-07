@@ -3,7 +3,8 @@ use std::sync::Arc;
 use bevy::{
     prelude::*,
     reflect::TypePath,
-    render::view::{self, VisibilityClass},
+    render::view::{self},
+    camera::visibility::{self, VisibilityClass},
 };
 
 use crate::prelude::*;

@@ -10,3 +10,4 @@ publish = false
 [dependencies]
 bevy_vello = { path = "../../", features = ["lottie"] }
 bevy = { workspace = true, features = ["bevy_gizmos"] }
+
