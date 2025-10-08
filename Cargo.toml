@@ -88,3 +88,4 @@ default_font = ["bevy/default_font", "text"]
 [patch.crates-io]
 usvg ={ git = "https://github.com/HaHa421/resvg-bevy-0.17/", package = "usvg" }
 svgtypes ={ git = "https://github.com/HaHa421/svgtypes-bevy-0.17" }
+velato = { git = "https://github.com/HaHa421/velato-bevy-0.17" }

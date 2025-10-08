@@ -1,10 +1,8 @@
 use bevy::{
+    camera::visibility::RenderLayers,
     prelude::*,
     render::{
-        Extract,
-        camera::ExtractedCamera,
-        sync_world::TemporaryRenderEntity,
-        view::{ExtractedView, RenderLayers},
+        Extract, camera::ExtractedCamera, sync_world::TemporaryRenderEntity, view::ExtractedView,
     },
 };
 use kurbo::Affine;

@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{Render, RenderApp, RenderSet},
+    render::{Render, RenderApp, RenderSystems},
 };
 
 use super::{
@@ -28,7 +28,7 @@ impl Plugin for SvgIntegrationPlugin {
             )
             .add_systems(
                 Render,
-                (render::prepare_asset_affines,).in_set(RenderSet::Prepare),
+                (render::prepare_asset_affines,).in_set(RenderSystems::Prepare),
             );
     }
 }

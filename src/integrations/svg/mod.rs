@@ -9,7 +9,7 @@ mod parse;
 pub use parse::{load_svg_from_bytes, load_svg_from_str};
 
 mod plugin;
-use bevy::{prelude::*, render::view::VisibilityClass};
+use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
 #[derive(Bundle, Default)]
 pub struct VelloSvgBundle {
