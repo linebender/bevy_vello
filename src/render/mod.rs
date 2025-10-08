@@ -3,7 +3,7 @@
 use std::sync::{Arc, Mutex};
 
 use bevy::{
-    asset::weak_handle,
+    asset::uuid_handle,
     camera::visibility::RenderLayers,
     mesh::MeshVertexBufferLayoutRef,
     mesh::VertexBufferLayout,
@@ -31,7 +31,7 @@ pub(crate) mod prepare;
 pub(crate) use plugin::VelloRenderPlugin;
 
 /// A handle to the screen space render target shader.
-pub const SSRT_SHADER_HANDLE: Handle<Shader> = weak_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
+pub const SSRT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
 
 /// A component that should be added to the camera that will render Vello assets.
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]

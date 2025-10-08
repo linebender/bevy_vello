@@ -2,7 +2,7 @@ use bevy::{
     asset::load_internal_asset,
     prelude::*,
     render::{
-        Render, RenderApp, RenderSet, extract_component::ExtractComponentPlugin,
+        Render, RenderApp, RenderSystems, extract_component::ExtractComponentPlugin,
         extract_resource::ExtractResourcePlugin, renderer::RenderDevice,
     },
     sprite_render::Material2dPlugin,
@@ -75,18 +75,18 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 Render,
-                prepare::prepare_scene_affines.in_set(RenderSet::Prepare),
+                prepare::prepare_scene_affines.in_set(RenderSystems::Prepare),
             )
             .add_systems(
                 Render,
                 (systems::sort_render_items, systems::render_frame)
                     .chain()
-                    .in_set(RenderSet::Render)
+                    .in_set(RenderSystems::Render)
                     .run_if(resource_exists::<RenderDevice>),
             )
             .add_systems(
                 Render,
-                systems::render_settings_change_detection.in_set(RenderSet::Cleanup),
+                systems::render_settings_change_detection.in_set(RenderSystems::Cleanup),
             );
 
         app.add_plugins(ExtractComponentPlugin::<VelloView>::default());
