@@ -2,8 +2,8 @@ use std::ops::DerefMut;
 
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
+    camera::primitives::Aabb,
     prelude::*,
-    render::primitives::Aabb,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
 

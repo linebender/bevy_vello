@@ -10,7 +10,7 @@ publish = false
 [dependencies]
 bevy_vello = { path = "../../", features = ["svg", "lottie"] }
 bevy = { workspace = true, features = ["default_font"] }
-bevy_pancam = "0.18.0"
+bevy_pancam = "0.19.0"
 bevy_async_task = "0.8.0"
 rfd = "0.15.2"
 tracing = "0.1.41"

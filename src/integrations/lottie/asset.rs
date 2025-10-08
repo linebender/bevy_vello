@@ -4,7 +4,6 @@ use bevy::{
     camera::visibility::{self, VisibilityClass},
     prelude::*,
     reflect::TypePath,
-    render::view::{self},
 };
 
 use crate::prelude::*;

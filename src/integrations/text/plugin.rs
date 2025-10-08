@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{Render, RenderApp, RenderSet, render_asset::RenderAssetPlugin},
+    render::{Render, RenderApp, RenderSystems, render_asset::RenderAssetPlugin},
 };
 
 use super::{
@@ -13,6 +13,7 @@ use super::{
     },
 };
 use crate::render::{VelloScreenScale, extract::VelloExtractStep};
+use tracing::error;
 
 pub struct VelloTextIntegrationPlugin;
 
@@ -40,10 +41,12 @@ impl Plugin for VelloTextIntegrationPlugin {
                 .get_resource_mut::<Assets<VelloFont>>()
                 .unwrap();
 
-            fonts.insert(
+            if let Err(err) = fonts.insert(
                 Handle::default().id(),
                 super::font_loader::load_into_font_context(bevy::text::DEFAULT_FONT_DATA.to_vec()),
-            );
+            ) {
+                error!("{}", err);
+            }
         }
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
@@ -56,7 +59,7 @@ impl Plugin for VelloTextIntegrationPlugin {
             )
             .add_systems(
                 Render,
-                render::prepare_text_affines.in_set(RenderSet::Prepare),
+                render::prepare_text_affines.in_set(RenderSystems::Prepare),
             );
     }
 }

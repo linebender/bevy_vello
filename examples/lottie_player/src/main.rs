@@ -14,9 +14,7 @@ fn main() {
         meta_check: AssetMetaCheck::Never,
         ..default()
     }))
-    .add_plugins(EguiPlugin {
-        enable_multipass_for_primary_context: false,
-    })
+    .add_plugins(EguiPlugin::default())
     .add_plugins(VelloPlugin::default())
     .init_resource::<EmbeddedAssetRegistry>()
     .add_plugins(bevy_pancam::PanCamPlugin)
@@ -75,7 +73,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
 }
 
 fn print_metadata(
-    mut asset_ev: EventReader<AssetEvent<VelloLottie>>,
+    mut asset_ev: MessageReader<AssetEvent<VelloLottie>>,
     assets: Res<Assets<VelloLottie>>,
 ) {
     for ev in asset_ev.read() {

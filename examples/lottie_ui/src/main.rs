@@ -31,7 +31,7 @@ fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             border: UiRect::all(Val::Px(2.0)),
             ..default()
         },
-        BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
+        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
         VelloLottieHandle(asset_server.load("embedded://lottie_ui/assets/Tiger.json")),
     ));
 }

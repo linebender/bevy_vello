@@ -72,7 +72,7 @@ pub fn advance_playheads(
         // Handle intermissions
         if let Some(intermission) = playhead.intermission.as_mut() {
             intermission.tick(time.delta());
-            if intermission.finished() {
+            if intermission.is_finished() {
                 playhead.intermission.take();
                 match options.direction {
                     PlaybackDirection::Normal => {
