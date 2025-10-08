@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use bevy::{
+    camera::visibility::{self, VisibilityClass},
     prelude::*,
     reflect::TypePath,
     render::view::{self},
-    camera::visibility::{self, VisibilityClass},
 };
 
 use crate::prelude::*;

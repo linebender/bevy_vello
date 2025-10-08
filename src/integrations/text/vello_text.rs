@@ -1,10 +1,9 @@
 use std::ops::Mul;
 
 use bevy::{
+    camera::visibility::{self, VisibilityClass},
     prelude::*,
-    //render::view::{self, VisibilityClass},
     ui::{ContentSize, NodeMeasure},
-    camera::visibility::{self,VisibilityClass},
 };
 use tracing::warn;
 use vello::peniko::{self, Brush};

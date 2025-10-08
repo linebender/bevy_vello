@@ -34,7 +34,7 @@ mod player_transition;
 pub use player_transition::PlayerTransition;
 
 mod theme;
-use bevy::{prelude::*, camera::visibility::VisibilityClass};
+use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub use theme::Theme;
 
 #[cfg(feature = "lottie")]

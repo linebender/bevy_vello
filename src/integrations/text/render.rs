@@ -1,12 +1,12 @@
 use bevy::{
+    camera::visibility::RenderLayers,
     prelude::*,
     render::{
         Extract,
         camera::ExtractedCamera,
         sync_world::TemporaryRenderEntity,
-        view::{ExtractedView/*, RenderLayers*/},
+        view::{ExtractedView /*, RenderLayers*/},
     },
-    camera::visibility::RenderLayers,
 };
 use vello::kurbo::Affine;
 

@@ -1,19 +1,17 @@
 use bevy::{
+    asset::RenderAssetUsages,
+    camera::visibility::NoFrustumCulling,
+    mesh::Indices,
     prelude::*,
     render::{
-        //mesh::Indices,
-        render_asset::{/*RenderAssetUsages,*/ RenderAssets},
+        render_asset::RenderAssets,
         render_resource::{
             Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension, TextureFormat,
             TextureUsages,
         },
         renderer::{RenderDevice, RenderQueue},
         texture::GpuImage,
-        //view::NoFrustumCulling,
     },
-    asset::RenderAssetUsages,
-    mesh::Indices,
-    camera::visibility::NoFrustumCulling,
     sprite_render::MeshMaterial2d,
     window::{PrimaryWindow, WindowResized},
 };
