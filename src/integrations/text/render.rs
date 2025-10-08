@@ -5,7 +5,7 @@ use bevy::{
         Extract,
         camera::ExtractedCamera,
         sync_world::TemporaryRenderEntity,
-        view::{ExtractedView /*, RenderLayers*/},
+        view::ExtractedView,
     },
 };
 use vello::kurbo::Affine;
