@@ -2,10 +2,7 @@ use bevy::{
     camera::visibility::RenderLayers,
     prelude::*,
     render::{
-        Extract,
-        camera::ExtractedCamera,
-        sync_world::TemporaryRenderEntity,
-        view::ExtractedView,
+        Extract, camera::ExtractedCamera, sync_world::TemporaryRenderEntity, view::ExtractedView,
     },
 };
 use vello::kurbo::Affine;
