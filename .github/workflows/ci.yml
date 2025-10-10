@@ -4,6 +4,8 @@ on: [push, pull_request]
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: --cfg getrandom_backend="wasm_js" ${{ matrix.atomic.flags }}
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v4
@@ -29,6 +31,8 @@ jobs:
 
   check:
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: --cfg getrandom_backend="wasm_js" ${{ matrix.atomic.flags }}
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v4
@@ -55,6 +59,8 @@ jobs:
   test:
     needs: [check]
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: --cfg getrandom_backend="wasm_js" ${{ matrix.atomic.flags }}
     steps:
       - name: Setup | Checkout
         uses: actions/checkout@v4
