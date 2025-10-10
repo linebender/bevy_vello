@@ -3,7 +3,7 @@ resolver = "2"
 members = [
   "examples/run_wasm",
   "examples/lottie_player",
-  #"examples/drag_n_drop", #needs bevy_async_task upgrade
+  "examples/drag_n_drop",
   "examples/text",
   "examples/scene",
   "examples/scene_ui",
@@ -88,4 +88,4 @@ default_font = ["bevy/default_font", "text"]
 [patch.crates-io]
 usvg ={ git = "https://github.com/HaHa421/resvg-bevy-0.17/", package = "usvg" }
 svgtypes ={ git = "https://github.com/linebender/svgtypes" }
-velato = { git = "https://github.com/HaHa421/velato-bevy-0.17" }
+velato = { git = "https://github.com/linebender/velato" }

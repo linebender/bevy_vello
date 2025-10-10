@@ -55,7 +55,7 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    BorderColor(Color::BLACK),
+                    BorderColor::all(Color::BLACK),
                     BorderRadius::MAX,
                     BackgroundColor(NORMAL_BUTTON),
                 ))
@@ -84,7 +84,7 @@ fn button_system(
         match *interaction {
             Interaction::Pressed => {
                 *color = HOVERED_BUTTON.into();
-                border_color.0 = RED.into();
+                *border_color = BorderColor::all(RED);
 
                 let fut = async move {
                     let handle = rfd::AsyncFileDialog::new().pick_file().await?;
@@ -97,11 +97,11 @@ fn button_system(
             }
             Interaction::Hovered => {
                 *color = HOVERED_BUTTON.into();
-                border_color.0 = Color::WHITE;
+                *border_color = BorderColor::all(Color::WHITE);
             }
             Interaction::None => {
                 *color = NORMAL_BUTTON.into();
-                border_color.0 = Color::BLACK;
+                *border_color = BorderColor::all(Color::BLACK);
             }
         }
     }
@@ -163,7 +163,7 @@ fn drag_and_drop(
 struct CleanupEvent;
 
 fn cleanup_scene(
-    _trigger: Trigger<CleanupEvent>,
+    _trigger: On<CleanupEvent>,
     mut commands: Commands,
     query_lottie: Option<Single<Entity, With<VelloLottieHandle>>>,
     query_svg: Option<Single<Entity, With<VelloSvgHandle>>>,

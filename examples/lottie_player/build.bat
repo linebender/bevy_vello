@@ -8,7 +8,7 @@ REM set PATH=%PATH%;%ProgramFiles%\LLVM\bin
 
 REM cargo build --release --examples
 REM cargo run --release --example renderlayers_performance
-cargo build --release 
+call cargo build --release 
 REM cargo build --release --example rxqlite-client
 REM cargo build --release --example rxqlite-client-insecure-tls
 
