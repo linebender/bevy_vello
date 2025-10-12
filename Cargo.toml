@@ -64,7 +64,7 @@ bevy = { workspace = true }
 vello = "0.6.0"
 thiserror = "2.0.11"
 vello_svg = { version = "0.8", optional = true }
-velato = { version = "0.6.0", optional = true }
+velato = { version = "0.7.0", optional = true }
 tracing = "0.1.41"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -85,7 +85,4 @@ lottie = ["velato"]
 text = ["parley"]
 default_font = ["bevy/default_font", "text"]
 
-[patch.crates-io]
-usvg ={ git = "https://github.com/HaHa421/resvg-bevy-0.17/", package = "usvg" }
-svgtypes ={ git = "https://github.com/linebender/svgtypes" }
-velato = { git = "https://github.com/linebender/velato" }
+

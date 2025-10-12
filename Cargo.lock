@@ -3217,6 +3217,17 @@ dependencies = [
 
 [[package]]
 name = "kurbo"
+version = "0.11.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c62026ae44756f8a599ba21140f350303d4f08dcdcc71b5ad9c9bb8128c13c62"
+dependencies = [
+ "arrayvec",
+ "euclid",
+ "smallvec",
+]
+
+[[package]]
+name = "kurbo"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce9729cc38c18d86123ab736fd2e7151763ba226ac2490ec092d1dd148825e32"
@@ -3439,9 +3450,9 @@ dependencies = [
 
 [[package]]
 name = "moxcms"
-version = "0.7.6"
+version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cc7d85f3d741164e8972ad355e26ac6e51b20fcae5f911c7da8f2d8bbbb3f33"
+checksum = "c588e11a3082784af229e23e8e4ecf5bcc6fbe4f69101e0421ce8d79da7f0b40"
 dependencies = [
  "num-traits",
  "pxfm",
@@ -3995,7 +4006,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3c76095c9a636173600478e0373218c7b955335048c2bcd12dc6a79657649d8"
 dependencies = [
  "color",
- "kurbo",
+ "kurbo 0.12.0",
  "linebender_resource_handle",
  "smallvec",
 ]
@@ -4338,9 +4349,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.11.3"
+version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b5288124840bee7b386bc413c487869b360b2b4ec421ea56425128692f2a82c"
+checksum = "4a52d8d02cacdb176ef4678de6c052efb4b3da14b78e4db683a4252762be5433"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -4350,9 +4361,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.11"
+version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "833eb9ce86d40ef33cb1306d8accf7bc8ec2bfea4355cbdebb3df68b40925cad"
+checksum = "722166aa0d7438abbaa4d5cc2c649dac844e8c56d82fb3d33e9c34b5cd268fc6"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -4361,9 +4372,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.8.6"
+version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001"
+checksum = "c3160422bbd54dd5ecfdca71e5fd59b7b8fe2b1697ab2baf64f6d05dcc66d298"
 
 [[package]]
 name = "render_layers"
@@ -4795,9 +4806,10 @@ dependencies = [
 [[package]]
 name = "svgtypes"
 version = "0.15.3"
-source = "git+https://github.com/linebender/svgtypes#ee0c189bf4525369c440a37904a650796abcae8f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68c7541fff44b35860c1a7a47a7cadf3e4a304c457b58f9870d9706ece028afc"
 dependencies = [
- "kurbo",
+ "kurbo 0.11.3",
  "siphasher",
 ]
 
@@ -5261,14 +5273,15 @@ checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
 [[package]]
 name = "usvg"
 version = "0.45.1"
-source = "git+https://github.com/HaHa421/resvg-bevy-0.17/#45fb2e515258c9a3f50e034e806f8b7160aa7437"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80be9b06fbae3b8b303400ab20778c80bbaf338f563afe567cf3c9eea17b47ef"
 dependencies = [
  "base64",
  "data-url",
  "flate2",
  "fontdb 0.23.0",
  "imagesize",
- "kurbo",
+ "kurbo 0.11.3",
  "log",
  "pico-args",
  "roxmltree",
@@ -5321,8 +5334,9 @@ dependencies = [
 
 [[package]]
 name = "velato"
-version = "0.6.0"
-source = "git+https://github.com/linebender/velato#f2da49c6336f27119dc298c63a274cd87b2161fd"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d94f3acaa58a01f49ee0ab98d41bf7b0938320430110250015cbd56347974d9"
 dependencies = [
  "keyframe",
  "once_cell",
