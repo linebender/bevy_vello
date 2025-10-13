@@ -35,14 +35,21 @@ fn setup_ui(mut commands: Commands) {
     ));
 }
 
-fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut VelloScene)>) {
-    let (node, interaction, scene) = query.deref_mut();
+fn update_ui(
+    mut query: Single<(
+        &ComputedNode,
+        &UiGlobalTransform,
+        &Interaction,
+        &mut VelloScene,
+    )>,
+) {
+    let (node, ui_global_transform, interaction, scene) = query.deref_mut();
 
     let size = node.size();
     let dmin = f32::min(size.x, size.y);
     let radius = (dmin / 2.0) as f64;
 
-    let center = size / 2.0;
+    let center = ui_global_transform.transform_point2(size / 2.0);
     let center = kurbo::Point::from((center.x as f64, center.y as f64));
 
     scene.reset();
