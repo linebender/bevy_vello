@@ -1,3 +1,6 @@
+use super::{SkipScaling, VelloEntityCountData, VelloFrameProfileData};
+use crate::prelude::*;
+use bevy::math::Affine3A;
 use bevy::{
     camera::visibility::RenderLayers,
     prelude::*,
@@ -7,15 +10,18 @@ use bevy::{
     },
 };
 
-use super::{SkipScaling, VelloEntityCountData, VelloFrameProfileData};
-use crate::prelude::*;
-
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum VelloExtractStep {
     // Extract renderable types, e.g. SVG, Lottie, Text, Scenes
     ExtractAssets,
     // Synchronize frame data
     SyncData,
+}
+
+fn ui_to_global(ui: &UiGlobalTransform) -> GlobalTransform {
+    let t = ui.translation;
+    let mat = Mat4::from_translation(Vec3::new(t.x, t.y, 0.0));
+    GlobalTransform::from(Affine3A::from_mat4(mat))
 }
 
 #[derive(Component, Clone)]
@@ -38,7 +44,7 @@ pub fn extract_scenes(
         Query<
             (
                 &VelloScene,
-                &GlobalTransform,
+                &UiGlobalTransform,
                 &ViewVisibility,
                 &InheritedVisibility,
                 Option<&ComputedNode>,
@@ -82,7 +88,7 @@ pub fn extract_scenes(
         }) {
             commands
                 .spawn(ExtractedVelloScene {
-                    transform: *transform,
+                    transform: ui_to_global(transform),
                     scene: scene.clone(),
                     ui_node: ui_node.cloned(),
                     screen_space: screen_space.cloned(),
