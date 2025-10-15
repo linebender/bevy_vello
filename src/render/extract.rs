@@ -1,6 +1,6 @@
 use super::{SkipScaling, VelloEntityCountData, VelloFrameProfileData};
 use crate::prelude::*;
-use bevy::math::Affine3A;
+
 use bevy::{
     camera::visibility::RenderLayers,
     prelude::*,
