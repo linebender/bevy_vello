@@ -18,10 +18,29 @@ pub enum VelloExtractStep {
     SyncData,
 }
 
-fn ui_to_global(ui: &UiGlobalTransform) -> GlobalTransform {
-    let t = ui.translation;
-    let mat = Mat4::from_translation(Vec3::new(t.x, t.y, 0.0));
-    GlobalTransform::from(Affine3A::from_mat4(mat))
+#[inline]
+fn decompose_mat2(mat: Mat2) -> (f32, Vec2) {
+    let x = mat.x_axis;
+    let y = mat.y_axis;
+
+    let scale_x = x.length();
+    let scale_y = y.length();
+
+    let angle = x.y.atan2(x.x);
+
+    (angle, Vec2::new(scale_x, scale_y))
+}
+
+pub fn ui_to_global(ui: &UiGlobalTransform) -> GlobalTransform {
+    let (angle, scale) = decompose_mat2(ui.matrix2);
+
+    let rotation = Quat::from_rotation_z(angle);
+
+    let scale = Vec3::new(scale.x, scale.y, 1.0);
+
+    GlobalTransform::from_xyz(ui.translation.x, ui.translation.y, 0.0)
+        * GlobalTransform::from_rotation(rotation)
+        * GlobalTransform::from_scale(scale)
 }
 
 #[derive(Component, Clone)]
