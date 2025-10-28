@@ -27,7 +27,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/linebender/bevy_vello"
 
 [workspace.dependencies]
-bevy = { version = "0.16.1", default-features = false, features = [
+bevy = { version = "0.17.2", default-features = false, features = [
   "bevy_asset",
   "bevy_winit",
   "bevy_window",
@@ -37,6 +37,9 @@ bevy = { version = "0.16.1", default-features = false, features = [
   "multi_threaded",
   "x11",
   "tonemapping_luts",
+  "zstd_rust",
+  "bevy_sprite",
+  "bevy_sprite_render",
 ] }
 
 [package]
@@ -58,17 +61,17 @@ repository.workspace = true
 [dependencies]
 bevy = { workspace = true }
 # Ensure this version stays up to date with the README
-vello = "0.5.0"
+vello = "0.6.0"
 thiserror = "2.0.11"
-vello_svg = { version = "0.7.1", optional = true }
-velato = { version = "0.6.0", optional = true }
+vello_svg = { version = "0.8.0", optional = true }
+velato = { version = "0.7.0", optional = true }
 tracing = "0.1.41"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-parley = { version = "0.4.0", optional = true, features = ["system"] }
+parley = { version = "0.6.0", optional = true, features = ["system"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-parley = { version = "0.4.0", optional = true, default-features = false, features = [
+parley = { version = "0.6.0", optional = true, default-features = false, features = [
   "std",
 ] }
 

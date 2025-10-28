@@ -3,20 +3,21 @@
 use std::sync::{Arc, Mutex};
 
 use bevy::{
-    asset::weak_handle,
+    asset::uuid_handle,
     prelude::*,
+    shader::{ ShaderRef },
+    mesh::{MeshVertexBufferLayoutRef, VertexBufferLayout},
+    camera::visibility::RenderLayers,
     render::{
         extract_component::ExtractComponent,
         extract_resource::ExtractResource,
-        mesh::MeshVertexBufferLayoutRef,
         render_resource::{
-            AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError,
-            VertexBufferLayout, VertexFormat, VertexStepMode,
+            AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError,
+            VertexFormat, VertexStepMode,
         },
         renderer::RenderDevice,
-        view::RenderLayers,
     },
-    sprite::{Material2d, Material2dKey},
+    sprite_render::{Material2d, Material2dKey},
 };
 use vello::{AaConfig, AaSupport, kurbo::Affine};
 
@@ -29,7 +30,7 @@ pub(crate) mod prepare;
 pub(crate) use plugin::VelloRenderPlugin;
 
 /// A handle to the screen space render target shader.
-pub const SSRT_SHADER_HANDLE: Handle<Shader> = weak_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
+pub const SSRT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
 
 /// A component that should be added to the camera that will render Vello assets.
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]
