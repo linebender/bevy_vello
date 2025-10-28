@@ -138,7 +138,7 @@ fn button_system(
 fn drag_and_drop(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
-    mut dnd_evr: EventReader<FileDragAndDrop>,
+    mut dnd_evr: MessageReader<FileDragAndDrop>,
 ) {
     for ev in dnd_evr.read() {
         let FileDragAndDrop::DroppedFile { path_buf, .. } = ev else {
@@ -163,7 +163,7 @@ fn drag_and_drop(
 struct CleanupEvent;
 
 fn cleanup_scene(
-    _trigger: Trigger<CleanupEvent>,
+    _trigger: On<CleanupEvent>,
     mut commands: Commands,
     query_lottie: Option<Single<Entity, With<VelloLottieHandle>>>,
     query_svg: Option<Single<Entity, With<VelloSvgHandle>>>,

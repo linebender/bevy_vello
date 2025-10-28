@@ -1,7 +1,7 @@
 use bevy::{
     prelude::*,
     render::{
-        Render, RenderApp, RenderSet,
+        Render, RenderApp, RenderSystems,
         extract_component::{ExtractComponent, ExtractComponentPlugin},
         render_asset::RenderAssets,
         render_resource::{
@@ -48,7 +48,7 @@ fn main() {
     render_app.add_systems(
         Render,
         render_texture
-            .in_set(RenderSet::Render)
+            .in_set(RenderSystems::Render)
             .run_if(resource_exists::<RenderDevice>),
     );
 
