@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{Render, RenderApp, RenderSet, render_asset::RenderAssetPlugin},
+    render::{Render, RenderApp, RenderSystems, render_asset::RenderAssetPlugin},
 };
 
 use super::{
@@ -56,7 +56,7 @@ impl Plugin for VelloTextIntegrationPlugin {
             )
             .add_systems(
                 Render,
-                render::prepare_text_affines.in_set(RenderSet::Prepare),
+                render::prepare_text_affines.in_set(RenderSystems::Prepare),
             );
     }
 }

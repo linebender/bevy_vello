@@ -4,8 +4,9 @@ use bevy::{
         Extract,
         camera::ExtractedCamera,
         sync_world::TemporaryRenderEntity,
-        view::{ExtractedView, RenderLayers},
+        view::ExtractedView,
     },
+    camera::visibility::RenderLayers,
 };
 use kurbo::Affine;
 
@@ -153,7 +154,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         world_scale: f32,
         screen_scale: f32,
     ) -> PreparedAffine {
-        let mut local_center_matrix = self.asset.local_transform_center.compute_matrix().inverse();
+        let mut local_center_matrix = self.asset.local_transform_center.to_matrix().inverse();
         let is_scaled = self.skip_scaling.is_none();
 
         // A transposed (flipped over its diagonal) PostScript matrix
@@ -178,7 +179,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
         // 2. Rotate
         // 3. Translate
         let transform: [f64; 6] = if let Some(node) = self.ui_node {
-            let mut model_mat = world_transform.compute_matrix();
+            let mut model_mat = world_transform.to_matrix();
 
             // Fill the bevy_ui Node with the asset size
             let asset_size = Vec2::new(self.asset.width, self.asset.height);
@@ -203,7 +204,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
                 transform[13] as f64, // f // translate_y
             ]
         } else if self.screen_space.is_some() {
-            let mut model_matrix = world_transform.compute_matrix();
+            let mut model_matrix = world_transform.to_matrix();
 
             if is_scaled {
                 let scale_mat = Mat4::from_scale(Vec3::new(screen_scale, screen_scale, 1.0));
@@ -221,7 +222,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
                 transform[13] as f64, // f // translate_y
             ]
         } else {
-            let mut model_matrix = world_transform.compute_matrix();
+            let mut model_matrix = world_transform.to_matrix();
 
             if is_scaled {
                 let scale_mat = Mat4::from_scale(Vec3::new(world_scale, world_scale, 1.0));
@@ -236,7 +237,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
             model_matrix.w_axis.y *= -1.0;
 
             let (projection_mat, view_mat) = {
-                let mut view_mat = view.world_from_view.compute_matrix();
+                let mut view_mat = view.world_from_view.to_matrix();
 
                 // Flip Y-axis to match Vello's y-down coordinate space
                 view_mat.w_axis.y *= -1.0;
