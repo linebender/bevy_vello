@@ -20,7 +20,7 @@ impl ExtractComponent for VelloTarget {
     type QueryData = &'static VelloTarget;
     type QueryFilter = ();
     type Out = Self;
-    fn extract_component(target: bevy::ecs::query::QueryItem<'_, Self::QueryData>) -> Option<Self> {
+    fn extract_component(target: bevy::ecs::query::QueryItem<'_, '_, Self::QueryData>) -> Option<Self> {
         Some(Self(target.0.clone()))
     }
 }

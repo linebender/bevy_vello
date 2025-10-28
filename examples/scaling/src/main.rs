@@ -115,7 +115,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             ..default()
                         },
                         VelloScene::new(),
-                        BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
+                        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
                     ));
 
                     parent.spawn((
@@ -124,7 +124,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
-                        BorderColor(css::BLACK.with_alpha(0.5).into()),
+                        BorderColor::all(css::BLACK.with_alpha(0.5)),
                         VelloTextSection {
                             value: "Scene in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
@@ -162,7 +162,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                         VelloSvgHandle(
                             asset_server.load("embedded://scaling/assets/svg/fountain.svg"),
                         ),
-                        BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
+                        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
                     ));
 
                     parent.spawn((
@@ -171,7 +171,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
-                        BorderColor(css::BLACK.with_alpha(0.5).into()),
+                        BorderColor::all(css::BLACK.with_alpha(0.5)),
                         VelloTextSection {
                             value: "SVG in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
@@ -208,7 +208,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                         VelloLottieHandle(
                             asset_server.load("embedded://scaling/assets/lottie/Tiger.json"),
                         ),
-                        BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
+                        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
                     ));
 
                     parent.spawn((
@@ -217,7 +217,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
-                        BorderColor(css::BLACK.with_alpha(0.5).into()),
+                        BorderColor::all(css::BLACK.with_alpha(0.5)),
                         VelloTextSection {
                             value: "Lottie in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
@@ -480,7 +480,7 @@ fn scale_control(
     mut commands: Commands,
     world_scale: Res<VelloWorldScale>,
     screen_scale: Res<VelloScreenScale>,
-    mut keyboard_event_reader: EventReader<KeyboardInput>,
+    mut keyboard_event_reader: MessageReader<KeyboardInput>,
 ) {
     for event in keyboard_event_reader.read() {
         if event.state == ButtonState::Pressed {

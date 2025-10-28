@@ -20,9 +20,9 @@ pub fn controls_ui(
         )>,
     >,
     assets: Res<Assets<VelloLottie>>,
-) {
+) -> Result {
     let Some((player, playhead, options, theme, handle)) = player.as_deref_mut() else {
-        return;
+        return Ok(());
     };
 
     let asset = assets.get(handle.id()).unwrap();
@@ -32,7 +32,7 @@ pub fn controls_ui(
         .resizable(false)
         .title_bar(true)
         .collapsible(true);
-    window.show(contexts.ctx_mut(), |ui| {
+    window.show(contexts.ctx_mut()?, |ui| {
         ui.heading("Lottie Player");
 
         ui.horizontal(|ui| {
@@ -277,4 +277,6 @@ pub fn controls_ui(
             ui.label(format!("{transition:?}"));
         }
     });
+
+    Ok(())
 }

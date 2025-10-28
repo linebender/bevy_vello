@@ -29,7 +29,7 @@ fn setup_ui(mut commands: Commands) {
             border: UiRect::all(Val::Px(2.0)),
             ..default()
         },
-        BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
+        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
         Interaction::default(),
         VelloScene::new(),
     ));
