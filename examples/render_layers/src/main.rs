@@ -2,7 +2,7 @@
 
 use std::ops::DerefMut;
 
-use bevy::{color::palettes::css, prelude::*, camera::visibility::RenderLayers};
+use bevy::{camera::visibility::RenderLayers, color::palettes::css, prelude::*};
 use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {

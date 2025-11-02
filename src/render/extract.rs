@@ -1,10 +1,10 @@
 use bevy::{
+    camera::visibility::RenderLayers,
     prelude::*,
     render::{
         Extract, MainWorld, camera::ExtractedCamera, extract_component::ExtractComponent,
         sync_world::TemporaryRenderEntity,
     },
-    camera::visibility::RenderLayers
 };
 
 use super::{SkipScaling, VelloEntityCountData, VelloFrameProfileData};

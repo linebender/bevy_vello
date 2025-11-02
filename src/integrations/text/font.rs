@@ -216,7 +216,9 @@ impl VelloFont {
 /// letter_spacing - extra spacing between letters
 fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, text_section: &VelloTextSection) {
     builder.push_default(StyleProperty::FontSize(text_section.style.font_size));
-    builder.push_default(StyleProperty::LineHeight(parley::LineHeight::MetricsRelative(text_section.style.line_height)));
+    builder.push_default(StyleProperty::LineHeight(
+        parley::LineHeight::MetricsRelative(text_section.style.line_height),
+    ));
     builder.push_default(StyleProperty::WordSpacing(text_section.style.word_spacing));
     builder.push_default(StyleProperty::LetterSpacing(
         text_section.style.letter_spacing,

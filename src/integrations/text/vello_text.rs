@@ -1,8 +1,8 @@
 use std::ops::Mul;
 
 use bevy::{
-    prelude::*,
     camera::visibility::{self, VisibilityClass},
+    prelude::*,
     ui::{ContentSize, NodeMeasure},
 };
 use tracing::warn;

@@ -4,19 +4,19 @@ use std::sync::{Arc, Mutex};
 
 use bevy::{
     asset::uuid_handle,
-    prelude::*,
-    shader::{ ShaderRef },
-    mesh::{MeshVertexBufferLayoutRef, VertexBufferLayout},
     camera::visibility::RenderLayers,
+    mesh::{MeshVertexBufferLayoutRef, VertexBufferLayout},
+    prelude::*,
     render::{
         extract_component::ExtractComponent,
         extract_resource::ExtractResource,
         render_resource::{
-            AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError,
-            VertexFormat, VertexStepMode,
+            AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError, VertexFormat,
+            VertexStepMode,
         },
         renderer::RenderDevice,
     },
+    shader::ShaderRef,
     sprite_render::{Material2d, Material2dKey},
 };
 use vello::{AaConfig, AaSupport, kurbo::Affine};

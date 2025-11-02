@@ -3,8 +3,8 @@
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 use bevy::{
-    prelude::*,
     camera::visibility::{self, VisibilityClass},
+    prelude::*,
 };
 
 use crate::prelude::*;

@@ -203,10 +203,8 @@ pub fn run_transitions(
         let is_inside = if ui_node.is_some() || screen_space.is_some() {
             match pointer_screen_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix = current_asset
-                        .local_transform_center
-                        .to_matrix()
-                        .inverse();
+                    let local_center_matrix =
+                        current_asset.local_transform_center.to_matrix().inverse();
 
                     let transform = gtransform.to_matrix() * local_center_matrix;
 
@@ -224,10 +222,8 @@ pub fn run_transitions(
         } else {
             match pointer_world_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix = current_asset
-                        .local_transform_center
-                        .to_matrix()
-                        .inverse();
+                    let local_center_matrix =
+                        current_asset.local_transform_center.to_matrix().inverse();
 
                     let model_matrix = gtransform.to_matrix() * local_center_matrix;
 
