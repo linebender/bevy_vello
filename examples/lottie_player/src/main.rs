@@ -5,7 +5,7 @@ use bevy::{
     color::palettes::css,
     prelude::*,
 };
-use bevy_egui::EguiPlugin;
+use bevy_egui::{EguiPlugin, EguiPrimaryContextPass};
 use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
@@ -14,14 +14,13 @@ fn main() {
         meta_check: AssetMetaCheck::Never,
         ..default()
     }))
-    .add_plugins(EguiPlugin {
-        enable_multipass_for_primary_context: false,
-    })
+    .add_plugins(EguiPlugin::default())
     .add_plugins(VelloPlugin::default())
     .init_resource::<EmbeddedAssetRegistry>()
     .add_plugins(bevy_pancam::PanCamPlugin)
     .add_systems(Startup, setup_vector_graphics)
-    .add_systems(Update, (print_metadata, ui::controls_ui));
+    .add_systems(Update, print_metadata)
+    .add_systems(EguiPrimaryContextPass, ui::controls_ui);
     embedded_asset!(app, "assets/calendar.json");
     app.run();
 }
@@ -75,7 +74,7 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
 }
 
 fn print_metadata(
-    mut asset_ev: EventReader<AssetEvent<VelloLottie>>,
+    mut asset_ev: MessageReader<AssetEvent<VelloLottie>>,
     assets: Res<Assets<VelloLottie>>,
 ) {
     for ev in asset_ev.read() {

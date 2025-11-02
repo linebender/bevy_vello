@@ -1,7 +1,7 @@
 use bevy::{
     prelude::*,
     render::{
-        Render, RenderApp, RenderSet,
+        Render, RenderApp, RenderSystems,
         extract_component::{ExtractComponent, ExtractComponentPlugin},
         render_asset::RenderAssets,
         render_resource::{
@@ -20,7 +20,9 @@ impl ExtractComponent for VelloTarget {
     type QueryData = &'static VelloTarget;
     type QueryFilter = ();
     type Out = Self;
-    fn extract_component(target: bevy::ecs::query::QueryItem<'_, Self::QueryData>) -> Option<Self> {
+    fn extract_component(
+        target: bevy::ecs::query::QueryItem<'_, '_, Self::QueryData>,
+    ) -> Option<Self> {
         Some(Self(target.0.clone()))
     }
 }
@@ -48,7 +50,7 @@ fn main() {
     render_app.add_systems(
         Render,
         render_texture
-            .in_set(RenderSet::Render)
+            .in_set(RenderSystems::Render)
             .run_if(resource_exists::<RenderDevice>),
     );
 

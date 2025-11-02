@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use bevy::{
+    camera::visibility::{self, VisibilityClass},
     prelude::*,
     reflect::TypePath,
-    render::view::{self, VisibilityClass},
 };
 
 use crate::prelude::*;
@@ -11,7 +11,7 @@ use crate::prelude::*;
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
 #[reflect(Component)]
-#[component(on_add = view::add_visibility_class::<VelloSvgHandle>)]
+#[component(on_add = visibility::add_visibility_class::<VelloSvgHandle>)]
 pub struct VelloSvgHandle(pub Handle<VelloSvg>);
 
 #[derive(Asset, TypePath, Clone)]
@@ -30,8 +30,8 @@ impl VelloSvg {
         let local_min = Vec3::new(-self.width / 2.0, -self.height / 2.0, 0.0).extend(1.0);
         let local_max = Vec3::new(self.width / 2.0, self.height / 2.0, 0.0).extend(1.0);
 
-        let min_world = gtransform.compute_matrix() * local_min;
-        let max_world = gtransform.compute_matrix() * local_max;
+        let min_world = gtransform.to_matrix() * local_min;
+        let max_world = gtransform.to_matrix() * local_max;
 
         // Calculate the distance between the vertices to get the size in world space
         let min = Vec2::new(min_world.x, min_world.y);

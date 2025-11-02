@@ -3,8 +3,8 @@
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
 use bevy::{
+    camera::visibility::{self, VisibilityClass},
     prelude::*,
-    render::view::{self, VisibilityClass},
 };
 
 use crate::prelude::*;
@@ -68,7 +68,7 @@ pub struct VelloSceneBundle {
 /// [`SkipScaling`] to the entity to prevent scaling the scene beyond the node size.
 #[derive(Component, Default, Clone, Deref, DerefMut)]
 #[require(Transform, Visibility, VisibilityClass)]
-#[component(on_add = view::add_visibility_class::<VelloScene>)]
+#[component(on_add = visibility::add_visibility_class::<VelloScene>)]
 pub struct VelloScene(Box<vello::Scene>);
 
 /// A simple marker component to use screen space coordinates for rendering.

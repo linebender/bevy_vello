@@ -11,7 +11,7 @@ pub use font::VelloFont;
 pub use vello_text::{VelloTextAlign, VelloTextAnchor, VelloTextSection, VelloTextStyle};
 
 mod plugin;
-use bevy::{prelude::*, render::view::VisibilityClass};
+use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::VelloTextIntegrationPlugin;
 #[derive(Bundle, Default)]
 pub struct VelloTextBundle {

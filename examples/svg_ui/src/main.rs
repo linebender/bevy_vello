@@ -31,7 +31,7 @@ fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             border: UiRect::all(Val::Px(2.0)),
             ..default()
         },
-        BorderColor(css::FUCHSIA.with_alpha(0.5).into()),
+        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
         VelloSvgHandle(asset_server.load("embedded://svg_ui/assets/fountain.svg")),
     ));
 }

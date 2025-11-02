@@ -1,17 +1,18 @@
 use bevy::{
+    asset::RenderAssetUsages,
+    camera::visibility::NoFrustumCulling,
+    mesh::Indices,
     prelude::*,
     render::{
-        mesh::Indices,
-        render_asset::{RenderAssetUsages, RenderAssets},
+        render_asset::RenderAssets,
         render_resource::{
             Extent3d, PrimitiveTopology, TextureDescriptor, TextureDimension, TextureFormat,
             TextureUsages,
         },
         renderer::{RenderDevice, RenderQueue},
         texture::GpuImage,
-        view::NoFrustumCulling,
     },
-    sprite::MeshMaterial2d,
+    sprite_render::MeshMaterial2d,
     window::{PrimaryWindow, WindowResized},
 };
 use vello::{RenderParams, Scene};
@@ -333,10 +334,10 @@ pub fn get_viewport_size(
     camera_query: Query<&Camera, With<VelloView>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
 ) -> (u32, u32) {
-    if let Ok(camera) = camera_query.single() {
-        if let Some(viewport) = &camera.viewport {
-            return (viewport.physical_size.x, viewport.physical_size.y);
-        }
+    if let Ok(camera) = camera_query.single()
+        && let Some(viewport) = &camera.viewport
+    {
+        return (viewport.physical_size.x, viewport.physical_size.y);
     }
 
     let Some(window) = window.as_deref() else {
@@ -349,7 +350,7 @@ pub fn get_viewport_size(
 }
 
 pub fn resize_rendertargets(
-    window_resize_events: EventReader<WindowResized>,
+    window_resize_events: MessageReader<WindowResized>,
     mut query: Query<(&mut SSRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,

@@ -1,8 +1,9 @@
 use bevy::{
+    camera::visibility::RenderLayers,
     prelude::*,
     render::{
         Extract, MainWorld, camera::ExtractedCamera, extract_component::ExtractComponent,
-        sync_world::TemporaryRenderEntity, view::RenderLayers,
+        sync_world::TemporaryRenderEntity,
     },
 };
 
@@ -120,7 +121,7 @@ impl ExtractComponent for SSRenderTarget {
     type Out = Self;
 
     fn extract_component(
-        ss_render_target: bevy::ecs::query::QueryItem<'_, Self::QueryData>,
+        ss_render_target: bevy::ecs::query::QueryItem<'_, '_, Self::QueryData>,
     ) -> Option<Self> {
         Some(Self(ss_render_target.0.clone()))
     }

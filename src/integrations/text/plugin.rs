@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{Render, RenderApp, RenderSet, render_asset::RenderAssetPlugin},
+    render::{Render, RenderApp, RenderSystems, render_asset::RenderAssetPlugin},
 };
 
 use super::{
@@ -40,7 +40,7 @@ impl Plugin for VelloTextIntegrationPlugin {
                 .get_resource_mut::<Assets<VelloFont>>()
                 .unwrap();
 
-            fonts.insert(
+            let _ = fonts.insert(
                 Handle::default().id(),
                 super::font_loader::load_into_font_context(bevy::text::DEFAULT_FONT_DATA.to_vec()),
             );
@@ -56,7 +56,7 @@ impl Plugin for VelloTextIntegrationPlugin {
             )
             .add_systems(
                 Render,
-                render::prepare_text_affines.in_set(RenderSet::Prepare),
+                render::prepare_text_affines.in_set(RenderSystems::Prepare),
             );
     }
 }

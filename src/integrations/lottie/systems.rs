@@ -72,7 +72,7 @@ pub fn advance_playheads(
         // Handle intermissions
         if let Some(intermission) = playhead.intermission.as_mut() {
             intermission.tick(time.delta());
-            if intermission.finished() {
+            if intermission.is_finished() {
                 playhead.intermission.take();
                 match options.direction {
                     PlaybackDirection::Normal => {
@@ -203,12 +203,10 @@ pub fn run_transitions(
         let is_inside = if ui_node.is_some() || screen_space.is_some() {
             match pointer_screen_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix = current_asset
-                        .local_transform_center
-                        .compute_matrix()
-                        .inverse();
+                    let local_center_matrix =
+                        current_asset.local_transform_center.to_matrix().inverse();
 
-                    let transform = gtransform.compute_matrix() * local_center_matrix;
+                    let transform = gtransform.to_matrix() * local_center_matrix;
 
                     let mouse_local = transform
                         .inverse()
@@ -224,12 +222,10 @@ pub fn run_transitions(
         } else {
             match pointer_world_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix = current_asset
-                        .local_transform_center
-                        .compute_matrix()
-                        .inverse();
+                    let local_center_matrix =
+                        current_asset.local_transform_center.to_matrix().inverse();
 
-                    let model_matrix = gtransform.compute_matrix() * local_center_matrix;
+                    let model_matrix = gtransform.to_matrix() * local_center_matrix;
 
                     let mouse_local = model_matrix
                         .inverse()
