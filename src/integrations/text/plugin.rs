@@ -40,7 +40,7 @@ impl Plugin for VelloTextIntegrationPlugin {
                 .get_resource_mut::<Assets<VelloFont>>()
                 .unwrap();
 
-            fonts.insert(
+            let _ = fonts.insert(
                 Handle::default().id(),
                 super::font_loader::load_into_font_context(bevy::text::DEFAULT_FONT_DATA.to_vec()),
             );
