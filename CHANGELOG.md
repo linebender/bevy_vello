@@ -15,7 +15,9 @@ You can find its changes [documented below](#0102---2025-06-29).
 
 This release supports Bevy version 0.16 and has an [MSRV][] of 1.87.
 
-- Nothing yet
+### Fixed
+
+- Render targets are now resized when camera viewport size changes
 
 ## [0.10.3] - 2025-07-09
 
