@@ -1,6 +1,7 @@
 use bevy::{
     asset::RenderAssetUsages,
     camera::visibility::NoFrustumCulling,
+    image::ToExtents,
     mesh::Indices,
     prelude::*,
     render::{
@@ -13,7 +14,7 @@ use bevy::{
         texture::GpuImage,
     },
     sprite_render::MeshMaterial2d,
-    window::{PrimaryWindow, WindowResized},
+    window::PrimaryWindow,
 };
 use vello::{RenderParams, Scene};
 
@@ -350,17 +351,12 @@ pub fn get_viewport_size(
 }
 
 pub fn resize_rendertargets(
-    window_resize_events: MessageReader<WindowResized>,
     mut query: Query<(&mut SSRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
     camera_query: Query<&Camera, With<VelloView>>,
 ) {
-    if window_resize_events.is_empty() {
-        return;
-    }
-
     let (width, height) = get_viewport_size(camera_query, window);
 
     let size = Extent3d {
@@ -372,6 +368,12 @@ pub fn resize_rendertargets(
         return;
     }
     for (mut target, target_mat_handle) in query.iter_mut() {
+        if let Some(image) = images.get(target.0.id())
+            && image.size().to_extents() == size
+        {
+            continue;
+        }
+
         let image = setup_image(&mut images, width, height);
         if let Some(mat) = target_materials.get_mut(target_mat_handle.id()) {
             target.0 = image.clone();
