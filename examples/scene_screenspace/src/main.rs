@@ -16,8 +16,8 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn setup_vector_graphics(mut commands: Commands) {
-    // Spawn a scene in world space
-    commands.spawn(VelloScene::new());
+    // Spawn a scene with the screen space marker
+    commands.spawn((VelloScene::new(), VelloScreenSpace));
 }
 
 fn animation(scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
@@ -44,6 +44,6 @@ fn animation(scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) 
     );
 
     transform.scale = Vec3::lerp(Vec3::ONE * 0.5, Vec3::ONE * 1.0, sin_time);
-    transform.translation = Vec3::lerp(Vec3::X * -100.0, Vec3::X * 100.0, sin_time);
-    transform.rotation = Quat::from_rotation_z(-std::f32::consts::TAU * sin_time);
+    transform.translation = Vec3::lerp(Vec3::X * 0.0 + 50.0, Vec3::X * 100.0 + 75.0, sin_time);
+    transform.rotation = Quat::from_rotation_z(std::f32::consts::TAU * sin_time);
 }
