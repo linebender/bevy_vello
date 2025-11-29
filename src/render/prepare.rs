@@ -4,7 +4,9 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{VelloScreenScale, VelloView, VelloWorldScale, extract::ExtractedVelloScene};
+use crate::render::extract::ExtractedUiVelloScene;
+
+use super::{VelloScreenScale, VelloView, VelloWorldScale, extract::ExtractedWorldVelloScene};
 
 #[derive(Component, Copy, Clone, Deref, DerefMut)]
 pub struct PreparedAffine(pub Affine);
@@ -31,7 +33,8 @@ pub trait PrepareRenderInstance {
 pub fn prepare_scene_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
-    render_entities: Query<(Entity, &ExtractedVelloScene)>,
+    render_entities: Query<(Entity, &ExtractedWorldVelloScene)>,
+    render_ui_entities: Query<(Entity, &ExtractedUiVelloScene)>,
     world_scale: Res<VelloWorldScale>,
     screen_scale: Res<VelloScreenScale>,
 ) {
@@ -49,9 +52,10 @@ pub fn prepare_scene_affines(
         ])
         .transpose();
 
-        for (entity, render_entity) in render_entities.iter() {
-            let world_transform = render_entity.transform;
-            let is_scaled = render_entity.skip_scaling.is_none();
+        for (entity, render_entity) in render_ui_entities.iter() {
+            let ui_transform = render_entity.ui_transform;
+            let ui_node = render_entity.ui_node;
+            let needs_scaling = render_entity.skip_scaling.is_none();
 
             // A transposed (flipped over its diagonal) PostScript matrix
             // | a c e |
@@ -74,13 +78,23 @@ pub fn prepare_scene_affines(
             // 1. Scale
             // 2. Rotate
             // 3. Translate
-            let transform: [f64; 6] = if let Some(node) = render_entity.ui_node {
-                let mut model_matrix = world_transform.to_matrix();
-                let Vec2 { x, y } = node.size();
+            let transform: [f64; 6] = {
+                // Convert UiGlobalTransform to Mat4
+                let mat2 = ui_transform.matrix2;
+                let translation = ui_transform.translation;
+                let mut model_matrix = Mat4::from_cols_array_2d(&[
+                    [mat2.x_axis.x, mat2.x_axis.y, 0.0, 0.0],
+                    [mat2.y_axis.x, mat2.y_axis.y, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [translation.x, translation.y, 0.0, 1.0],
+                ]);
+
+                // Apply node centering transformation
+                let Vec2 { x, y } = ui_node.size();
                 let local_center_matrix =
                     Mat4::from_translation(Vec3::new(x / 2.0, y / 2.0, 0.0)).inverse();
 
-                if is_scaled {
+                if needs_scaling {
                     model_matrix *= screen_scale_matrix;
                 }
 
@@ -94,10 +108,41 @@ pub fn prepare_scene_affines(
                     transform[12] as f64, // e // translate_x
                     transform[13] as f64, // f // translate_y
                 ]
-            } else if render_entity.screen_space.is_some() {
+            };
+
+            commands
+                .entity(entity)
+                .insert(PreparedAffine(Affine::new(transform)));
+        }
+        for (entity, render_entity) in render_entities.iter() {
+            let world_transform = render_entity.transform;
+            let needs_scaling = render_entity.skip_scaling.is_none();
+
+            // A transposed (flipped over its diagonal) PostScript matrix
+            // | a c e |
+            // | b d f |
+            // | 0 0 1 |
+            //
+            // Components
+            // | scale_x skew_x translate_x |
+            // | skew_y scale_y translate_y |
+            // | skew_z skew_z scale_z |
+            //
+            // rotate (z)
+            // | cos(θ) -sin(θ) translate_x |
+            // | sin(θ) cos(θ) translate_y |
+            // | skew_z skew_z scale_z |
+            //
+            // The order of operations is important, as it affects the final transformation matrix.
+            //
+            // Order of operations:
+            // 1. Scale
+            // 2. Rotate
+            // 3. Translate
+            let transform: [f64; 6] = if render_entity.screen_space {
                 let mut model_matrix = world_transform.to_matrix();
 
-                if is_scaled {
+                if needs_scaling {
                     model_matrix *= screen_scale_matrix;
                 }
 
@@ -114,7 +159,7 @@ pub fn prepare_scene_affines(
             } else {
                 let mut model_matrix = world_transform.to_matrix();
 
-                if is_scaled {
+                if needs_scaling {
                     model_matrix *= world_scale_matrix;
                 }
 

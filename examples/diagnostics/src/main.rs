@@ -79,7 +79,8 @@ fn update_scene_count_ui(
     diagnostics: Res<DiagnosticsStore>,
     mut text: Single<&mut Text, With<DiagnosticsText>>,
 ) {
-    let Some(scenes) = diagnostics.get(&VelloEntityCountDiagnosticsPlugin::SCENE_COUNT) else {
+    let Some(scenes) = diagnostics.get(&VelloEntityCountDiagnosticsPlugin::WORLD_SCENE_COUNT)
+    else {
         return;
     };
     let Some(scene_count) = scenes.measurement() else {
