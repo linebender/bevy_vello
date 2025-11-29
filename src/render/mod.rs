@@ -222,9 +222,9 @@ pub(crate) enum VelloRenderItem {
         affine: Affine,
         item: crate::integrations::lottie::render::ExtractedLottieAsset,
     },
-    Scene {
+    WorldScene {
         affine: Affine,
-        item: extract::ExtractedVelloScene,
+        item: extract::ExtractedWorldVelloScene,
     },
     #[cfg(feature = "text")]
     Text {
@@ -233,15 +233,29 @@ pub(crate) enum VelloRenderItem {
     },
 }
 
+/// Internally used as a prepared render asset.
+#[derive(Clone)]
+pub(crate) enum VelloUiRenderItem {
+    UiScene {
+        affine: Affine,
+        item: extract::ExtractedUiVelloScene,
+    },
+}
+
 /// Internally used to buffer sorted assets prepared for the next frame.
-#[derive(Resource, Default, Deref, DerefMut)]
-pub(crate) struct VelloRenderQueue(Vec<VelloRenderItem>);
+#[derive(Resource, Default)]
+pub(crate) struct VelloRenderQueue {
+    world: Vec<VelloRenderItem>,
+    ui: Vec<VelloUiRenderItem>,
+}
 
 /// Internally used for diagnostics.
 #[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloEntityCountData {
-    /// Number of scenes.
-    pub n_scenes: u32,
+    /// Number of scenes used in the World.
+    pub n_world_scenes: u32,
+    /// Number of scenes used in UI.
+    pub n_ui_scenes: u32,
     /// Number of text sections.
     #[cfg(feature = "text")]
     pub n_texts: u32,

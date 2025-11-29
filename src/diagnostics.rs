@@ -11,7 +11,7 @@ pub struct VelloEntityCountDiagnosticsPlugin;
 
 impl Plugin for VelloEntityCountDiagnosticsPlugin {
     fn build(&self, app: &mut App) {
-        app.register_diagnostic(Diagnostic::new(Self::SCENE_COUNT).with_suffix(" scenes"))
+        app.register_diagnostic(Diagnostic::new(Self::WORLD_SCENE_COUNT).with_suffix(" scenes"))
             .add_systems(Update, Self::diagnostic_system);
         #[cfg(feature = "text")]
         app.register_diagnostic(Diagnostic::new(Self::TEXT_COUNT).with_suffix(" texts"));
@@ -23,7 +23,8 @@ impl Plugin for VelloEntityCountDiagnosticsPlugin {
 }
 
 impl VelloEntityCountDiagnosticsPlugin {
-    pub const SCENE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_scenes");
+    pub const WORLD_SCENE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_world_scenes");
+    pub const UI_SCENE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_ui_scenes");
     #[cfg(feature = "text")]
     pub const TEXT_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_texts");
     #[cfg(feature = "svg")]
@@ -32,7 +33,8 @@ impl VelloEntityCountDiagnosticsPlugin {
     pub const LOTTIE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_lotties");
 
     fn diagnostic_system(mut diagnostics: Diagnostics, data: Res<VelloEntityCountData>) {
-        diagnostics.add_measurement(&Self::SCENE_COUNT, || data.n_scenes as f64);
+        diagnostics.add_measurement(&Self::WORLD_SCENE_COUNT, || data.n_world_scenes as f64);
+        diagnostics.add_measurement(&Self::UI_SCENE_COUNT, || data.n_ui_scenes as f64);
         #[cfg(feature = "text")]
         diagnostics.add_measurement(&Self::TEXT_COUNT, || data.n_texts as f64);
         #[cfg(feature = "svg")]

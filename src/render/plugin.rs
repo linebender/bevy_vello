@@ -66,7 +66,8 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 ExtractSchedule,
-                extract::extract_scenes.in_set(VelloExtractStep::ExtractAssets),
+                (extract::extract_world_scenes, extract::extract_ui_scenes)
+                    .in_set(VelloExtractStep::ExtractAssets),
             )
             .add_systems(
                 ExtractSchedule,
