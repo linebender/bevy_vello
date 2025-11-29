@@ -12,7 +12,6 @@ use super::{
     asset::{VelloSvg, VelloSvgHandle},
 };
 use crate::{
-    VelloScreenSpace,
     prelude::*,
     render::{
         SkipScaling, VelloEntityCountData, VelloScreenScale, VelloWorldScale,
@@ -27,7 +26,7 @@ pub struct ExtractedVelloSvg {
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
     pub alpha: f32,
-    pub screen_space: Option<VelloScreenSpace>,
+    pub render_space: VelloRenderSpace,
     pub skip_scaling: Option<SkipScaling>,
     pub z_index: Option<ZIndex>,
 }
@@ -48,7 +47,7 @@ pub fn extract_svg_assets(
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
-                Option<&VelloScreenSpace>,
+                &VelloRenderSpace,
                 Option<&SkipScaling>,
                 Option<&ZIndex>,
             ),
@@ -72,7 +71,7 @@ pub fn extract_svg_assets(
         render_layers,
         view_visibility,
         inherited_visibility,
-        screen_space,
+        render_space,
         skip_scaling,
         z_index,
     ) in query_vectors.iter()
@@ -98,7 +97,7 @@ pub fn extract_svg_assets(
                     asset_anchor: *asset_anchor,
                     ui_node: ui_node.cloned(),
                     alpha: asset.alpha,
-                    screen_space: screen_space.cloned(),
+                    render_space: *render_space,
                     skip_scaling: skip_scaling.cloned(),
                     z_index: z_index.cloned(),
                 })
@@ -200,7 +199,7 @@ impl PrepareRenderInstance for ExtractedVelloSvg {
                 transform[12] as f64, // e // translate_x
                 transform[13] as f64, // f // translate_y
             ]
-        } else if self.screen_space.is_some() {
+        } else if self.render_space == VelloRenderSpace::Screen {
             let mut model_matrix = world_transform.to_matrix();
 
             if is_scaled {

@@ -10,6 +10,7 @@ use crate::prelude::*;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
+    VelloRenderSpace,
     VelloLottieAnchor,
     Playhead,
     PlaybackOptions,

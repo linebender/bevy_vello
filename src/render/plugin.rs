@@ -11,7 +11,7 @@ use bevy::{
 use super::{
     VelloCanvasSettings, VelloRenderSettings,
     extract::{self, SSRenderTarget},
-    prepare, systems,
+    systems,
 };
 use crate::{
     VelloView,
@@ -66,17 +66,8 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 ExtractSchedule,
-                (extract::extract_world_scenes, extract::extract_ui_scenes)
-                    .in_set(VelloExtractStep::ExtractAssets),
-            )
-            .add_systems(
-                ExtractSchedule,
                 (extract::sync_frame_profile, extract::sync_entity_count)
                     .in_set(VelloExtractStep::SyncData),
-            )
-            .add_systems(
-                Render,
-                prepare::prepare_scene_affines.in_set(RenderSystems::Prepare),
             )
             .add_systems(
                 Render,

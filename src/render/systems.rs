@@ -29,9 +29,9 @@ use crate::integrations::lottie::render::ExtractedLottieAsset;
 use crate::integrations::svg::render::ExtractedVelloSvg;
 #[cfg(feature = "text")]
 use crate::integrations::text::{VelloFont, render::ExtractedVelloText};
-use crate::render::{
-    VelloUiRenderItem, VelloView,
-    extract::{ExtractedUiVelloScene, ExtractedWorldVelloScene},
+use crate::{
+    integrations::scene::render::{ExtractedUiVelloScene, ExtractedWorldVelloScene},
+    render::{VelloUiRenderItem, VelloView},
 };
 
 pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handle<Image> {
@@ -118,7 +118,9 @@ pub fn sort_render_items(
 
     #[cfg(feature = "svg")]
     for (&affine, asset) in view_svgs.iter() {
-        if asset.ui_node.is_some() || asset.screen_space.is_some() {
+        use crate::VelloRenderSpace;
+
+        if asset.ui_node.is_some() || asset.render_space == VelloRenderSpace::Screen {
             world_render_queue.push((
                 asset
                     .z_index
@@ -141,7 +143,9 @@ pub fn sort_render_items(
 
     #[cfg(feature = "lottie")]
     for (&affine, asset) in view_lotties.iter() {
-        if asset.ui_node.is_some() || asset.screen_space.is_some() {
+        use crate::VelloRenderSpace;
+
+        if asset.ui_node.is_some() || asset.render_space == VelloRenderSpace::Screen {
             world_render_queue.push((
                 asset
                     .z_index
@@ -164,7 +168,9 @@ pub fn sort_render_items(
 
     #[cfg(feature = "text")]
     for (&affine, text) in view_text.iter() {
-        if text.ui_node.is_some() || text.screen_space.is_some() {
+        use crate::VelloRenderSpace;
+
+        if text.ui_node.is_some() || text.render_space == VelloRenderSpace::Screen {
             world_render_queue.push((
                 text.z_index
                     .map_or_else(|| text.transform.translation().z, |z| z.0 as f32),

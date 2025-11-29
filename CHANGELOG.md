@@ -19,10 +19,11 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 - Some diagnostics were changed.
   - `VelloEntityCountDiagnosticsPlugin::SCENE_COUNT` was split into `VelloEntityCountDiagnosticsPlugin::WORLD_SCENE_COUNT` and `VelloEntityCountDiagnosticsPlugin::UI_SCENE_COUNT` to more granularly track Ui and World entities.
+- The `VelloScreenSpace` marker component has changed to `VelloRenderSpace::Screen`.
 
 ### Fixed
 
-- Components marked with `ScreenSpace` no longer *always* render over components without them. Now it is correct - Screen space renderables will be sorted by their respective transform's Z value.
+- Components that were marked with `ScreenSpace` no longer *always* render over components without them. Now it is correct - Screen space renderables will be sorted by their respective transform's Z value.
 - Render targets are now resized when camera viewport size changes
 
 ## [0.10.3] - 2025-07-09

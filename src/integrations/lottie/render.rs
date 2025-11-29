@@ -12,7 +12,7 @@ use super::{
     asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    SkipEncoding, VelloScreenSpace,
+    SkipEncoding, VelloRenderSpace,
     render::{
         SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView, VelloWorldScale,
         prepare::{PrepareRenderInstance, PreparedAffine, PreparedTransform},
@@ -28,7 +28,7 @@ pub struct ExtractedLottieAsset {
     pub alpha: f32,
     pub theme: Option<Theme>,
     pub playhead: f64,
-    pub screen_space: Option<VelloScreenSpace>,
+    pub render_space: VelloRenderSpace,
     pub skip_scaling: Option<SkipScaling>,
     pub z_index: Option<ZIndex>,
 }
@@ -51,7 +51,7 @@ pub fn extract_lottie_assets(
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
-                Option<&VelloScreenSpace>,
+                &VelloRenderSpace,
                 Option<&SkipScaling>,
                 Option<&ZIndex>,
             ),
@@ -77,7 +77,7 @@ pub fn extract_lottie_assets(
         render_layers,
         view_visibility,
         inherited_visibility,
-        screen_space,
+        render_space,
         skip_scaling,
         z_index,
     ) in query_vectors.iter()
@@ -105,7 +105,7 @@ pub fn extract_lottie_assets(
                     playhead: playhead.frame(),
                     alpha: asset.alpha,
                     ui_node: ui_node.cloned(),
-                    screen_space: screen_space.cloned(),
+                    render_space: *render_space,
                     skip_scaling: skip_scaling.cloned(),
                     z_index: z_index.cloned(),
                 })
@@ -209,7 +209,7 @@ impl PrepareRenderInstance for ExtractedLottieAsset {
                 transform[12] as f64, // e // translate_x
                 transform[13] as f64, // f // translate_y
             ]
-        } else if self.screen_space.is_some() {
+        } else if self.render_space == VelloRenderSpace::Screen {
             let mut model_matrix = world_transform.to_matrix();
 
             if is_scaled {

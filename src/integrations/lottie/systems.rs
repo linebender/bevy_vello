@@ -7,7 +7,7 @@ use super::{
     asset::{VelloLottie, VelloLottieHandle},
 };
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VelloScreenSpace,
+    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VelloRenderSpace,
     integrations::lottie::PlaybackPlayMode, render::VelloView,
 };
 
@@ -158,7 +158,7 @@ pub fn run_transitions(
         &PlaybackOptions,
         &GlobalTransform,
         &mut VelloLottieHandle,
-        Option<&VelloScreenSpace>,
+        &VelloRenderSpace,
         Option<&ComputedNode>,
     )>,
     mut assets: ResMut<Assets<VelloLottie>>,
@@ -181,7 +181,7 @@ pub fn run_transitions(
         .and_then(|cursor| camera.viewport_to_world(view, cursor).ok())
         .map(|ray| ray.origin.truncate());
 
-    for (mut player, playhead, options, gtransform, current_asset_handle, screen_space, ui_node) in
+    for (mut player, playhead, options, gtransform, current_asset_handle, render_space, ui_node) in
         query_player.iter_mut()
     {
         if player.stopped {
@@ -200,7 +200,7 @@ pub fn run_transitions(
             continue;
         };
 
-        let is_inside = if ui_node.is_some() || screen_space.is_some() {
+        let is_inside = if ui_node.is_some() || *render_space == VelloRenderSpace::Screen {
             match pointer_screen_pos {
                 Some(pointer_pos) => {
                     let local_center_matrix =

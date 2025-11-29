@@ -9,7 +9,7 @@ use vello::kurbo::Affine;
 
 use super::{VelloFont, VelloTextAnchor, VelloTextSection};
 use crate::{
-    VelloScreenSpace,
+    VelloRenderSpace,
     render::{
         SkipEncoding, SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView,
         VelloWorldScale, prepare::PreparedAffine,
@@ -22,7 +22,7 @@ pub struct ExtractedVelloText {
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
     pub ui_node: Option<ComputedNode>,
-    pub screen_space: Option<VelloScreenSpace>,
+    pub render_space: VelloRenderSpace,
     pub skip_scaling: Option<SkipScaling>,
     pub z_index: Option<ZIndex>,
 }
@@ -43,7 +43,7 @@ pub fn extract_text(
                 &InheritedVisibility,
                 Option<&RenderLayers>,
                 Option<&ComputedNode>,
-                Option<&VelloScreenSpace>,
+                &VelloRenderSpace,
                 Option<&SkipScaling>,
                 Option<&ZIndex>,
             ),
@@ -67,7 +67,7 @@ pub fn extract_text(
         inherited_visibility,
         render_layers,
         ui_node,
-        screen_space,
+        render_space,
         skip_scaling,
         z_index,
     ) in query_scenes.iter()
@@ -92,7 +92,7 @@ pub fn extract_text(
                     text_anchor: *text_anchor,
                     transform: *transform,
                     ui_node: ui_node.cloned(),
-                    screen_space: screen_space.cloned(),
+                    render_space: *render_space,
                     skip_scaling: skip_scaling.cloned(),
                     z_index: z_index.cloned(),
                 })
@@ -150,58 +150,59 @@ pub fn prepare_text_affines(
             // 1. Scale
             // 2. Rotate
             // 3. Translate
-            let transform: [f64; 6] =
-                if render_entity.ui_node.is_some() || render_entity.screen_space.is_some() {
-                    let mut model_matrix = world_transform.to_matrix();
+            let transform: [f64; 6] = if render_entity.ui_node.is_some()
+                || render_entity.render_space == VelloRenderSpace::Screen
+            {
+                let mut model_matrix = world_transform.to_matrix();
 
-                    if is_scaled {
-                        model_matrix *= screen_scale_matrix;
-                    }
+                if is_scaled {
+                    model_matrix *= screen_scale_matrix;
+                }
 
-                    let raw_transform = model_matrix;
-                    let transform = raw_transform.to_cols_array();
+                let raw_transform = model_matrix;
+                let transform = raw_transform.to_cols_array();
 
-                    [
-                        transform[0] as f64,  // a // scale_x
-                        transform[1] as f64,  // b // skew_y
-                        transform[4] as f64,  // c // skew_x
-                        transform[5] as f64,  // d // scale_y
-                        transform[12] as f64, // e // translate_x
-                        transform[13] as f64, // f // translate_y
-                    ]
-                } else {
-                    let mut model_matrix = world_transform.to_matrix();
+                [
+                    transform[0] as f64,  // a // scale_x
+                    transform[1] as f64,  // b // skew_y
+                    transform[4] as f64,  // c // skew_x
+                    transform[5] as f64,  // d // scale_y
+                    transform[12] as f64, // e // translate_x
+                    transform[13] as f64, // f // translate_y
+                ]
+            } else {
+                let mut model_matrix = world_transform.to_matrix();
 
-                    if is_scaled {
-                        model_matrix *= world_scale_matrix;
-                    }
+                if is_scaled {
+                    model_matrix *= world_scale_matrix;
+                }
+
+                // Flip Y-axis to match Vello's y-down coordinate space
+                model_matrix.w_axis.y *= -1.0;
+
+                let (projection_mat, view_mat) = {
+                    let mut view_mat = view.world_from_view.to_matrix();
 
                     // Flip Y-axis to match Vello's y-down coordinate space
-                    model_matrix.w_axis.y *= -1.0;
+                    view_mat.w_axis.y *= -1.0;
 
-                    let (projection_mat, view_mat) = {
-                        let mut view_mat = view.world_from_view.to_matrix();
-
-                        // Flip Y-axis to match Vello's y-down coordinate space
-                        view_mat.w_axis.y *= -1.0;
-
-                        (view.clip_from_view, view_mat)
-                    };
-                    let view_proj_matrix = projection_mat * view_mat.inverse();
-
-                    let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
-                    let transform = raw_transform.to_cols_array();
-
-                    // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
-                    [
-                        transform[0] as f64,  // a // scale_x
-                        -transform[1] as f64, // b // skew_y
-                        -transform[4] as f64, // c // skew_x
-                        transform[5] as f64,  // d // scale_y
-                        transform[12] as f64, // e // translate_x
-                        transform[13] as f64, // f // translate_y
-                    ]
+                    (view.clip_from_view, view_mat)
                 };
+                let view_proj_matrix = projection_mat * view_mat.inverse();
+
+                let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+                let transform = raw_transform.to_cols_array();
+
+                // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
+                [
+                    transform[0] as f64,  // a // scale_x
+                    -transform[1] as f64, // b // skew_y
+                    -transform[4] as f64, // c // skew_x
+                    transform[5] as f64,  // d // scale_y
+                    transform[12] as f64, // e // translate_x
+                    transform[13] as f64, // f // translate_y
+                ]
+            };
 
             commands
                 .entity(entity)

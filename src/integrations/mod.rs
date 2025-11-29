@@ -1,8 +1,11 @@
-//! Integrations for supported file types. These are included by cargo feature.
+//! Integrations for supported file types. Some are included by cargo feature.
 //!
-//! # Features
+//! # Cargo features
 //! - `svg` - Enables SVG loading and rendering
 //! - `lottie` - Enable Lottie (JSON) loading and rendering
+//! - `text` - Enable text loading and rendering
+
+pub mod scene;
 
 #[cfg(feature = "svg")]
 pub mod svg;

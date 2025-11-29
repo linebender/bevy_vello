@@ -1,14 +1,9 @@
 use bevy::{
-    camera::visibility::RenderLayers,
     prelude::*,
-    render::{
-        Extract, MainWorld, camera::ExtractedCamera, extract_component::ExtractComponent,
-        sync_world::TemporaryRenderEntity,
-    },
+    render::{MainWorld, extract_component::ExtractComponent},
 };
 
-use super::{SkipScaling, VelloEntityCountData, VelloFrameProfileData};
-use crate::prelude::*;
+use super::{VelloEntityCountData, VelloFrameProfileData};
 
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum VelloExtractStep {
@@ -16,148 +11,6 @@ pub enum VelloExtractStep {
     ExtractAssets,
     // Synchronize frame data
     SyncData,
-}
-
-#[derive(Component, Clone)]
-pub struct ExtractedWorldVelloScene {
-    pub scene: VelloScene,
-    pub transform: GlobalTransform,
-    pub screen_space: bool,
-    pub skip_scaling: Option<SkipScaling>,
-}
-
-#[derive(Component, Clone)]
-pub struct ExtractedUiVelloScene {
-    pub scene: VelloScene,
-    pub ui_transform: UiGlobalTransform,
-    pub ui_node: ComputedNode,
-    pub skip_scaling: Option<SkipScaling>,
-}
-
-pub fn extract_world_scenes(
-    mut commands: Commands,
-    query_views: Query<
-        (&ExtractedCamera, Option<&RenderLayers>),
-        (With<Camera2d>, With<VelloView>),
-    >,
-    query_scenes: Extract<
-        Query<
-            (
-                &VelloScene,
-                &GlobalTransform,
-                &ViewVisibility,
-                &InheritedVisibility,
-                Option<&RenderLayers>,
-                Option<&VelloScreenSpace>,
-                Option<&SkipScaling>,
-            ),
-            (Without<SkipEncoding>, Without<Node>),
-        >,
-    >,
-    mut frame_data: ResMut<VelloEntityCountData>,
-) {
-    let mut n_scenes = 0;
-
-    // Sort cameras by rendering order
-    let mut views: Vec<_> = query_views.iter().collect();
-    views.sort_unstable_by_key(|(camera, _)| camera.order);
-
-    for (
-        scene,
-        transform,
-        view_visibility,
-        inherited_visibility,
-        render_layers,
-        screen_space,
-        skip_scaling,
-    ) in query_scenes.iter()
-    {
-        // Skip if visibility conditions are not met
-        if !view_visibility.get() || !inherited_visibility.get() {
-            continue;
-        }
-
-        // Check if any camera renders this asset
-        let asset_render_layers = render_layers.unwrap_or_default();
-        if views.iter().any(|(_, camera_layers)| {
-            asset_render_layers.intersects(camera_layers.unwrap_or_default())
-        }) {
-            commands
-                .spawn(ExtractedWorldVelloScene {
-                    transform: *transform,
-                    scene: scene.clone(),
-                    screen_space: screen_space.is_some(),
-                    skip_scaling: skip_scaling.cloned(),
-                })
-                .insert(TemporaryRenderEntity);
-            n_scenes += 1;
-        }
-    }
-
-    frame_data.n_world_scenes = n_scenes;
-}
-
-pub fn extract_ui_scenes(
-    mut commands: Commands,
-    query_views: Query<
-        (&ExtractedCamera, Option<&RenderLayers>),
-        (With<Camera2d>, With<VelloView>),
-    >,
-    query_scenes: Extract<
-        Query<
-            (
-                &VelloScene,
-                &ComputedNode,
-                &UiGlobalTransform,
-                &ViewVisibility,
-                &InheritedVisibility,
-                Option<&RenderLayers>,
-                Option<&SkipScaling>,
-            ),
-            Without<SkipEncoding>,
-        >,
-    >,
-    mut frame_data: ResMut<VelloEntityCountData>,
-) {
-    let mut n_scenes = 0;
-
-    // Sort cameras by rendering order
-    let mut views: Vec<_> = query_views.iter().collect();
-    views.sort_unstable_by_key(|(camera, _)| camera.order);
-
-    for (
-        scene,
-        ui_node,
-        ui_transform,
-        view_visibility,
-        inherited_visibility,
-        render_layers,
-        skip_scaling,
-    ) in query_scenes.iter()
-    {
-        // Skip if visibility conditions are not met
-        if !view_visibility.get() || !inherited_visibility.get() {
-            continue;
-        }
-
-        // Check if any camera renders this asset
-        let asset_render_layers = render_layers.unwrap_or_default();
-        if views.iter().any(|(_, camera_layers)| {
-            asset_render_layers.intersects(camera_layers.unwrap_or_default())
-        }) {
-            commands
-                .spawn(ExtractedUiVelloScene {
-                    scene: scene.clone(),
-                    ui_transform: *ui_transform,
-                    ui_node: *ui_node,
-                    skip_scaling: skip_scaling.cloned(),
-                })
-                .insert(TemporaryRenderEntity);
-            n_scenes += 1;
-        }
-    }
-
-    frame_data.n_ui_scenes = n_scenes;
 }
 
 /// Synchronize the entity count data back to the main world.

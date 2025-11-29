@@ -17,7 +17,7 @@ fn setup_camera(mut commands: Commands) {
 
 fn setup_vector_graphics(mut commands: Commands) {
     // Spawn a scene with the screen space marker
-    commands.spawn((VelloScene::new(), VelloScreenSpace));
+    commands.spawn((VelloScene::new(), VelloRenderSpace::Screen));
 }
 
 fn animation(scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {

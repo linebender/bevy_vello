@@ -212,6 +212,10 @@ pub struct SkipEncoding;
 #[derive(Clone)]
 #[allow(clippy::large_enum_variant, reason = "Deferred for later")]
 pub(crate) enum VelloRenderItem {
+    WorldScene {
+        affine: Affine,
+        item: crate::integrations::scene::render::ExtractedWorldVelloScene,
+    },
     #[cfg(feature = "svg")]
     Svg {
         affine: Affine,
@@ -221,10 +225,6 @@ pub(crate) enum VelloRenderItem {
     Lottie {
         affine: Affine,
         item: crate::integrations::lottie::render::ExtractedLottieAsset,
-    },
-    WorldScene {
-        affine: Affine,
-        item: extract::ExtractedWorldVelloScene,
     },
     #[cfg(feature = "text")]
     Text {
@@ -238,7 +238,7 @@ pub(crate) enum VelloRenderItem {
 pub(crate) enum VelloUiRenderItem {
     UiScene {
         affine: Affine,
-        item: extract::ExtractedUiVelloScene,
+        item: crate::integrations::scene::render::ExtractedUiVelloScene,
     },
 }
 
