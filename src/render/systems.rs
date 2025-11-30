@@ -110,7 +110,7 @@ pub fn sort_render_items(
     for (&affine, scene) in view_world_scenes.iter() {
         world_render_queue.push((
             scene.transform.translation().z,
-            VelloRenderItem::WorldScene {
+            VelloRenderItem::Scene {
                 affine: *affine,
                 item: scene.clone(),
             },
@@ -119,7 +119,7 @@ pub fn sort_render_items(
     for (&affine, scene) in view_ui_scenes.iter() {
         ui_render_queue.push((
             scene.ui_node.stack_index,
-            VelloUiRenderItem::UiScene {
+            VelloUiRenderItem::Scene {
                 affine: *affine,
                 item: scene.clone(),
             },
@@ -140,7 +140,7 @@ pub fn sort_render_items(
         for (&affine, svg) in view_ui_svgs.iter() {
             ui_render_queue.push((
                 svg.ui_node.stack_index,
-                VelloUiRenderItem::UiSvg {
+                VelloUiRenderItem::Svg {
                     affine: *affine,
                     item: svg.clone(),
                 },
@@ -187,7 +187,7 @@ pub fn sort_render_items(
         for (&affine, text) in view_ui_text.iter() {
             ui_render_queue.push((
                 text.ui_node.stack_index,
-                VelloUiRenderItem::UiText {
+                VelloUiRenderItem::Text {
                     affine: *affine,
                     item: text.clone(),
                 },
@@ -246,7 +246,7 @@ pub fn render_frame(
     // World Renderables
     for render_item in render_queue.world.iter() {
         match render_item {
-            VelloRenderItem::WorldScene {
+            VelloRenderItem::Scene {
                 affine,
                 item: ExtractedWorldVelloScene { scene, .. },
             } => {
@@ -327,13 +327,13 @@ pub fn render_frame(
     // Ui Renderables
     for render_item in render_queue.ui.iter() {
         match render_item {
-            VelloUiRenderItem::UiScene {
+            VelloUiRenderItem::Scene {
                 affine,
                 item: ExtractedUiVelloScene { scene, .. },
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
-            VelloUiRenderItem::UiSvg {
+            VelloUiRenderItem::Svg {
                 affine,
                 item: ExtractedUiVelloSvg { asset, alpha, .. },
             } => {
@@ -354,7 +354,7 @@ pub fn render_frame(
                 }
             }
             #[cfg(feature = "text")]
-            VelloUiRenderItem::UiText {
+            VelloUiRenderItem::Text {
                 affine,
                 item:
                     ExtractedUiVelloText {

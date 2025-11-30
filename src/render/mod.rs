@@ -211,7 +211,7 @@ pub struct SkipEncoding;
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
 pub(crate) enum VelloRenderItem {
-    WorldScene {
+    Scene {
         affine: Affine,
         item: crate::integrations::scene::render::ExtractedWorldVelloScene,
     },
@@ -236,17 +236,17 @@ pub(crate) enum VelloRenderItem {
 #[derive(Clone)]
 #[expect(clippy::large_enum_variant, reason = "Deferred")]
 pub(crate) enum VelloUiRenderItem {
-    UiScene {
+    Scene {
         affine: Affine,
         item: crate::integrations::scene::render::ExtractedUiVelloScene,
     },
     #[cfg(feature = "svg")]
-    UiSvg {
+    Svg {
         affine: Affine,
         item: crate::integrations::svg::render::ExtractedUiVelloSvg,
     },
     #[cfg(feature = "text")]
-    UiText {
+    Text {
         affine: Affine,
         item: crate::integrations::text::render::ExtractedUiVelloText,
     },
