@@ -30,7 +30,10 @@ impl Plugin for VelloEntityCountDiagnosticsPlugin {
             .register_diagnostic(Diagnostic::new(Self::UI_SVG_COUNT).with_suffix(" UI svgs"));
         // Lottie
         #[cfg(feature = "lottie")]
-        app.register_diagnostic(Diagnostic::new(Self::LOTTIE_COUNT).with_suffix(" lotties"));
+        app.register_diagnostic(
+            Diagnostic::new(Self::WORLD_LOTTIE_COUNT).with_suffix(" world lotties"),
+        )
+        .register_diagnostic(Diagnostic::new(Self::UI_LOTTIE_COUNT).with_suffix(" ui lotties"));
     }
 }
 
@@ -46,7 +49,9 @@ impl VelloEntityCountDiagnosticsPlugin {
     #[cfg(feature = "svg")]
     pub const UI_SVG_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_ui_svgs");
     #[cfg(feature = "lottie")]
-    pub const LOTTIE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_lotties");
+    pub const WORLD_LOTTIE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_world_lotties");
+    #[cfg(feature = "lottie")]
+    pub const UI_LOTTIE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_ui_lotties");
 
     fn diagnostic_system(mut diagnostics: Diagnostics, data: Res<VelloEntityCountData>) {
         diagnostics.add_measurement(&Self::WORLD_SCENE_COUNT, || data.n_world_scenes as f64);
@@ -63,7 +68,8 @@ impl VelloEntityCountDiagnosticsPlugin {
         }
         #[cfg(feature = "lottie")]
         {
-            diagnostics.add_measurement(&Self::LOTTIE_COUNT, || data.n_lotties as f64);
+            diagnostics.add_measurement(&Self::WORLD_LOTTIE_COUNT, || data.n_world_lotties as f64);
+            diagnostics.add_measurement(&Self::UI_LOTTIE_COUNT, || data.n_ui_lotties as f64);
         }
     }
 }

@@ -24,7 +24,7 @@ use super::{
     prepare::PreparedAffine,
 };
 #[cfg(feature = "lottie")]
-use crate::integrations::lottie::render::ExtractedLottieAsset;
+use crate::integrations::lottie::render::{ExtractedUiVelloLottie, ExtractedWorldVelloLottie};
 #[cfg(feature = "svg")]
 use crate::integrations::svg::render::{ExtractedUiVelloSvg, ExtractedWorldVelloSvg};
 #[cfg(feature = "text")]
@@ -74,7 +74,11 @@ pub fn sort_render_items(
     #[cfg(feature = "text")] view_ui_text: Query<(&PreparedAffine, &ExtractedUiVelloText)>,
     #[cfg(feature = "svg")] view_world_svgs: Query<(&PreparedAffine, &ExtractedWorldVelloSvg)>,
     #[cfg(feature = "svg")] view_ui_svgs: Query<(&PreparedAffine, &ExtractedUiVelloSvg)>,
-    #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
+    #[cfg(feature = "lottie")] view_world_lotties: Query<(
+        &PreparedAffine,
+        &ExtractedWorldVelloLottie,
+    )>,
+    #[cfg(feature = "lottie")] view_ui_lotties: Query<(&PreparedAffine, &ExtractedUiVelloLottie)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
     frame_data: ResMut<VelloEntityCountData>,
 ) {
@@ -99,7 +103,8 @@ pub fn sort_render_items(
     // Lottie
     #[cfg(feature = "lottie")]
     {
-        n_render_items += frame_data.n_lotties as usize;
+        n_render_items += frame_data.n_world_lotties as usize;
+        n_ui_items += frame_data.n_ui_lotties as usize;
     }
 
     // Reserve space for the render queues to avoid reallocations
@@ -149,25 +154,22 @@ pub fn sort_render_items(
     }
 
     #[cfg(feature = "lottie")]
-    for (&affine, asset) in view_lotties.iter() {
-        use crate::VelloRenderSpace;
-
-        if asset.ui_node.is_some() || asset.render_space == VelloRenderSpace::Screen {
+    {
+        for (&affine, lottie) in view_world_lotties.iter() {
             world_render_queue.push((
-                asset
-                    .z_index
-                    .map_or_else(|| asset.transform.translation().z, |z| z.0 as f32),
+                lottie.transform.translation().z,
                 VelloRenderItem::Lottie {
                     affine: *affine,
-                    item: asset.clone(),
+                    item: lottie.clone(),
                 },
             ));
-        } else {
-            world_render_queue.push((
-                asset.transform.translation().z,
-                VelloRenderItem::Lottie {
+        }
+        for (&affine, lottie) in view_ui_lotties.iter() {
+            ui_render_queue.push((
+                lottie.ui_node.stack_index,
+                VelloUiRenderItem::Lottie {
                     affine: *affine,
-                    item: asset.clone(),
+                    item: lottie.clone(),
                 },
             ));
         }
@@ -256,7 +258,7 @@ pub fn render_frame(
             VelloRenderItem::Lottie {
                 affine,
                 item:
-                    ExtractedLottieAsset {
+                    ExtractedWorldVelloLottie {
                         asset,
                         alpha,
                         theme,
@@ -333,6 +335,43 @@ pub fn render_frame(
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
+            #[cfg(feature = "lottie")]
+            VelloUiRenderItem::Lottie {
+                affine,
+                item:
+                    ExtractedUiVelloLottie {
+                        asset,
+                        alpha,
+                        theme,
+                        playhead,
+                        ..
+                    },
+            } => {
+                if *alpha <= 0.0 {
+                    continue;
+                }
+                if *alpha < 1.0 {
+                    scene_buffer.push_layer(
+                        vello::peniko::Mix::Normal,
+                        *alpha,
+                        *affine,
+                        &vello::kurbo::Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                    );
+                }
+                let recolored = theme.as_ref().map(|cs| cs.recolor(&asset.composition));
+                let animation = recolored.as_ref().unwrap_or(&asset.composition);
+                velato_renderer.append(
+                    animation,
+                    *playhead as f64,
+                    *affine,
+                    1.0,
+                    &mut scene_buffer,
+                );
+                if *alpha < 1.0 {
+                    scene_buffer.pop_layer();
+                }
+            }
+            #[cfg(feature = "svg")]
             VelloUiRenderItem::Svg {
                 affine,
                 item: ExtractedUiVelloSvg { asset, alpha, .. },
@@ -524,7 +563,7 @@ pub fn hide_when_empty(
     #[cfg(feature = "svg")]
     let is_empty = is_empty && entity_count.n_world_svgs == 0 && entity_count.n_ui_svgs == 0;
     #[cfg(feature = "lottie")]
-    let is_empty = is_empty && entity_count.n_lotties == 0;
+    let is_empty = is_empty && entity_count.n_world_lotties == 0 && entity_count.n_ui_lotties == 0;
     if let Some(visibility) = query_render_target.as_deref_mut() {
         if is_empty {
             **visibility = Visibility::Hidden;

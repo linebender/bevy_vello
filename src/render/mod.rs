@@ -210,6 +210,7 @@ pub struct SkipEncoding;
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
+#[expect(clippy::large_enum_variant, reason = "Deferred")]
 pub(crate) enum VelloRenderItem {
     Scene {
         affine: Affine,
@@ -223,7 +224,7 @@ pub(crate) enum VelloRenderItem {
     #[cfg(feature = "lottie")]
     Lottie {
         affine: Affine,
-        item: crate::integrations::lottie::render::ExtractedLottieAsset,
+        item: crate::integrations::lottie::render::ExtractedWorldVelloLottie,
     },
     #[cfg(feature = "text")]
     Text {
@@ -244,6 +245,11 @@ pub(crate) enum VelloUiRenderItem {
     Svg {
         affine: Affine,
         item: crate::integrations::svg::render::ExtractedUiVelloSvg,
+    },
+    #[cfg(feature = "lottie")]
+    Lottie {
+        affine: Affine,
+        item: crate::integrations::lottie::render::ExtractedUiVelloLottie,
     },
     #[cfg(feature = "text")]
     Text {
@@ -278,9 +284,12 @@ pub(crate) struct VelloEntityCountData {
     /// Number of SVGs used in UI.
     #[cfg(feature = "svg")]
     pub n_ui_svgs: u32,
-    /// Number of Lotties.
+    /// Number of Lotties used in the World.
     #[cfg(feature = "lottie")]
-    pub n_lotties: u32,
+    pub n_world_lotties: u32,
+    /// Number of Lotties used in UI.
+    #[cfg(feature = "lottie")]
+    pub n_ui_lotties: u32,
 }
 
 /// Internally used for diagnostics.

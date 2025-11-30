@@ -32,7 +32,11 @@ impl Plugin for LottieIntegrationPlugin {
             .init_resource::<VelatoRenderer>()
             .add_systems(
                 ExtractSchedule,
-                render::extract_lottie_assets.in_set(VelloExtractStep::ExtractAssets),
+                (
+                    render::extract_world_lottie_assets,
+                    render::extract_ui_lottie_assets,
+                )
+                    .in_set(VelloExtractStep::ExtractAssets),
             )
             .add_systems(
                 Render,
