@@ -9,6 +9,7 @@ members = [
   "examples/scene_screenspace",
   "examples/scene_ui",
   "examples/lottie",
+  "examples/lottie_screenspace",
   "examples/lottie_ui",
   "examples/svg",
   "examples/svg_screenspace",

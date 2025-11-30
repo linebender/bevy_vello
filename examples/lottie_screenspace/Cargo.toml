@@ -1,5 +1,5 @@
 [package]
-name = "svg_screenspace"
+name = "lottie_screenspace"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -8,5 +8,5 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy_vello = { path = "../../", features = ["svg"] }
+bevy_vello = { path = "../../", features = ["lottie"] }
 bevy = { workspace = true }

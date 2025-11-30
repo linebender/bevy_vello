@@ -14,6 +14,7 @@ fn main() {
         ..default()
     }))
     .add_plugins(VelloPlugin::default())
+    .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_view_culling)
     .add_systems(
         Update,
@@ -55,9 +56,11 @@ fn log_visibility(
     println!("{visible_status}");
 }
 
-fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
+}
 
+fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn(VelloScene::new())
         .insert(RightLeft)
