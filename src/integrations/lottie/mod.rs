@@ -59,7 +59,9 @@ pub struct VelloLottieBundle {
 }
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
-/// [`VelloAssetAnchor::Center`].
+/// [`VelloLottieAnchor::Center`].
+///
+/// Has no effect in UI nodes.
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
 pub enum VelloLottieAnchor {

@@ -32,7 +32,6 @@ pub struct ExtractedWorldVelloSvg {
 #[derive(Component, Clone)]
 pub struct ExtractedUiVelloSvg {
     pub asset: VelloSvg,
-    pub asset_anchor: VelloSvgAnchor,
     pub ui_transform: UiGlobalTransform,
     pub ui_node: ComputedNode,
     pub alpha: f32,
@@ -169,7 +168,6 @@ pub fn extract_ui_svg_assets(
             commands
                 .spawn(ExtractedUiVelloSvg {
                     asset: asset.to_owned(),
-                    asset_anchor: *asset_anchor,
                     ui_transform: *ui_transform,
                     ui_node: *ui_node,
                     alpha: asset.alpha,

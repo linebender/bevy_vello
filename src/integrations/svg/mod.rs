@@ -9,7 +9,7 @@ mod parse;
 pub use parse::{load_svg_from_bytes, load_svg_from_str};
 
 mod plugin;
-use bevy::{camera::visibility::VisibilityClass, math::Affine2, prelude::*};
+use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
 
 use crate::VelloRenderSpace;
@@ -28,7 +28,9 @@ pub struct VelloSvgBundle {
 }
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
-/// [`VelloAssetAnchor::Center`].
+/// [`VelloSvgAnchor::Center`].
+///
+/// Has no effect in UI nodes.
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
 pub enum VelloSvgAnchor {
