@@ -210,7 +210,7 @@ pub struct SkipEncoding;
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
-#[allow(clippy::large_enum_variant, reason = "Deferred for later")]
+#[expect(clippy::large_enum_variant, reason = "Deferred for later")]
 pub(crate) enum VelloRenderItem {
     WorldScene {
         affine: Affine,
@@ -219,7 +219,7 @@ pub(crate) enum VelloRenderItem {
     #[cfg(feature = "svg")]
     Svg {
         affine: Affine,
-        item: crate::integrations::svg::render::ExtractedVelloSvg,
+        item: crate::integrations::svg::render::ExtractedWorldVelloSvg,
     },
     #[cfg(feature = "lottie")]
     Lottie {
@@ -240,6 +240,11 @@ pub(crate) enum VelloUiRenderItem {
     UiScene {
         affine: Affine,
         item: crate::integrations::scene::render::ExtractedUiVelloScene,
+    },
+    #[cfg(feature = "svg")]
+    UiSvg {
+        affine: Affine,
+        item: crate::integrations::svg::render::ExtractedUiVelloSvg,
     },
     #[cfg(feature = "text")]
     UiText {
@@ -268,9 +273,12 @@ pub(crate) struct VelloEntityCountData {
     /// Number of text sections used in UI.
     #[cfg(feature = "text")]
     pub n_ui_texts: u32,
-    /// Number of SVGs.
+    /// Number of SVGs used in the World.
     #[cfg(feature = "svg")]
-    pub n_svgs: u32,
+    pub n_world_svgs: u32,
+    /// Number of SVGs used in UI.
+    #[cfg(feature = "svg")]
+    pub n_ui_svgs: u32,
     /// Number of Lotties.
     #[cfg(feature = "lottie")]
     pub n_lotties: u32,

@@ -26,7 +26,7 @@ use super::{
 #[cfg(feature = "lottie")]
 use crate::integrations::lottie::render::ExtractedLottieAsset;
 #[cfg(feature = "svg")]
-use crate::integrations::svg::render::ExtractedVelloSvg;
+use crate::integrations::svg::render::{ExtractedUiVelloSvg, ExtractedWorldVelloSvg};
 #[cfg(feature = "text")]
 use crate::integrations::text::{
     VelloFont,
@@ -72,7 +72,8 @@ pub fn sort_render_items(
     view_ui_scenes: Query<(&PreparedAffine, &ExtractedUiVelloScene)>,
     #[cfg(feature = "text")] view_world_text: Query<(&PreparedAffine, &ExtractedWorldVelloText)>,
     #[cfg(feature = "text")] view_ui_text: Query<(&PreparedAffine, &ExtractedUiVelloText)>,
-    #[cfg(feature = "svg")] view_svgs: Query<(&PreparedAffine, &ExtractedVelloSvg)>,
+    #[cfg(feature = "svg")] view_world_svgs: Query<(&PreparedAffine, &ExtractedWorldVelloSvg)>,
+    #[cfg(feature = "svg")] view_ui_svgs: Query<(&PreparedAffine, &ExtractedUiVelloSvg)>,
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
     frame_data: ResMut<VelloEntityCountData>,
@@ -92,7 +93,8 @@ pub fn sort_render_items(
     // Svg
     #[cfg(feature = "svg")]
     {
-        n_render_items += frame_data.n_svgs as usize;
+        n_render_items += frame_data.n_world_svgs as usize;
+        n_ui_items += frame_data.n_ui_svgs as usize;
     }
     // Lottie
     #[cfg(feature = "lottie")]
@@ -125,25 +127,22 @@ pub fn sort_render_items(
     }
 
     #[cfg(feature = "svg")]
-    for (&affine, asset) in view_svgs.iter() {
-        use crate::VelloRenderSpace;
-
-        if asset.ui_node.is_some() || asset.render_space == VelloRenderSpace::Screen {
+    {
+        for (&affine, svg) in view_world_svgs.iter() {
             world_render_queue.push((
-                asset
-                    .z_index
-                    .map_or_else(|| asset.transform.translation().z, |z| z.0 as f32),
+                svg.transform.translation().z,
                 VelloRenderItem::Svg {
                     affine: *affine,
-                    item: asset.clone(),
+                    item: svg.clone(),
                 },
             ));
-        } else {
-            world_render_queue.push((
-                asset.transform.translation().z,
-                VelloRenderItem::Svg {
+        }
+        for (&affine, svg) in view_ui_svgs.iter() {
+            ui_render_queue.push((
+                svg.ui_node.stack_index,
+                VelloUiRenderItem::UiSvg {
                     affine: *affine,
-                    item: asset.clone(),
+                    item: svg.clone(),
                 },
             ));
         }
@@ -292,7 +291,7 @@ pub fn render_frame(
             #[cfg(feature = "svg")]
             VelloRenderItem::Svg {
                 affine,
-                item: ExtractedVelloSvg { asset, alpha, .. },
+                item: ExtractedWorldVelloSvg { asset, alpha, .. },
             } => {
                 if *alpha <= 0.0 {
                     continue;
@@ -334,6 +333,27 @@ pub fn render_frame(
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
+            VelloUiRenderItem::UiSvg {
+                affine,
+                item: ExtractedUiVelloSvg { asset, alpha, .. },
+            } => {
+                if *alpha <= 0.0 {
+                    continue;
+                }
+                if *alpha < 1.0 {
+                    scene_buffer.push_layer(
+                        vello::peniko::Mix::Normal,
+                        *alpha,
+                        *affine,
+                        &vello::kurbo::Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                    );
+                }
+                scene_buffer.append(&asset.scene, Some(*affine));
+                if *alpha < 1.0 {
+                    scene_buffer.pop_layer();
+                }
+            }
+            #[cfg(feature = "text")]
             VelloUiRenderItem::UiText {
                 affine,
                 item:
@@ -502,7 +522,7 @@ pub fn hide_when_empty(
     #[cfg(feature = "text")]
     let is_empty = is_empty && entity_count.n_world_texts == 0 && entity_count.n_ui_texts == 0;
     #[cfg(feature = "svg")]
-    let is_empty = is_empty && entity_count.n_svgs == 0;
+    let is_empty = is_empty && entity_count.n_world_svgs == 0 && entity_count.n_ui_svgs == 0;
     #[cfg(feature = "lottie")]
     let is_empty = is_empty && entity_count.n_lotties == 0;
     if let Some(visibility) = query_render_target.as_deref_mut() {

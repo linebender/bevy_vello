@@ -9,8 +9,10 @@ mod parse;
 pub use parse::{load_svg_from_bytes, load_svg_from_str};
 
 mod plugin;
-use bevy::{camera::visibility::VisibilityClass, prelude::*};
+use bevy::{camera::visibility::VisibilityClass, math::Affine2, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
+
+use crate::VelloRenderSpace;
 #[derive(Bundle, Default)]
 pub struct VelloSvgBundle {
     /// Asset data to render
@@ -58,19 +60,34 @@ impl VelloSvgAnchor {
         &self,
         width: f32,
         height: f32,
+        render_space: VelloRenderSpace,
         transform: &GlobalTransform,
     ) -> GlobalTransform {
         // Apply positioning
-        let adjustment = match self {
-            Self::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-            Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-            Self::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-            Self::Top => Vec3::new(0.0, -height / 2.0, 0.0),
-            Self::Center => Vec3::new(0.0, 0.0, 0.0),
-            Self::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
-            Self::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-            Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-            Self::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+        let adjustment = match render_space {
+            VelloRenderSpace::World => match self {
+                Self::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+                Self::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+                Self::Top => Vec3::new(0.0, -height / 2.0, 0.0),
+                Self::Center => Vec3::new(0.0, 0.0, 0.0),
+                Self::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
+                Self::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+                Self::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+            },
+            // Note: Screen space has Y increasing downward, opposite of world space
+            VelloRenderSpace::Screen => match self {
+                Self::TopLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+                Self::BottomLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+                Self::Top => Vec3::new(0.0, height / 2.0, 0.0),
+                Self::Center => Vec3::new(0.0, 0.0, 0.0),
+                Self::Bottom => Vec3::new(0.0, -height / 2.0, 0.0),
+                Self::TopRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+                Self::BottomRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+            },
         };
         let new_translation: Vec3 = (transform.to_matrix() * adjustment.extend(1.0)).xyz();
         GlobalTransform::from(

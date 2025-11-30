@@ -24,11 +24,15 @@ impl Plugin for SvgIntegrationPlugin {
         render_app
             .add_systems(
                 ExtractSchedule,
-                render::extract_svg_assets.in_set(VelloExtractStep::ExtractAssets),
+                (
+                    render::extract_world_svg_assets,
+                    render::extract_ui_svg_assets,
+                )
+                    .in_set(VelloExtractStep::ExtractAssets),
             )
             .add_systems(
                 Render,
-                (render::prepare_asset_affines,).in_set(RenderSystems::Prepare),
+                (render::prepare_asset_affines).in_set(RenderSystems::Prepare),
             );
     }
 }

@@ -11,6 +11,7 @@ members = [
   "examples/lottie",
   "examples/lottie_ui",
   "examples/svg",
+  "examples/svg_screenspace",
   "examples/svg_ui",
   "examples/render_layers",
   "examples/cube3d",

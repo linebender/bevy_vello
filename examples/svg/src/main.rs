@@ -11,19 +11,23 @@ fn main() {
         ..default()
     }))
     .add_plugins(VelloPlugin::default())
+    .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_svg)
     .add_systems(Update, (rotate, gizmos));
     embedded_asset!(app, "assets/fountain.svg");
     app.run();
 }
 
-fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
+}
 
+fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     // You can also use `VelloSvgBundle`
     commands
-        .spawn(VelloSvgHandle(
-            asset_server.load("embedded://svg/assets/fountain.svg"),
+        .spawn((
+            VelloSvgHandle(asset_server.load("embedded://svg/assets/fountain.svg")),
+            VelloSvgAnchor::Center,
         ))
         .insert(Transform::from_scale(Vec3::splat(5.0)));
 }
