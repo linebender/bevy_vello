@@ -66,7 +66,7 @@ pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handl
     images.add(image)
 }
 
-#[expect(clippy::too_many_arguments, reason = "Many feature gates")]
+#[allow(clippy::too_many_arguments, reason = "Many features gates")]
 pub fn sort_render_items(
     view_world_scenes: Query<(&PreparedAffine, &ExtractedWorldVelloScene)>,
     view_ui_scenes: Query<(&PreparedAffine, &ExtractedUiVelloScene)>,

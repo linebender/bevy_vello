@@ -210,7 +210,7 @@ pub struct SkipEncoding;
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
-#[expect(clippy::large_enum_variant, reason = "Deferred")]
+#[allow(clippy::large_enum_variant, reason = "Many feature gates")]
 pub(crate) enum VelloRenderItem {
     Scene {
         affine: Affine,
@@ -235,7 +235,7 @@ pub(crate) enum VelloRenderItem {
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
-#[expect(clippy::large_enum_variant, reason = "Deferred")]
+#[allow(clippy::large_enum_variant, reason = "Many feature gates")]
 pub(crate) enum VelloUiRenderItem {
     Scene {
         affine: Affine,
