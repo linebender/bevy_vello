@@ -28,7 +28,10 @@ use crate::integrations::lottie::render::ExtractedLottieAsset;
 #[cfg(feature = "svg")]
 use crate::integrations::svg::render::ExtractedVelloSvg;
 #[cfg(feature = "text")]
-use crate::integrations::text::{VelloFont, render::ExtractedVelloText};
+use crate::integrations::text::{
+    VelloFont,
+    render::{ExtractedUiVelloText, ExtractedWorldVelloText},
+};
 use crate::{
     integrations::scene::render::{ExtractedUiVelloScene, ExtractedWorldVelloScene},
     render::{VelloUiRenderItem, VelloView},
@@ -63,10 +66,12 @@ pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handl
     images.add(image)
 }
 
+#[expect(clippy::too_many_arguments, reason = "Many feature gates")]
 pub fn sort_render_items(
-    view_ui_scenes: Query<(&PreparedAffine, &ExtractedUiVelloScene)>,
     view_world_scenes: Query<(&PreparedAffine, &ExtractedWorldVelloScene)>,
-    #[cfg(feature = "text")] view_text: Query<(&PreparedAffine, &ExtractedVelloText)>,
+    view_ui_scenes: Query<(&PreparedAffine, &ExtractedUiVelloScene)>,
+    #[cfg(feature = "text")] view_world_text: Query<(&PreparedAffine, &ExtractedWorldVelloText)>,
+    #[cfg(feature = "text")] view_ui_text: Query<(&PreparedAffine, &ExtractedUiVelloText)>,
     #[cfg(feature = "svg")] view_svgs: Query<(&PreparedAffine, &ExtractedVelloSvg)>,
     #[cfg(feature = "lottie")] view_lotties: Query<(&PreparedAffine, &ExtractedLottieAsset)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
@@ -75,19 +80,21 @@ pub fn sort_render_items(
     let mut n_render_items: usize = 0;
     let mut n_ui_items: usize = 0;
 
-    n_ui_items += frame_data.n_ui_scenes as usize;
+    // Scenes
     n_render_items += frame_data.n_world_scenes as usize;
-
+    n_ui_items += frame_data.n_ui_scenes as usize;
+    // Text
     #[cfg(feature = "text")]
     {
-        n_render_items += frame_data.n_texts as usize;
+        n_render_items += frame_data.n_world_texts as usize;
+        n_ui_items += frame_data.n_ui_texts as usize;
     }
-
+    // Svg
     #[cfg(feature = "svg")]
     {
         n_render_items += frame_data.n_svgs as usize;
     }
-
+    // Lottie
     #[cfg(feature = "lottie")]
     {
         n_render_items += frame_data.n_lotties as usize;
@@ -97,6 +104,7 @@ pub fn sort_render_items(
     let mut world_render_queue: Vec<(f32, VelloRenderItem)> = Vec::with_capacity(n_render_items);
     let mut ui_render_queue: Vec<(u32, VelloUiRenderItem)> = Vec::with_capacity(n_render_items);
 
+    // Scenes
     for (&affine, scene) in view_world_scenes.iter() {
         world_render_queue.push((
             scene.transform.translation().z,
@@ -167,22 +175,20 @@ pub fn sort_render_items(
     }
 
     #[cfg(feature = "text")]
-    for (&affine, text) in view_text.iter() {
-        use crate::VelloRenderSpace;
-
-        if text.ui_node.is_some() || text.render_space == VelloRenderSpace::Screen {
+    {
+        for (&affine, text) in view_world_text.iter() {
             world_render_queue.push((
-                text.z_index
-                    .map_or_else(|| text.transform.translation().z, |z| z.0 as f32),
+                text.transform.translation().z,
                 VelloRenderItem::Text {
                     affine: *affine,
                     item: text.clone(),
                 },
             ));
-        } else {
-            world_render_queue.push((
-                text.transform.translation().z,
-                VelloRenderItem::Text {
+        }
+        for (&affine, text) in view_ui_text.iter() {
+            ui_render_queue.push((
+                text.ui_node.stack_index,
+                VelloUiRenderItem::UiText {
                     affine: *affine,
                     item: text.clone(),
                 },
@@ -308,7 +314,7 @@ pub fn render_frame(
             VelloRenderItem::Text {
                 affine,
                 item:
-                    ExtractedVelloText {
+                    ExtractedWorldVelloText {
                         text, text_anchor, ..
                     },
             } => {
@@ -327,6 +333,17 @@ pub fn render_frame(
                 item: ExtractedUiVelloScene { scene, .. },
             } => {
                 scene_buffer.append(scene, Some(*affine));
+            }
+            VelloUiRenderItem::UiText {
+                affine,
+                item:
+                    ExtractedUiVelloText {
+                        text, text_anchor, ..
+                    },
+            } => {
+                if let Some(font) = font_render_assets.get(text.style.font.id()) {
+                    font.render(&mut scene_buffer, *affine, text, *text_anchor);
+                }
             }
         }
     }
@@ -483,7 +500,7 @@ pub fn hide_when_empty(
 ) {
     let is_empty = entity_count.n_world_scenes == 0 && entity_count.n_ui_scenes == 0;
     #[cfg(feature = "text")]
-    let is_empty = is_empty && entity_count.n_texts == 0;
+    let is_empty = is_empty && entity_count.n_world_texts == 0 && entity_count.n_ui_texts == 0;
     #[cfg(feature = "svg")]
     let is_empty = is_empty && entity_count.n_svgs == 0;
     #[cfg(feature = "lottie")]

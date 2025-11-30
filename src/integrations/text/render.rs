@@ -17,17 +17,24 @@ use crate::{
 };
 
 #[derive(Component, Clone)]
-pub struct ExtractedVelloText {
+pub struct ExtractedWorldVelloText {
     pub text: VelloTextSection,
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
-    pub ui_node: Option<ComputedNode>,
     pub render_space: VelloRenderSpace,
     pub skip_scaling: Option<SkipScaling>,
-    pub z_index: Option<ZIndex>,
 }
 
-pub fn extract_text(
+#[derive(Component, Clone)]
+pub struct ExtractedUiVelloText {
+    pub text: VelloTextSection,
+    pub text_anchor: VelloTextAnchor,
+    pub ui_transform: UiGlobalTransform,
+    pub ui_node: ComputedNode,
+    pub skip_scaling: Option<SkipScaling>,
+}
+
+pub fn extract_world_text(
     mut commands: Commands,
     query_views: Query<
         (&ExtractedCamera, Option<&RenderLayers>),
@@ -42,12 +49,10 @@ pub fn extract_text(
                 &ViewVisibility,
                 &InheritedVisibility,
                 Option<&RenderLayers>,
-                Option<&ComputedNode>,
                 &VelloRenderSpace,
                 Option<&SkipScaling>,
-                Option<&ZIndex>,
             ),
-            Without<SkipEncoding>,
+            (Without<SkipEncoding>, Without<Node>),
         >,
     >,
     fonts: Extract<Res<Assets<VelloFont>>>,
@@ -66,10 +71,8 @@ pub fn extract_text(
         view_visibility,
         inherited_visibility,
         render_layers,
-        ui_node,
         render_space,
         skip_scaling,
-        z_index,
     ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met
@@ -87,27 +90,97 @@ pub fn extract_text(
             asset_render_layers.intersects(camera_layers.unwrap_or_default())
         }) {
             commands
-                .spawn(ExtractedVelloText {
+                .spawn(ExtractedWorldVelloText {
                     text: text.clone(),
                     text_anchor: *text_anchor,
                     transform: *transform,
-                    ui_node: ui_node.cloned(),
                     render_space: *render_space,
                     skip_scaling: skip_scaling.cloned(),
-                    z_index: z_index.cloned(),
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
         }
     }
 
-    frame_data.n_texts = n_texts;
+    frame_data.n_world_texts = n_texts;
+}
+
+pub fn extract_ui_text(
+    mut commands: Commands,
+    query_views: Query<
+        (&ExtractedCamera, Option<&RenderLayers>),
+        (With<Camera2d>, With<VelloView>),
+    >,
+    query_scenes: Extract<
+        Query<
+            (
+                &VelloTextSection,
+                &VelloTextAnchor,
+                &UiGlobalTransform,
+                &ViewVisibility,
+                &InheritedVisibility,
+                Option<&RenderLayers>,
+                &ComputedNode,
+                Option<&SkipScaling>,
+            ),
+            Without<SkipEncoding>,
+        >,
+    >,
+    fonts: Extract<Res<Assets<VelloFont>>>,
+    mut frame_data: ResMut<VelloEntityCountData>,
+) {
+    let mut n_texts = 0;
+
+    // Sort cameras by rendering order
+    let mut views: Vec<_> = query_views.iter().collect();
+    views.sort_unstable_by_key(|(camera, _)| camera.order);
+
+    for (
+        text,
+        text_anchor,
+        ui_transform,
+        view_visibility,
+        inherited_visibility,
+        render_layers,
+        ui_node,
+        skip_scaling,
+    ) in query_scenes.iter()
+    {
+        // Skip if visibility conditions are not met
+        if !view_visibility.get() || !inherited_visibility.get() {
+            continue;
+        }
+        // Skip if font isn't loaded.
+        let Some(_font) = fonts.get(text.style.font.id()) else {
+            continue;
+        };
+
+        // Check if any camera renders this asset
+        let asset_render_layers = render_layers.unwrap_or_default();
+        if views.iter().any(|(_, camera_layers)| {
+            asset_render_layers.intersects(camera_layers.unwrap_or_default())
+        }) {
+            commands
+                .spawn(ExtractedUiVelloText {
+                    text: text.clone(),
+                    text_anchor: *text_anchor,
+                    ui_transform: *ui_transform,
+                    ui_node: *ui_node,
+                    skip_scaling: skip_scaling.cloned(),
+                })
+                .insert(TemporaryRenderEntity);
+            n_texts += 1;
+        }
+    }
+
+    frame_data.n_ui_texts = n_texts;
 }
 
 pub fn prepare_text_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
-    render_entities: Query<(Entity, &ExtractedVelloText)>,
+    render_entities: Query<(Entity, &ExtractedWorldVelloText)>,
+    render_ui_entities: Query<(Entity, &ExtractedUiVelloText)>,
     world_scale: Res<VelloWorldScale>,
     screen_scale: Res<VelloScreenScale>,
 ) {
@@ -125,9 +198,47 @@ pub fn prepare_text_affines(
         ])
         .transpose();
 
+        // Process UI entities
+        for (entity, render_entity) in render_ui_entities.iter() {
+            let ui_transform = render_entity.ui_transform;
+            let needs_scaling = render_entity.skip_scaling.is_none();
+
+            let transform: [f64; 6] = {
+                // Convert UiGlobalTransform to Mat4
+                let mat2 = ui_transform.matrix2;
+                let translation = ui_transform.translation;
+                let mut model_matrix = Mat4::from_cols_array_2d(&[
+                    [mat2.x_axis.x, mat2.x_axis.y, 0.0, 0.0],
+                    [mat2.y_axis.x, mat2.y_axis.y, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [translation.x, translation.y, 0.0, 1.0],
+                ]);
+
+                if needs_scaling {
+                    model_matrix *= screen_scale_matrix;
+                }
+
+                let raw_transform = model_matrix;
+                let transform = raw_transform.to_cols_array();
+                [
+                    transform[0] as f64,  // a // scale_x
+                    transform[1] as f64,  // b // skew_y
+                    transform[4] as f64,  // c // skew_x
+                    transform[5] as f64,  // d // scale_y
+                    transform[12] as f64, // e // translate_x
+                    transform[13] as f64, // f // translate_y
+                ]
+            };
+
+            commands
+                .entity(entity)
+                .insert(PreparedAffine(Affine::new(transform)));
+        }
+
+        // Process World entities
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
-            let is_scaled = render_entity.skip_scaling.is_none();
+            let needs_scaling = render_entity.skip_scaling.is_none();
 
             // A transposed (flipped over its diagonal) PostScript matrix
             // | a c e |
@@ -150,58 +261,58 @@ pub fn prepare_text_affines(
             // 1. Scale
             // 2. Rotate
             // 3. Translate
-            let transform: [f64; 6] = if render_entity.ui_node.is_some()
-                || render_entity.render_space == VelloRenderSpace::Screen
-            {
-                let mut model_matrix = world_transform.to_matrix();
+            let transform: [f64; 6] = match render_entity.render_space {
+                VelloRenderSpace::World => {
+                    let mut model_matrix = world_transform.to_matrix();
 
-                if is_scaled {
-                    model_matrix *= screen_scale_matrix;
-                }
-
-                let raw_transform = model_matrix;
-                let transform = raw_transform.to_cols_array();
-
-                [
-                    transform[0] as f64,  // a // scale_x
-                    transform[1] as f64,  // b // skew_y
-                    transform[4] as f64,  // c // skew_x
-                    transform[5] as f64,  // d // scale_y
-                    transform[12] as f64, // e // translate_x
-                    transform[13] as f64, // f // translate_y
-                ]
-            } else {
-                let mut model_matrix = world_transform.to_matrix();
-
-                if is_scaled {
-                    model_matrix *= world_scale_matrix;
-                }
-
-                // Flip Y-axis to match Vello's y-down coordinate space
-                model_matrix.w_axis.y *= -1.0;
-
-                let (projection_mat, view_mat) = {
-                    let mut view_mat = view.world_from_view.to_matrix();
+                    if needs_scaling {
+                        model_matrix *= world_scale_matrix;
+                    }
 
                     // Flip Y-axis to match Vello's y-down coordinate space
-                    view_mat.w_axis.y *= -1.0;
+                    model_matrix.w_axis.y *= -1.0;
 
-                    (view.clip_from_view, view_mat)
-                };
-                let view_proj_matrix = projection_mat * view_mat.inverse();
+                    let (projection_mat, view_mat) = {
+                        let mut view_mat = view.world_from_view.to_matrix();
 
-                let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
-                let transform = raw_transform.to_cols_array();
+                        // Flip Y-axis to match Vello's y-down coordinate space
+                        view_mat.w_axis.y *= -1.0;
 
-                // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
-                [
-                    transform[0] as f64,  // a // scale_x
-                    -transform[1] as f64, // b // skew_y
-                    -transform[4] as f64, // c // skew_x
-                    transform[5] as f64,  // d // scale_y
-                    transform[12] as f64, // e // translate_x
-                    transform[13] as f64, // f // translate_y
-                ]
+                        (view.clip_from_view, view_mat)
+                    };
+                    let view_proj_matrix = projection_mat * view_mat.inverse();
+
+                    let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+                    let transform = raw_transform.to_cols_array();
+
+                    // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
+                    [
+                        transform[0] as f64,  // a // scale_x
+                        -transform[1] as f64, // b // skew_y
+                        -transform[4] as f64, // c // skew_x
+                        transform[5] as f64,  // d // scale_y
+                        transform[12] as f64, // e // translate_x
+                        transform[13] as f64, // f // translate_y
+                    ]
+                }
+                VelloRenderSpace::Screen => {
+                    let mut model_matrix = world_transform.to_matrix();
+
+                    if needs_scaling {
+                        model_matrix *= screen_scale_matrix;
+                    }
+
+                    let raw_transform = model_matrix;
+                    let transform = raw_transform.to_cols_array();
+                    [
+                        transform[0] as f64,  // a // scale_x
+                        transform[1] as f64,  // b // skew_y
+                        transform[4] as f64,  // c // skew_x
+                        transform[5] as f64,  // d // scale_y
+                        transform[12] as f64, // e // translate_x
+                        transform[13] as f64, // f // translate_y
+                    ]
+                }
             };
 
             commands

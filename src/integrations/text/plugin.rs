@@ -52,7 +52,8 @@ impl Plugin for VelloTextIntegrationPlugin {
         render_app
             .add_systems(
                 ExtractSchedule,
-                render::extract_text.in_set(VelloExtractStep::ExtractAssets),
+                (render::extract_ui_text, render::extract_world_text)
+                    .in_set(VelloExtractStep::ExtractAssets),
             )
             .add_systems(
                 Render,

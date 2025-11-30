@@ -11,10 +11,16 @@ pub struct VelloEntityCountDiagnosticsPlugin;
 
 impl Plugin for VelloEntityCountDiagnosticsPlugin {
     fn build(&self, app: &mut App) {
-        app.register_diagnostic(Diagnostic::new(Self::WORLD_SCENE_COUNT).with_suffix(" scenes"))
-            .add_systems(Update, Self::diagnostic_system);
+        app.register_diagnostic(
+            Diagnostic::new(Self::WORLD_SCENE_COUNT).with_suffix(" world scenes"),
+        )
+        .register_diagnostic(Diagnostic::new(Self::UI_SCENE_COUNT).with_suffix(" UI scenes"))
+        .add_systems(Update, Self::diagnostic_system);
         #[cfg(feature = "text")]
-        app.register_diagnostic(Diagnostic::new(Self::TEXT_COUNT).with_suffix(" texts"));
+        app.register_diagnostic(
+            Diagnostic::new(Self::WORLD_TEXT_COUNT).with_suffix(" world texts"),
+        )
+        .register_diagnostic(Diagnostic::new(Self::UI_TEXT_COUNT).with_suffix(" UI texts"));
         #[cfg(feature = "svg")]
         app.register_diagnostic(Diagnostic::new(Self::SVG_COUNT).with_suffix(" svgs"));
         #[cfg(feature = "lottie")]
@@ -26,7 +32,9 @@ impl VelloEntityCountDiagnosticsPlugin {
     pub const WORLD_SCENE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_world_scenes");
     pub const UI_SCENE_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_ui_scenes");
     #[cfg(feature = "text")]
-    pub const TEXT_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_texts");
+    pub const WORLD_TEXT_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_world_texts");
+    #[cfg(feature = "text")]
+    pub const UI_TEXT_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_ui_texts");
     #[cfg(feature = "svg")]
     pub const SVG_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_svgs");
     #[cfg(feature = "lottie")]
@@ -36,7 +44,9 @@ impl VelloEntityCountDiagnosticsPlugin {
         diagnostics.add_measurement(&Self::WORLD_SCENE_COUNT, || data.n_world_scenes as f64);
         diagnostics.add_measurement(&Self::UI_SCENE_COUNT, || data.n_ui_scenes as f64);
         #[cfg(feature = "text")]
-        diagnostics.add_measurement(&Self::TEXT_COUNT, || data.n_texts as f64);
+        diagnostics.add_measurement(&Self::WORLD_TEXT_COUNT, || data.n_world_texts as f64);
+        #[cfg(feature = "text")]
+        diagnostics.add_measurement(&Self::UI_TEXT_COUNT, || data.n_ui_texts as f64);
         #[cfg(feature = "svg")]
         diagnostics.add_measurement(&Self::SVG_COUNT, || data.n_svgs as f64);
         #[cfg(feature = "lottie")]

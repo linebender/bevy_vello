@@ -229,16 +229,22 @@ pub(crate) enum VelloRenderItem {
     #[cfg(feature = "text")]
     Text {
         affine: Affine,
-        item: crate::integrations::text::render::ExtractedVelloText,
+        item: crate::integrations::text::render::ExtractedWorldVelloText,
     },
 }
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
+#[expect(clippy::large_enum_variant, reason = "Deferred")]
 pub(crate) enum VelloUiRenderItem {
     UiScene {
         affine: Affine,
         item: crate::integrations::scene::render::ExtractedUiVelloScene,
+    },
+    #[cfg(feature = "text")]
+    UiText {
+        affine: Affine,
+        item: crate::integrations::text::render::ExtractedUiVelloText,
     },
 }
 
@@ -256,9 +262,12 @@ pub(crate) struct VelloEntityCountData {
     pub n_world_scenes: u32,
     /// Number of scenes used in UI.
     pub n_ui_scenes: u32,
-    /// Number of text sections.
+    /// Number of text sections used in the World.
     #[cfg(feature = "text")]
-    pub n_texts: u32,
+    pub n_world_texts: u32,
+    /// Number of text sections used in UI.
+    #[cfg(feature = "text")]
+    pub n_ui_texts: u32,
     /// Number of SVGs.
     #[cfg(feature = "svg")]
     pub n_svgs: u32,

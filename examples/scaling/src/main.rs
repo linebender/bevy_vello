@@ -64,8 +64,10 @@ fn spawn_instructions(mut commands: Commands) {
             width: Val::Percent(100.0),
             height: Val::Px(50.0),
             bottom: Val::Px(0.0),
+            border: UiRect::all(Val::Px(2.0)),
             ..default()
         },
+        BorderColor::all(css::FUCHSIA),
         SkipScaling,
         VelloTextSection {
             value: "Press 1 to scale down, press 2 to scale up, press 3 to reset scale to 1.0"
@@ -128,7 +130,6 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                         VelloTextSection {
                             value: "Scene in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
-
                             style: VelloTextStyle {
                                 font_size: 14.,
                                 ..default()
@@ -255,7 +256,6 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, 50.0, 0.0),
             ));
         });
 
@@ -279,7 +279,6 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, 50.0, 0.0),
             ));
         });
 
@@ -304,7 +303,7 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, 526.0, 0.0).with_scale(Vec3::splat(10.)),
+                Transform::from_scale(Vec3::splat(10.)),
             ));
         });
 }
@@ -328,7 +327,6 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, -50.0, 0.0),
             ));
         });
 
@@ -350,7 +348,6 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, -50., 0.0),
             ));
         });
 
@@ -372,7 +369,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, -526.0, 0.0).with_scale(Vec3::splat(10.)),
+                Transform::from_scale(Vec3::splat(10.)),
             ));
         });
 }
