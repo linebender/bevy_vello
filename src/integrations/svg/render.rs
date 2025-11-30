@@ -120,7 +120,6 @@ pub fn extract_ui_svg_assets(
         Query<
             (
                 &VelloSvgHandle,
-                &VelloSvgAnchor,
                 &UiGlobalTransform,
                 &ComputedNode,
                 Option<&RenderLayers>,
@@ -142,7 +141,6 @@ pub fn extract_ui_svg_assets(
 
     for (
         asset_handle,
-        asset_anchor,
         ui_transform,
         ui_node,
         render_layers,

@@ -210,7 +210,6 @@ pub struct SkipEncoding;
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
-#[expect(clippy::large_enum_variant, reason = "Deferred for later")]
 pub(crate) enum VelloRenderItem {
     WorldScene {
         affine: Affine,
