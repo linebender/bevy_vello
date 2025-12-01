@@ -9,4 +9,4 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy_vello = { path = "../../" }
-bevy = { workspace = true }
+bevy = { workspace = true, features = ["default_font"] }
