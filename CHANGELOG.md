@@ -23,7 +23,9 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 ### Fixed
 
-- Components that were marked with `ScreenSpace` no longer *always* render over components without them. Now it is correct - Screen space renderables will be sorted by their respective transform's Z value.
+- Objects are now scaled according to the scale factor (pixel density) of the viewport/window. This fixes scaling on retina displays.
+- The `VelloScreenScale` resource no longer applies to Vello renderables parented by a `Node`; it only applies to objects tagged with `VelloRenderSpace::Screen` (which uses the world transform system, not the ui transform system).
+- Components that were marked with `VelloScreenSpace` no longer *always* render over components without them. Now it is correct - Screen space renderables will be sorted by their respective transform's Z value.
 - Render targets are now resized when camera viewport size changes
 
 ## [0.10.3] - 2025-07-09

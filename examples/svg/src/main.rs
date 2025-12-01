@@ -29,7 +29,7 @@ fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             VelloSvgHandle(asset_server.load("embedded://svg/assets/fountain.svg")),
             VelloSvgAnchor::Center,
         ))
-        .insert(Transform::from_scale(Vec3::splat(5.0)));
+        .insert(Transform::from_scale(Vec3::splat(1.0)));
 }
 
 fn rotate(mut svg: Single<&mut Transform, With<VelloSvgHandle>>, time: Res<Time>) {

@@ -72,6 +72,9 @@ impl ExtractResource for VelloScreenScale {
     }
 }
 
+/// Whether to ignore the world and screen scaling.
+///
+/// Has no effect on UI components.
 #[derive(Component, Debug, Clone)]
 pub struct SkipScaling;
 
@@ -256,6 +259,24 @@ pub(crate) enum VelloUiRenderItem {
         affine: Affine,
         item: crate::integrations::text::render::ExtractedUiVelloText,
     },
+}
+
+/// A resource that holds the pixel density of the canvas.
+#[derive(Resource, Clone)]
+pub(crate) struct VelloPixelScale(pub f32);
+
+impl Default for VelloPixelScale {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
+
+impl ExtractResource for VelloPixelScale {
+    type Source = VelloPixelScale;
+
+    fn extract_resource(source: &Self::Source) -> Self {
+        source.clone()
+    }
 }
 
 /// Internally used to buffer sorted assets prepared for the next frame.

@@ -4,6 +4,7 @@ use bevy::{
     input::{ButtonState, keyboard::KeyboardInput},
     prelude::*,
     ui::ContentSize,
+    window::WindowResolution,
 };
 use bevy_vello::{
     VelloPlugin,
@@ -13,10 +14,20 @@ use bevy_vello::{
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(AssetPlugin {
-        meta_check: AssetMetaCheck::Never,
-        ..default()
-    }))
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    resolution: WindowResolution::new(SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32),
+                    ..default()
+                }),
+                ..default()
+            })
+            .set(AssetPlugin {
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            }),
+    )
     .add_plugins(VelloPlugin::default())
     .add_systems(
         Startup,
@@ -34,7 +45,6 @@ fn main() {
         Update,
         (
             rotate,
-            gizmos,
             simple_ui_animation,
             simple_non_ui_animation,
             scale_control,
@@ -111,8 +121,8 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                 .with_children(|parent| {
                     parent.spawn((
                         Node {
-                            width: Val::Px(50.0),
-                            height: Val::Px(50.0),
+                            width: Val::Px(100.0),
+                            height: Val::Px(100.0),
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
@@ -126,7 +136,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
-                        BorderColor::all(css::BLACK.with_alpha(0.5)),
+                        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
                         VelloTextSection {
                             value: "Scene in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
@@ -155,8 +165,8 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                 .with_children(|parent| {
                     parent.spawn((
                         Node {
-                            width: Val::Px(75.0),
-                            height: Val::Px(75.0),
+                            width: Val::Px(100.0),
+                            height: Val::Px(100.0),
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
@@ -201,8 +211,8 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                 .with_children(|parent| {
                     parent.spawn((
                         Node {
-                            width: Val::Px(75.0),
-                            height: Val::Px(75.0),
+                            width: Val::Px(100.0),
+                            height: Val::Px(100.0),
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
@@ -222,7 +232,6 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                         VelloTextSection {
                             value: "Lottie in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
-
                             style: VelloTextStyle {
                                 font_size: 14.,
                                 ..default()
@@ -417,7 +426,7 @@ fn simple_ui_animation(mut scene_q: Query<&mut VelloScene>, time: Res<Time>) {
             kurbo::Affine::default(),
             peniko::Color::new([c.x, c.y, c.z, 1.]),
             None,
-            &kurbo::RoundedRect::new(0., 0., 50.0, 50.0, (sin_time as f64) * 25.0),
+            &kurbo::RoundedRect::new(0., 0., 100.0, 100.0, (sin_time as f64) * 25.0),
         );
     }
 }
@@ -428,51 +437,6 @@ pub struct RotateThing;
 fn rotate(mut rotate_q: Query<&mut Transform, With<RotateThing>>, time: Res<Time>) {
     for mut transform in rotate_q.iter_mut() {
         transform.rotate_z(-0.5 * time.delta_secs());
-    }
-}
-
-#[allow(clippy::type_complexity)]
-fn gizmos(
-    svg: Query<(&VelloSvgHandle, &GlobalTransform, &VelloRenderSpace), Without<Node>>,
-    lottie: Query<(&VelloLottieHandle, &GlobalTransform, &VelloRenderSpace), Without<Node>>,
-    svg_assets: Res<Assets<VelloSvg>>,
-    lottie_assets: Res<Assets<VelloLottie>>,
-    mut gizmos: Gizmos,
-) {
-    for (svg, gtransform, render_space) in svg.iter() {
-        if *render_space == VelloRenderSpace::Screen {
-            continue;
-        }
-        let Some(svg) = svg_assets.get(svg.id()) else {
-            continue;
-        };
-
-        gizmos.rect_2d(
-            Isometry2d::new(
-                gtransform.translation().xy(),
-                Rot2::radians(gtransform.rotation().to_scaled_axis().z),
-            ),
-            Vec2::new(svg.width, svg.height) * gtransform.scale().xy(),
-            Color::WHITE,
-        );
-    }
-
-    for (lottie, gtransform, render_space) in lottie.iter() {
-        if *render_space == VelloRenderSpace::Screen {
-            continue;
-        }
-        let Some(svg) = lottie_assets.get(lottie.id()) else {
-            continue;
-        };
-
-        gizmos.rect_2d(
-            Isometry2d::new(
-                gtransform.translation().xy(),
-                Rot2::radians(gtransform.rotation().to_scaled_axis().z),
-            ),
-            Vec2::new(svg.width, svg.height) * gtransform.scale().xy(),
-            Color::WHITE,
-        );
     }
 }
 

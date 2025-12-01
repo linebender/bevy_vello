@@ -11,8 +11,8 @@ use super::{VelloFont, VelloTextAnchor, VelloTextSection};
 use crate::{
     VelloRenderSpace,
     render::{
-        SkipEncoding, SkipScaling, VelloEntityCountData, VelloScreenScale, VelloView,
-        VelloWorldScale, prepare::PreparedAffine,
+        SkipEncoding, SkipScaling, VelloEntityCountData, VelloPixelScale, VelloScreenScale,
+        VelloView, VelloWorldScale, prepare::PreparedAffine,
     },
 };
 
@@ -31,7 +31,7 @@ pub struct ExtractedUiVelloText {
     pub text_anchor: VelloTextAnchor,
     pub ui_transform: UiGlobalTransform,
     pub ui_node: ComputedNode,
-    pub skip_scaling: Option<SkipScaling>,
+    pub ui_render_target: ComputedUiRenderTargetInfo,
 }
 
 pub fn extract_world_text(
@@ -121,7 +121,7 @@ pub fn extract_ui_text(
                 &InheritedVisibility,
                 Option<&RenderLayers>,
                 &ComputedNode,
-                Option<&SkipScaling>,
+                &ComputedUiRenderTargetInfo,
             ),
             Without<SkipEncoding>,
         >,
@@ -143,7 +143,7 @@ pub fn extract_ui_text(
         inherited_visibility,
         render_layers,
         ui_node,
-        skip_scaling,
+        ui_render_target,
     ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met
@@ -166,7 +166,7 @@ pub fn extract_ui_text(
                     text_anchor: *text_anchor,
                     ui_transform: *ui_transform,
                     ui_node: *ui_node,
-                    skip_scaling: skip_scaling.cloned(),
+                    ui_render_target: *ui_render_target,
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
@@ -183,42 +183,49 @@ pub fn prepare_text_affines(
     render_ui_entities: Query<(Entity, &ExtractedUiVelloText)>,
     world_scale: Res<VelloWorldScale>,
     screen_scale: Res<VelloScreenScale>,
+    pixel_scale: Res<VelloPixelScale>,
 ) {
-    let screen_scale_matrix = Mat4::from_scale(Vec3::new(screen_scale.0, screen_scale.0, 1.0));
-    let world_scale_matrix = Mat4::from_scale(Vec3::new(world_scale.0, world_scale.0, 1.0));
-
     for (camera, view) in views.iter() {
-        let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
-        let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-        let ndc_to_pixels_matrix = Mat4::from_cols_array_2d(&[
-            [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ])
-        .transpose();
-
-        // Process UI entities
+        // Render UI
         for (entity, render_entity) in render_ui_entities.iter() {
+            let pixel_scale = render_entity.ui_render_target.scale_factor();
+            let pixel_scale_matrix = Mat4::from_scale(Vec3::new(pixel_scale, pixel_scale, 1.0));
             let ui_transform = render_entity.ui_transform;
-            let needs_scaling = render_entity.skip_scaling.is_none();
 
+            // A transposed (flipped over its diagonal) PostScript matrix
+            // | a c e |
+            // | b d f |
+            // | 0 0 1 |
+            //
+            // Components
+            // | scale_x skew_x translate_x |
+            // | skew_y scale_y translate_y |
+            // | skew_z skew_z scale_z |
+            //
+            // rotate (z)
+            // | cos(θ) -sin(θ) translate_x |
+            // | sin(θ) cos(θ) translate_y |
+            // | skew_z skew_z scale_z |
+            //
+            // The order of operations is important, as it affects the final transformation matrix.
+            //
+            // Order of operations:
+            // 1. Scale
+            // 2. Rotate
+            // 3. Translate
             let transform: [f64; 6] = {
                 // Convert UiGlobalTransform to Mat4
                 let mat2 = ui_transform.matrix2;
                 let translation = ui_transform.translation;
-                let mut model_matrix = Mat4::from_cols_array_2d(&[
+                let model_matrix = Mat4::from_cols_array_2d(&[
                     [mat2.x_axis.x, mat2.x_axis.y, 0.0, 0.0],
                     [mat2.y_axis.x, mat2.y_axis.y, 0.0, 0.0],
                     [0.0, 0.0, 1.0, 0.0],
                     [translation.x, translation.y, 0.0, 1.0],
                 ]);
 
-                if needs_scaling {
-                    model_matrix *= screen_scale_matrix;
-                }
-
-                let raw_transform = model_matrix;
+                // Transform chain: ui_transform (already in px) → pixel_scale
+                let raw_transform = model_matrix * pixel_scale_matrix;
                 let transform = raw_transform.to_cols_array();
                 [
                     transform[0] as f64,  // a // scale_x
@@ -235,7 +242,9 @@ pub fn prepare_text_affines(
                 .insert(PreparedAffine(Affine::new(transform)));
         }
 
-        // Process World entities
+        // Render World
+        let pixel_scale = pixel_scale.0;
+        let pixel_scale_matrix = Mat4::from_scale(Vec3::new(pixel_scale, pixel_scale, 1.0));
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
             let needs_scaling = render_entity.skip_scaling.is_none();
@@ -263,26 +272,46 @@ pub fn prepare_text_affines(
             // 3. Translate
             let transform: [f64; 6] = match render_entity.render_space {
                 VelloRenderSpace::World => {
-                    let mut model_matrix = world_transform.to_matrix();
-
-                    if needs_scaling {
-                        model_matrix *= world_scale_matrix;
-                    }
-
-                    // Flip Y-axis to match Vello's y-down coordinate space
-                    model_matrix.w_axis.y *= -1.0;
-
-                    let (projection_mat, view_mat) = {
-                        let mut view_mat = view.world_from_view.to_matrix();
-
-                        // Flip Y-axis to match Vello's y-down coordinate space
-                        view_mat.w_axis.y *= -1.0;
-
-                        (view.clip_from_view, view_mat)
+                    let ndc_to_pixels_matrix = {
+                        let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
+                        let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
+                        Mat4::from_cols_array_2d(&[
+                            [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
+                            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
+                            [0.0, 0.0, 1.0, 0.0],
+                            [0.0, 0.0, 0.0, 1.0],
+                        ])
+                        .transpose()
                     };
-                    let view_proj_matrix = projection_mat * view_mat.inverse();
+                    let view_proj_matrix = {
+                        let (projection_mat, view_mat) = {
+                            let mut view_mat = view.world_from_view.to_matrix();
 
-                    let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+                            // Flip Y-axis to match Vello's y-down coordinate space
+                            view_mat.w_axis.y *= -1.0;
+
+                            (view.clip_from_view, view_mat)
+                        };
+                        projection_mat * view_mat.inverse()
+                    };
+                    let world_scale_matrix = if needs_scaling {
+                        Mat4::from_scale(Vec3::new(world_scale.0, world_scale.0, 1.0))
+                    } else {
+                        Mat4::IDENTITY
+                    };
+                    let model_matrix = {
+                        let mut model_matrix = world_transform.to_matrix();
+                        // Flip Y-axis to match Vello's y-down coordinate space
+                        model_matrix.w_axis.y *= -1.0;
+                        model_matrix
+                    };
+
+                    // Transform chain: world → view → projection → NDC → pixels → pixel_scale
+                    let raw_transform = ndc_to_pixels_matrix
+                        * view_proj_matrix
+                        * model_matrix
+                        * world_scale_matrix
+                        * pixel_scale_matrix;
                     let transform = raw_transform.to_cols_array();
 
                     // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
@@ -296,13 +325,15 @@ pub fn prepare_text_affines(
                     ]
                 }
                 VelloRenderSpace::Screen => {
-                    let mut model_matrix = world_transform.to_matrix();
+                    let model_matrix = world_transform.to_matrix();
+                    let screen_scale_matrix = if needs_scaling {
+                        Mat4::from_scale(Vec3::new(screen_scale.0, screen_scale.0, 1.0))
+                    } else {
+                        Mat4::IDENTITY
+                    };
 
-                    if needs_scaling {
-                        model_matrix *= screen_scale_matrix;
-                    }
-
-                    let raw_transform = model_matrix;
+                    // Transform chain: model (in screen coords) → screen_scale → pixel_scale
+                    let raw_transform = model_matrix * screen_scale_matrix * pixel_scale_matrix;
                     let transform = raw_transform.to_cols_array();
                     [
                         transform[0] as f64,  // a // scale_x
