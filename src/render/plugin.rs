@@ -1,5 +1,6 @@
 use bevy::{
     asset::load_internal_asset,
+    camera::CameraUpdateSystems,
     prelude::*,
     render::{
         Render, RenderApp, RenderSystems, extract_component::ExtractComponentPlugin,
@@ -17,7 +18,7 @@ use crate::{
     VelloView,
     render::{
         SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
-        VelloRenderQueue, VelloRenderer, VelloScreenScale, VelloWorldScale,
+        VelloPixelScale, VelloRenderQueue, VelloRenderer, VelloScreenScale, VelloWorldScale,
         extract::VelloExtractStep,
     },
 };
@@ -50,6 +51,10 @@ impl Plugin for VelloRenderPlugin {
 
         app.insert_resource(VelloScreenScale::default())
             .add_plugins(ExtractResourcePlugin::<VelloScreenScale>::default());
+
+        app.insert_resource(VelloPixelScale::default())
+            .add_plugins(ExtractResourcePlugin::<VelloPixelScale>::default())
+            .add_systems(Update, extract::extract_pixel_scale);
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
@@ -90,8 +95,11 @@ impl Plugin for VelloRenderPlugin {
             ))
             .add_systems(Startup, systems::setup_ss_rendertarget)
             .add_systems(
-                Update,
-                (systems::resize_rendertargets, systems::hide_when_empty),
+                PostUpdate,
+                (
+                    systems::resize_rendertargets.after(CameraUpdateSystems),
+                    systems::hide_when_empty,
+                ),
             );
     }
 
