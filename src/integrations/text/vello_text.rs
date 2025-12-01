@@ -9,12 +9,18 @@ use tracing::warn;
 use vello::peniko::{self, Brush};
 
 use crate::{
-    VelloFont,
+    VelloFont, VelloRenderSpace,
     render::{VelloScreenScale, VelloView},
 };
 
 #[derive(Component, Default, Clone)]
-#[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
+#[require(
+    VelloRenderSpace,
+    VelloTextAnchor,
+    Transform,
+    Visibility,
+    VisibilityClass
+)]
 #[component(on_add = visibility::add_visibility_class::<VelloTextSection>)]
 pub struct VelloTextSection {
     pub value: String,

@@ -41,6 +41,7 @@ impl Plugin for VelloPlugin {
                 antialiasing: self.antialiasing,
             },
         });
+        app.add_plugins(crate::integrations::scene::SceneIntegrationPlugin);
         #[cfg(feature = "svg")]
         app.add_plugins(crate::integrations::svg::SvgIntegrationPlugin);
         #[cfg(feature = "lottie")]

@@ -937,6 +937,7 @@ dependencies = [
  "bevy_time",
  "bevy_transform",
  "bevy_ui",
+ "bevy_ui_render",
  "bevy_utils",
  "bevy_window",
  "bevy_winit",
@@ -3388,6 +3389,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "lottie_screenspace"
+version = "0.10.3"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "lottie_ui"
 version = "0.10.3"
 dependencies = [
@@ -4581,6 +4590,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "scene_screenspace"
+version = "0.10.3"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
+
+[[package]]
 name = "scene_ui"
 version = "0.10.3"
 dependencies = [
@@ -4815,6 +4832,14 @@ name = "svg_fmt"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0193cc4331cfd2f3d2011ef287590868599a2f33c3e69bc22c1a3d3acf9e02fb"
+
+[[package]]
+name = "svg_screenspace"
+version = "0.10.3"
+dependencies = [
+ "bevy",
+ "bevy_vello",
+]
 
 [[package]]
 name = "svg_ui"

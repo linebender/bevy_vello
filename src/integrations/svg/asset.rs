@@ -9,7 +9,13 @@ use bevy::{
 use crate::prelude::*;
 
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
+#[require(
+    VelloRenderSpace,
+    VelloSvgAnchor,
+    Transform,
+    Visibility,
+    VisibilityClass
+)]
 #[reflect(Component)]
 #[component(on_add = visibility::add_visibility_class::<VelloSvgHandle>)]
 pub struct VelloSvgHandle(pub Handle<VelloSvg>);

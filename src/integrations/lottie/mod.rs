@@ -37,6 +37,8 @@ mod theme;
 use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub use theme::Theme;
 
+use crate::VelloRenderSpace;
+
 #[cfg(feature = "lottie")]
 #[derive(Bundle, Default)]
 pub struct VelloLottieBundle {
@@ -59,7 +61,9 @@ pub struct VelloLottieBundle {
 }
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
-/// [`VelloAssetAnchor::Center`].
+/// [`VelloLottieAnchor::Center`].
+///
+/// Has no effect in UI nodes.
 #[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 #[reflect(Component)]
 pub enum VelloLottieAnchor {
@@ -91,19 +95,34 @@ impl VelloLottieAnchor {
         &self,
         width: f32,
         height: f32,
+        render_space: VelloRenderSpace,
         transform: &GlobalTransform,
     ) -> GlobalTransform {
         // Apply positioning
-        let adjustment = match self {
-            Self::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-            Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-            Self::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-            Self::Top => Vec3::new(0.0, -height / 2.0, 0.0),
-            Self::Center => Vec3::new(0.0, 0.0, 0.0),
-            Self::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
-            Self::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-            Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-            Self::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+        let adjustment = match render_space {
+            VelloRenderSpace::World => match self {
+                Self::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+                Self::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+                Self::Top => Vec3::new(0.0, -height / 2.0, 0.0),
+                Self::Center => Vec3::new(0.0, 0.0, 0.0),
+                Self::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
+                Self::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+                Self::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+            },
+            // Note: Screen space has Y increasing downward, opposite of world space
+            VelloRenderSpace::Screen => match self {
+                Self::TopLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
+                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
+                Self::BottomLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
+                Self::Top => Vec3::new(0.0, height / 2.0, 0.0),
+                Self::Center => Vec3::new(0.0, 0.0, 0.0),
+                Self::Bottom => Vec3::new(0.0, -height / 2.0, 0.0),
+                Self::TopRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
+                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
+                Self::BottomRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
+            },
         };
         let new_translation: Vec3 = (transform.to_matrix() * adjustment.extend(1.0)).xyz();
         GlobalTransform::from(

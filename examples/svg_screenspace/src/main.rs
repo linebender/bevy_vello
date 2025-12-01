@@ -1,6 +1,5 @@
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
-    color::palettes::css,
     prelude::*,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
@@ -23,18 +22,12 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    let one_third = Val::Percent(100.0 / 3.0);
-    commands.spawn((
-        Node {
-            position_type: PositionType::Absolute,
-            left: one_third,
-            top: one_third,
-            width: one_third,
-            height: one_third,
-            border: UiRect::all(Val::Px(2.0)),
-            ..default()
-        },
-        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
-        VelloSvgHandle(asset_server.load("embedded://svg_ui/assets/fountain.svg")),
-    ));
+    // Spawn SVG with the screen space marker
+    commands
+        .spawn((
+            VelloSvgHandle(asset_server.load("embedded://svg_screenspace/assets/fountain.svg")),
+            VelloSvgAnchor::TopLeft,
+            VelloRenderSpace::Screen,
+        ))
+        .insert(Transform::from_xyz(50.0, 50.0, 0.0).with_scale(Vec3::splat(2.0)));
 }

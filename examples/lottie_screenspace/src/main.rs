@@ -1,6 +1,5 @@
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
-    color::palettes::css,
     prelude::*,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
@@ -21,19 +20,14 @@ fn main() {
 fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
+
 fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    let one_third = Val::Percent(100.0 / 3.0);
-    commands.spawn((
-        Node {
-            position_type: PositionType::Absolute,
-            left: one_third,
-            top: one_third,
-            width: one_third,
-            height: one_third,
-            border: UiRect::all(Val::Px(2.0)),
-            ..default()
-        },
-        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
-        VelloLottieHandle(asset_server.load("embedded://lottie_ui/assets/Tiger.json")),
-    ));
+    // You can also use `VelloLottieBundle`
+    commands
+        .spawn((
+            VelloLottieHandle(asset_server.load("embedded://lottie/assets/Tiger.json")),
+            VelloLottieAnchor::Center,
+            VelloRenderSpace::Screen,
+        ))
+        .insert(Transform::from_xyz(0.0, 50.0, 0.0).with_scale(Vec3::splat(2.0)));
 }

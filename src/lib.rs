@@ -2,10 +2,7 @@
 // #![deny(missing_docs)] -- This would be great! But we are far away.
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-use bevy::{
-    camera::visibility::{self, VisibilityClass},
-    prelude::*,
-};
+use bevy::prelude::*;
 
 use crate::prelude::*;
 
@@ -26,7 +23,17 @@ pub use vello;
 pub use vello_svg;
 
 pub mod prelude {
+    // Vendor re-exports
     pub use vello::{self, kurbo, peniko};
+
+    pub use crate::{
+        VelloRenderSpace,
+        integrations::scene::{VelloScene, VelloSceneBundle},
+        render::{
+            SkipEncoding, SkipScaling, VelloRenderSettings, VelloScreenScale, VelloView,
+            VelloWorldScale,
+        },
+    };
 
     #[cfg(feature = "lottie")]
     pub use crate::integrations::lottie::{
@@ -41,48 +48,26 @@ pub mod prelude {
         VelloFont, VelloTextAlign, VelloTextAnchor, VelloTextBundle, VelloTextSection,
         VelloTextStyle,
     };
-    pub use crate::{
-        VelloScene, VelloSceneBundle, VelloScreenSpace,
-        render::{
-            SkipEncoding, SkipScaling, VelloRenderSettings, VelloScreenScale, VelloView,
-            VelloWorldScale,
-        },
-    };
 }
 
-#[derive(Bundle, Default)]
-pub struct VelloSceneBundle {
-    /// Scene to render
-    pub scene: VelloScene,
-    /// A transform to apply to this scene
-    pub transform: Transform,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub visibility: Visibility,
-    /// A bucket into which we group entities for the purposes of visibility.
-    pub visibility_class: VisibilityClass,
-}
-
-/// A simple newtype component wrapper for [`vello::Scene`] for rendering.
+/// Determines which coordinate space this entity should be rendered in.
 ///
-/// If you render a [`VelloScene`] based on a [`bevy::ui::Node`] size, you may want to also add
-/// [`SkipScaling`] to the entity to prevent scaling the scene beyond the node size.
-#[derive(Component, Default, Clone, Deref, DerefMut)]
-#[require(Transform, Visibility, VisibilityClass)]
-#[component(on_add = visibility::add_visibility_class::<VelloScene>)]
-pub struct VelloScene(Box<vello::Scene>);
-
-/// A simple marker component to use screen space coordinates for rendering.
-#[derive(Component, Default, Clone)]
-pub struct VelloScreenSpace;
-
-impl VelloScene {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
-impl From<vello::Scene> for VelloScene {
-    fn from(scene: vello::Scene) -> Self {
-        Self(Box::new(scene))
-    }
+/// - `VelloRenderSpace::World`
+///   Renders using **world-space coordinates**, typically with an origin at the
+///   center of the scene and a **Y-up** coordinate system. World-space rendering
+///   is affected by the world camera's transform.
+///
+/// - `VelloRenderSpace::Screen`
+///   Renders using **screen-space coordinates**, typically with an origin at the
+///   top-left of the window and a **Y-down** coordinate system. Screen-space
+///   rendering is anchored to the screen and is **not affected** by world camera
+///   movement.
+///
+/// If this component is attached to an entity that is parented under a Bevy UI
+/// `Node`, it is ignored; the entity will render in **UI layout space** instead.
+#[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
+pub enum VelloRenderSpace {
+    #[default]
+    World,
+    Screen,
 }

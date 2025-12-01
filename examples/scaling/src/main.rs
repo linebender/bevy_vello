@@ -64,8 +64,10 @@ fn spawn_instructions(mut commands: Commands) {
             width: Val::Percent(100.0),
             height: Val::Px(50.0),
             bottom: Val::Px(0.0),
+            border: UiRect::all(Val::Px(2.0)),
             ..default()
         },
+        BorderColor::all(css::FUCHSIA),
         SkipScaling,
         VelloTextSection {
             value: "Press 1 to scale down, press 2 to scale up, press 3 to reset scale to 1.0"
@@ -128,7 +130,6 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                         VelloTextSection {
                             value: "Scene in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
-
                             style: VelloTextStyle {
                                 font_size: 14.,
                                 ..default()
@@ -237,14 +238,14 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn((
-            VelloScreenSpace,
+            VelloRenderSpace::Screen,
             VelloScene::new(),
             Transform::from_xyz(CELL_WIDTH, SCREEN_HEIGHT / 2., 0.0),
             RotateThing,
         ))
         .with_children(|parent| {
             parent.spawn((
-                VelloScreenSpace,
+                VelloRenderSpace::Screen,
                 VelloTextSection {
                     value: "Scene in screen space".to_string(),
                     text_align: VelloTextAlign::Middle,
@@ -255,20 +256,19 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, 50.0, 0.0),
             ));
         });
 
     commands
         .spawn((
-            VelloScreenSpace,
+            VelloRenderSpace::Screen,
             VelloSvgHandle(asset_server.load("embedded://scaling/assets/svg/fountain.svg")),
             Transform::from_xyz(CELL_WIDTH * 2., SCREEN_HEIGHT / 2., 0.0),
             RotateThing,
         ))
         .with_children(|parent| {
             parent.spawn((
-                VelloScreenSpace,
+                VelloRenderSpace::Screen,
                 VelloTextSection {
                     value: "SVG in screen space".to_string(),
                     text_align: VelloTextAlign::Middle,
@@ -279,13 +279,12 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, 50.0, 0.0),
             ));
         });
 
     commands
         .spawn((
-            VelloScreenSpace,
+            VelloRenderSpace::Screen,
             VelloLottieHandle(asset_server.load("embedded://scaling/assets/lottie/Tiger.json")),
             Transform::from_xyz(CELL_WIDTH * 3., SCREEN_HEIGHT / 2., 0.0)
                 .with_scale(Vec3::splat(0.1)),
@@ -293,7 +292,7 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
         ))
         .with_children(|parent| {
             parent.spawn((
-                VelloScreenSpace,
+                VelloRenderSpace::Screen,
                 VelloTextSection {
                     value: "Lottie in screen space".to_string(),
                     text_align: VelloTextAlign::Middle,
@@ -304,7 +303,7 @@ fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>)
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, 526.0, 0.0).with_scale(Vec3::splat(10.)),
+                Transform::from_scale(Vec3::splat(10.)),
             ));
         });
 }
@@ -328,7 +327,6 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, -50.0, 0.0),
             ));
         });
 
@@ -350,7 +348,6 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, -50., 0.0),
             ));
         });
 
@@ -372,7 +369,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     ..default()
                 },
                 VelloTextAnchor::Center,
-                Transform::from_xyz(0.0, -526.0, 0.0).with_scale(Vec3::splat(10.)),
+                Transform::from_scale(Vec3::splat(10.)),
             ));
         });
 }
@@ -436,16 +433,16 @@ fn rotate(mut rotate_q: Query<&mut Transform, With<RotateThing>>, time: Res<Time
 
 #[allow(clippy::type_complexity)]
 fn gizmos(
-    svg: Query<(&VelloSvgHandle, &GlobalTransform), (Without<Node>, Without<VelloScreenSpace>)>,
-    lottie: Query<
-        (&VelloLottieHandle, &GlobalTransform),
-        (Without<Node>, Without<VelloScreenSpace>),
-    >,
+    svg: Query<(&VelloSvgHandle, &GlobalTransform, &VelloRenderSpace), Without<Node>>,
+    lottie: Query<(&VelloLottieHandle, &GlobalTransform, &VelloRenderSpace), Without<Node>>,
     svg_assets: Res<Assets<VelloSvg>>,
     lottie_assets: Res<Assets<VelloLottie>>,
     mut gizmos: Gizmos,
 ) {
-    for (svg, gtransform) in svg.iter() {
+    for (svg, gtransform, render_space) in svg.iter() {
+        if *render_space == VelloRenderSpace::Screen {
+            continue;
+        }
         let Some(svg) = svg_assets.get(svg.id()) else {
             continue;
         };
@@ -460,7 +457,10 @@ fn gizmos(
         );
     }
 
-    for (lottie, gtransform) in lottie.iter() {
+    for (lottie, gtransform, render_space) in lottie.iter() {
+        if *render_space == VelloRenderSpace::Screen {
+            continue;
+        }
         let Some(svg) = lottie_assets.get(lottie.id()) else {
             continue;
         };

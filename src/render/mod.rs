@@ -210,47 +210,86 @@ pub struct SkipEncoding;
 
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
-#[allow(clippy::large_enum_variant, reason = "Deferred for later")]
+#[allow(clippy::large_enum_variant, reason = "Many feature gates")]
 pub(crate) enum VelloRenderItem {
+    Scene {
+        affine: Affine,
+        item: crate::integrations::scene::render::ExtractedWorldVelloScene,
+    },
     #[cfg(feature = "svg")]
     Svg {
         affine: Affine,
-        item: crate::integrations::svg::render::ExtractedVelloSvg,
+        item: crate::integrations::svg::render::ExtractedWorldVelloSvg,
     },
     #[cfg(feature = "lottie")]
     Lottie {
         affine: Affine,
-        item: crate::integrations::lottie::render::ExtractedLottieAsset,
-    },
-    Scene {
-        affine: Affine,
-        item: extract::ExtractedVelloScene,
+        item: crate::integrations::lottie::render::ExtractedWorldVelloLottie,
     },
     #[cfg(feature = "text")]
     Text {
         affine: Affine,
-        item: crate::integrations::text::render::ExtractedVelloText,
+        item: crate::integrations::text::render::ExtractedWorldVelloText,
+    },
+}
+
+/// Internally used as a prepared render asset.
+#[derive(Clone)]
+#[allow(clippy::large_enum_variant, reason = "Many feature gates")]
+pub(crate) enum VelloUiRenderItem {
+    Scene {
+        affine: Affine,
+        item: crate::integrations::scene::render::ExtractedUiVelloScene,
+    },
+    #[cfg(feature = "svg")]
+    Svg {
+        affine: Affine,
+        item: crate::integrations::svg::render::ExtractedUiVelloSvg,
+    },
+    #[cfg(feature = "lottie")]
+    Lottie {
+        affine: Affine,
+        item: crate::integrations::lottie::render::ExtractedUiVelloLottie,
+    },
+    #[cfg(feature = "text")]
+    Text {
+        affine: Affine,
+        item: crate::integrations::text::render::ExtractedUiVelloText,
     },
 }
 
 /// Internally used to buffer sorted assets prepared for the next frame.
-#[derive(Resource, Default, Deref, DerefMut)]
-pub(crate) struct VelloRenderQueue(Vec<VelloRenderItem>);
+#[derive(Resource, Default)]
+pub(crate) struct VelloRenderQueue {
+    world: Vec<VelloRenderItem>,
+    ui: Vec<VelloUiRenderItem>,
+}
 
 /// Internally used for diagnostics.
 #[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloEntityCountData {
-    /// Number of scenes.
-    pub n_scenes: u32,
-    /// Number of text sections.
+    /// Number of scenes used in the World.
+    pub n_world_scenes: u32,
+    /// Number of scenes used in UI.
+    pub n_ui_scenes: u32,
+    /// Number of text sections used in the World.
     #[cfg(feature = "text")]
-    pub n_texts: u32,
-    /// Number of SVGs.
+    pub n_world_texts: u32,
+    /// Number of text sections used in UI.
+    #[cfg(feature = "text")]
+    pub n_ui_texts: u32,
+    /// Number of SVGs used in the World.
     #[cfg(feature = "svg")]
-    pub n_svgs: u32,
-    /// Number of Lotties.
+    pub n_world_svgs: u32,
+    /// Number of SVGs used in UI.
+    #[cfg(feature = "svg")]
+    pub n_ui_svgs: u32,
+    /// Number of Lotties used in the World.
     #[cfg(feature = "lottie")]
-    pub n_lotties: u32,
+    pub n_world_lotties: u32,
+    /// Number of Lotties used in UI.
+    #[cfg(feature = "lottie")]
+    pub n_ui_lotties: u32,
 }
 
 /// Internally used for diagnostics.

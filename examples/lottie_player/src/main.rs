@@ -18,6 +18,7 @@ fn main() {
     .add_plugins(VelloPlugin::default())
     .init_resource::<EmbeddedAssetRegistry>()
     .add_plugins(bevy_pancam::PanCamPlugin)
+    .add_systems(Startup, setup_camera)
     .add_systems(Startup, setup_vector_graphics)
     .add_systems(Update, print_metadata)
     .add_systems(EguiPrimaryContextPass, ui::controls_ui);
@@ -25,8 +26,11 @@ fn main() {
     app.run();
 }
 
-fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
+}
+
+fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn(VelloLottieBundle {
             asset: VelloLottieHandle(

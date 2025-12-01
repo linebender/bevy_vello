@@ -11,15 +11,18 @@ fn main() {
         ..default()
     }))
     .add_plugins(VelloPlugin::default())
+    .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_lottie)
     .add_systems(Update, gizmos);
     embedded_asset!(app, "assets/Tiger.json");
     app.run();
 }
 
-fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
+}
 
+fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     // You can also use `VelloLottieBundle`
     commands
         .spawn(VelloLottieHandle(
