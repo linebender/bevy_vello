@@ -23,7 +23,6 @@ pub struct VelloSvgHandle(pub Handle<VelloSvg>);
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloSvg {
     pub scene: Arc<vello::Scene>,
-    pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
     pub alpha: f32,
