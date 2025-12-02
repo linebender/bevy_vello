@@ -17,15 +17,21 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 ### Changed
 
+- `VelloSvgHandle` has been split into `VelloSvg2d` and `UiVelloSvg`. The former is for world entities and the latter is for UI nodes.
 - Some diagnostics were changed.
   - `VelloEntityCountDiagnosticsPlugin::SCENE_COUNT` was split into `VelloEntityCountDiagnosticsPlugin::WORLD_SCENE_COUNT` and `VelloEntityCountDiagnosticsPlugin::UI_SCENE_COUNT` to more granularly track Ui and World entities.
-- The `VelloScreenSpace` marker component has changed to `VelloRenderSpace::Screen`.
+
+### Removed
+
+- `VelloWorldScale` no longer exists. If you need to scale something, use the entity's transform.
+- `VelloScreenScale` no longer exists. If you need to scale something, use the entity's transform.
+- `VelloScreenSpace` no longer exists. You should use a separate camera for UI and manually place items into screen space. There are now examples for screenspace to help.
 
 ### Fixed
 
+- Renderables (text, images, scenes) now respect the camera projection scale.
 - Objects are now scaled according to the scale factor (pixel density) of the viewport/window. This fixes scaling on retina displays.
 - The `VelloScreenScale` resource no longer applies to Vello renderables parented by a `Node`; it only applies to objects tagged with `VelloRenderSpace::Screen` (which uses the world transform system, not the ui transform system).
-- Components that were marked with `VelloScreenSpace` no longer *always* render over components without them. Now it is correct - Screen space renderables will be sorted by their respective transform's Z value.
 - Render targets are now resized when camera viewport size changes
 
 ## [0.10.3] - 2025-07-09

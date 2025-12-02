@@ -8,10 +8,7 @@ use bevy::{
 };
 use kurbo::Affine;
 
-use super::{
-    VelloSvgAnchor,
-    asset::{VelloSvg, VelloSvgHandle},
-};
+use super::{VelloSvgAnchor, asset::VelloSvg};
 use crate::{
     prelude::*,
     render::{
@@ -49,7 +46,7 @@ pub fn extract_world_svg_assets(
     query_vectors: Extract<
         Query<
             (
-                &VelloSvgHandle,
+                &VelloSvg2d,
                 &VelloSvgAnchor,
                 &GlobalTransform,
                 Option<&RenderLayers>,
@@ -128,7 +125,7 @@ pub fn extract_ui_svg_assets(
     query_vectors: Extract<
         Query<
             (
-                &VelloSvgHandle,
+                &UiVelloSvg,
                 &UiGlobalTransform,
                 &ComputedNode,
                 Option<&RenderLayers>,

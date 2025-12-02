@@ -34,7 +34,6 @@ fn main() {
         (
             spawn_camera,
             spawn_bevy_ui,
-            spawn_screen_space,
             spawn_scenes,
             spawn_instructions,
         ),
@@ -170,9 +169,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
-                        VelloSvgHandle(
-                            asset_server.load("embedded://scaling/assets/svg/fountain.svg"),
-                        ),
+                        UiVelloSvg(asset_server.load("embedded://scaling/assets/svg/fountain.svg")),
                         BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
                     ));
 
@@ -244,79 +241,6 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         });
 }
 
-fn spawn_screen_space(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands
-        .spawn((
-            VelloRenderSpace::Screen,
-            VelloScene::new(),
-            Transform::from_xyz(CELL_WIDTH, SCREEN_HEIGHT / 2., 0.0),
-            RotateThing,
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                VelloRenderSpace::Screen,
-                VelloTextSection {
-                    value: "Scene in screen space".to_string(),
-                    text_align: VelloTextAlign::Middle,
-                    style: VelloTextStyle {
-                        font_size: 14.,
-                        ..default()
-                    },
-                    ..default()
-                },
-                VelloTextAnchor::Center,
-            ));
-        });
-
-    commands
-        .spawn((
-            VelloRenderSpace::Screen,
-            VelloSvgHandle(asset_server.load("embedded://scaling/assets/svg/fountain.svg")),
-            Transform::from_xyz(CELL_WIDTH * 2., SCREEN_HEIGHT / 2., 0.0),
-            RotateThing,
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                VelloRenderSpace::Screen,
-                VelloTextSection {
-                    value: "SVG in screen space".to_string(),
-                    text_align: VelloTextAlign::Middle,
-                    style: VelloTextStyle {
-                        font_size: 14.,
-                        ..default()
-                    },
-                    ..default()
-                },
-                VelloTextAnchor::Center,
-            ));
-        });
-
-    commands
-        .spawn((
-            VelloRenderSpace::Screen,
-            VelloLottieHandle(asset_server.load("embedded://scaling/assets/lottie/Tiger.json")),
-            Transform::from_xyz(CELL_WIDTH * 3., SCREEN_HEIGHT / 2., 0.0)
-                .with_scale(Vec3::splat(0.1)),
-            RotateThing,
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                VelloRenderSpace::Screen,
-                VelloTextSection {
-                    value: "Lottie in screen space".to_string(),
-                    text_align: VelloTextAlign::Middle,
-                    style: VelloTextStyle {
-                        font_size: 14.,
-                        ..default()
-                    },
-                    ..default()
-                },
-                VelloTextAnchor::Center,
-                Transform::from_scale(Vec3::splat(10.)),
-            ));
-        });
-}
-
 fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn((
@@ -341,7 +265,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 
     commands
         .spawn((
-            VelloSvgHandle(asset_server.load("embedded://scaling/assets/svg/fountain.svg")),
+            VelloSvg2d(asset_server.load("embedded://scaling/assets/svg/fountain.svg")),
             Transform::from_xyz(0.0, -CELL_HEIGHT, 0.0),
             RotateThing,
         ))

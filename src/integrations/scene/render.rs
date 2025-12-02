@@ -1,3 +1,4 @@
+use bevy::camera::ScalingMode;
 use bevy::camera::visibility::RenderLayers;
 use bevy::prelude::*;
 use bevy::render::Extract;
@@ -20,6 +21,8 @@ pub struct ExtractedWorldVelloScene {
     pub transform: GlobalTransform,
     pub render_space: VelloRenderSpace,
     pub skip_scaling: Option<SkipScaling>,
+    pub camera_scaling_mode: ScalingMode,
+    pub camera_scale: f32,
 }
 
 #[derive(Component, Clone)]
@@ -33,7 +36,7 @@ pub struct ExtractedUiVelloScene {
 pub fn extract_world_scenes(
     mut commands: Commands,
     query_views: Query<
-        (&ExtractedCamera, Option<&RenderLayers>),
+        (&ExtractedCamera, &Projection, Option<&RenderLayers>),
         (With<Camera2d>, With<VelloView>),
     >,
     query_scenes: Extract<
@@ -56,7 +59,7 @@ pub fn extract_world_scenes(
 
     // Sort cameras by rendering order
     let mut views: Vec<_> = query_views.iter().collect();
-    views.sort_unstable_by_key(|(camera, _)| camera.order);
+    views.sort_unstable_by_key(|(camera, _, _)| camera.order);
 
     for (
         scene,
@@ -73,17 +76,24 @@ pub fn extract_world_scenes(
             continue;
         }
 
-        // Check if any camera renders this asset
+        // Find cameras that can see this asset
         let asset_render_layers = render_layers.unwrap_or_default();
-        if views.iter().any(|(_, camera_layers)| {
+        for (_, projection, _) in views.iter().filter(|(_, _, camera_layers)| {
+            // Does this camera can see this?
             asset_render_layers.intersects(camera_layers.unwrap_or_default())
         }) {
+            let (camera_scale, camera_scaling_mode) = match projection {
+                Projection::Orthographic(p) => (p.scale, p.scaling_mode),
+                _ => (1.0, ScalingMode::WindowSize),
+            };
             commands
                 .spawn(ExtractedWorldVelloScene {
                     transform: *transform,
                     scene: scene.clone(),
                     render_space: *render_space,
                     skip_scaling: skip_scaling.cloned(),
+                    camera_scaling_mode,
+                    camera_scale,
                 })
                 .insert(TemporaryRenderEntity);
             n_scenes += 1;
@@ -232,12 +242,42 @@ pub fn prepare_scene_affines(
                 .entity(entity)
                 .insert(PreparedAffine(Affine::new(transform)));
         }
+
         // Render World
-        let pixel_scale = pixel_scale.0;
-        let pixel_scale_matrix = Mat4::from_scale(Vec3::new(pixel_scale, pixel_scale, 1.0));
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
             let needs_scaling = render_entity.skip_scaling.is_none();
+
+            // Calculate camera scale based on scaling mode
+            let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
+            let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
+            let camera_scale_factor = match render_entity.camera_scaling_mode {
+                ScalingMode::WindowSize => 1.0,
+                ScalingMode::Fixed { width, height } => {
+                    // Scale to fit fixed world units
+                    (pixels_x / width).min(pixels_y / height)
+                }
+                ScalingMode::AutoMin {
+                    min_width,
+                    min_height,
+                } => {
+                    let scale_x = pixels_x / min_width;
+                    let scale_y = pixels_y / min_height;
+                    scale_x.min(scale_y)
+                }
+                ScalingMode::AutoMax {
+                    max_width,
+                    max_height,
+                } => {
+                    let scale_x = pixels_x / max_width;
+                    let scale_y = pixels_y / max_height;
+                    scale_x.max(scale_y)
+                }
+                ScalingMode::FixedVertical { viewport_height } => pixels_y / viewport_height,
+                ScalingMode::FixedHorizontal { viewport_width } => pixels_x / viewport_width,
+            } * render_entity.camera_scale;
+            let camera_scale_matrix =
+                Mat4::from_scale(Vec3::new(camera_scale_factor, camera_scale_factor, 1.0));
 
             // A transposed (flipped over its diagonal) PostScript matrix
             // | a c e |
@@ -301,7 +341,7 @@ pub fn prepare_scene_affines(
                         * view_proj_matrix
                         * model_matrix
                         * world_scale_matrix
-                        * pixel_scale_matrix;
+                        * camera_scale_matrix;
                     let transform = raw_transform.to_cols_array();
 
                     // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
@@ -316,6 +356,9 @@ pub fn prepare_scene_affines(
                 }
                 VelloRenderSpace::Screen => {
                     let model_matrix = world_transform.to_matrix();
+                    let pixel_scale = pixel_scale.0;
+                    let pixel_scale_matrix =
+                        Mat4::from_scale(Vec3::new(pixel_scale, pixel_scale, 1.0));
                     let screen_scale_matrix = if needs_scaling {
                         Mat4::from_scale(Vec3::new(screen_scale.0, screen_scale.0, 1.0))
                     } else {

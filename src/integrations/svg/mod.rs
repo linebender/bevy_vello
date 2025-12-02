@@ -3,7 +3,7 @@ mod asset_loader;
 pub(crate) mod render;
 
 mod asset;
-pub use asset::{VelloSvg, VelloSvgHandle};
+pub use asset::VelloSvg;
 
 mod parse;
 pub use parse::{load_svg_from_bytes, load_svg_from_str};
@@ -12,19 +12,30 @@ mod plugin;
 use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
 
-#[derive(Bundle, Default)]
-pub struct VelloSvgBundle {
-    /// Asset data to render
-    pub asset: VelloSvgHandle,
-    /// How the asset is positioned relative to its [`Transform`].
-    pub asset_anchor: VelloSvgAnchor,
-    /// A transform to apply to this vector
-    pub transform: Transform,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub view_visibility: Visibility,
-    /// A bucket into which we group entities for the purposes of visibility.
-    pub visibility_class: VisibilityClass,
-}
+use crate::VelloRenderSpace;
+
+/// A renderable SVG that may be used in Bevy UI.
+///
+/// ### Object fit
+/// The image will preserve the aspect ratio, and fits the image inside the container, without cutting - will leave empty space if needed.
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
+#[require(Node, VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
+#[reflect(Component)]
+#[component(on_add = bevy::camera::visibility::add_visibility_class::<UiVelloSvg>)]
+pub struct UiVelloSvg(pub Handle<VelloSvg>);
+
+/// A renderable SVG in the world.
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
+#[require(
+    VelloSvgAnchor,
+    VelloRenderSpace,
+    Transform,
+    Visibility,
+    VisibilityClass
+)]
+#[reflect(Component)]
+#[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloSvg2d>)]
+pub struct VelloSvg2d(pub Handle<VelloSvg>);
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
 /// [`VelloSvgAnchor::Center`].
