@@ -22,12 +22,6 @@ pub fn load_svg_from_bytes(bytes: &[u8]) -> Result<VelloSvg, VectorLoaderError> 
 
     let asset = VelloSvg {
         scene: Arc::new(scene),
-        local_transform_center: {
-            let mut transform = Transform::default();
-            transform.translation.x = width / 2.0;
-            transform.translation.y = height / 2.0;
-            transform
-        },
         width,
         height,
         alpha: 1.0,

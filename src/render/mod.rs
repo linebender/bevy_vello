@@ -262,7 +262,7 @@ pub(crate) enum VelloUiRenderItem {
 }
 
 /// A resource that holds the pixel density of the canvas.
-#[derive(Resource, Clone)]
+#[derive(Resource, Clone, Deref)]
 pub(crate) struct VelloPixelScale(pub f32);
 
 impl Default for VelloPixelScale {
