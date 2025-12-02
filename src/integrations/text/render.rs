@@ -243,8 +243,6 @@ pub fn prepare_text_affines(
         }
 
         // Render World
-        let pixel_scale = pixel_scale.0;
-        let pixel_scale_matrix = Mat4::from_scale(Vec3::new(pixel_scale, pixel_scale, 1.0));
         for (entity, render_entity) in render_entities.iter() {
             let world_transform = render_entity.transform;
             let needs_scaling = render_entity.skip_scaling.is_none();
@@ -306,12 +304,9 @@ pub fn prepare_text_affines(
                         model_matrix
                     };
 
-                    // Transform chain: world → view → projection → NDC → pixels → pixel_scale
-                    let raw_transform = ndc_to_pixels_matrix
-                        * view_proj_matrix
-                        * model_matrix
-                        * world_scale_matrix
-                        * pixel_scale_matrix;
+                    // Transform chain: world → view → projection → NDC → pixels
+                    let raw_transform =
+                        ndc_to_pixels_matrix * view_proj_matrix * model_matrix * world_scale_matrix;
                     let transform = raw_transform.to_cols_array();
 
                     // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
@@ -331,6 +326,9 @@ pub fn prepare_text_affines(
                     } else {
                         Mat4::IDENTITY
                     };
+                    let pixel_scale = pixel_scale.0;
+                    let pixel_scale_matrix =
+                        Mat4::from_scale(Vec3::new(pixel_scale, pixel_scale, 1.0));
 
                     // Transform chain: model (in screen coords) → screen_scale → pixel_scale
                     let raw_transform = model_matrix * screen_scale_matrix * pixel_scale_matrix;

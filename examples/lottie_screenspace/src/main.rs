@@ -29,5 +29,5 @@ fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             VelloLottieAnchor::Center,
             VelloRenderSpace::Screen,
         ))
-        .insert(Transform::from_xyz(0.0, 50.0, 0.0).with_scale(Vec3::splat(2.0)));
+        .insert(Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::splat(0.5)));
 }

@@ -3,10 +3,11 @@ use bevy::{
     render::{Render, RenderApp, RenderSystems},
 };
 
-use super::{
-    VelloSvg, VelloSvgAnchor, asset::VelloSvgHandle, asset_loader::VelloSvgLoader, render,
+use super::{VelloSvg, VelloSvgAnchor, asset_loader::VelloSvgLoader, render};
+use crate::{
+    integrations::svg::{UiVelloSvg, VelloSvg2d},
+    render::extract::VelloExtractStep,
 };
-use crate::render::extract::VelloExtractStep;
 
 pub struct SvgIntegrationPlugin;
 
@@ -14,7 +15,8 @@ impl Plugin for SvgIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset_loader::<VelloSvgLoader>()
             .init_asset::<VelloSvg>()
-            .register_type::<VelloSvgHandle>()
+            .register_type::<UiVelloSvg>()
+            .register_type::<VelloSvg2d>()
             .register_type::<VelloSvgAnchor>();
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {

@@ -42,7 +42,7 @@ fn main() {
 fn log_visibility(
     scene: Single<&ViewVisibility, With<VelloScene>>,
     lottie: Single<&ViewVisibility, With<VelloLottieHandle>>,
-    svg: Single<&ViewVisibility, With<VelloSvgHandle>>,
+    svg: Single<&ViewVisibility, With<VelloSvg2d>>,
     text: Single<&ViewVisibility, With<VelloTextSection>>,
 ) {
     let visible_status = format!(
@@ -79,7 +79,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
         .insert(Aabb::default());
 
     commands
-        .spawn(VelloSvgHandle(
+        .spawn(VelloSvg2d(
             asset_server.load("embedded://view_culling/assets/svg/fountain.svg"),
         ))
         .insert(Transform::from_scale(Vec3::splat(1.0)))
@@ -116,7 +116,7 @@ fn update_lottie_aabb(
 
 fn update_svg_aabb(
     svg_assets: Res<Assets<VelloSvg>>,
-    mut svg_q: Query<(&GlobalTransform, &VelloSvgHandle, &mut Aabb), Added<Aabb>>,
+    mut svg_q: Query<(&GlobalTransform, &VelloSvg2d, &mut Aabb), Added<Aabb>>,
 ) {
     for (svg_transform, handle, mut aabb) in &mut svg_q {
         if let Some(vello_svg) = svg_assets.get(&handle.0) {

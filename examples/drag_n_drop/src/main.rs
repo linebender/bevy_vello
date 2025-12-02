@@ -29,11 +29,10 @@ fn main() {
 
 fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
-    commands.spawn(VelloSvgBundle {
-        asset: VelloSvgHandle(asset_server.load("embedded://drag_n_drop/assets/fountain.svg")),
-        transform: Transform::from_scale(Vec3::splat(5.0)),
-        ..default()
-    });
+    commands.spawn((
+        VelloSvg2d(asset_server.load("embedded://drag_n_drop/assets/fountain.svg")),
+        Transform::from_scale(Vec3::splat(5.0)),
+    ));
     commands
         .spawn(Node {
             position_type: PositionType::Absolute,
@@ -117,7 +116,7 @@ fn button_system(
             };
             let handle = asset_server.add(svg);
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloSvgHandle(handle));
+            commands.spawn(VelloSvg2d(handle));
         } else if file_name.ends_with(".json") {
             let lottie = match bevy_vello::integrations::lottie::load_lottie_from_bytes(&file) {
                 Ok(lottie) => lottie,
@@ -151,7 +150,7 @@ fn drag_and_drop(
         let lottie_ext = OsStr::new("json");
         if ext == svg_ext {
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloSvgHandle(asset_server.load(path_buf.clone())));
+            commands.spawn(VelloSvg2d(asset_server.load(path_buf.clone())));
         } else if ext == lottie_ext {
             commands.trigger(CleanupEvent);
             commands.spawn(VelloLottieHandle(asset_server.load(path_buf.clone())));
@@ -166,7 +165,7 @@ fn cleanup_scene(
     _trigger: On<CleanupEvent>,
     mut commands: Commands,
     query_lottie: Option<Single<Entity, With<VelloLottieHandle>>>,
-    query_svg: Option<Single<Entity, With<VelloSvgHandle>>>,
+    query_svg: Option<Single<Entity, With<VelloSvg2d>>>,
 ) {
     if let Some(svg) = query_svg {
         commands.entity(*svg).despawn();
