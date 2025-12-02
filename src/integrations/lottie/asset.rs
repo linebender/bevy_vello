@@ -26,7 +26,6 @@ pub struct VelloLottieHandle(pub Handle<VelloLottie>);
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloLottie {
     pub composition: Arc<velato::Composition>,
-    pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
     pub alpha: f32,

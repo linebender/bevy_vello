@@ -19,6 +19,10 @@ impl Plugin for LottieIntegrationPlugin {
             .register_type::<VelloLottieAnchor>()
             .register_type::<PlaybackOptions>()
             .add_systems(PostUpdate, systems::advance_playheads)
+            // .add_systems(
+            //     PostUpdate,
+            //     systems::update_lottie_aabbs.after(TransformSystems::Propagate),
+            // )
             .add_systems(
                 Last,
                 (systems::run_transitions, systems::transition_state).chain(),
