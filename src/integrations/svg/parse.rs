@@ -1,6 +1,4 @@
 use std::sync::Arc;
-
-use bevy::transform::components::Transform;
 use vello_svg::usvg::{self};
 
 use super::asset::VelloSvg;

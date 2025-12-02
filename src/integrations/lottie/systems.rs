@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::{platform::time::Instant, prelude::*, window::PrimaryWindow};
+use bevy::{camera::primitives::Aabb, platform::time::Instant, prelude::*, window::PrimaryWindow};
 
 use super::{
     LottiePlayer, PlayerTransition,
@@ -8,7 +8,8 @@ use super::{
 };
 use crate::{
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VelloRenderSpace,
-    integrations::lottie::PlaybackPlayMode, render::VelloView,
+    integrations::lottie::PlaybackPlayMode,
+    render::{VelloView, VelloWorldScale},
 };
 
 /// Helper function to get the next smallest representable f64.
@@ -26,6 +27,36 @@ fn prev_f64(x: f64) -> f64 {
         u - 1
     };
     f64::from_bits(new_u)
+}
+
+pub fn update_lottie_aabbs(
+    mut commands: Commands,
+    lottie_entities: Query<
+        (Entity, &VelloLottieHandle, &GlobalTransform),
+        (
+            Changed<GlobalTransform>,
+            Or<(Changed<VelloLottieHandle>, Added<VelloLottieHandle>)>,
+        ),
+    >,
+    assets: Res<Assets<VelloLottie>>,
+    world_scale: Res<VelloWorldScale>,
+) {
+    // TODO: Work for camera scale
+    let scale_factor = world_scale.0;
+
+    for (entity, handle, transform) in lottie_entities.iter() {
+        if let Some(asset) = assets.get(handle.id()) {
+            let scaled_width = asset.width * scale_factor * transform.scale().x;
+            let scaled_height = asset.height * scale_factor * transform.scale().y;
+
+            let aabb = Aabb {
+                center: transform.translation().into(),
+                half_extents: Vec3::new(scaled_width / 2.0, scaled_height / 2.0, 0.0).into(),
+            };
+            eprintln!("new aabb: {aabb:?}");
+            commands.entity(entity).insert(aabb);
+        }
+    }
 }
 
 /// Advance all playheads in the scene
@@ -203,10 +234,7 @@ pub fn run_transitions(
         let is_inside = if ui_node.is_some() || *render_space == VelloRenderSpace::Screen {
             match pointer_screen_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix =
-                        current_asset.local_transform_center.to_matrix().inverse();
-
-                    let transform = gtransform.to_matrix() * local_center_matrix;
+                    let transform = gtransform.to_matrix();
 
                     let mouse_local = transform
                         .inverse()
@@ -222,10 +250,7 @@ pub fn run_transitions(
         } else {
             match pointer_world_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix =
-                        current_asset.local_transform_center.to_matrix().inverse();
-
-                    let model_matrix = gtransform.to_matrix() * local_center_matrix;
+                    let model_matrix = gtransform.to_matrix();
 
                     let mouse_local = model_matrix
                         .inverse()
