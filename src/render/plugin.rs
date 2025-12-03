@@ -1,10 +1,10 @@
 use bevy::{
     asset::load_internal_asset,
-    camera::CameraUpdateSystems,
+    camera::{CameraUpdateSystems, visibility::VisibilitySystems},
     prelude::*,
     render::{
         Render, RenderApp, RenderSystems, extract_component::ExtractComponentPlugin,
-        extract_resource::ExtractResourcePlugin, renderer::RenderDevice,
+        renderer::RenderDevice,
     },
     sprite_render::Material2dPlugin,
 };
@@ -18,8 +18,7 @@ use crate::{
     VelloView,
     render::{
         SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
-        VelloPixelScale, VelloRenderQueue, VelloRenderer, VelloScreenScale, VelloWorldScale,
-        extract::VelloExtractStep,
+        VelloRenderQueue, VelloRenderer, extract::VelloExtractStep,
     },
 };
 
@@ -46,16 +45,6 @@ impl Plugin for VelloRenderPlugin {
         app.register_type::<VelloFrameProfileData>()
             .init_resource::<VelloFrameProfileData>();
 
-        app.insert_resource(VelloWorldScale::default())
-            .add_plugins(ExtractResourcePlugin::<VelloWorldScale>::default());
-
-        app.insert_resource(VelloScreenScale::default())
-            .add_plugins(ExtractResourcePlugin::<VelloScreenScale>::default());
-
-        app.insert_resource(VelloPixelScale::default())
-            .add_plugins(ExtractResourcePlugin::<VelloPixelScale>::default())
-            .add_systems(Update, extract::extract_pixel_scale);
-
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
@@ -67,7 +56,9 @@ impl Plugin for VelloRenderPlugin {
             .init_resource::<VelloRenderQueue>()
             .configure_sets(
                 ExtractSchedule,
-                (VelloExtractStep::ExtractAssets, VelloExtractStep::SyncData).chain(),
+                (VelloExtractStep::ExtractAssets, VelloExtractStep::SyncData)
+                    .chain()
+                    .after(VisibilitySystems::CheckVisibility),
             )
             .add_systems(
                 ExtractSchedule,

@@ -1,10 +1,7 @@
 use bevy::{
     prelude::*,
     render::{MainWorld, extract_component::ExtractComponent},
-    window::PrimaryWindow,
 };
-
-use crate::render::VelloPixelScale;
 
 use super::{VelloEntityCountData, VelloFrameProfileData};
 
@@ -31,11 +28,3 @@ pub fn sync_frame_profile(render_data: Res<VelloFrameProfileData>, mut world: Re
 /// A screenspace render target. We use a resizable fullscreen quad.
 #[derive(Component, Default, Clone, ExtractComponent)]
 pub struct SSRenderTarget(pub Handle<Image>);
-
-pub fn extract_pixel_scale(
-    mut pixel_scale: ResMut<VelloPixelScale>,
-    window: Single<&Window, With<PrimaryWindow>>,
-) {
-    let scale_factor = window.resolution.scale_factor();
-    pixel_scale.0 = scale_factor;
-}

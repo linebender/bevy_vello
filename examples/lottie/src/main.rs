@@ -24,8 +24,7 @@ fn main() {
     )
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_camera)
-    .add_systems(Startup, load_lottie)
-    .add_systems(Update, gizmos);
+    .add_systems(Startup, load_lottie);
     embedded_asset!(app, "assets/Tiger.json");
     app.run();
 }

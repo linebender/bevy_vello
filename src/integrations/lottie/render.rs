@@ -1,6 +1,8 @@
-use bevy::camera::ScalingMode;
 use bevy::{
-    camera::visibility::RenderLayers,
+    camera::{
+        primitives::Aabb,
+        visibility::{RenderLayers, VisibilityClass},
+    },
     prelude::*,
     render::{
         Extract, camera::ExtractedCamera, sync_world::TemporaryRenderEntity, view::ExtractedView,
@@ -8,30 +10,21 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{
-    Playhead, Theme, VelloLottieAnchor,
-    asset::{VelloLottie, VelloLottieHandle},
-};
+use super::{Playhead, Theme, VelloLottieAnchor, asset::VelloLottie};
+use crate::integrations::lottie::{UiVelloLottie, VelloLottie2d};
 use crate::{
-    SkipEncoding, VelloRenderSpace,
-    render::{
-        SkipScaling, VelloEntityCountData, VelloPixelScale, VelloScreenScale, VelloView,
-        VelloWorldScale, prepare::PreparedAffine,
-    },
+    SkipEncoding,
+    render::{VelloEntityCountData, VelloView, prepare::PreparedAffine},
 };
 
 #[derive(Component, Clone)]
-pub struct ExtractedWorldVelloLottie {
+pub struct ExtractedVelloLottie2d {
     pub asset: VelloLottie,
     pub asset_anchor: VelloLottieAnchor,
     pub transform: GlobalTransform,
     pub alpha: f32,
     pub theme: Option<Theme>,
     pub playhead: f64,
-    pub render_space: VelloRenderSpace,
-    pub skip_scaling: Option<SkipScaling>,
-    pub camera_scaling_mode: ScalingMode,
-    pub camera_scale: f32,
 }
 
 #[derive(Component, Clone)]
@@ -47,13 +40,13 @@ pub struct ExtractedUiVelloLottie {
 pub fn extract_world_lottie_assets(
     mut commands: Commands,
     query_views: Query<
-        (&ExtractedCamera, &Projection, Option<&RenderLayers>),
+        (&ExtractedCamera, Option<&RenderLayers>),
         (With<Camera2d>, With<VelloView>),
     >,
     query_vectors: Extract<
         Query<
             (
-                &VelloLottieHandle,
+                &VelloLottie2d,
                 &VelloLottieAnchor,
                 &GlobalTransform,
                 &Playhead,
@@ -61,8 +54,6 @@ pub fn extract_world_lottie_assets(
                 Option<&RenderLayers>,
                 &ViewVisibility,
                 &InheritedVisibility,
-                &VelloRenderSpace,
-                Option<&SkipScaling>,
             ),
             (Without<SkipEncoding>, Without<Node>),
         >,
@@ -74,7 +65,7 @@ pub fn extract_world_lottie_assets(
 
     // Sort cameras by rendering order
     let mut views: Vec<_> = query_views.iter().collect();
-    views.sort_unstable_by_key(|(camera, _, _)| camera.order);
+    views.sort_unstable_by_key(|(camera, _)| camera.order);
 
     for (
         asset_handle,
@@ -85,8 +76,6 @@ pub fn extract_world_lottie_assets(
         render_layers,
         view_visibility,
         inherited_visibility,
-        render_space,
-        skip_scaling,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met
@@ -100,26 +89,18 @@ pub fn extract_world_lottie_assets(
 
         // Check if any camera renders this asset
         let asset_render_layers = render_layers.unwrap_or_default();
-        for (_, projection, _) in views.iter().filter(|(_, _, camera_layers)| {
+        for (_, _) in views.iter().filter(|(_, camera_layers)| {
             // Does this camera can see this?
             asset_render_layers.intersects(camera_layers.unwrap_or_default())
         }) {
-            let (camera_scale, camera_scaling_mode) = match projection {
-                Projection::Orthographic(p) => (p.scale, p.scaling_mode),
-                _ => (1.0, ScalingMode::WindowSize),
-            };
             commands
-                .spawn(ExtractedWorldVelloLottie {
+                .spawn(ExtractedVelloLottie2d {
                     asset: asset.clone(),
                     transform: *transform,
                     asset_anchor: *asset_anchor,
                     theme: theme.cloned(),
                     playhead: playhead.frame(),
                     alpha: asset.alpha,
-                    render_space: *render_space,
-                    skip_scaling: skip_scaling.cloned(),
-                    camera_scaling_mode,
-                    camera_scale,
                 })
                 .insert(TemporaryRenderEntity);
             n_lotties += 1;
@@ -138,13 +119,12 @@ pub fn extract_ui_lottie_assets(
     query_vectors: Extract<
         Query<
             (
-                &VelloLottieHandle,
+                &UiVelloLottie,
                 &UiGlobalTransform,
                 &Playhead,
                 Option<&Theme>,
                 &ComputedNode,
                 Option<&RenderLayers>,
-                &ViewVisibility,
                 &InheritedVisibility,
             ),
             Without<SkipEncoding>,
@@ -166,14 +146,15 @@ pub fn extract_ui_lottie_assets(
         theme,
         ui_node,
         render_layers,
-        view_visibility,
         inherited_visibility,
     ) in query_vectors.iter()
     {
-        // Skip if visibility conditions are not met
-        if !view_visibility.get() || !inherited_visibility.get() {
+        // Skip if visibility conditions are not met.
+        // UI does not check view visibility, only inherited visibility.
+        if !inherited_visibility.get() {
             continue;
         }
+
         // Skip if asset isn't loaded.
         let Some(asset) = assets.get(asset_handle.id()) else {
             continue;
@@ -204,11 +185,8 @@ pub fn extract_ui_lottie_assets(
 pub fn prepare_asset_affines(
     mut commands: Commands,
     views: Query<(&ExtractedCamera, &ExtractedView), (With<Camera2d>, With<VelloView>)>,
-    render_entities: Query<(Entity, &ExtractedWorldVelloLottie)>,
+    render_entities: Query<(Entity, &ExtractedVelloLottie2d)>,
     render_ui_entities: Query<(Entity, &ExtractedUiVelloLottie)>,
-    world_scale: Res<VelloWorldScale>,
-    screen_scale: Res<VelloScreenScale>,
-    pixel_scale: Res<VelloPixelScale>,
 ) {
     for (camera, view) in views.iter() {
         // Render UI
@@ -282,39 +260,6 @@ pub fn prepare_asset_affines(
 
         // Render World
         for (entity, render_entity) in render_entities.iter() {
-            let needs_scaling = render_entity.skip_scaling.is_none();
-
-            // Calculate camera scale based on scaling mode
-            let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
-            let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-            let camera_scale_factor = match render_entity.camera_scaling_mode {
-                ScalingMode::WindowSize => 1.0,
-                ScalingMode::Fixed { width, height } => {
-                    // Scale to fit fixed world units
-                    (pixels_x / width).min(pixels_y / height)
-                }
-                ScalingMode::AutoMin {
-                    min_width,
-                    min_height,
-                } => {
-                    let scale_x = pixels_x / min_width;
-                    let scale_y = pixels_y / min_height;
-                    scale_x.min(scale_y)
-                }
-                ScalingMode::AutoMax {
-                    max_width,
-                    max_height,
-                } => {
-                    let scale_x = pixels_x / max_width;
-                    let scale_y = pixels_y / max_height;
-                    scale_x.max(scale_y)
-                }
-                ScalingMode::FixedVertical { viewport_height } => pixels_y / viewport_height,
-                ScalingMode::FixedHorizontal { viewport_width } => pixels_x / viewport_width,
-            } * render_entity.camera_scale;
-            let camera_scale_matrix =
-                Mat4::from_scale(Vec3::new(camera_scale_factor, camera_scale_factor, 1.0));
-
             // A transposed (flipped over its diagonal) PostScript matrix
             // | a c e |
             // | b d f |
@@ -336,165 +281,96 @@ pub fn prepare_asset_affines(
             // 1. Scale
             // 2. Rotate
             // 3. Translate
-            let transform: [f64; 6] = match render_entity.render_space {
-                VelloRenderSpace::World => {
-                    // Get the base world transform
-                    let world_transform = render_entity.transform.compute_transform();
-                    let Transform {
-                        translation,
-                        rotation,
-                        scale,
-                    } = world_transform;
+            let transform: [f64; 6] = {
+                // Get the base world transform
+                let world_transform = render_entity.transform.compute_transform();
+                let Transform {
+                    translation,
+                    rotation,
+                    scale,
+                } = world_transform;
 
-                    // Calculate anchor offset in local space (Vello's top-left origin)
-                    let anchor_local = match render_entity.asset_anchor {
-                        VelloLottieAnchor::TopLeft => Vec3::ZERO,
-                        VelloLottieAnchor::Left => {
-                            Vec3::new(0.0, render_entity.asset.height / 2.0, 0.0)
-                        }
-                        VelloLottieAnchor::BottomLeft => {
-                            Vec3::new(0.0, render_entity.asset.height, 0.0)
-                        }
-                        VelloLottieAnchor::Top => {
-                            Vec3::new(render_entity.asset.width / 2.0, 0.0, 0.0)
-                        }
-                        VelloLottieAnchor::Center => Vec3::new(
-                            render_entity.asset.width / 2.0,
-                            render_entity.asset.height / 2.0,
-                            0.0,
-                        ),
-                        VelloLottieAnchor::Bottom => Vec3::new(
-                            render_entity.asset.width / 2.0,
-                            render_entity.asset.height,
-                            0.0,
-                        ),
-                        VelloLottieAnchor::TopRight => {
-                            Vec3::new(render_entity.asset.width, 0.0, 0.0)
-                        }
-                        VelloLottieAnchor::Right => Vec3::new(
-                            render_entity.asset.width,
-                            render_entity.asset.height / 2.0,
-                            0.0,
-                        ),
-                        VelloLottieAnchor::BottomRight => {
-                            Vec3::new(render_entity.asset.width, render_entity.asset.height, 0.0)
-                        }
-                    };
+                // Calculate anchor offset in local space (Vello's top-left origin)
+                let anchor_local = match render_entity.asset_anchor {
+                    VelloLottieAnchor::TopLeft => Vec3::ZERO,
+                    VelloLottieAnchor::Left => {
+                        Vec3::new(0.0, render_entity.asset.height / 2.0, 0.0)
+                    }
+                    VelloLottieAnchor::BottomLeft => {
+                        Vec3::new(0.0, render_entity.asset.height, 0.0)
+                    }
+                    VelloLottieAnchor::Top => Vec3::new(render_entity.asset.width / 2.0, 0.0, 0.0),
+                    VelloLottieAnchor::Center => Vec3::new(
+                        render_entity.asset.width / 2.0,
+                        render_entity.asset.height / 2.0,
+                        0.0,
+                    ),
+                    VelloLottieAnchor::Bottom => Vec3::new(
+                        render_entity.asset.width / 2.0,
+                        render_entity.asset.height,
+                        0.0,
+                    ),
+                    VelloLottieAnchor::TopRight => Vec3::new(render_entity.asset.width, 0.0, 0.0),
+                    VelloLottieAnchor::Right => Vec3::new(
+                        render_entity.asset.width,
+                        render_entity.asset.height / 2.0,
+                        0.0,
+                    ),
+                    VelloLottieAnchor::BottomRight => {
+                        Vec3::new(render_entity.asset.width, render_entity.asset.height, 0.0)
+                    }
+                };
 
-                    let mut anchor_matrix = Mat4::from_translation(-anchor_local);
-                    // The anchor offset is in Vello's y-down coordinate space, but needs to be applied
-                    // in the transform chain that operates in Bevy's y-up space. This y-flip compensates
-                    // for the coordinate system difference before the final model_matrix y-flip (below).
-                    anchor_matrix.w_axis.y *= -1.0;
+                let mut anchor_matrix = Mat4::from_translation(-anchor_local);
+                // The anchor offset is in Vello's y-down coordinate space, but needs to be applied
+                // in the transform chain that operates in Bevy's y-up space. This y-flip compensates
+                // for the coordinate system difference before the final model_matrix y-flip (below).
+                anchor_matrix.w_axis.y *= -1.0;
 
-                    let ndc_to_pixels_matrix = {
-                        let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
-                        let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
-                        Mat4::from_cols_array_2d(&[
-                            [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
-                            [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
-                            [0.0, 0.0, 1.0, 0.0],
-                            [0.0, 0.0, 0.0, 1.0],
-                        ])
-                        .transpose()
-                    };
-
-                    let view_proj_matrix = {
-                        let (projection_mat, view_mat) = {
-                            let mut view_mat = view.world_from_view.to_matrix();
-                            // Flip Y-axis to match Vello's y-down coordinate space
-                            view_mat.w_axis.y *= -1.0;
-                            (view.clip_from_view, view_mat)
-                        };
-                        projection_mat * view_mat.inverse()
-                    };
-
-                    let world_scale_matrix = if needs_scaling {
-                        Mat4::from_scale(Vec3::new(world_scale.0, world_scale.0, 1.0))
-                    } else {
-                        Mat4::IDENTITY
-                    };
-
-                    // Build the model matrix with proper anchor handling
-                    let translation_matrix = Mat4::from_translation(translation);
-                    let rotation_matrix = Mat4::from_quat(rotation);
-                    let scale_matrix = Mat4::from_scale(scale);
-
-                    // Build model matrix: translate → rotate → scale → world_scale → camera_scale → anchor offset (including local_center)
-                    let mut model_matrix = translation_matrix
-                        * rotation_matrix
-                        * scale_matrix
-                        * world_scale_matrix
-                        * camera_scale_matrix
-                        * anchor_matrix;
-
+                let ndc_to_pixels_matrix = {
+                    let size_pixels: UVec2 = camera.physical_viewport_size.unwrap();
+                    let (pixels_x, pixels_y) = (size_pixels.x as f32, size_pixels.y as f32);
+                    Mat4::from_cols_array_2d(&[
+                        [pixels_x / 2.0, 0.0, 0.0, pixels_x / 2.0],
+                        [0.0, pixels_y / 2.0, 0.0, pixels_y / 2.0],
+                        [0.0, 0.0, 1.0, 0.0],
+                        [0.0, 0.0, 0.0, 1.0],
+                    ])
+                    .transpose()
+                };
+                let view_proj_matrix = {
+                    let mut view_mat = view.world_from_view.to_matrix();
                     // Flip Y-axis to match Vello's y-down coordinate space
-                    model_matrix.w_axis.y *= -1.0;
+                    view_mat.w_axis.y *= -1.0;
+                    let proj_mat = view.clip_from_view;
+                    proj_mat * view_mat.inverse()
+                };
 
-                    // Transform chain: world → world_scale → camera_scale → anchor (with local_center) → y-flip → view → projection → NDC → pixels
-                    let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
-                    let transform = raw_transform.to_cols_array();
+                // Build the model matrix with proper anchor handling
+                let translation_matrix = Mat4::from_translation(translation);
+                let rotation_matrix = Mat4::from_quat(rotation);
+                let scale_matrix = Mat4::from_scale(scale);
 
-                    // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
-                    [
-                        transform[0] as f64,  // a // scale_x
-                        -transform[1] as f64, // b // skew_y
-                        -transform[4] as f64, // c // skew_x
-                        transform[5] as f64,  // d // scale_y
-                        transform[12] as f64, // e // translate_x
-                        transform[13] as f64, // f // translate_y
-                    ]
-                }
-                VelloRenderSpace::Screen => {
-                    let world_transform = render_entity.transform.compute_transform();
-                    // Decompose the transform
-                    let Transform {
-                        translation,
-                        rotation,
-                        scale,
-                    } = world_transform;
+                // Build model matrix: translate → rotate → scale → camera_scale → anchor offset (including local_center)
+                let mut model_matrix =
+                    translation_matrix * rotation_matrix * scale_matrix * anchor_matrix;
 
-                    // Scale the position to physical pixels
-                    let user_scale_value = if needs_scaling { screen_scale.0 } else { 1.0 };
-                    let total_scale = pixel_scale.0 * user_scale_value * camera_scale_factor;
-                    let physical_position = translation * total_scale;
+                // Flip Y-axis to match Vello's y-down coordinate space
+                model_matrix.w_axis.y *= -1.0;
 
-                    let anchor_local = {
-                        let width = render_entity.asset.width;
-                        let height = render_entity.asset.height;
-                        match render_entity.asset_anchor {
-                            VelloLottieAnchor::TopLeft => Vec3::new(0.0, 0.0, 0.0),
-                            VelloLottieAnchor::Left => Vec3::new(0.0, height / 2.0, 0.0),
-                            VelloLottieAnchor::BottomLeft => Vec3::new(0.0, height, 0.0),
-                            VelloLottieAnchor::Top => Vec3::new(width / 2.0, 0.0, 0.0),
-                            VelloLottieAnchor::Center => Vec3::new(width / 2.0, height / 2.0, 0.0),
-                            VelloLottieAnchor::Bottom => Vec3::new(width / 2.0, height, 0.0),
-                            VelloLottieAnchor::TopRight => Vec3::new(width, 0.0, 0.0),
-                            VelloLottieAnchor::Right => Vec3::new(width, height / 2.0, 0.0),
-                            VelloLottieAnchor::BottomRight => Vec3::new(width, height, 0.0),
-                        }
-                    };
+                // Transform chain: world → anchor (with local_center) → y-flip → view → projection → NDC → pixels
+                let raw_transform = ndc_to_pixels_matrix * view_proj_matrix * model_matrix;
+                let transform = raw_transform.to_cols_array();
 
-                    // Reconstruct transform with scaled position and content scale, preserving rotation
-                    let position_matrix = Mat4::from_translation(physical_position);
-                    let rotation_matrix = Mat4::from_quat(rotation);
-                    let content_scale_matrix = Mat4::from_scale(scale * total_scale);
-                    let anchor_matrix = Mat4::from_translation(-anchor_local);
-
-                    // Transform chain
-                    let raw_transform =
-                        position_matrix * rotation_matrix * content_scale_matrix * anchor_matrix;
-
-                    let transform = raw_transform.to_cols_array();
-                    [
-                        transform[0] as f64,  // a // scale_x
-                        transform[1] as f64,  // b // skew_y
-                        transform[4] as f64,  // c // skew_x
-                        transform[5] as f64,  // d // scale_y
-                        transform[12] as f64, // e // translate_x (in physical pixels)
-                        transform[13] as f64, // f // translate_y (in physical pixels)
-                    ]
-                }
+                // Negate skew_x and skew_y to match rotation of the Bevy's y-up world
+                [
+                    transform[0] as f64,  // a // scale_x
+                    -transform[1] as f64, // b // skew_y
+                    -transform[4] as f64, // c // skew_x
+                    transform[5] as f64,  // d // scale_y
+                    transform[12] as f64, // e // translate_x
+                    transform[13] as f64, // f // translate_y
+                ]
             };
 
             commands

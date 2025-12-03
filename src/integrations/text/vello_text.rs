@@ -1,5 +1,3 @@
-use std::ops::Mul;
-
 use bevy::{
     camera::visibility::{self, VisibilityClass},
     prelude::*,
@@ -8,19 +6,10 @@ use bevy::{
 use tracing::warn;
 use vello::peniko::{self, Brush};
 
-use crate::{
-    VelloFont, VelloRenderSpace,
-    render::{VelloPixelScale, VelloView},
-};
+use crate::{VelloFont, render::VelloView};
 
 #[derive(Component, Default, Clone)]
-#[require(
-    VelloRenderSpace,
-    VelloTextAnchor,
-    Transform,
-    Visibility,
-    VisibilityClass
-)]
+#[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
 #[component(on_add = visibility::add_visibility_class::<VelloTextSection>)]
 pub struct VelloTextSection {
     pub value: String,
@@ -243,7 +232,6 @@ pub fn calculate_text_section_content_size_on_change(
     >,
     camera: Single<(&Camera, &GlobalTransform), With<VelloView>>,
     fonts: Res<Assets<VelloFont>>,
-    pixel_scale: Res<VelloPixelScale>,
 ) {
     let (camera, camera_transform) = *camera;
 
@@ -255,8 +243,8 @@ pub fn calculate_text_section_content_size_on_change(
 
         if let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, camera_transform) {
             let size = rect.size();
-            let width = text.width.unwrap_or(size.x.abs().mul(pixel_scale.0));
-            let height = text.height.unwrap_or(size.y.abs().mul(pixel_scale.0));
+            let width = text.width.unwrap_or(size.x.abs());
+            let height = text.height.unwrap_or(size.y.abs());
             let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
                 size: Vec2::new(width, height),
             });

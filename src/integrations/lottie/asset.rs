@@ -1,27 +1,6 @@
 use std::sync::Arc;
 
-use bevy::{
-    camera::visibility::{self, VisibilityClass},
-    prelude::*,
-    reflect::TypePath,
-};
-
-use crate::prelude::*;
-
-#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(
-    VelloRenderSpace,
-    VelloLottieAnchor,
-    Playhead,
-    PlaybackOptions,
-    LottiePlayer,
-    Transform,
-    Visibility,
-    VisibilityClass
-)]
-#[reflect(Component)]
-#[component(on_add = visibility::add_visibility_class::<VelloLottieHandle>)]
-pub struct VelloLottieHandle(pub Handle<VelloLottie>);
+use bevy::{prelude::*, reflect::TypePath};
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloLottie {

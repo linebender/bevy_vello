@@ -18,11 +18,17 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 ### Changed
 
 - `VelloSvgHandle` has been split into `VelloSvg2d` and `UiVelloSvg`. The former is for world entities and the latter is for UI nodes.
+- `VelloLottieHandle` has been split into `VelloLottie2d` and `UiVelloLottie`. The former is for world entities and the latter is for UI nodes.
 - Some diagnostics were changed.
   - `VelloEntityCountDiagnosticsPlugin::SCENE_COUNT` was split into `VelloEntityCountDiagnosticsPlugin::WORLD_SCENE_COUNT` and `VelloEntityCountDiagnosticsPlugin::UI_SCENE_COUNT` to more granularly track Ui and World entities.
 
 ### Removed
 
+- `VelloSceneBundle` no longer exists. Use `VelloScene2d` and `UiVelloScene` instead.
+- `VelloTextBundle` no longer exists. Use `VelloText2d` and `UiVelloText` instead.
+- `VelloSvgBundle` no longer exists. Use `VelloSvg2d` and `UiVelloSvg` instead.
+- `VelloLottieBundle` no longer exists. Use `VelloLottie2d` and `UiVelloLottie` instead.
+- `SkipScaling` no longer exists. If you need to scale something, use the entity's transform.
 - `VelloWorldScale` no longer exists. If you need to scale something, use the entity's transform.
 - `VelloScreenScale` no longer exists. If you need to scale something, use the entity's transform.
 - `VelloScreenSpace` no longer exists. You should use a separate camera for UI and manually place items into screen space. There are now examples for screenspace to help.

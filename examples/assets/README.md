@@ -17,3 +17,11 @@ If you use this asset in your own work, please ensure compliance with the AGPL l
 **More Info:** <https://googlefonts.github.io/noto-emoji-animation/>
 
 An animated tiger emoji in Lottie format. This asset is from Google's collection of animated emoji for Noto. The CC BY 4.0 license requires attribution and is compatible with this project's MIT/Apache 2.0 license. You're free to use, modify, and distribute this asset as long as you provide appropriate credit to Google.
+
+## `calendar.json`
+
+**Original Source:** thesvbd\
+**License:** Unknown\
+**More Info:** <https://github.com/thesvbd/Lottie-examples/>
+
+An animated calendar in Lottie format. This test asset is included for demonstration and testing purposes only. If you use this asset in your own work, please ensure compliance with the author or obtain an appropriate commercial license from thesvbd.

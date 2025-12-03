@@ -24,16 +24,16 @@ use super::{
     prepare::PreparedAffine,
 };
 #[cfg(feature = "lottie")]
-use crate::integrations::lottie::render::{ExtractedUiVelloLottie, ExtractedWorldVelloLottie};
+use crate::integrations::lottie::render::{ExtractedUiVelloLottie, ExtractedVelloLottie2d};
 #[cfg(feature = "svg")]
-use crate::integrations::svg::render::{ExtractedUiVelloSvg, ExtractedWorldVelloSvg};
+use crate::integrations::svg::render::{ExtractedUiVelloSvg, ExtractedVelloSvg2d};
 #[cfg(feature = "text")]
 use crate::integrations::text::{
     VelloFont,
-    render::{ExtractedUiVelloText, ExtractedWorldVelloText},
+    render::{ExtractedUiVelloText, ExtractedVelloText2d},
 };
 use crate::{
-    integrations::scene::render::{ExtractedUiVelloScene, ExtractedWorldVelloScene},
+    integrations::scene::render::{ExtractedUiVelloScene, ExtractedVelloScene2d},
     render::{VelloUiRenderItem, VelloView},
 };
 
@@ -68,15 +68,15 @@ pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handl
 
 #[allow(clippy::too_many_arguments, reason = "Many features gates")]
 pub fn sort_render_items(
-    view_world_scenes: Query<(&PreparedAffine, &ExtractedWorldVelloScene)>,
+    view_world_scenes: Query<(&PreparedAffine, &ExtractedVelloScene2d)>,
     view_ui_scenes: Query<(&PreparedAffine, &ExtractedUiVelloScene)>,
-    #[cfg(feature = "text")] view_world_text: Query<(&PreparedAffine, &ExtractedWorldVelloText)>,
+    #[cfg(feature = "text")] view_world_text: Query<(&PreparedAffine, &ExtractedVelloText2d)>,
     #[cfg(feature = "text")] view_ui_text: Query<(&PreparedAffine, &ExtractedUiVelloText)>,
-    #[cfg(feature = "svg")] view_world_svgs: Query<(&PreparedAffine, &ExtractedWorldVelloSvg)>,
+    #[cfg(feature = "svg")] view_world_svgs: Query<(&PreparedAffine, &ExtractedVelloSvg2d)>,
     #[cfg(feature = "svg")] view_ui_svgs: Query<(&PreparedAffine, &ExtractedUiVelloSvg)>,
     #[cfg(feature = "lottie")] view_world_lotties: Query<(
         &PreparedAffine,
-        &ExtractedWorldVelloLottie,
+        &ExtractedVelloLottie2d,
     )>,
     #[cfg(feature = "lottie")] view_ui_lotties: Query<(&PreparedAffine, &ExtractedUiVelloLottie)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
@@ -250,7 +250,7 @@ pub fn render_frame(
         match render_item {
             VelloRenderItem::Scene {
                 affine,
-                item: ExtractedWorldVelloScene { scene, .. },
+                item: ExtractedVelloScene2d { scene, .. },
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
@@ -258,7 +258,7 @@ pub fn render_frame(
             VelloRenderItem::Lottie {
                 affine,
                 item:
-                    ExtractedWorldVelloLottie {
+                    ExtractedVelloLottie2d {
                         asset,
                         alpha,
                         theme,
@@ -293,7 +293,7 @@ pub fn render_frame(
             #[cfg(feature = "svg")]
             VelloRenderItem::Svg {
                 affine,
-                item: ExtractedWorldVelloSvg { asset, alpha, .. },
+                item: ExtractedVelloSvg2d { asset, alpha, .. },
             } => {
                 if *alpha <= 0.0 {
                     continue;
@@ -315,7 +315,7 @@ pub fn render_frame(
             VelloRenderItem::Text {
                 affine,
                 item:
-                    ExtractedWorldVelloText {
+                    ExtractedVelloText2d {
                         text, text_anchor, ..
                     },
             } => {

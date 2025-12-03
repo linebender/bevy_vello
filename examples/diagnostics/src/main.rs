@@ -24,7 +24,7 @@ fn setup(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
     for i in 0..SCENE_COUNT {
         commands.spawn((
-            VelloScene::new(),
+            VelloScene2d::new(),
             Transform::from_translation(Vec3::new(i as f32 * 100.0 - 200.0, 0.0, 0.0)),
         ));
     }
@@ -50,7 +50,7 @@ fn setup(mut commands: Commands) {
 #[derive(Component)]
 struct DiagnosticsText;
 
-fn simple_animation(mut query: Query<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
+fn simple_animation(mut query: Query<(&mut Transform, &mut VelloScene2d)>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
 
     for (mut transform, mut scene) in query.iter_mut() {
