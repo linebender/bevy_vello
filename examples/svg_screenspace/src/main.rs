@@ -15,7 +15,7 @@ fn main() {
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_svg)
     .add_systems(Update, animate_svg_worldspace)
-    .add_systems(PostUpdate, draw_svg_gizmo);
+    .add_systems(PostUpdate, gizmos);
     embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
     app.run();
 }
@@ -28,7 +28,7 @@ fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((
         VelloSvg2d(asset_server.load("embedded://svg_screenspace/assets/Ghostscript_Tiger.svg")),
         VelloSvgAnchor::Center,
-        Transform::from_scale(Vec3::splat(0.5)),
+        Transform::from_scale(Vec3::splat(0.25)),
     ));
 }
 
@@ -65,10 +65,7 @@ fn animate_svg_worldspace(
     Ok(())
 }
 
-fn draw_svg_gizmo(
-    mut gizmos: Gizmos,
-    svg_tf: Single<&Transform, (With<VelloSvg2d>, Without<Camera2d>)>,
-) {
+fn gizmos(mut gizmos: Gizmos, svg_tf: Single<&Transform, (With<VelloSvg2d>, Without<Camera2d>)>) {
     let pos = svg_tf.translation.truncate();
 
     // Small circle at the position
