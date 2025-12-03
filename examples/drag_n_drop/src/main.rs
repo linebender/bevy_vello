@@ -23,14 +23,14 @@ fn main() {
     .add_systems(Update, drag_and_drop)
     .add_systems(Update, button_system)
     .add_observer(cleanup_scene);
-    embedded_asset!(app, "assets/fountain.svg");
+    embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
     app.run();
 }
 
 fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
     commands.spawn((
-        VelloSvg2d(asset_server.load("embedded://drag_n_drop/assets/fountain.svg")),
+        VelloSvg2d(asset_server.load("embedded://drag_n_drop/assets/Ghostscript_Tiger.svg")),
         Transform::from_scale(Vec3::splat(5.0)),
     ));
     commands
@@ -127,7 +127,7 @@ fn button_system(
             };
             let handle = asset_server.add(lottie);
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloLottieHandle(handle));
+            commands.spawn(VelloLottie2d(handle));
         }
     }
 }
@@ -153,7 +153,7 @@ fn drag_and_drop(
             commands.spawn(VelloSvg2d(asset_server.load(path_buf.clone())));
         } else if ext == lottie_ext {
             commands.trigger(CleanupEvent);
-            commands.spawn(VelloLottieHandle(asset_server.load(path_buf.clone())));
+            commands.spawn(VelloLottie2d(asset_server.load(path_buf.clone())));
         }
     }
 }
@@ -164,7 +164,7 @@ struct CleanupEvent;
 fn cleanup_scene(
     _trigger: On<CleanupEvent>,
     mut commands: Commands,
-    query_lottie: Option<Single<Entity, With<VelloLottieHandle>>>,
+    query_lottie: Option<Single<Entity, With<VelloLottie2d>>>,
     query_svg: Option<Single<Entity, With<VelloSvg2d>>>,
 ) {
     if let Some(svg) = query_svg {
