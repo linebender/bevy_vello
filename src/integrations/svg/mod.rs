@@ -12,8 +12,6 @@ mod plugin;
 use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
 
-use crate::VelloRenderSpace;
-
 /// A renderable SVG that may be used in Bevy UI.
 ///
 /// ### Object fit
@@ -26,13 +24,7 @@ pub struct UiVelloSvg(pub Handle<VelloSvg>);
 
 /// A renderable SVG in the world.
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(
-    VelloSvgAnchor,
-    VelloRenderSpace,
-    Transform,
-    Visibility,
-    VisibilityClass
-)]
+#[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
 #[reflect(Component)]
 #[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloSvg2d>)]
 pub struct VelloSvg2d(pub Handle<VelloSvg>);
