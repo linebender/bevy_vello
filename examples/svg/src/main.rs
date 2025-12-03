@@ -14,7 +14,7 @@ fn main() {
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_svg)
     .add_systems(Update, (rotate, gizmos));
-    embedded_asset!(app, "assets/fountain.svg");
+    embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
     app.run();
 }
 
@@ -23,13 +23,12 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    // You can also use `VelloSvgBundle`
     commands
         .spawn((
-            VelloSvg2d(asset_server.load("embedded://svg/assets/fountain.svg")),
+            VelloSvg2d(asset_server.load("embedded://svg/assets/Ghostscript_Tiger.svg")),
             VelloSvgAnchor::Center,
         ))
-        .insert(Transform::from_scale(Vec3::splat(1.0)));
+        .insert(Transform::from_scale(Vec3::splat(0.5)));
 }
 
 fn rotate(mut svg: Single<&mut Transform, With<VelloSvg2d>>, time: Res<Time>) {
