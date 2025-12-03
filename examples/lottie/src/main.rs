@@ -12,7 +12,7 @@ fn main() {
         DefaultPlugins
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    resolution: WindowResolution::new(1024, 1024),
+                    resolution: WindowResolution::new(512, 512),
                     ..default()
                 }),
                 ..default()
@@ -25,8 +25,7 @@ fn main() {
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_lottie)
-    .add_systems(Update, gizmos)
-    .add_systems(Update, debug_transforms);
+    .add_systems(Update, gizmos);
     embedded_asset!(app, "assets/Tiger.json");
     app.run();
 }
@@ -35,37 +34,16 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
 
-fn debug_transforms(
-    lottie: Query<(&Transform, &GlobalTransform), With<VelloLottieHandle>>,
-    cameras: Query<&Projection, With<Camera2d>>,
-) {
-    for (transform, global_transform) in lottie.iter() {
-        eprintln!("Local scale: {:?}", transform.scale);
-        eprintln!(
-            "Global scale: {:?}",
-            global_transform.to_scale_rotation_translation().0
-        );
-    }
-    for proj in cameras.iter() {
-        let Projection::Orthographic(proj) = proj else {
-            panic!()
-        };
-        eprintln!("Camera scale: {}", proj.scale);
-        eprintln!("Camera scaling mode: {:?}", proj.scaling_mode);
-    }
-}
-
 fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    // You can also use `VelloLottieBundle`
     commands
-        .spawn(VelloLottieHandle(
+        .spawn(VelloLottie2d(
             asset_server.load("embedded://lottie/assets/Tiger.json"),
         ))
         .insert(Transform::from_scale(Vec3::splat(0.5)));
 }
 
 fn gizmos(
-    lottie_entities: Query<(&Aabb, &GlobalTransform), With<VelloLottieHandle>>,
+    lottie_entities: Query<(&Aabb, &GlobalTransform), With<VelloLottie2d>>,
     mut gizmos: Gizmos,
 ) {
     for (aabb, transform) in lottie_entities.iter() {
