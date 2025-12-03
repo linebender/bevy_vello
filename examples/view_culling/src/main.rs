@@ -33,15 +33,15 @@ fn main() {
             .chain(),
     );
 
-    embedded_asset!(app, "assets/lottie/Tiger.json");
-    embedded_asset!(app, "assets/svg/fountain.svg");
+    embedded_asset!(app, "assets/Tiger.json");
+    embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
 
     app.run();
 }
 
 fn log_visibility(
     scene: Single<&ViewVisibility, With<VelloScene>>,
-    lottie: Single<&ViewVisibility, With<VelloLottieHandle>>,
+    lottie: Single<&ViewVisibility, With<VelloLottie2d>>,
     svg: Single<&ViewVisibility, With<VelloSvg2d>>,
     text: Single<&ViewVisibility, With<VelloTextSection>>,
 ) {
@@ -69,10 +69,9 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
             Vec3::new(50.0, 50.0, 0.0),
         ));
 
-    // You can also use `VelloLottieBundle`
     commands
-        .spawn(VelloLottieHandle(
-            asset_server.load("embedded://view_culling/assets/lottie/Tiger.json"),
+        .spawn(VelloLottie2d(
+            asset_server.load("embedded://view_culling/assets/Tiger.json"),
         ))
         .insert(Transform::from_scale(Vec3::splat(0.2)))
         .insert(LeftRight)
@@ -80,7 +79,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
 
     commands
         .spawn(VelloSvg2d(
-            asset_server.load("embedded://view_culling/assets/svg/fountain.svg"),
+            asset_server.load("embedded://view_culling/assets/Ghostscript_Tiger.svg"),
         ))
         .insert(Transform::from_scale(Vec3::splat(1.0)))
         .insert(DownUp)
@@ -104,7 +103,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
 
 fn update_lottie_aabb(
     lottie_assets: Res<Assets<VelloLottie>>,
-    mut lottie_q: Query<(&GlobalTransform, &VelloLottieHandle, &mut Aabb), Added<Aabb>>,
+    mut lottie_q: Query<(&GlobalTransform, &VelloLottie2d, &mut Aabb), Added<Aabb>>,
 ) {
     for (lottie_transform, handle, mut aabb) in &mut lottie_q {
         if let Some(vello_lottie) = lottie_assets.get(&handle.0) {

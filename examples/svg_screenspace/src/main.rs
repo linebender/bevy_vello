@@ -16,7 +16,7 @@ fn main() {
     .add_systems(Startup, load_svg)
     .add_systems(Update, animate_svg_worldspace)
     .add_systems(PostUpdate, draw_svg_gizmo);
-    embedded_asset!(app, "assets/fountain.svg");
+    embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
     app.run();
 }
 
@@ -24,12 +24,11 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
 
-/// Load the SVG in **world space** (default)
 fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((
-        VelloSvg2d(asset_server.load("embedded://svg_screenspace/assets/fountain.svg")),
+        VelloSvg2d(asset_server.load("embedded://svg_screenspace/assets/Ghostscript_Tiger.svg")),
         VelloSvgAnchor::Center,
-        Transform::from_scale(Vec3::splat(1.0)),
+        Transform::from_scale(Vec3::splat(0.5)),
     ));
 }
 
