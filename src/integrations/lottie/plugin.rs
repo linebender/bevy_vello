@@ -4,10 +4,13 @@ use bevy::{
 };
 
 use super::{
-    PlaybackOptions, VelloLottie, VelloLottieAnchor, asset::VelloLottieHandle,
-    asset_loader::VelloLottieLoader, render, systems,
+    PlaybackOptions, VelloLottie, VelloLottieAnchor, asset_loader::VelloLottieLoader, render,
+    systems,
 };
-use crate::render::{VelatoRenderer, extract::VelloExtractStep};
+use crate::{
+    integrations::lottie::{UiVelloLottie, VelloLottie2d},
+    render::{VelatoRenderer, extract::VelloExtractStep},
+};
 
 pub struct LottieIntegrationPlugin;
 
@@ -15,14 +18,11 @@ impl Plugin for LottieIntegrationPlugin {
     fn build(&self, app: &mut App) {
         app.init_asset_loader::<VelloLottieLoader>()
             .init_asset::<VelloLottie>()
-            .register_type::<VelloLottieHandle>()
+            .register_type::<VelloLottie2d>()
+            .register_type::<UiVelloLottie>()
             .register_type::<VelloLottieAnchor>()
             .register_type::<PlaybackOptions>()
             .add_systems(PostUpdate, systems::advance_playheads)
-            // .add_systems(
-            //     PostUpdate,
-            //     systems::update_lottie_aabbs.after(TransformSystems::Propagate),
-            // )
             .add_systems(
                 Last,
                 (systems::run_transitions, systems::transition_state).chain(),

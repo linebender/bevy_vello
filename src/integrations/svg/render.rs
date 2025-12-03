@@ -109,7 +109,6 @@ pub fn extract_ui_svg_assets(
                 &UiGlobalTransform,
                 &ComputedNode,
                 Option<&RenderLayers>,
-                &ViewVisibility,
                 &InheritedVisibility,
             ),
             Without<SkipEncoding>,
@@ -124,17 +123,12 @@ pub fn extract_ui_svg_assets(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (
-        asset_handle,
-        ui_transform,
-        ui_node,
-        render_layers,
-        view_visibility,
-        inherited_visibility,
-    ) in query_vectors.iter()
+    for (asset_handle, ui_transform, ui_node, render_layers, inherited_visibility) in
+        query_vectors.iter()
     {
-        // Skip if visibility conditions are not met
-        if !view_visibility.get() || !inherited_visibility.get() {
+        // Skip if visibility conditions are not met.
+        // UI does not check view visibility, only inherited visibility.
+        if !inherited_visibility.get() {
             continue;
         }
         // Skip if asset isn't loaded.
@@ -313,10 +307,10 @@ pub fn prepare_asset_affines(
                     ])
                     .transpose()
                 };
-
                 let view_proj_matrix = {
                     let mut view_mat = view.world_from_view.to_matrix();
-                    view_mat.w_axis.y *= -1.0; // flip Y for Vello
+                    // Flip Y-axis to match Vello's y-down coordinate space
+                    view_mat.w_axis.y *= -1.0;
                     let proj_mat = view.clip_from_view;
                     proj_mat * view_mat.inverse()
                 };

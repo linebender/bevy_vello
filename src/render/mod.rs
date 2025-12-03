@@ -36,48 +36,6 @@ pub const SSRT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]
 pub struct VelloView;
 
-/// A resource that holds the scale factor for Vello world coordinates.
-#[derive(Resource, Clone)]
-pub struct VelloWorldScale(pub f32);
-
-impl Default for VelloWorldScale {
-    fn default() -> Self {
-        Self(1.0)
-    }
-}
-
-impl ExtractResource for VelloWorldScale {
-    type Source = VelloWorldScale;
-
-    fn extract_resource(source: &Self::Source) -> Self {
-        source.clone()
-    }
-}
-
-/// A resource that holds the scale factor for Vello screen coordinates.
-#[derive(Resource, Clone)]
-pub struct VelloScreenScale(pub f32);
-
-impl Default for VelloScreenScale {
-    fn default() -> Self {
-        Self(1.0)
-    }
-}
-
-impl ExtractResource for VelloScreenScale {
-    type Source = VelloScreenScale;
-
-    fn extract_resource(source: &Self::Source) -> Self {
-        source.clone()
-    }
-}
-
-/// Whether to ignore the world and screen scaling.
-///
-/// Has no effect on UI components.
-#[derive(Component, Debug, Clone)]
-pub struct SkipScaling;
-
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
 #[derive(AsBindGroup, TypePath, Asset, Clone)]
 pub struct VelloCanvasMaterial {
@@ -217,22 +175,22 @@ pub struct SkipEncoding;
 pub(crate) enum VelloRenderItem {
     Scene {
         affine: Affine,
-        item: crate::integrations::scene::render::ExtractedWorldVelloScene,
+        item: crate::integrations::scene::render::ExtractedVelloScene2d,
     },
     #[cfg(feature = "svg")]
     Svg {
         affine: Affine,
-        item: crate::integrations::svg::render::ExtractedWorldVelloSvg,
+        item: crate::integrations::svg::render::ExtractedVelloSvg2d,
     },
     #[cfg(feature = "lottie")]
     Lottie {
         affine: Affine,
-        item: crate::integrations::lottie::render::ExtractedWorldVelloLottie,
+        item: crate::integrations::lottie::render::ExtractedVelloLottie2d,
     },
     #[cfg(feature = "text")]
     Text {
         affine: Affine,
-        item: crate::integrations::text::render::ExtractedWorldVelloText,
+        item: crate::integrations::text::render::ExtractedVelloText2d,
     },
 }
 
@@ -259,24 +217,6 @@ pub(crate) enum VelloUiRenderItem {
         affine: Affine,
         item: crate::integrations::text::render::ExtractedUiVelloText,
     },
-}
-
-/// A resource that holds the pixel density of the canvas.
-#[derive(Resource, Clone, Deref)]
-pub(crate) struct VelloPixelScale(pub f32);
-
-impl Default for VelloPixelScale {
-    fn default() -> Self {
-        Self(1.0)
-    }
-}
-
-impl ExtractResource for VelloPixelScale {
-    type Source = VelloPixelScale;
-
-    fn extract_resource(source: &Self::Source) -> Self {
-        source.clone()
-    }
 }
 
 /// Internally used to buffer sorted assets prepared for the next frame.

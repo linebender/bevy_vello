@@ -31,7 +31,7 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
     commands.spawn((
         VelloSvg2d(asset_server.load("embedded://drag_n_drop/assets/Ghostscript_Tiger.svg")),
-        Transform::from_scale(Vec3::splat(5.0)),
+        Transform::from_scale(Vec3::splat(0.5)),
     ));
     commands
         .spawn(Node {

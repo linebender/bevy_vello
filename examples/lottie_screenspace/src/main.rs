@@ -14,8 +14,7 @@ fn main() {
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_lottie)
-    .add_systems(Update, animate_svg_worldspace)
-    .add_systems(PostUpdate, gizmos);
+    .add_systems(Update, animate_svg_worldspace);
     embedded_asset!(app, "assets/Tiger.json");
     app.run();
 }
@@ -64,26 +63,4 @@ fn animate_svg_worldspace(
     transform.translation = Vec3::new(x, y, transform.translation.z);
 
     Ok(())
-}
-
-fn gizmos(
-    mut gizmos: Gizmos,
-    lottie_tf: Single<&Transform, (With<VelloLottie2d>, Without<Camera2d>)>,
-) {
-    let pos = lottie_tf.translation.truncate();
-
-    // Small circle at the position
-    gizmos.circle_2d(pos, 5.0, Color::WHITE);
-
-    // Crosshair
-    gizmos.line_2d(
-        pos + Vec2::new(-10.0, 0.0),
-        pos + Vec2::new(10.0, 0.0),
-        Color::WHITE,
-    );
-    gizmos.line_2d(
-        pos + Vec2::new(0.0, -10.0),
-        pos + Vec2::new(0.0, 10.0),
-        Color::WHITE,
-    );
 }

@@ -2,14 +2,11 @@ use std::time::Duration;
 
 use bevy::{camera::primitives::Aabb, platform::time::Instant, prelude::*, window::PrimaryWindow};
 
-use super::{
-    LottiePlayer, PlayerTransition,
-    asset::{VelloLottie, VelloLottieHandle},
-};
+use super::{LottiePlayer, PlayerTransition, asset::VelloLottie};
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VelloRenderSpace,
-    integrations::lottie::PlaybackPlayMode,
-    render::{VelloView, VelloWorldScale},
+    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
+    integrations::lottie::{PlaybackPlayMode, UiVelloLottie, VelloLottie2d},
+    render::VelloView,
 };
 
 /// Helper function to get the next smallest representable f64.
@@ -29,48 +26,38 @@ fn prev_f64(x: f64) -> f64 {
     f64::from_bits(new_u)
 }
 
-pub fn update_lottie_aabbs(
-    mut commands: Commands,
-    lottie_entities: Query<
-        (Entity, &VelloLottieHandle, &GlobalTransform),
-        (
-            Changed<GlobalTransform>,
-            Or<(Changed<VelloLottieHandle>, Added<VelloLottieHandle>)>,
-        ),
-    >,
-    assets: Res<Assets<VelloLottie>>,
-    world_scale: Res<VelloWorldScale>,
-) {
-    // TODO: Work for camera scale
-    let scale_factor = world_scale.0;
-
-    for (entity, handle, transform) in lottie_entities.iter() {
-        if let Some(asset) = assets.get(handle.id()) {
-            let scaled_width = asset.width * scale_factor * transform.scale().x;
-            let scaled_height = asset.height * scale_factor * transform.scale().y;
-
-            let aabb = Aabb {
-                center: transform.translation().into(),
-                half_extents: Vec3::new(scaled_width / 2.0, scaled_height / 2.0, 0.0).into(),
-            };
-            eprintln!("new aabb: {aabb:?}");
-            commands.entity(entity).insert(aabb);
-        }
-    }
-}
-
 /// Advance all playheads in the scene
 pub fn advance_playheads(
-    mut query: Query<(
-        &VelloLottieHandle,
-        &mut Playhead,
-        &mut LottiePlayer,
-        &PlaybackOptions,
-    )>,
+    mut world_lotties: Query<
+        (
+            &VelloLottie2d,
+            &mut Playhead,
+            &mut LottiePlayer,
+            &PlaybackOptions,
+        ),
+        Without<UiVelloLottie>,
+    >,
+    mut ui_lotties: Query<
+        (
+            &UiVelloLottie,
+            &mut Playhead,
+            &mut LottiePlayer,
+            &PlaybackOptions,
+        ),
+        Without<VelloLottie2d>,
+    >,
     mut assets: ResMut<Assets<VelloLottie>>,
     time: Res<Time>,
 ) {
-    for (asset_handle, mut playhead, mut player, options) in query.iter_mut() {
+    let world_lotties = world_lotties
+        .iter_mut()
+        .map(|(handle, playhead, player, options)| (handle.0.clone(), playhead, player, options));
+    let ui_lotties = ui_lotties
+        .iter_mut()
+        .map(|(handle, playhead, player, options)| (handle.0.clone(), playhead, player, options));
+    let all_lotties = world_lotties.chain(ui_lotties);
+
+    for (asset_handle, mut playhead, mut player, options) in all_lotties {
         // Get asset
         let Some(asset) = assets.get_mut(asset_handle.id()) else {
             continue;
@@ -188,8 +175,7 @@ pub fn run_transitions(
         &Playhead,
         &PlaybackOptions,
         &GlobalTransform,
-        &mut VelloLottieHandle,
-        &VelloRenderSpace,
+        &mut VelloLottie2d,
         Option<&ComputedNode>,
     )>,
     mut assets: ResMut<Assets<VelloLottie>>,
@@ -212,7 +198,7 @@ pub fn run_transitions(
         .and_then(|cursor| camera.viewport_to_world(view, cursor).ok())
         .map(|ray| ray.origin.truncate());
 
-    for (mut player, playhead, options, gtransform, current_asset_handle, render_space, ui_node) in
+    for (mut player, playhead, options, gtransform, current_asset_handle, ui_node) in
         query_player.iter_mut()
     {
         if player.stopped {
@@ -231,7 +217,7 @@ pub fn run_transitions(
             continue;
         };
 
-        let is_inside = if ui_node.is_some() || *render_space == VelloRenderSpace::Screen {
+        let is_inside = if ui_node.is_some() {
             match pointer_screen_pos {
                 Some(pointer_pos) => {
                     let transform = gtransform.to_matrix();
@@ -375,7 +361,7 @@ pub fn transition_state(
 
         // Swap asset
         if let Some(target_handle) = target_state.asset.as_ref() {
-            commands.entity(entity).insert(target_handle.clone());
+            // FIXME: commands.entity(entity).insert(target_handle.clone());
         }
         // Reset playheads if requested
         let reset_playhead =

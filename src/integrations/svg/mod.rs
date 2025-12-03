@@ -12,22 +12,22 @@ mod plugin;
 use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
 
-/// A renderable SVG that may be used in Bevy UI.
-///
-/// ### Object fit
-/// The image will preserve the aspect ratio, and fits the image inside the container, without cutting - will leave empty space if needed.
-#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(Node, VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
-#[reflect(Component)]
-#[component(on_add = bevy::camera::visibility::add_visibility_class::<UiVelloSvg>)]
-pub struct UiVelloSvg(pub Handle<VelloSvg>);
-
 /// A renderable SVG in the world.
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
 #[reflect(Component)]
 #[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloSvg2d>)]
 pub struct VelloSvg2d(pub Handle<VelloSvg>);
+
+/// A renderable SVG that may be used in Bevy UI.
+///
+/// ### Object fit
+/// The image will preserve the aspect ratio, and fits the image inside the container, without cutting - will leave empty space if needed.
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
+#[require(Node, VelloSvgAnchor, Visibility, VisibilityClass)]
+#[reflect(Component)]
+#[component(on_add = bevy::camera::visibility::add_visibility_class::<UiVelloSvg>)]
+pub struct UiVelloSvg(pub Handle<VelloSvg>);
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
 /// [`VelloSvgAnchor::Center`].

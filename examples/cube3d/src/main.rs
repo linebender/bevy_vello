@@ -115,7 +115,7 @@ fn render_texture(
     queue: Res<RenderQueue>,
     time: Res<Time>,
 ) {
-    let mut scene = VelloScene::default();
+    let mut scene = vello::Scene::default();
     // Animate the scene
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
     let c = Vec3::lerp(
