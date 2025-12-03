@@ -6,11 +6,7 @@ use bevy::{
     ui::ContentSize,
     window::WindowResolution,
 };
-use bevy_vello::{
-    VelloPlugin,
-    prelude::*,
-    render::{SkipScaling, VelloScreenScale, VelloWorldScale},
-};
+use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
     let mut app = App::new();
@@ -38,8 +34,6 @@ fn main() {
             spawn_instructions,
         ),
     )
-    .insert_resource(VelloScreenScale(1.))
-    .insert_resource(VelloWorldScale(1.))
     .add_systems(
         Update,
         (
@@ -77,7 +71,6 @@ fn spawn_instructions(mut commands: Commands) {
             ..default()
         },
         BorderColor::all(css::FUCHSIA),
-        SkipScaling,
         VelloTextSection {
             value: "Press 1 to scale down, press 2 to scale up, press 3 to reset scale to 1.0"
                 .to_string(),
@@ -213,7 +206,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             border: UiRect::all(Val::Px(2.0)),
                             ..default()
                         },
-                        VelloLottieHandle(
+                        UiVelloLottie(
                             asset_server.load("embedded://scaling/assets/lottie/Tiger.json"),
                         ),
                         BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
@@ -286,7 +279,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
 
     commands
         .spawn((
-            VelloLottieHandle(asset_server.load("embedded://scaling/assets/lottie/Tiger.json")),
+            VelloLottie2d(asset_server.load("embedded://scaling/assets/lottie/Tiger.json")),
             RotateThing,
             Transform::from_xyz(CELL_WIDTH, -CELL_HEIGHT, 0.0).with_scale(Vec3::splat(0.1)),
         ))
@@ -365,26 +358,39 @@ fn rotate(mut rotate_q: Query<&mut Transform, With<RotateThing>>, time: Res<Time
 }
 
 fn scale_control(
-    mut commands: Commands,
-    world_scale: Res<VelloWorldScale>,
-    screen_scale: Res<VelloScreenScale>,
+    mut world_items: Query<&mut Transform, (With<RotateThing>, Without<Node>)>,
     mut keyboard_event_reader: MessageReader<KeyboardInput>,
 ) {
     for event in keyboard_event_reader.read() {
         if event.state == ButtonState::Pressed {
-            if event.key_code == KeyCode::Digit1 && world_scale.0 > 0.1 {
-                commands.insert_resource(VelloWorldScale(world_scale.0 - 0.1));
-                commands.insert_resource(VelloScreenScale(screen_scale.0 - 0.1));
-            }
-
-            if event.key_code == KeyCode::Digit2 && world_scale.0 < 10.0 {
-                commands.insert_resource(VelloWorldScale(world_scale.0 + 0.1));
-                commands.insert_resource(VelloScreenScale(screen_scale.0 + 0.1));
-            }
-
-            if event.key_code == KeyCode::Digit3 {
-                commands.insert_resource(VelloWorldScale(1.0));
-                commands.insert_resource(VelloScreenScale(1.0));
+            match event.key_code {
+                KeyCode::Digit1 => {
+                    // Scale down
+                    for mut transform in world_items.iter_mut() {
+                        let current_scale = transform.scale.x;
+                        if current_scale > 0.1 {
+                            transform.scale *= 0.9;
+                        }
+                    }
+                }
+                KeyCode::Digit2 => {
+                    // Scale up
+                    for mut transform in world_items.iter_mut() {
+                        let current_scale = transform.scale.x;
+                        if current_scale < 10.0 {
+                            transform.scale *= 1.1;
+                        }
+                    }
+                }
+                KeyCode::Digit3 => {
+                    // Reset scale
+                    for mut transform in world_items.iter_mut() {
+                        // Reset to original scales for each item type
+                        // SVG and Scene default to 1.0, Lottie was 0.1
+                        transform.scale = Vec3::splat(1.0);
+                    }
+                }
+                _ => {}
             }
         }
     }
