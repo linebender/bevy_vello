@@ -4,12 +4,7 @@ use bevy::{
 };
 
 use super::{VelloFont, font_loader::VelloFontLoader, render};
-use crate::{
-    integrations::text::vello_text::{
-        update_text_2d_aabb_on_change, update_ui_text_content_size_on_change,
-    },
-    render::extract::VelloExtractStep,
-};
+use crate::{integrations::text::systems, render::extract::VelloExtractStep};
 
 pub struct VelloTextIntegrationPlugin;
 
@@ -22,9 +17,9 @@ impl Plugin for VelloTextIntegrationPlugin {
         app.add_systems(
             PostUpdate,
             (
-                update_text_2d_aabb_on_change
+                systems::update_text_2d_aabb_on_change
                     .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
-                update_ui_text_content_size_on_change.in_set(bevy::ui::UiSystems::Content),
+                systems::update_ui_text_content_size_on_change.in_set(bevy::ui::UiSystems::Content),
             ),
         );
 

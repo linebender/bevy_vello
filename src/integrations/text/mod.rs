@@ -3,6 +3,7 @@
 mod context;
 mod font;
 mod font_loader;
+mod systems;
 mod vello_text;
 
 pub(crate) mod render;
