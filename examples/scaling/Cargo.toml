@@ -8,5 +8,10 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy_vello = { path = "../../", features = ["svg", "lottie", "text", "default_font"] }
-bevy = { workspace = true, features = ["bevy_gizmos"] }
+bevy_vello = { path = "../../", features = [
+  "svg",
+  "lottie",
+  "text",
+  "default_font",
+] }
+bevy = { workspace = true, features = ["bevy_gizmos", "bevy_ui_debug"] }

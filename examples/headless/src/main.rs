@@ -23,7 +23,7 @@ fn setup(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 
     // Draw a circle
-    let mut scene = VelloScene::new();
+    let mut scene = VelloScene2d::new();
     scene.fill(
         peniko::Fill::NonZero,
         kurbo::Affine::default(),

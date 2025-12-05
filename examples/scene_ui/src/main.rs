@@ -34,22 +34,21 @@ fn setup_ui(mut commands: Commands) {
         },
         BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
         Interaction::default(),
-        VelloScene::new(),
+        UiVelloScene::new(),
     ));
 }
-
-fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut VelloScene)>) {
+fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut UiVelloScene)>) {
     let (node, interaction, scene) = query.deref_mut();
 
-    let size = node.size();
-    let dmin = f32::min(size.x, size.y);
-    let radius = (dmin / 2.0) as f64;
+    // We draw with logical pixels. We need the logical size of this node.
+    let logical_size = node.size() * node.inverse_scale_factor();
 
-    let center = size / 2.0;
+    let dmin = f32::min(logical_size.x, logical_size.y);
+    let radius = (dmin / 2.0) as f64;
+    let center = logical_size / 2.0;
     let center = kurbo::Point::from((center.x as f64, center.y as f64));
 
     scene.reset();
-
     match *interaction {
         Interaction::Hovered | Interaction::Pressed => {
             let color = match *interaction {
@@ -57,7 +56,6 @@ fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut VelloScene)>) 
                 Interaction::Pressed => peniko::Color::from_rgba8(0, 110, 0, 255),
                 _ => unreachable!(),
             };
-
             scene.fill(
                 peniko::Fill::NonZero,
                 kurbo::Affine::default(),

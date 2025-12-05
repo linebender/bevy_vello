@@ -1,19 +1,30 @@
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
+    camera::primitives::Aabb,
     prelude::*,
+    window::WindowResolution,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(AssetPlugin {
-        meta_check: AssetMetaCheck::Never,
-        ..default()
-    }))
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    resolution: WindowResolution::new(512, 512),
+                    ..default()
+                }),
+                ..default()
+            })
+            .set(AssetPlugin {
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            }),
+    )
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_camera)
-    .add_systems(Startup, load_lottie)
-    .add_systems(Update, gizmos);
+    .add_systems(Startup, load_lottie);
     embedded_asset!(app, "assets/Tiger.json");
     app.run();
 }
@@ -23,30 +34,25 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    // You can also use `VelloLottieBundle`
     commands
-        .spawn(VelloLottieHandle(
+        .spawn(VelloLottie2d(
             asset_server.load("embedded://lottie/assets/Tiger.json"),
         ))
         .insert(Transform::from_scale(Vec3::splat(0.5)));
 }
 
 fn gizmos(
-    svg: Single<(&VelloLottieHandle, &GlobalTransform)>,
-    assets: Res<Assets<VelloLottie>>,
+    lottie_entities: Query<(&Aabb, &GlobalTransform), With<VelloLottie2d>>,
     mut gizmos: Gizmos,
 ) {
-    let (lottie, gtransform) = *svg;
-    let Some(lottie) = assets.get(lottie.id()) else {
-        return;
-    };
-
-    gizmos.rect_2d(
-        Isometry2d::new(
-            gtransform.translation().xy(),
-            Rot2::radians(gtransform.rotation().to_scaled_axis().z),
-        ),
-        Vec2::new(lottie.width, lottie.height) * gtransform.scale().xy(),
-        Color::WHITE,
-    );
+    for (aabb, transform) in lottie_entities.iter() {
+        gizmos.rect_2d(
+            Isometry2d::new(
+                transform.translation().xy(),
+                Rot2::radians(transform.rotation().to_scaled_axis().z),
+            ),
+            aabb.half_extents.to_vec3().xy(),
+            Color::WHITE,
+        );
+    }
 }

@@ -53,12 +53,12 @@ fn setup_scene(mut commands: Commands) {
         VelloView,
     ));
 
-    commands.spawn((VelloScene::new(), BackgroundScene, RenderLayers::layer(1)));
-    commands.spawn((VelloScene::new(), AnimationScene, RenderLayers::layer(2)));
+    commands.spawn((VelloScene2d::new(), BackgroundScene, RenderLayers::layer(1)));
+    commands.spawn((VelloScene2d::new(), AnimationScene, RenderLayers::layer(2)));
 }
 
 fn animation(
-    mut query_scene: Single<(&mut Transform, &mut VelloScene), With<AnimationScene>>,
+    mut query_scene: Single<(&mut Transform, &mut VelloScene2d), With<AnimationScene>>,
     time: Res<Time>,
 ) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
@@ -87,7 +87,7 @@ fn animation(
     transform.rotation = Quat::from_rotation_z(-std::f32::consts::TAU * sin_time);
 }
 
-fn background(mut query_scene: Single<&mut VelloScene, With<BackgroundScene>>) {
+fn background(mut query_scene: Single<&mut VelloScene2d, With<BackgroundScene>>) {
     let scene = query_scene.deref_mut();
     scene.reset();
     scene.fill(

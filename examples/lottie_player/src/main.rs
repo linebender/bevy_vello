@@ -32,14 +32,10 @@ fn setup_camera(mut commands: Commands) {
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
-        .spawn(VelloLottieBundle {
-            asset: VelloLottieHandle(
-                asset_server.load("embedded://lottie_player/assets/calendar.json"),
-            ),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0))
-                .with_scale(Vec3::splat(20.0)),
-            ..default()
-        })
+        .spawn((
+            VelloLottie2d(asset_server.load("embedded://lottie_player/assets/calendar.json")),
+            Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)).with_scale(Vec3::splat(20.0)),
+        ))
         .insert(
             LottiePlayer::new("stopped")
                 .with_state({

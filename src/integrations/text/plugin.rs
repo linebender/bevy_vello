@@ -3,16 +3,8 @@ use bevy::{
     render::{Render, RenderApp, RenderSystems, render_asset::RenderAssetPlugin},
 };
 
-use super::{
-    VelloFont,
-    font_loader::VelloFontLoader,
-    render,
-    vello_text::{
-        calculate_text_section_content_size_on_change,
-        calculate_text_section_content_size_on_screen_scale_change,
-    },
-};
-use crate::render::{VelloScreenScale, extract::VelloExtractStep};
+use super::{VelloFont, font_loader::VelloFontLoader, render};
+use crate::{integrations::text::systems, render::extract::VelloExtractStep};
 
 pub struct VelloTextIntegrationPlugin;
 
@@ -22,14 +14,12 @@ impl Plugin for VelloTextIntegrationPlugin {
             .init_asset_loader::<VelloFontLoader>()
             .add_plugins(RenderAssetPlugin::<VelloFont>::default());
 
-        // Intentionally run in `PostUpdate` due to race condition behavior when modifying
-        // `VelloTextStyle` font in the same frame.
         app.add_systems(
             PostUpdate,
             (
-                calculate_text_section_content_size_on_change,
-                calculate_text_section_content_size_on_screen_scale_change
-                    .run_if(resource_changed::<VelloScreenScale>),
+                systems::update_text_2d_aabb_on_change
+                    .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
+                systems::update_ui_text_content_size_on_change.in_set(bevy::ui::UiSystems::Content),
             ),
         );
 

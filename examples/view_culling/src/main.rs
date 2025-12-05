@@ -3,6 +3,7 @@ use std::ops::DerefMut;
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
     camera::primitives::Aabb,
+    diagnostic::DiagnosticsStore,
     prelude::*,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
@@ -15,6 +16,7 @@ fn main() {
     }))
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_camera)
+    .add_systems(Startup, enable_debug)
     .add_systems(Startup, load_view_culling)
     .add_systems(
         Update,
@@ -24,33 +26,52 @@ fn main() {
             right_left,
             down_up,
             simple_animation,
-            update_lottie_aabb,
-            update_svg_aabb,
-            update_text_aabb,
-            draw_aabb_gizmos,
             log_visibility,
         )
             .chain(),
     );
 
-    embedded_asset!(app, "assets/lottie/Tiger.json");
-    embedded_asset!(app, "assets/svg/fountain.svg");
+    embedded_asset!(app, "assets/Tiger.json");
+    embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
 
     app.run();
 }
 
 fn log_visibility(
-    scene: Single<&ViewVisibility, With<VelloScene>>,
-    lottie: Single<&ViewVisibility, With<VelloLottieHandle>>,
-    svg: Single<&ViewVisibility, With<VelloSvgHandle>>,
-    text: Single<&ViewVisibility, With<VelloTextSection>>,
+    diagnostics: Res<DiagnosticsStore>,
+    scene: Single<&ViewVisibility, With<VelloScene2d>>,
+    lottie: Single<&ViewVisibility, With<VelloLottie2d>>,
+    svg: Single<&ViewVisibility, With<VelloSvg2d>>,
+    text: Single<&ViewVisibility, With<VelloText2d>>,
 ) {
     let visible_status = format!(
-        "{{\n  scene: {},\n  lottie: {},\n  svg: {},\n  text: {}\n}}",
+        r#"
+{{
+    visibility: {{
+        scene: {},
+        lottie: {},
+        svg: {},
+        text: {}
+    }},
+    render: {{
+        paths: {},
+        path_segs: {}
+    }}
+}}"#,
         scene.get(),
         lottie.get(),
         svg.get(),
-        text.get()
+        text.get(),
+        diagnostics
+            .get(&bevy_vello::render::diagnostics::PATH_COUNT)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value)
+            .unwrap_or(0.0),
+        diagnostics
+            .get(&bevy_vello::render::diagnostics::PATH_SEGMENTS_COUNT)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value)
+            .unwrap_or(0.0)
     );
 
     println!("{visible_status}");
@@ -60,35 +81,37 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
 
+fn enable_debug(mut config: ResMut<GizmoConfigStore>) {
+    config.config_mut::<AabbGizmoConfigGroup>().1.draw_all = true;
+}
+
 fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
-        .spawn(VelloScene::new())
+        .spawn(VelloScene2d::new())
         .insert(RightLeft)
+        // For scene culling, you must specify the bounding box yourself!
         .insert(Aabb::from_min_max(
             Vec3::new(-50.0, -50.0, 0.0),
             Vec3::new(50.0, 50.0, 0.0),
         ));
 
-    // You can also use `VelloLottieBundle`
     commands
-        .spawn(VelloLottieHandle(
-            asset_server.load("embedded://view_culling/assets/lottie/Tiger.json"),
+        .spawn(VelloLottie2d(
+            asset_server.load("embedded://view_culling/assets/Tiger.json"),
         ))
         .insert(Transform::from_scale(Vec3::splat(0.2)))
-        .insert(LeftRight)
-        .insert(Aabb::default());
+        .insert(LeftRight);
 
     commands
-        .spawn(VelloSvgHandle(
-            asset_server.load("embedded://view_culling/assets/svg/fountain.svg"),
+        .spawn(VelloSvg2d(
+            asset_server.load("embedded://view_culling/assets/Ghostscript_Tiger.svg"),
         ))
-        .insert(Transform::from_scale(Vec3::splat(1.0)))
-        .insert(DownUp)
-        .insert(Aabb::default());
+        .insert(Transform::from_scale(Vec3::splat(0.2)))
+        .insert(DownUp);
 
     commands
         .spawn((
-            VelloTextSection {
+            VelloText2d {
                 value: "View culled text".to_string(),
                 style: VelloTextStyle {
                     font_size: 24.0,
@@ -98,47 +121,10 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
             },
             VelloTextAnchor::Center,
         ))
-        .insert(UpDown)
-        .insert(Aabb::default());
+        .insert(UpDown);
 }
 
-fn update_lottie_aabb(
-    lottie_assets: Res<Assets<VelloLottie>>,
-    mut lottie_q: Query<(&GlobalTransform, &VelloLottieHandle, &mut Aabb), Added<Aabb>>,
-) {
-    for (lottie_transform, handle, mut aabb) in &mut lottie_q {
-        if let Some(vello_lottie) = lottie_assets.get(&handle.0) {
-            let bb = vello_lottie.bb_in_world_space(lottie_transform);
-            *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
-        }
-    }
-}
-
-fn update_svg_aabb(
-    svg_assets: Res<Assets<VelloSvg>>,
-    mut svg_q: Query<(&GlobalTransform, &VelloSvgHandle, &mut Aabb), Added<Aabb>>,
-) {
-    for (svg_transform, handle, mut aabb) in &mut svg_q {
-        if let Some(vello_svg) = svg_assets.get(&handle.0) {
-            let bb = vello_svg.bb_in_world_space(svg_transform);
-            *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
-        }
-    }
-}
-
-fn update_text_aabb(
-    font_assets: Res<Assets<VelloFont>>,
-    mut text_q: Query<(&GlobalTransform, &VelloTextSection, &mut Aabb), Added<Aabb>>,
-) {
-    for (text_transform, text_section, mut aabb) in &mut text_q {
-        if let Some(font) = font_assets.get(&text_section.style.font) {
-            let bb = text_section.bb_in_world_space(font, text_transform);
-            *aabb = Aabb::from_min_max(bb.min.extend(0.0), bb.max.extend(0.0));
-        }
-    }
-}
-
-fn simple_animation(mut query_scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
+fn simple_animation(mut query_scene: Single<(&mut Transform, &mut VelloScene2d)>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
     let (transform, scene) = query_scene.deref_mut();
     // Reset scene every frame
@@ -203,20 +189,5 @@ fn down_up(mut query: Query<&mut Transform, With<DownUp>>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5) * ANIMATION_SPEED;
     for mut transform in query.iter_mut() {
         transform.translation = Vec3::lerp(Vec3::Y * 500.0, Vec3::Y * -500.0, sin_time);
-    }
-}
-
-fn draw_aabb_gizmos(aabb_q: Query<(&Aabb, &GlobalTransform)>, mut gizmos: Gizmos) {
-    for (aabb, gtransform) in &aabb_q {
-        let aabb_min = aabb.min();
-        let aabb_max = aabb.max();
-        gizmos.rect_2d(
-            Isometry2d::new(
-                gtransform.translation().xy(),
-                Rot2::radians(gtransform.rotation().to_scaled_axis().z),
-            ),
-            Vec2::new(aabb_max.x - aabb_min.x, aabb_max.y - aabb_min.y) * gtransform.scale().xy(),
-            Color::WHITE,
-        );
     }
 }

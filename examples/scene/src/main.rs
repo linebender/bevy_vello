@@ -16,11 +16,10 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn setup_vector_graphics(mut commands: Commands) {
-    // Spawn a scene in world space
-    commands.spawn(VelloScene::new());
+    commands.spawn(VelloScene2d::new());
 }
 
-fn animation(scene: Single<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
+fn animation(scene: Single<(&mut Transform, &mut VelloScene2d)>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
     let (mut transform, mut scene) = scene.into_inner();
 

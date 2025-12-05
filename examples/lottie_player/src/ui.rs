@@ -16,7 +16,7 @@ pub fn controls_ui(
             &mut Playhead,
             &mut PlaybackOptions,
             &mut Theme,
-            &VelloLottieHandle,
+            &VelloLottie2d,
         )>,
     >,
     assets: Res<Assets<VelloLottie>>,

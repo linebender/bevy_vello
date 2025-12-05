@@ -1,9 +1,5 @@
 use bevy::{diagnostic::DiagnosticsStore, prelude::*};
-use bevy_vello::{
-    VelloPlugin,
-    diagnostics::{VelloEntityCountDiagnosticsPlugin, VelloFrameProfileDiagnosticsPlugin},
-    prelude::*,
-};
+use bevy_vello::{VelloPlugin, prelude::*};
 
 const SCENE_COUNT: usize = 5;
 
@@ -11,8 +7,6 @@ fn main() {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin::default())
-        .add_plugins(VelloEntityCountDiagnosticsPlugin)
-        .add_plugins(VelloFrameProfileDiagnosticsPlugin)
         .add_systems(Startup, setup)
         .add_systems(Update, simple_animation)
         .add_systems(Update, update_scene_count_ui);
@@ -24,7 +18,7 @@ fn setup(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
     for i in 0..SCENE_COUNT {
         commands.spawn((
-            VelloScene::new(),
+            VelloScene2d::new(),
             Transform::from_translation(Vec3::new(i as f32 * 100.0 - 200.0, 0.0, 0.0)),
         ));
     }
@@ -50,7 +44,7 @@ fn setup(mut commands: Commands) {
 #[derive(Component)]
 struct DiagnosticsText;
 
-fn simple_animation(mut query: Query<(&mut Transform, &mut VelloScene)>, time: Res<Time>) {
+fn simple_animation(mut query: Query<(&mut Transform, &mut VelloScene2d)>, time: Res<Time>) {
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
 
     for (mut transform, mut scene) in query.iter_mut() {
@@ -79,23 +73,17 @@ fn update_scene_count_ui(
     diagnostics: Res<DiagnosticsStore>,
     mut text: Single<&mut Text, With<DiagnosticsText>>,
 ) {
-    let Some(scenes) = diagnostics.get(&VelloEntityCountDiagnosticsPlugin::WORLD_SCENE_COUNT)
-    else {
-        return;
-    };
-    let Some(scene_count) = scenes.measurement() else {
-        return;
-    };
-    let Some(path_segs) = diagnostics.get(&VelloFrameProfileDiagnosticsPlugin::PATH_SEGMENTS_COUNT)
-    else {
-        return;
-    };
-    let Some(path_segs_count) = path_segs.measurement() else {
-        return;
-    };
+    let scene_count = diagnostics
+        .get(&bevy_vello::render::diagnostics::WORLD_SCENE_COUNT)
+        .and_then(|d| d.measurement())
+        .map(|m| m.value)
+        .unwrap_or(0.0);
 
-    text.0 = format!(
-        "Total scenes: {}\nTotal path segments: {}",
-        scene_count.value, path_segs_count.value
-    );
+    let path_segs_count = diagnostics
+        .get(&bevy_vello::render::diagnostics::PATH_SEGMENTS_COUNT)
+        .and_then(|d| d.measurement())
+        .map(|m| m.value)
+        .unwrap_or(0.0);
+
+    text.0 = format!("Total scenes: {scene_count}\nTotal path segments: {path_segs_count}");
 }

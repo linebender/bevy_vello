@@ -14,7 +14,7 @@ fn main() {
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_svg);
-    embedded_asset!(app, "assets/fountain.svg");
+    embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
     app.run();
 }
 
@@ -35,6 +35,6 @@ fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             ..default()
         },
         BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
-        VelloSvgHandle(asset_server.load("embedded://svg_ui/assets/fountain.svg")),
+        UiVelloSvg(asset_server.load("embedded://svg_ui/assets/Ghostscript_Tiger.svg")),
     ));
 }

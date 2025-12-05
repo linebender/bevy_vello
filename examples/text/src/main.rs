@@ -18,7 +18,7 @@ fn main() {
         Startup,
         (setup_camera, setup_screenspace_text, setup_worldspace_text),
     )
-    .add_systems(Update, (toggle_animations, animate_axes, gizmos).chain())
+    .add_systems(Update, (toggle_animations, animate_axes).chain())
     .init_resource::<AnimationToggles>();
     embedded_asset!(
         app,
@@ -35,29 +35,26 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
     let brush = vello::peniko::Brush::Solid(vello::peniko::Color::WHITE);
 
     commands.spawn((
-        VelloTextBundle {
-            text: VelloTextSection {
-                value: "bevy_vello using RobotoFlex-VariableFont".to_string(),
-                style: VelloTextStyle {
-                    font: asset_server.load(EMBEDDED_FONT),
-                    brush: brush.clone(),
-                    line_height: 1.5,
-                    word_spacing: 2.0,
-                    letter_spacing: 2.0,
-                    font_size: 32.0,
-                    ..default()
-                },
+        VelloText2d {
+            value: "bevy_vello using RobotoFlex-VariableFont".to_string(),
+            style: VelloTextStyle {
+                font: asset_server.load(EMBEDDED_FONT),
+                brush: brush.clone(),
+                line_height: 1.5,
+                word_spacing: 2.0,
+                letter_spacing: 2.0,
+                font_size: 32.0,
                 ..default()
             },
-            text_anchor: VelloTextAnchor::Center,
-            transform: Transform::from_xyz(0.0, 150.0, 0.0),
             ..default()
         },
+        VelloTextAnchor::Center,
+        Transform::from_xyz(0.0, 150.0, 0.0),
         WithAnimatedFont,
     ));
 
-    commands.spawn(VelloTextBundle {
-        text: VelloTextSection {
+    commands.spawn((
+        VelloText2d {
             value: "bevy_vello using Bevy's default font".to_string(),
             style: VelloTextStyle {
                 font_size: 24.0,
@@ -65,17 +62,15 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
             },
             ..default()
         },
-        text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, 40.0, 0.0),
-        ..default()
-    });
+        VelloTextAnchor::Center,
+        Transform::from_xyz(0.0, 40.0, 0.0),
+    ));
 
-    commands.spawn(VelloTextBundle {
-        text: VelloTextSection {
+    commands.spawn((
+        VelloText2d {
             value: "Justified text along a width\nbut the last line is not justified".to_string(),
             text_align: VelloTextAlign::Justified,
-            width: Some(720.0),
-            height: None,
+            max_advance: Some(720.0),
             style: VelloTextStyle {
                 font: asset_server.load(EMBEDDED_FONT),
                 brush,
@@ -86,10 +81,9 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
                 ..default()
             },
         },
-        text_anchor: VelloTextAnchor::Center,
-        transform: Transform::from_xyz(0.0, -100.0, 0.0),
-        ..default()
-    });
+        VelloTextAnchor::Center,
+        Transform::from_xyz(0.0, -100.0, 0.0),
+    ));
 }
 
 #[derive(Debug, Default, Resource)]
@@ -153,7 +147,7 @@ struct WithAnimatedFont;
 
 fn animate_axes(
     time: Res<Time>,
-    mut text_section: Single<&mut VelloTextSection, With<WithAnimatedFont>>,
+    mut text_section: Single<&mut VelloText2d, With<WithAnimatedFont>>,
     animation_toggles: Res<AnimationToggles>,
 ) {
     let sin_time = (time.elapsed_secs() * ANIMATION_SPEED)
@@ -295,27 +289,4 @@ fn setup_screenspace_text(mut commands: Commands) {
                         .with_child(Text::new("V: figure height"));
                 });
         });
-}
-
-fn gizmos(
-    texts: Query<(&VelloTextSection, &GlobalTransform)>,
-    assets: Res<Assets<VelloFont>>,
-    mut gizmos: Gizmos,
-) {
-    for (text, gtransform) in texts.iter() {
-        let Some(font) = assets.get(text.style.font.id()) else {
-            continue;
-        };
-
-        let bb_size = font.sizeof(text);
-
-        gizmos.rect_2d(
-            Isometry2d::new(
-                gtransform.translation().xy(),
-                Rot2::radians(gtransform.rotation().to_scaled_axis().z),
-            ),
-            bb_size * gtransform.scale().xy(),
-            Color::WHITE,
-        );
-    }
 }

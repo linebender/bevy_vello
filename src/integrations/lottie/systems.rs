@@ -1,15 +1,20 @@
 use std::time::Duration;
 
-use bevy::{platform::time::Instant, prelude::*, window::PrimaryWindow};
-
-use super::{
-    LottiePlayer, PlayerTransition,
-    asset::{VelloLottie, VelloLottieHandle},
-};
+use super::{LottiePlayer, PlayerTransition, asset::VelloLottie};
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead, VelloRenderSpace,
-    integrations::lottie::PlaybackPlayMode, render::VelloView,
+    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
+    integrations::lottie::{PlaybackPlayMode, UiVelloLottie, VelloLottie2d},
+    prelude::VelloLottieAnchor,
+    render::VelloView,
 };
+use bevy::{
+    camera::primitives::Aabb,
+    platform::time::Instant,
+    prelude::*,
+    ui::{ContentSize, NodeMeasure},
+    window::PrimaryWindow,
+};
+use tracing::warn;
 
 /// Helper function to get the next smallest representable f64.
 /// For example, prev_f64(3.0) == 2.9999999999999996
@@ -30,16 +35,36 @@ fn prev_f64(x: f64) -> f64 {
 
 /// Advance all playheads in the scene
 pub fn advance_playheads(
-    mut query: Query<(
-        &VelloLottieHandle,
-        &mut Playhead,
-        &mut LottiePlayer,
-        &PlaybackOptions,
-    )>,
+    mut world_lotties: Query<
+        (
+            &VelloLottie2d,
+            &mut Playhead,
+            &mut LottiePlayer,
+            &PlaybackOptions,
+        ),
+        Without<UiVelloLottie>,
+    >,
+    mut ui_lotties: Query<
+        (
+            &UiVelloLottie,
+            &mut Playhead,
+            &mut LottiePlayer,
+            &PlaybackOptions,
+        ),
+        Without<VelloLottie2d>,
+    >,
     mut assets: ResMut<Assets<VelloLottie>>,
     time: Res<Time>,
 ) {
-    for (asset_handle, mut playhead, mut player, options) in query.iter_mut() {
+    let world_lotties = world_lotties
+        .iter_mut()
+        .map(|(handle, playhead, player, options)| (handle.0.clone(), playhead, player, options));
+    let ui_lotties = ui_lotties
+        .iter_mut()
+        .map(|(handle, playhead, player, options)| (handle.0.clone(), playhead, player, options));
+    let all_lotties = world_lotties.chain(ui_lotties);
+
+    for (asset_handle, mut playhead, mut player, options) in all_lotties {
         // Get asset
         let Some(asset) = assets.get_mut(asset_handle.id()) else {
             continue;
@@ -157,8 +182,7 @@ pub fn run_transitions(
         &Playhead,
         &PlaybackOptions,
         &GlobalTransform,
-        &mut VelloLottieHandle,
-        &VelloRenderSpace,
+        &mut VelloLottie2d,
         Option<&ComputedNode>,
     )>,
     mut assets: ResMut<Assets<VelloLottie>>,
@@ -181,7 +205,7 @@ pub fn run_transitions(
         .and_then(|cursor| camera.viewport_to_world(view, cursor).ok())
         .map(|ray| ray.origin.truncate());
 
-    for (mut player, playhead, options, gtransform, current_asset_handle, render_space, ui_node) in
+    for (mut player, playhead, options, gtransform, current_asset_handle, ui_node) in
         query_player.iter_mut()
     {
         if player.stopped {
@@ -200,13 +224,10 @@ pub fn run_transitions(
             continue;
         };
 
-        let is_inside = if ui_node.is_some() || *render_space == VelloRenderSpace::Screen {
+        let is_inside = if ui_node.is_some() {
             match pointer_screen_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix =
-                        current_asset.local_transform_center.to_matrix().inverse();
-
-                    let transform = gtransform.to_matrix() * local_center_matrix;
+                    let transform = gtransform.to_matrix();
 
                     let mouse_local = transform
                         .inverse()
@@ -222,10 +243,7 @@ pub fn run_transitions(
         } else {
             match pointer_world_pos {
                 Some(pointer_pos) => {
-                    let local_center_matrix =
-                        current_asset.local_transform_center.to_matrix().inverse();
-
-                    let model_matrix = gtransform.to_matrix() * local_center_matrix;
+                    let model_matrix = gtransform.to_matrix();
 
                     let mouse_local = model_matrix
                         .inverse()
@@ -350,7 +368,7 @@ pub fn transition_state(
 
         // Swap asset
         if let Some(target_handle) = target_state.asset.as_ref() {
-            commands.entity(entity).insert(target_handle.clone());
+            // FIXME: commands.entity(entity).insert(target_handle.clone());
         }
         // Reset playheads if requested
         let reset_playhead =
@@ -399,5 +417,56 @@ pub fn transition_state(
         player.started = false;
         player.playing = false;
         player.current_state.replace(next_state);
+    }
+}
+
+pub fn update_lottie_2d_aabb_on_change(
+    mut query: Query<(&mut Aabb, &mut VelloLottie2d, &VelloLottieAnchor), Changed<VelloLottie2d>>,
+    lotties: Res<Assets<VelloLottie>>,
+) {
+    for (mut aabb, lottie, anchor) in query.iter_mut() {
+        let Some(lottie) = lotties.get(&lottie.0) else {
+            warn!("VelloLottie2d: lottie {:?} not found", lottie.0);
+            continue;
+        };
+
+        let (width, height) = (lottie.width, lottie.height);
+        let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
+        let (dx, dy) = {
+            match anchor {
+                VelloLottieAnchor::TopLeft => (half_size.x, -half_size.y),
+                VelloLottieAnchor::Left => (half_size.x, 0.0),
+                VelloLottieAnchor::BottomLeft => (half_size.x, half_size.y),
+                VelloLottieAnchor::Top => (0.0, -half_size.y),
+                VelloLottieAnchor::Center => (0.0, 0.0),
+                VelloLottieAnchor::Bottom => (0.0, half_size.y),
+                VelloLottieAnchor::TopRight => (-half_size.x, -half_size.y),
+                VelloLottieAnchor::Right => (-half_size.x, 0.0),
+                VelloLottieAnchor::BottomRight => (-half_size.x, half_size.y),
+            }
+        };
+        let adjustment = Vec3::new(dx, dy, 0.0);
+        let min = -half_size + adjustment;
+        let max = half_size + adjustment;
+        *aabb = Aabb::from_min_max(min, max);
+    }
+}
+
+pub fn update_ui_lottie_content_size_on_change(
+    mut query: Query<
+        (&mut ContentSize, &ComputedNode, &mut UiVelloLottie),
+        Or<(Changed<UiVelloLottie>, Changed<ComputedNode>)>,
+    >,
+    lotties: Res<Assets<VelloLottie>>,
+) {
+    for (mut content_size, node, lottie) in query.iter_mut() {
+        let Some(lottie) = lotties.get(&lottie.0) else {
+            warn!("UiVelloLottie: lottie {:?} not found", lottie.0);
+            continue;
+        };
+
+        let size = Vec2::new(lottie.width, lottie.height) / node.inverse_scale_factor();
+        let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure { size });
+        content_size.set(measure);
     }
 }

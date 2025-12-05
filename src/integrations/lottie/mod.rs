@@ -3,7 +3,7 @@ mod asset_loader;
 pub(crate) mod render;
 
 pub mod asset;
-pub use asset::{VelloLottie, VelloLottieHandle};
+pub use asset::VelloLottie;
 
 mod systems;
 
@@ -34,31 +34,46 @@ mod player_transition;
 pub use player_transition::PlayerTransition;
 
 mod theme;
-use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub use theme::Theme;
 
-use crate::VelloRenderSpace;
+/// A renderable Lottie in the world.
+use bevy::{
+    camera::{primitives::Aabb, visibility::VisibilityClass},
+    prelude::*,
+};
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
+#[require(
+    Aabb,
+    VelloLottieAnchor,
+    Playhead,
+    PlaybackOptions,
+    LottiePlayer,
+    Transform,
+    Visibility,
+    VisibilityClass
+)]
+#[reflect(Component)]
+#[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloLottie2d>)]
+pub struct VelloLottie2d(pub Handle<VelloLottie>);
 
-#[cfg(feature = "lottie")]
-#[derive(Bundle, Default)]
-pub struct VelloLottieBundle {
-    /// Asset data to render
-    pub asset: VelloLottieHandle,
-    /// How the asset is positioned relative to its [`Transform`].
-    pub asset_anchor: VelloLottieAnchor,
-    /// The current playhead for the animation
-    pub playhead: Playhead,
-    /// The playback options for the animation
-    pub playback_options: PlaybackOptions,
-    /// The player used for advanced state machine transitions and playback control.
-    pub player: LottiePlayer,
-    /// A transform to apply to this vector
-    pub transform: Transform,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub visibility: Visibility,
-    /// A bucket into which we group entities for the purposes of visibility.
-    pub visibility_class: VisibilityClass,
-}
+/// A renderable Lottie that may be used in Bevy UI.
+///
+/// ### Object fit
+/// The image will preserve the aspect ratio, and fits the image inside the container, without cutting - will leave empty space if needed.
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
+#[require(
+    Node,
+    VelloLottieAnchor,
+    Playhead,
+    PlaybackOptions,
+    LottiePlayer,
+    UiTransform,
+    Visibility,
+    VisibilityClass
+)]
+#[reflect(Component)]
+#[component(on_add = bevy::camera::visibility::add_visibility_class::<UiVelloLottie>)]
+pub struct UiVelloLottie(pub Handle<VelloLottie>);
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
 /// [`VelloLottieAnchor::Center`].
@@ -88,47 +103,4 @@ pub enum VelloLottieAnchor {
     Top,
     /// Bounds start from the render position and advance down and to the left.
     TopRight,
-}
-
-impl VelloLottieAnchor {
-    pub(crate) fn compute(
-        &self,
-        width: f32,
-        height: f32,
-        render_space: VelloRenderSpace,
-        transform: &GlobalTransform,
-    ) -> GlobalTransform {
-        // Apply positioning
-        let adjustment = match render_space {
-            VelloRenderSpace::World => match self {
-                Self::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-                Self::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-                Self::Top => Vec3::new(0.0, -height / 2.0, 0.0),
-                Self::Center => Vec3::new(0.0, 0.0, 0.0),
-                Self::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
-                Self::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-                Self::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
-            },
-            // Note: Screen space has Y increasing downward, opposite of world space
-            VelloRenderSpace::Screen => match self {
-                Self::TopLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-                Self::BottomLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-                Self::Top => Vec3::new(0.0, height / 2.0, 0.0),
-                Self::Center => Vec3::new(0.0, 0.0, 0.0),
-                Self::Bottom => Vec3::new(0.0, -height / 2.0, 0.0),
-                Self::TopRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
-                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-                Self::BottomRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-            },
-        };
-        let new_translation: Vec3 = (transform.to_matrix() * adjustment.extend(1.0)).xyz();
-        GlobalTransform::from(
-            transform
-                .compute_transform()
-                .with_translation(new_translation),
-        )
-    }
 }

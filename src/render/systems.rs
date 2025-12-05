@@ -24,16 +24,16 @@ use super::{
     prepare::PreparedAffine,
 };
 #[cfg(feature = "lottie")]
-use crate::integrations::lottie::render::{ExtractedUiVelloLottie, ExtractedWorldVelloLottie};
+use crate::integrations::lottie::render::{ExtractedUiVelloLottie, ExtractedVelloLottie2d};
 #[cfg(feature = "svg")]
-use crate::integrations::svg::render::{ExtractedUiVelloSvg, ExtractedWorldVelloSvg};
+use crate::integrations::svg::render::{ExtractedUiVelloSvg, ExtractedVelloSvg2d};
 #[cfg(feature = "text")]
 use crate::integrations::text::{
     VelloFont,
-    render::{ExtractedUiVelloText, ExtractedWorldVelloText},
+    render::{ExtractedUiVelloText, ExtractedVelloText2d},
 };
 use crate::{
-    integrations::scene::render::{ExtractedUiVelloScene, ExtractedWorldVelloScene},
+    integrations::scene::render::{ExtractedUiVelloScene, ExtractedVelloScene2d},
     render::{VelloUiRenderItem, VelloView},
 };
 
@@ -68,15 +68,15 @@ pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handl
 
 #[allow(clippy::too_many_arguments, reason = "Many features gates")]
 pub fn sort_render_items(
-    view_world_scenes: Query<(&PreparedAffine, &ExtractedWorldVelloScene)>,
+    view_world_scenes: Query<(&PreparedAffine, &ExtractedVelloScene2d)>,
     view_ui_scenes: Query<(&PreparedAffine, &ExtractedUiVelloScene)>,
-    #[cfg(feature = "text")] view_world_text: Query<(&PreparedAffine, &ExtractedWorldVelloText)>,
+    #[cfg(feature = "text")] view_world_text: Query<(&PreparedAffine, &ExtractedVelloText2d)>,
     #[cfg(feature = "text")] view_ui_text: Query<(&PreparedAffine, &ExtractedUiVelloText)>,
-    #[cfg(feature = "svg")] view_world_svgs: Query<(&PreparedAffine, &ExtractedWorldVelloSvg)>,
+    #[cfg(feature = "svg")] view_world_svgs: Query<(&PreparedAffine, &ExtractedVelloSvg2d)>,
     #[cfg(feature = "svg")] view_ui_svgs: Query<(&PreparedAffine, &ExtractedUiVelloSvg)>,
     #[cfg(feature = "lottie")] view_world_lotties: Query<(
         &PreparedAffine,
-        &ExtractedWorldVelloLottie,
+        &ExtractedVelloLottie2d,
     )>,
     #[cfg(feature = "lottie")] view_ui_lotties: Query<(&PreparedAffine, &ExtractedUiVelloLottie)>,
     mut final_render_queue: ResMut<VelloRenderQueue>,
@@ -250,7 +250,7 @@ pub fn render_frame(
         match render_item {
             VelloRenderItem::Scene {
                 affine,
-                item: ExtractedWorldVelloScene { scene, .. },
+                item: ExtractedVelloScene2d { scene, .. },
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
@@ -258,7 +258,7 @@ pub fn render_frame(
             VelloRenderItem::Lottie {
                 affine,
                 item:
-                    ExtractedWorldVelloLottie {
+                    ExtractedVelloLottie2d {
                         asset,
                         alpha,
                         theme,
@@ -293,7 +293,7 @@ pub fn render_frame(
             #[cfg(feature = "svg")]
             VelloRenderItem::Svg {
                 affine,
-                item: ExtractedWorldVelloSvg { asset, alpha, .. },
+                item: ExtractedVelloSvg2d { asset, alpha, .. },
             } => {
                 if *alpha <= 0.0 {
                     continue;
@@ -315,12 +315,20 @@ pub fn render_frame(
             VelloRenderItem::Text {
                 affine,
                 item:
-                    ExtractedWorldVelloText {
+                    ExtractedVelloText2d {
                         text, text_anchor, ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    font.render(&mut scene_buffer, *affine, text, *text_anchor);
+                    font.render(
+                        &mut scene_buffer,
+                        *affine,
+                        &text.value,
+                        &text.style,
+                        text.text_align,
+                        text.max_advance,
+                        *text_anchor,
+                    );
                 }
             }
         }
@@ -401,7 +409,15 @@ pub fn render_frame(
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    font.render(&mut scene_buffer, *affine, text, *text_anchor);
+                    font.render(
+                        &mut scene_buffer,
+                        *affine,
+                        &text.value,
+                        &text.style,
+                        text.text_align,
+                        text.max_advance,
+                        *text_anchor,
+                    );
                 }
             }
         }
@@ -442,13 +458,17 @@ pub fn get_viewport_size(
         return (viewport.physical_size.x, viewport.physical_size.y);
     }
 
-    let Some(window) = window.as_deref() else {
-        panic!("We only support rendering to the primary window right now.");
-    };
-    (
-        window.resolution.physical_width(),
-        window.resolution.physical_height(),
-    )
+    if let Some(window) = window.as_deref() {
+        (
+            window.resolution.physical_width(),
+            window.resolution.physical_height(),
+        )
+    } else {
+        tracing::error!(
+            "bevy_vello does not see a window, and thus, cannot resize the render target"
+        );
+        (0, 0)
+    }
 }
 
 pub fn resize_rendertargets(
@@ -549,26 +569,5 @@ pub fn render_settings_change_detection(
         tracing::info!("Render settings changed, re-initializing vello...");
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
-    }
-}
-
-/// Hide the render target canvas if there is nothing to render
-pub fn hide_when_empty(
-    mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
-    entity_count: Res<VelloEntityCountData>,
-) {
-    let is_empty = entity_count.n_world_scenes == 0 && entity_count.n_ui_scenes == 0;
-    #[cfg(feature = "text")]
-    let is_empty = is_empty && entity_count.n_world_texts == 0 && entity_count.n_ui_texts == 0;
-    #[cfg(feature = "svg")]
-    let is_empty = is_empty && entity_count.n_world_svgs == 0 && entity_count.n_ui_svgs == 0;
-    #[cfg(feature = "lottie")]
-    let is_empty = is_empty && entity_count.n_world_lotties == 0 && entity_count.n_ui_lotties == 0;
-    if let Some(visibility) = query_render_target.as_deref_mut() {
-        if is_empty {
-            **visibility = Visibility::Hidden;
-        } else {
-            **visibility = Visibility::Inherited;
-        }
     }
 }
