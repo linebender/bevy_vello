@@ -19,13 +19,12 @@ impl Plugin for VelloTextIntegrationPlugin {
             .init_asset_loader::<VelloFontLoader>()
             .add_plugins(RenderAssetPlugin::<VelloFont>::default());
 
-        // Intentionally run in `PostUpdate` due to race condition behavior when modifying
-        // `VelloTextStyle` font in the same frame.
         app.add_systems(
             PostUpdate,
             (
-                update_text_2d_aabb_on_change,
-                update_ui_text_content_size_on_change,
+                update_text_2d_aabb_on_change
+                    .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
+                update_ui_text_content_size_on_change.in_set(bevy::ui::UiSystems::Content),
             ),
         );
 
