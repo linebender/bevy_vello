@@ -1,4 +1,5 @@
 mod asset_loader;
+mod systems;
 
 pub(crate) mod render;
 
@@ -9,12 +10,16 @@ mod parse;
 pub use parse::{load_svg_from_bytes, load_svg_from_str};
 
 mod plugin;
-use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
+
+use bevy::{
+    camera::{primitives::Aabb, visibility::VisibilityClass},
+    prelude::*,
+};
 
 /// A renderable SVG in the world.
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
+#[require(Aabb, VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
 #[reflect(Component)]
 #[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloSvg2d>)]
 pub struct VelloSvg2d(pub Handle<VelloSvg>);

@@ -5,6 +5,7 @@ use bevy::{
     },
     math::DVec2,
     prelude::*,
+    ui::ContentSize,
 };
 use vello::peniko::{self, Brush};
 
@@ -21,7 +22,7 @@ pub struct VelloText2d {
 }
 
 #[derive(Component, Default, Clone)]
-#[require(VelloTextAnchor, UiTransform, Visibility, VisibilityClass)]
+#[require(ContentSize, VelloTextAnchor, UiTransform, Visibility, VisibilityClass)]
 #[component(on_add = visibility::add_visibility_class::<UiVelloText>)]
 pub struct UiVelloText {
     pub value: String,

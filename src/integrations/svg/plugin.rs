@@ -5,7 +5,7 @@ use bevy::{
 
 use super::{VelloSvg, VelloSvgAnchor, asset_loader::VelloSvgLoader, render};
 use crate::{
-    integrations::svg::{UiVelloSvg, VelloSvg2d},
+    integrations::svg::{UiVelloSvg, VelloSvg2d, systems},
     render::extract::VelloExtractStep,
 };
 
@@ -18,6 +18,15 @@ impl Plugin for SvgIntegrationPlugin {
             .register_type::<UiVelloSvg>()
             .register_type::<VelloSvg2d>()
             .register_type::<VelloSvgAnchor>();
+
+        app.add_systems(
+            PostUpdate,
+            (
+                systems::update_svg_2d_aabb_on_change
+                    .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
+                systems::update_ui_svg_content_size_on_change.in_set(bevy::ui::UiSystems::Content),
+            ),
+        );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
