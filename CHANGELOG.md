@@ -27,6 +27,7 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
   - UI will automatically measure `UiVelloSvg` using the asset size.
   - UI will automatically measure `UiVelloLottie` using the asset size.
   - UI will automatically measure `UiVelloText` using the text size.
+  - Several diagnostics were added. See `bevy_vello::render::diagnostics` for all of them.
 
 ### Changed
 
@@ -36,8 +37,7 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 - `VelloTextSection` has been split into `VelloText2d` and `UiVelloText`. The former is for world entities and the latter is for UI nodes.
 - `VelloSvgHandle` has been split into `VelloSvg2d` and `UiVelloSvg`. The former is for world entities and the latter is for UI nodes.
 - `VelloLottieHandle` has been split into `VelloLottie2d` and `UiVelloLottie`. The former is for world entities and the latter is for UI nodes.
-- Some diagnostics were changed.
-  - `VelloEntityCountDiagnosticsPlugin::SCENE_COUNT` was split into `VelloEntityCountDiagnosticsPlugin::WORLD_SCENE_COUNT` and `VelloEntityCountDiagnosticsPlugin::UI_SCENE_COUNT` to more granularly track Ui and World entities.
+- Several diagnostics changed names. See `bevy_vello::render::diagnostics` for all of them.
 
 ### Removed
 
@@ -54,7 +54,6 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 - Renderables (text, images, scenes) now respect the camera projection scale.
 - Objects are now scaled according to the scale factor (pixel density) of the viewport/window. This fixes scaling on retina displays.
-- The `VelloScreenScale` resource no longer applies to Vello renderables parented by a `Node`; it only applies to objects tagged with `VelloRenderSpace::Screen` (which uses the world transform system, not the ui transform system).
 - Render targets are now resized when camera viewport size changes
 
 ## [0.10.3] - 2025-07-09
