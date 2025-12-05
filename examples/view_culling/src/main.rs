@@ -15,6 +15,7 @@ fn main() {
     }))
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, setup_camera)
+    .add_systems(Startup, enable_debug)
     .add_systems(Startup, load_view_culling)
     .add_systems(
         Update,
@@ -56,6 +57,10 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
 
+fn enable_debug(mut config: ResMut<GizmoConfigStore>) {
+    config.config_mut::<AabbGizmoConfigGroup>().1.draw_all = true;
+}
+
 fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn(VelloScene2d::new())
@@ -77,7 +82,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
         .spawn(VelloSvg2d(
             asset_server.load("embedded://view_culling/assets/Ghostscript_Tiger.svg"),
         ))
-        .insert(Transform::from_scale(Vec3::splat(1.0)))
+        .insert(Transform::from_scale(Vec3::splat(0.2)))
         .insert(DownUp)
         .insert(Aabb::default());
 

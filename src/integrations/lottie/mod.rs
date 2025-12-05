@@ -43,6 +43,7 @@ use bevy::{
 };
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
+    Aabb,
     VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
@@ -62,7 +63,6 @@ pub struct VelloLottie2d(pub Handle<VelloLottie>);
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     Node,
-    Aabb,
     VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
