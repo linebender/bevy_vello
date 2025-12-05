@@ -320,7 +320,15 @@ pub fn render_frame(
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    font.render(&mut scene_buffer, *affine, text, *text_anchor);
+                    font.render(
+                        &mut scene_buffer,
+                        *affine,
+                        &text.value,
+                        &text.style,
+                        text.text_align,
+                        text.max_advance,
+                        *text_anchor,
+                    );
                 }
             }
         }
@@ -401,7 +409,15 @@ pub fn render_frame(
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    font.render(&mut scene_buffer, *affine, text, *text_anchor);
+                    font.render(
+                        &mut scene_buffer,
+                        *affine,
+                        &text.value,
+                        &text.style,
+                        text.text_align,
+                        text.max_advance,
+                        *text_anchor,
+                    );
                 }
             }
         }

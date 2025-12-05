@@ -39,7 +39,7 @@ fn log_visibility(
     scene: Single<&ViewVisibility, With<VelloScene2d>>,
     lottie: Single<&ViewVisibility, With<VelloLottie2d>>,
     svg: Single<&ViewVisibility, With<VelloSvg2d>>,
-    text: Single<&ViewVisibility, With<VelloTextSection>>,
+    text: Single<&ViewVisibility, With<VelloText2d>>,
 ) {
     let visible_status = format!(
         "{{\n  scene: {},\n  lottie: {},\n  svg: {},\n  text: {}\n}}",
@@ -83,7 +83,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
 
     commands
         .spawn((
-            VelloTextSection {
+            VelloText2d {
                 value: "View culled text".to_string(),
                 style: VelloTextStyle {
                     font_size: 24.0,

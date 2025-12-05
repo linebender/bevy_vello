@@ -3,11 +3,13 @@ use bevy::{
     render::{Render, RenderApp, RenderSystems, render_asset::RenderAssetPlugin},
 };
 
-use super::{
-    VelloFont, font_loader::VelloFontLoader, render,
-    vello_text::calculate_text_section_content_size_on_change,
+use super::{VelloFont, font_loader::VelloFontLoader, render};
+use crate::{
+    integrations::text::vello_text::{
+        update_text_2d_aabb_on_change, update_ui_text_content_size_on_change,
+    },
+    render::extract::VelloExtractStep,
 };
-use crate::render::extract::VelloExtractStep;
 
 pub struct VelloTextIntegrationPlugin;
 
@@ -19,7 +21,13 @@ impl Plugin for VelloTextIntegrationPlugin {
 
         // Intentionally run in `PostUpdate` due to race condition behavior when modifying
         // `VelloTextStyle` font in the same frame.
-        app.add_systems(PostUpdate, (calculate_text_section_content_size_on_change,));
+        app.add_systems(
+            PostUpdate,
+            (
+                update_text_2d_aabb_on_change,
+                update_ui_text_content_size_on_change,
+            ),
+        );
 
         #[cfg(feature = "default_font")]
         {
