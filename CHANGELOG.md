@@ -22,8 +22,8 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
   - AABBs will automatically update for `VelloSvg2d` using the asset size.
   - AABBs will automatically update for `VelloLottie2d` using the asset size.
   - AABBs will automatically update for `VelloText2d` using the text size.
-- `ContentMeasure` for Ui nodes will automatically update for all assets.
-  - **WARNING** There is no way to retrieve the content size of a `vello::Scene`. Hence, `UiVelloScene` should have `ContentMeasure` manually managed by the developer. Otherwise, we assume a 0x0 content measurement, which takes no layout space.
+- `ContentSize` for Ui nodes will automatically update for all assets.
+  - **WARNING** There is no way to retrieve the content size of a `vello::Scene`. Hence, `UiVelloScene` should have `ContentSize` manually managed by the developer. Otherwise, we assume a 0x0 content measurement, which takes no layout space.
   - UI will automatically measure `UiVelloSvg` using the asset size.
   - UI will automatically measure `UiVelloLottie` using the asset size.
   - UI will automatically measure `UiVelloText` using the text size.
@@ -31,6 +31,7 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 ### Changed
 
 - The default `VelloTextAnchor` is now `VelloTextAnchor::Center`.
+- `VelloTextSection` (now `VelloText2d`/`UiVelloText`) no longer has `height`, and `width` has been renamed to `max_advance`.
 - `VelloScene` has been split into `VelloScene2d` and `UiVelloScene`. The former is for world entities and the latter is for UI nodes.
 - `VelloTextSection` has been split into `VelloText2d` and `UiVelloText`. The former is for world entities and the latter is for UI nodes.
 - `VelloSvgHandle` has been split into `VelloSvg2d` and `UiVelloSvg`. The former is for world entities and the latter is for UI nodes.
