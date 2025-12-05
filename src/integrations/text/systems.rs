@@ -9,12 +9,12 @@ use crate::{VelloFont, prelude::*};
 
 pub fn update_text_2d_aabb_on_change(
     mut text_q: Query<
-        (&mut Aabb, &mut VelloText2d, &VelloTextAnchor, &Transform),
+        (&mut Aabb, &mut VelloText2d, &VelloTextAnchor),
         Or<(Changed<VelloText2d>, Changed<Transform>)>,
     >,
     fonts: Res<Assets<VelloFont>>,
 ) {
-    for (mut aabb, text, text_anchor, transform) in text_q.iter_mut() {
+    for (mut aabb, text, text_anchor) in text_q.iter_mut() {
         let Some(font) = fonts.get(&text.style.font) else {
             warn!("VelloText2d: font {:?} not found", text.style.font);
             continue;
@@ -37,8 +37,8 @@ pub fn update_text_2d_aabb_on_change(
             }
         };
         let adjustment = Vec3::new(dx, dy, 0.0);
-        let min = transform.translation - half_size + adjustment;
-        let max = transform.translation + half_size + adjustment;
+        let min = -half_size + adjustment;
+        let max = half_size + adjustment;
         *aabb = Aabb::from_min_max(min, max);
     }
 }
