@@ -300,7 +300,7 @@ fn simple_non_ui_animation(mut scene_q: Query<&mut VelloScene2d, Without<Node>>,
             kurbo::Affine::default(),
             peniko::Color::new([c.x, c.y, c.z, 1.]),
             None,
-            &kurbo::RoundedRect::new(-50.0, -50.0, 50.0, 50.0, (sin_time as f64) * 25.0),
+            &kurbo::RoundedRect::new(-50.0, -50.0, 50.0, 50.0, (sin_time as f64) * 50.0),
         );
     }
 }
@@ -324,7 +324,7 @@ fn simple_ui_animation(mut scene_q: Query<&mut UiVelloScene>, time: Res<Time>) {
             kurbo::Affine::default(),
             peniko::Color::new([c.x, c.y, c.z, 1.]),
             None,
-            &kurbo::RoundedRect::new(0., 0., 100.0, 100.0, (sin_time as f64) * 25.0),
+            &kurbo::RoundedRect::new(0., 0., 100.0, 100.0, (sin_time as f64) * 50.0),
         );
     }
 }
