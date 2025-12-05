@@ -1,13 +1,20 @@
 use std::time::Duration;
 
-use bevy::{camera::primitives::Aabb, platform::time::Instant, prelude::*, window::PrimaryWindow};
-
 use super::{LottiePlayer, PlayerTransition, asset::VelloLottie};
 use crate::{
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
     integrations::lottie::{PlaybackPlayMode, UiVelloLottie, VelloLottie2d},
+    prelude::VelloLottieAnchor,
     render::VelloView,
 };
+use bevy::{
+    camera::primitives::Aabb,
+    platform::time::Instant,
+    prelude::*,
+    ui::{ContentSize, NodeMeasure},
+    window::PrimaryWindow,
+};
+use tracing::warn;
 
 /// Helper function to get the next smallest representable f64.
 /// For example, prev_f64(3.0) == 2.9999999999999996
@@ -410,5 +417,56 @@ pub fn transition_state(
         player.started = false;
         player.playing = false;
         player.current_state.replace(next_state);
+    }
+}
+
+pub fn update_lottie_2d_aabb_on_change(
+    mut query: Query<(&mut Aabb, &mut VelloLottie2d, &VelloLottieAnchor), Changed<VelloLottie2d>>,
+    lotties: Res<Assets<VelloLottie>>,
+) {
+    for (mut aabb, lottie, anchor) in query.iter_mut() {
+        let Some(lottie) = lotties.get(&lottie.0) else {
+            warn!("VelloLottie2d: lottie {:?} not found", lottie.0);
+            continue;
+        };
+
+        let (width, height) = (lottie.width, lottie.height);
+        let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
+        let (dx, dy) = {
+            match anchor {
+                VelloLottieAnchor::TopLeft => (half_size.x, -half_size.y),
+                VelloLottieAnchor::Left => (half_size.x, 0.0),
+                VelloLottieAnchor::BottomLeft => (half_size.x, half_size.y),
+                VelloLottieAnchor::Top => (0.0, -half_size.y),
+                VelloLottieAnchor::Center => (0.0, 0.0),
+                VelloLottieAnchor::Bottom => (0.0, half_size.y),
+                VelloLottieAnchor::TopRight => (-half_size.x, -half_size.y),
+                VelloLottieAnchor::Right => (-half_size.x, 0.0),
+                VelloLottieAnchor::BottomRight => (-half_size.x, half_size.y),
+            }
+        };
+        let adjustment = Vec3::new(dx, dy, 0.0);
+        let min = -half_size + adjustment;
+        let max = half_size + adjustment;
+        *aabb = Aabb::from_min_max(min, max);
+    }
+}
+
+pub fn update_ui_lottie_content_size_on_change(
+    mut query: Query<
+        (&mut ContentSize, &ComputedNode, &mut UiVelloLottie),
+        Or<(Changed<UiVelloLottie>, Changed<ComputedNode>)>,
+    >,
+    lotties: Res<Assets<VelloLottie>>,
+) {
+    for (mut content_size, node, lottie) in query.iter_mut() {
+        let Some(lottie) = lotties.get(&lottie.0) else {
+            warn!("UiVelloLottie: lottie {:?} not found", lottie.0);
+            continue;
+        };
+
+        let size = Vec2::new(lottie.width, lottie.height) / node.inverse_scale_factor();
+        let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure { size });
+        content_size.set(measure);
     }
 }

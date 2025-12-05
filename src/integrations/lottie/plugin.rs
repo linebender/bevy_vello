@@ -24,6 +24,15 @@ impl Plugin for LottieIntegrationPlugin {
             .register_type::<PlaybackOptions>()
             .add_systems(PostUpdate, systems::advance_playheads)
             .add_systems(
+                PostUpdate,
+                (
+                    systems::update_lottie_2d_aabb_on_change
+                        .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
+                    systems::update_ui_lottie_content_size_on_change
+                        .in_set(bevy::ui::UiSystems::Content),
+                ),
+            )
+            .add_systems(
                 Last,
                 (systems::run_transitions, systems::transition_state).chain(),
             );

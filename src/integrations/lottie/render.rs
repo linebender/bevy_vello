@@ -1,8 +1,5 @@
 use bevy::{
-    camera::{
-        primitives::Aabb,
-        visibility::{RenderLayers, VisibilityClass},
-    },
+    camera::visibility::RenderLayers,
     prelude::*,
     render::{
         Extract, camera::ExtractedCamera, sync_world::TemporaryRenderEntity, view::ExtractedView,
