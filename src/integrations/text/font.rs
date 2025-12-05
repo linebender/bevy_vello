@@ -86,6 +86,7 @@ impl VelloFont {
         })
     }
 
+    #[expect(clippy::too_many_arguments, reason = "Common lint in bevy")]
     pub(crate) fn render(
         &self,
         scene: &mut Scene,
