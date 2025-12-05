@@ -3,6 +3,7 @@ use std::ops::DerefMut;
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
     camera::primitives::Aabb,
+    diagnostic::DiagnosticsStore,
     prelude::*,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
@@ -37,17 +38,40 @@ fn main() {
 }
 
 fn log_visibility(
+    diagnostics: Res<DiagnosticsStore>,
     scene: Single<&ViewVisibility, With<VelloScene2d>>,
     lottie: Single<&ViewVisibility, With<VelloLottie2d>>,
     svg: Single<&ViewVisibility, With<VelloSvg2d>>,
     text: Single<&ViewVisibility, With<VelloText2d>>,
 ) {
     let visible_status = format!(
-        "{{\n  scene: {},\n  lottie: {},\n  svg: {},\n  text: {}\n}}",
+        r#"
+{{
+    visibility: {{
+        scene: {},
+        lottie: {},
+        svg: {},
+        text: {}
+    }},
+    render: {{
+        paths: {},
+        path_segs: {}
+    }}
+}}"#,
         scene.get(),
         lottie.get(),
         svg.get(),
-        text.get()
+        text.get(),
+        diagnostics
+            .get(&bevy_vello::render::diagnostics::PATH_COUNT)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value)
+            .unwrap_or(0.0),
+        diagnostics
+            .get(&bevy_vello::render::diagnostics::PATH_SEGMENTS_COUNT)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value)
+            .unwrap_or(0.0)
     );
 
     println!("{visible_status}");
@@ -65,6 +89,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
     commands
         .spawn(VelloScene2d::new())
         .insert(RightLeft)
+        // For scene culling, you must specify the bounding box yourself!
         .insert(Aabb::from_min_max(
             Vec3::new(-50.0, -50.0, 0.0),
             Vec3::new(50.0, 50.0, 0.0),
@@ -75,16 +100,14 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
             asset_server.load("embedded://view_culling/assets/Tiger.json"),
         ))
         .insert(Transform::from_scale(Vec3::splat(0.2)))
-        .insert(LeftRight)
-        .insert(Aabb::default());
+        .insert(LeftRight);
 
     commands
         .spawn(VelloSvg2d(
             asset_server.load("embedded://view_culling/assets/Ghostscript_Tiger.svg"),
         ))
         .insert(Transform::from_scale(Vec3::splat(0.2)))
-        .insert(DownUp)
-        .insert(Aabb::default());
+        .insert(DownUp);
 
     commands
         .spawn((
@@ -98,8 +121,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
             },
             VelloTextAnchor::Center,
         ))
-        .insert(UpDown)
-        .insert(Aabb::default());
+        .insert(UpDown);
 }
 
 fn simple_animation(mut query_scene: Single<(&mut Transform, &mut VelloScene2d)>, time: Res<Time>) {

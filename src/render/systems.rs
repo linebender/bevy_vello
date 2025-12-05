@@ -458,13 +458,17 @@ pub fn get_viewport_size(
         return (viewport.physical_size.x, viewport.physical_size.y);
     }
 
-    let Some(window) = window.as_deref() else {
-        panic!("We only support rendering to the primary window right now.");
-    };
-    (
-        window.resolution.physical_width(),
-        window.resolution.physical_height(),
-    )
+    if let Some(window) = window.as_deref() {
+        (
+            window.resolution.physical_width(),
+            window.resolution.physical_height(),
+        )
+    } else {
+        tracing::error!(
+            "bevy_vello does not see a window, and thus, cannot resize the render target"
+        );
+        (0, 0)
+    }
 }
 
 pub fn resize_rendertargets(
@@ -565,26 +569,5 @@ pub fn render_settings_change_detection(
         tracing::info!("Render settings changed, re-initializing vello...");
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
-    }
-}
-
-/// Hide the render target canvas if there is nothing to render
-pub fn hide_when_empty(
-    mut query_render_target: Option<Single<&mut Visibility, With<SSRenderTarget>>>,
-    entity_count: Res<VelloEntityCountData>,
-) {
-    let is_empty = entity_count.n_world_scenes == 0 && entity_count.n_ui_scenes == 0;
-    #[cfg(feature = "text")]
-    let is_empty = is_empty && entity_count.n_world_texts == 0 && entity_count.n_ui_texts == 0;
-    #[cfg(feature = "svg")]
-    let is_empty = is_empty && entity_count.n_world_svgs == 0 && entity_count.n_ui_svgs == 0;
-    #[cfg(feature = "lottie")]
-    let is_empty = is_empty && entity_count.n_world_lotties == 0 && entity_count.n_ui_lotties == 0;
-    if let Some(visibility) = query_render_target.as_deref_mut() {
-        if is_empty {
-            **visibility = Visibility::Hidden;
-        } else {
-            **visibility = Visibility::Inherited;
-        }
     }
 }

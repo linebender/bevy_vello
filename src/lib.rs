@@ -7,7 +7,6 @@ use crate::prelude::*;
 mod plugin;
 pub use plugin::VelloPlugin;
 
-pub mod diagnostics;
 pub mod integrations;
 pub mod render;
 

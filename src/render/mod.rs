@@ -9,7 +9,6 @@ use bevy::{
     prelude::*,
     render::{
         extract_component::ExtractComponent,
-        extract_resource::ExtractResource,
         render_resource::{
             AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError, VertexFormat,
             VertexStepMode,
@@ -28,6 +27,8 @@ pub(crate) mod extract;
 pub(crate) mod prepare;
 
 pub(crate) use plugin::VelloRenderPlugin;
+
+pub mod diagnostics;
 
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
@@ -227,7 +228,7 @@ pub(crate) struct VelloRenderQueue {
 }
 
 /// Internally used for diagnostics.
-#[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
+#[derive(Resource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloEntityCountData {
     /// Number of scenes used in the World.
     pub n_world_scenes: u32,
@@ -254,7 +255,7 @@ pub(crate) struct VelloEntityCountData {
 }
 
 /// Internally used for diagnostics.
-#[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
+#[derive(Resource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloFrameProfileData {
     /// Total number of paths rendered last frame.
     pub n_paths: u32,
