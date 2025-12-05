@@ -232,10 +232,8 @@ pub fn update_text_2d_aabb_on_change(
             continue;
         };
 
-        let Vec2 {
-            x: width,
-            y: height,
-        } = font.sizeof(&text.value, &text.style, text.text_align, text.max_advance);
+        let layout = font.layout(&text.value, &text.style, text.text_align, text.max_advance);
+        let (width, height) = (layout.width(), layout.height());
         let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
         let (dx, dy) = {
             match text_anchor {
@@ -254,8 +252,6 @@ pub fn update_text_2d_aabb_on_change(
         let min = transform.translation - half_size + adjustment;
         let max = transform.translation + half_size + adjustment;
         *aabb = Aabb::from_min_max(min, max);
-
-        eprintln!("new aabb: {aabb:?}");
     }
 }
 
@@ -272,8 +268,8 @@ pub fn update_ui_text_content_size_on_change(
             continue;
         };
 
-        let size = font.sizeof(&text.value, &text.style, text.text_align, text.max_advance)
-            / node.inverse_scale_factor();
+        let layout = font.layout(&text.value, &text.style, text.text_align, text.max_advance);
+        let size = Vec2::new(layout.width(), layout.height()) / node.inverse_scale_factor();
         let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure { size });
         content_size.set(measure);
     }

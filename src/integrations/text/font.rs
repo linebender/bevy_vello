@@ -1,8 +1,9 @@
 use std::borrow::Cow;
 
-use bevy::{math::DVec2, prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
+use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use parley::{
-    FontSettings, FontStyle, FontVariation, PositionedLayoutItem, RangedBuilder, StyleProperty,
+    FontSettings, FontStyle, FontVariation, Layout, PositionedLayoutItem, RangedBuilder,
+    StyleProperty,
 };
 use vello::{
     Scene,
@@ -48,13 +49,13 @@ impl VelloFont {
         }
     }
 
-    pub fn sizeof(
+    pub fn layout(
         &self,
         value: &str,
         style: &VelloTextStyle,
         text_align: VelloTextAlign,
         max_advance: Option<f32>,
-    ) -> Vec2 {
+    ) -> Layout<Brush> {
         LOCAL_FONT_CONTEXT.with_borrow_mut(|font_context| {
             if font_context.is_none() {
                 *font_context = Some(get_global_font_context().clone());
@@ -80,7 +81,7 @@ impl VelloFont {
                     parley::AlignmentOptions::default(),
                 );
 
-                Vec2::new(layout.width(), layout.height())
+                layout
             })
         })
     }
@@ -95,88 +96,63 @@ impl VelloFont {
         max_advance: Option<f32>,
         text_anchor: VelloTextAnchor,
     ) {
-        LOCAL_FONT_CONTEXT.with_borrow_mut(|font_context| {
-            if font_context.is_none() {
-                *font_context = Some(get_global_font_context().clone());
-            }
+        let layout = self.layout(value, style, text_align, max_advance);
 
-            let font_context = font_context.as_mut().unwrap();
+        let width = layout.width() as f64;
+        let height = layout.height() as f64;
 
-            LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                let mut builder = layout_context.ranged_builder(font_context, value, 1.0, true);
+        let (dx, dy) = match text_anchor {
+            VelloTextAnchor::TopLeft => (0.0, 0.0),
+            VelloTextAnchor::Left => (0.0, -height / 2.0),
+            VelloTextAnchor::BottomLeft => (0.0, -height),
+            VelloTextAnchor::Top => (-width / 2.0, 0.0),
+            VelloTextAnchor::Center => (-width / 2.0, -height / 2.0),
+            VelloTextAnchor::Bottom => (-width / 2.0, -height),
+            VelloTextAnchor::TopRight => (-width, 0.0),
+            VelloTextAnchor::Right => (-width, -height / 2.0),
+            VelloTextAnchor::BottomRight => (-width, -height),
+        };
+        transform *= vello::kurbo::Affine::translate((dx, dy));
 
-                apply_font_styles(&mut builder, style);
-                apply_variable_axes(&mut builder, &style.font_axes);
-
-                builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
-                    parley::FontFamily::Named(Cow::Owned(self.family_name.clone())),
-                )));
-
-                let mut layout = builder.build(value);
-                layout.break_all_lines(max_advance);
-                layout.align(
-                    max_advance,
-                    text_align.into(),
-                    parley::AlignmentOptions::default(),
-                );
-
-                let width = layout.width() as f64;
-                let height = layout.height() as f64;
-
-                let (dx, dy) = match text_anchor {
-                    VelloTextAnchor::TopLeft => (0.0, 0.0),
-                    VelloTextAnchor::Left => (0.0, -height / 2.0),
-                    VelloTextAnchor::BottomLeft => (0.0, -height),
-                    VelloTextAnchor::Top => (-width / 2.0, 0.0),
-                    VelloTextAnchor::Center => (-width / 2.0, -height / 2.0),
-                    VelloTextAnchor::Bottom => (-width / 2.0, -height),
-                    VelloTextAnchor::TopRight => (-width, 0.0),
-                    VelloTextAnchor::Right => (-width, -height / 2.0),
-                    VelloTextAnchor::BottomRight => (-width, -height),
+        for line in layout.lines() {
+            for item in line.items() {
+                let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
+                    continue;
                 };
-                transform *= vello::kurbo::Affine::translate((dx, dy));
 
-                for line in layout.lines() {
-                    for item in line.items() {
-                        let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
-                            continue;
-                        };
+                let mut x = glyph_run.offset();
+                let y = glyph_run.baseline();
+                let run = glyph_run.run();
+                let font = run.font();
+                let font_size = run.font_size();
+                let synthesis = run.synthesis();
+                let glyph_xform = synthesis
+                    .skew()
+                    .map(|angle| Affine::skew(angle.to_radians().tan() as f64, 0.0));
 
-                        let mut x = glyph_run.offset();
-                        let y = glyph_run.baseline();
-                        let run = glyph_run.run();
-                        let font = run.font();
-                        let font_size = run.font_size();
-                        let synthesis = run.synthesis();
-                        let glyph_xform = synthesis
-                            .skew()
-                            .map(|angle| Affine::skew(angle.to_radians().tan() as f64, 0.0));
-
-                        scene
-                            .draw_glyphs(font)
-                            .brush(&style.brush)
-                            .hint(true)
-                            .transform(transform)
-                            .glyph_transform(glyph_xform)
-                            .font_size(font_size)
-                            .normalized_coords(run.normalized_coords())
-                            .draw(
-                                Fill::NonZero,
-                                glyph_run.glyphs().map(|glyph| {
-                                    let gx = x + glyph.x;
-                                    let gy = y - glyph.y;
-                                    x += glyph.advance;
-                                    vello::Glyph {
-                                        id: glyph.id as _,
-                                        x: gx,
-                                        y: gy,
-                                    }
-                                }),
-                            );
-                    }
-                }
-            });
-        })
+                scene
+                    .draw_glyphs(font)
+                    .brush(&style.brush)
+                    .hint(true)
+                    .transform(transform)
+                    .glyph_transform(glyph_xform)
+                    .font_size(font_size)
+                    .normalized_coords(run.normalized_coords())
+                    .draw(
+                        Fill::NonZero,
+                        glyph_run.glyphs().map(|glyph| {
+                            let gx = x + glyph.x;
+                            let gy = y - glyph.y;
+                            x += glyph.advance;
+                            vello::Glyph {
+                                id: glyph.id as _,
+                                x: gx,
+                                y: gy,
+                            }
+                        }),
+                    );
+            }
+        }
     }
 }
 
