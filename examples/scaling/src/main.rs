@@ -55,11 +55,13 @@ const CELL_WIDTH: f32 = SCREEN_WIDTH / 4.0;
 const CELL_HEIGHT: f32 = SCREEN_HEIGHT / 5.0;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, VelloView, IsDefaultUiCamera));
+    commands.spawn((Camera2d, VelloView));
 }
 
-fn enable_ui_debug(mut options: ResMut<UiDebugOptions>) {
+fn enable_ui_debug(mut options: ResMut<UiDebugOptions>, mut config: ResMut<GizmoConfigStore>) {
     options.enabled = true;
+    config.config_mut::<AabbGizmoConfigGroup>().1.draw_all = true;
+    config.config_mut::<AabbGizmoConfigGroup>().1.default_color = Some(Color::WHITE);
 }
 
 fn spawn_instructions(mut commands: Commands) {
@@ -74,7 +76,7 @@ fn spawn_instructions(mut commands: Commands) {
             bottom: Val::Px(0.0),
             ..default()
         },
-        VelloTextSection {
+        UiVelloText {
             value: "Press 1 to scale down, press 2 to scale up, press 3 to reset scale to 1.0"
                 .to_string(),
             text_align: VelloTextAlign::Middle,
@@ -122,7 +124,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     parent.spawn((
                         ContentSize::default(),
                         Node::default(),
-                        VelloTextSection {
+                        UiVelloText {
                             value: "Scene in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
                             style: VelloTextStyle {
@@ -159,7 +161,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     parent.spawn((
                         ContentSize::default(),
                         Node::default(),
-                        VelloTextSection {
+                        UiVelloText {
                             value: "SVG in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
                             style: VelloTextStyle {
@@ -193,7 +195,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     parent.spawn((
                         ContentSize::default(),
                         Node::default(),
-                        VelloTextSection {
+                        UiVelloText {
                             value: "Lottie in bevy_ui".to_string(),
                             text_align: VelloTextAlign::Middle,
                             style: VelloTextStyle {
@@ -219,7 +221,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         ))
         .with_children(|parent| {
             parent.spawn((
-                VelloTextSection {
+                VelloText2d {
                     value: "Scene in world space".to_string(),
                     text_align: VelloTextAlign::Middle,
                     style: VelloTextStyle {
@@ -242,7 +244,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         ))
         .with_children(|parent| {
             parent.spawn((
-                VelloTextSection {
+                VelloText2d {
                     value: "SVG in world space".to_string(),
                     text_align: VelloTextAlign::Middle,
                     style: VelloTextStyle {
@@ -266,7 +268,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         ))
         .with_children(|parent| {
             parent.spawn((
-                VelloTextSection {
+                VelloText2d {
                     value: "Lottie in world space".to_string(),
                     text_align: VelloTextAlign::Middle,
                     style: VelloTextStyle {

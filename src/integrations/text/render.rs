@@ -7,19 +7,19 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{VelloFont, VelloTextAnchor, VelloTextSection};
+use super::{UiVelloText, VelloFont, VelloText2d, VelloTextAnchor};
 use crate::render::{SkipEncoding, VelloEntityCountData, VelloView, prepare::PreparedAffine};
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloText2d {
-    pub text: VelloTextSection,
+    pub text: VelloText2d,
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
 }
 
 #[derive(Component, Clone)]
 pub struct ExtractedUiVelloText {
-    pub text: VelloTextSection,
+    pub text: UiVelloText,
     pub text_anchor: VelloTextAnchor,
     pub ui_transform: UiGlobalTransform,
     pub ui_node: ComputedNode,
@@ -35,7 +35,7 @@ pub fn extract_world_text(
     query_scenes: Extract<
         Query<
             (
-                &VelloTextSection,
+                &VelloText2d,
                 &VelloTextAnchor,
                 &GlobalTransform,
                 &ViewVisibility,
@@ -94,7 +94,7 @@ pub fn extract_ui_text(
     query_scenes: Extract<
         Query<
             (
-                &VelloTextSection,
+                &UiVelloText,
                 &VelloTextAnchor,
                 &UiGlobalTransform,
                 &InheritedVisibility,

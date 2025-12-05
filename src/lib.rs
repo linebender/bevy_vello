@@ -39,7 +39,6 @@ pub mod prelude {
     pub use crate::integrations::svg::{UiVelloSvg, VelloSvg, VelloSvg2d, VelloSvgAnchor};
     #[cfg(feature = "text")]
     pub use crate::integrations::text::{
-        VelloFont, VelloTextAlign, VelloTextAnchor, VelloTextBundle, VelloTextSection,
-        VelloTextStyle,
+        UiVelloText, VelloFont, VelloText2d, VelloTextAlign, VelloTextAnchor, VelloTextStyle,
     };
 }

@@ -15,8 +15,24 @@ You can find its changes [documented below](#0102---2025-06-29).
 
 This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
+### Added
+
+- View culling is now automatically performed for all assets. All assets not within the view of a camera tagged with `VelloView` will be culled prior to rendering. This works by culling AABBs not seen by the cameras. see the view culling example.
+  - **WARNING** There is no way to retrieve the content size of a `vello::Scene`. Hence, `VelloScene2d` should be given an `Aabb` manually by the developer. By default, `Aabb::default()` is used, which is never updated (or gets view-culled).
+  - AABBs will automatically update for `VelloSvg2d` using the asset size.
+  - AABBs will automatically update for `VelloLottie2d` using the asset size.
+  - AABBs will automatically update for `VelloText2d` using the text size.
+- `ContentMeasure` for Ui nodes will automatically update for all assets.
+  - **WARNING** There is no way to retrieve the content size of a `vello::Scene`. Hence, `UiVelloScene` should have `ContentMeasure` manually managed by the developer. Otherwise, we assume a 0x0 content measurement, which takes no layout space.
+  - UI will automatically measure `UiVelloSvg` using the asset size.
+  - UI will automatically measure `UiVelloLottie` using the asset size.
+  - UI will automatically measure `UiVelloText` using the text size.
+
 ### Changed
 
+- The default `VelloTextAnchor` is now `VelloTextAnchor::Center`.
+- `VelloScene` has been split into `VelloScene2d` and `UiVelloScene`. The former is for world entities and the latter is for UI nodes.
+- `VelloTextSection` has been split into `VelloText2d` and `UiVelloText`. The former is for world entities and the latter is for UI nodes.
 - `VelloSvgHandle` has been split into `VelloSvg2d` and `UiVelloSvg`. The former is for world entities and the latter is for UI nodes.
 - `VelloLottieHandle` has been split into `VelloLottie2d` and `UiVelloLottie`. The former is for world entities and the latter is for UI nodes.
 - Some diagnostics were changed.

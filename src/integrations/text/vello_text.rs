@@ -1,22 +1,35 @@
 use bevy::{
-    camera::visibility::{self, VisibilityClass},
+    camera::{
+        primitives::Aabb,
+        visibility::{self, VisibilityClass},
+    },
+    math::DVec2,
     prelude::*,
     ui::{ContentSize, NodeMeasure},
 };
 use tracing::warn;
 use vello::peniko::{self, Brush};
 
-use crate::{VelloFont, render::VelloView};
+use crate::VelloFont;
 
 #[derive(Component, Default, Clone)]
-#[require(VelloTextAnchor, Transform, Visibility, VisibilityClass)]
-#[component(on_add = visibility::add_visibility_class::<VelloTextSection>)]
-pub struct VelloTextSection {
+#[require(Aabb, VelloTextAnchor, Transform, Visibility, VisibilityClass)]
+#[component(on_add = visibility::add_visibility_class::<VelloText2d>)]
+pub struct VelloText2d {
     pub value: String,
     pub style: VelloTextStyle,
     pub text_align: VelloTextAlign,
-    pub width: Option<f32>,
-    pub height: Option<f32>,
+    pub max_advance: Option<f32>,
+}
+
+#[derive(Component, Default, Clone)]
+#[require(VelloTextAnchor, UiTransform, Visibility, VisibilityClass)]
+#[component(on_add = visibility::add_visibility_class::<UiVelloText>)]
+pub struct UiVelloText {
+    pub value: String,
+    pub style: VelloTextStyle,
+    pub text_align: VelloTextAlign,
+    pub max_advance: Option<f32>,
 }
 
 #[derive(Clone)]
@@ -129,7 +142,6 @@ pub struct VelloFontAxes {
 #[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
 pub enum VelloTextAnchor {
     /// Bounds start from the render position and advance up and to the right.
-    #[default]
     BottomLeft,
     /// Bounds start from the render position and advance up.
     Bottom,
@@ -139,6 +151,7 @@ pub enum VelloTextAnchor {
     /// Bounds start from the render position and advance right.
     Left,
     /// Bounds start from the render position and advance equally on both axes.
+    #[default]
     Center,
     /// Bounds start from the render position and advance left.
     Right,
@@ -149,6 +162,22 @@ pub enum VelloTextAnchor {
     Top,
     /// Bounds start from the render position and advance down and to the left.
     TopRight,
+}
+
+impl VelloTextAnchor {
+    pub fn adjustment(&self, width: f64, height: f64) -> DVec2 {
+        match self {
+            VelloTextAnchor::TopLeft => DVec2::new(0.0, 0.0),
+            VelloTextAnchor::Left => DVec2::new(0.0, -height / 2.0),
+            VelloTextAnchor::BottomLeft => DVec2::new(0.0, -height),
+            VelloTextAnchor::Top => DVec2::new(-width / 2.0, 0.0),
+            VelloTextAnchor::Center => DVec2::new(-width / 2.0, -height / 2.0),
+            VelloTextAnchor::Bottom => DVec2::new(-width / 2.0, -height),
+            VelloTextAnchor::TopRight => DVec2::new(-width, 0.0),
+            VelloTextAnchor::Right => DVec2::new(-width, -height / 2.0),
+            VelloTextAnchor::BottomRight => DVec2::new(-width, -height),
+        }
+    }
 }
 
 /// Alignment of a parley layout.
@@ -190,65 +219,62 @@ impl From<VelloTextAlign> for parley::Alignment {
     }
 }
 
-impl VelloTextSection {
-    /// Returns the bounding box in world space
-    pub fn bb_in_world_space(&self, font: &VelloFont, gtransform: &GlobalTransform) -> Rect {
-        let size = font.sizeof(self);
-
-        // Convert local coordinates to world coordinates
-        let local_min = Vec3::new(0.0, 0.0, 0.0).extend(1.0);
-        let local_max = Vec3::new(size.x, size.y, 0.0).extend(1.0);
-
-        let min_world = gtransform.to_matrix() * local_min;
-        let max_world = gtransform.to_matrix() * local_max;
-
-        // Calculate the distance between the vertices to get the size in world space
-        let min = Vec2::new(min_world.x, min_world.y);
-        let max = Vec2::new(max_world.x, max_world.y);
-        Rect { min, max }
-    }
-
-    /// Returns the bounding box in screen space
-    pub fn bb_in_screen_space(
-        &self,
-        font: &VelloFont,
-        gtransform: &GlobalTransform,
-        camera: &Camera,
-        camera_transform: &GlobalTransform,
-    ) -> Option<Rect> {
-        let Rect { min, max } = self.bb_in_world_space(font, gtransform);
-        camera
-            .viewport_to_world_2d(camera_transform, min)
-            .ok()
-            .zip(camera.viewport_to_world_2d(camera_transform, max).ok())
-            .map(|(min, max)| Rect { min, max })
-    }
-}
-
-pub fn calculate_text_section_content_size_on_change(
+pub fn update_text_2d_aabb_on_change(
     mut text_q: Query<
-        (&mut ContentSize, &mut VelloTextSection, &GlobalTransform),
-        Changed<VelloTextSection>,
+        (&mut Aabb, &mut VelloText2d, &VelloTextAnchor, &Transform),
+        Or<(Changed<VelloText2d>, Changed<Transform>)>,
     >,
-    camera: Single<(&Camera, &GlobalTransform), With<VelloView>>,
     fonts: Res<Assets<VelloFont>>,
 ) {
-    let (camera, camera_transform) = *camera;
-
-    for (mut content_size, text, gtransform) in text_q.iter_mut() {
+    for (mut aabb, text, text_anchor, transform) in text_q.iter_mut() {
         let Some(font) = fonts.get(&text.style.font) else {
-            warn!("VelloTextSection: font {:?} not found", text.style.font);
+            warn!("VelloText2d: font {:?} not found", text.style.font);
             continue;
         };
 
-        if let Some(rect) = text.bb_in_screen_space(font, gtransform, camera, camera_transform) {
-            let size = rect.size();
-            let width = text.width.unwrap_or(size.x.abs());
-            let height = text.height.unwrap_or(size.y.abs());
-            let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure {
-                size: Vec2::new(width, height),
-            });
-            content_size.set(measure);
-        }
+        let Vec2 {
+            x: width,
+            y: height,
+        } = font.sizeof(&text.value, &text.style, text.text_align, text.max_advance);
+        let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
+        let (dx, dy) = {
+            match text_anchor {
+                VelloTextAnchor::TopLeft => (half_size.x, -half_size.y),
+                VelloTextAnchor::Left => (half_size.x, 0.0),
+                VelloTextAnchor::BottomLeft => (half_size.x, half_size.y),
+                VelloTextAnchor::Top => (0.0, -half_size.y),
+                VelloTextAnchor::Center => (0.0, 0.0),
+                VelloTextAnchor::Bottom => (0.0, half_size.y),
+                VelloTextAnchor::TopRight => (-half_size.x, -half_size.y),
+                VelloTextAnchor::Right => (-half_size.x, 0.0),
+                VelloTextAnchor::BottomRight => (-half_size.x, half_size.y),
+            }
+        };
+        let adjustment = Vec3::new(dx, dy, 0.0);
+        let min = transform.translation - half_size + adjustment;
+        let max = transform.translation + half_size + adjustment;
+        *aabb = Aabb::from_min_max(min, max);
+
+        eprintln!("new aabb: {aabb:?}");
+    }
+}
+
+pub fn update_ui_text_content_size_on_change(
+    mut text_q: Query<
+        (&mut ContentSize, &ComputedNode, &mut UiVelloText),
+        Or<(Changed<UiVelloText>, Changed<ComputedNode>)>,
+    >,
+    fonts: Res<Assets<VelloFont>>,
+) {
+    for (mut content_size, node, text) in text_q.iter_mut() {
+        let Some(font) = fonts.get(&text.style.font) else {
+            warn!("UiVelloText: font {:?} not found", text.style.font);
+            continue;
+        };
+
+        let size = font.sizeof(&text.value, &text.style, text.text_align, text.max_advance)
+            / node.inverse_scale_factor();
+        let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure { size });
+        content_size.set(measure);
     }
 }
