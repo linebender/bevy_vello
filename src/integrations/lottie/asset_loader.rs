@@ -41,7 +41,7 @@ impl AssetLoader for VelloLottieLoader {
                     let asset = load_lottie_from_bytes(&bytes)?;
                     tracing::info!(
                         path = format!("{}", load_context.path().display()),
-                        size = format!("{:?}", (asset.width, asset.height)),
+                        size = format!("{:?}", (asset.composition.width, asset.composition.height)),
                         "finished parsing lottie json asset"
                     );
                     Ok(asset)

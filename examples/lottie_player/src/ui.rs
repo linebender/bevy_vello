@@ -12,11 +12,11 @@ pub fn controls_ui(
     mut contexts: EguiContexts,
     mut player: Option<
         Single<(
-            &mut LottiePlayer,
+            &mut LottiePlayer<UiVelloLottie>,
             &mut Playhead,
             &mut PlaybackOptions,
             &mut Theme,
-            &VelloLottie2d,
+            &UiVelloLottie,
         )>,
     >,
     assets: Res<Assets<VelloLottie>>,

@@ -11,14 +11,14 @@ fn main() {
         ..default()
     }))
     .add_plugins(VelloPlugin::default())
-    .add_systems(Startup, enable_ui_debug)
+    .add_systems(Startup, enable_debug)
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_lottie);
     embedded_asset!(app, "assets/Tiger.json");
     app.run();
 }
 
-fn enable_ui_debug(mut options: ResMut<UiDebugOptions>) {
+fn enable_debug(mut options: ResMut<UiDebugOptions>) {
     options.enabled = true;
 }
 

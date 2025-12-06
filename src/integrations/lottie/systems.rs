@@ -3,16 +3,17 @@ use std::time::Duration;
 use super::{LottiePlayer, PlayerTransition, asset::VelloLottie};
 use crate::{
     PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
-    integrations::lottie::{PlaybackPlayMode, UiVelloLottie, VelloLottie2d},
+    integrations::lottie::{
+        LottieAssetVariant, PlaybackPlayMode, UiVelloLottie, VelloLottie2d,
+        player::events::{LottieOnAfterEvent, LottieOnCompletedEvent, LottieOnShowEvent},
+    },
     prelude::VelloLottieAnchor,
-    render::VelloView,
 };
 use bevy::{
     camera::primitives::Aabb,
     platform::time::Instant,
     prelude::*,
     ui::{ContentSize, NodeMeasure},
-    window::PrimaryWindow,
 };
 use tracing::warn;
 
@@ -34,44 +35,20 @@ fn prev_f64(x: f64) -> f64 {
 }
 
 /// Advance all playheads in the scene
-pub fn advance_playheads(
-    mut world_lotties: Query<
-        (
-            &VelloLottie2d,
-            &mut Playhead,
-            &mut LottiePlayer,
-            &PlaybackOptions,
-        ),
-        Without<UiVelloLottie>,
-    >,
-    mut ui_lotties: Query<
-        (
-            &UiVelloLottie,
-            &mut Playhead,
-            &mut LottiePlayer,
-            &PlaybackOptions,
-        ),
-        Without<VelloLottie2d>,
-    >,
+pub fn advance_playheads<A: LottieAssetVariant>(
+    mut lotties: Query<(&A, &mut Playhead, &mut LottiePlayer<A>, &PlaybackOptions)>,
     mut assets: ResMut<Assets<VelloLottie>>,
     time: Res<Time>,
 ) {
-    let world_lotties = world_lotties
-        .iter_mut()
-        .map(|(handle, playhead, player, options)| (handle.0.clone(), playhead, player, options));
-    let ui_lotties = ui_lotties
-        .iter_mut()
-        .map(|(handle, playhead, player, options)| (handle.0.clone(), playhead, player, options));
-    let all_lotties = world_lotties.chain(ui_lotties);
+    let all_lotties = lotties.iter_mut();
 
-    for (asset_handle, mut playhead, mut player, options) in all_lotties {
+    for (asset, mut playhead, mut player, options) in all_lotties {
         // Get asset
-        let Some(asset) = assets.get_mut(asset_handle.id()) else {
+        let Some(asset) = assets.get_mut(asset.asset_id()) else {
             continue;
         };
 
         // Keep playhead bounded
-
         let start_frame = options.segments.start.max(asset.composition.frames.start);
         let end_frame = prev_f64(options.segments.end.min(asset.composition.frames.end));
         playhead.frame = playhead.frame.clamp(start_frame, end_frame);
@@ -176,99 +153,36 @@ pub fn advance_playheads(
     }
 }
 
-pub fn run_transitions(
-    mut query_player: Query<(
-        &mut LottiePlayer,
-        &Playhead,
-        &PlaybackOptions,
-        &GlobalTransform,
-        &mut VelloLottie2d,
-        Option<&ComputedNode>,
-    )>,
+pub fn run_time_transitions<A: LottieAssetVariant>(
+    mut commands: Commands,
+    query_player: Query<(Entity, &LottiePlayer<A>, &Playhead, &PlaybackOptions, &A)>,
     mut assets: ResMut<Assets<VelloLottie>>,
-    window: Option<Single<&Window, With<PrimaryWindow>>>,
-    query_view: Query<(&Camera, &GlobalTransform), (With<Camera2d>, With<VelloView>)>,
-    buttons: Res<ButtonInput<MouseButton>>,
-    mut hovered: Local<bool>,
 ) {
-    let Some(window) = window.as_deref() else {
-        // We only support rendering to the primary window right now.
-        return;
-    };
-    let Ok((camera, view)) = query_view.single() else {
-        return;
-    };
-
-    let pointer_screen_pos = window.cursor_position();
-    let pointer_world_pos = window
-        .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(view, cursor).ok())
-        .map(|ray| ray.origin.truncate());
-
-    for (mut player, playhead, options, gtransform, current_asset_handle, ui_node) in
-        query_player.iter_mut()
-    {
-        if player.stopped {
+    for (entity, player, playhead, options, lottie) in query_player.iter() {
+        let Some(current_asset) = assets.get_mut(lottie.asset_id()) else {
+            // Asset has not loaded yet and is therefore not visible. It would be odd to run transitions on assets that aren't visible.
             continue;
-        }
-        if player.states.len() <= 1 {
-            continue;
-        }
-
-        let Some(current_asset) = assets.get_mut(current_asset_handle.id()) else {
-            // Asset may not be loaded yet, or in progress. This is common in WASM.
-            tracing::warn!(
-                current_state = player.current_state,
-                "asset not loaded for state, waiting..."
-            );
-            continue;
-        };
-
-        let is_inside = if ui_node.is_some() {
-            match pointer_screen_pos {
-                Some(pointer_pos) => {
-                    let transform = gtransform.to_matrix();
-
-                    let mouse_local = transform
-                        .inverse()
-                        .transform_point3(pointer_pos.extend(0.0));
-
-                    mouse_local.x <= current_asset.width
-                        && mouse_local.x >= 0.0
-                        && mouse_local.y <= current_asset.height
-                        && mouse_local.y >= 0.0
-                }
-                None => false,
-            }
-        } else {
-            match pointer_world_pos {
-                Some(pointer_pos) => {
-                    let model_matrix = gtransform.to_matrix();
-
-                    let mouse_local = model_matrix
-                        .inverse()
-                        .transform_point3(pointer_pos.extend(0.0));
-
-                    mouse_local.x <= current_asset.width
-                        && mouse_local.x >= 0.0
-                        && mouse_local.y <= current_asset.height
-                        && mouse_local.y >= 0.0
-                }
-                None => false,
-            }
         };
 
         for transition in player.state().transitions.iter() {
             match transition {
+                PlayerTransition::OnMouseEnter { .. }
+                | PlayerTransition::OnMouseClick { .. }
+                | PlayerTransition::OnMouseLeave { .. } => {
+                    // Handled via observer
+                }
                 PlayerTransition::OnAfter { state, secs } => {
                     let started = playhead.first_render;
                     if started.is_some_and(|s| s.elapsed().as_secs_f32() >= *secs) {
-                        player.next_state = Some(state);
-                        break;
+                        commands
+                            .entity(entity)
+                            .trigger(|entity| LottieOnAfterEvent {
+                                entity,
+                                next_state: state,
+                            });
                     }
                 }
                 PlayerTransition::OnComplete { state } => {
-                    // can be irrefutable if only feature is lottie
                     let loops_needed = match options.looping {
                         PlaybackLoopBehavior::DoNotLoop => Some(0),
                         PlaybackLoopBehavior::Amount(amt) => Some(amt),
@@ -286,8 +200,12 @@ pub fn run_transitions(
                                 && loops_needed
                                     .is_some_and(|needed| playhead.loops_completed >= needed)
                             {
-                                player.next_state = Some(state);
-                                break;
+                                commands
+                                    .entity(entity)
+                                    .trigger(|entity| LottieOnCompletedEvent {
+                                        entity,
+                                        next_state: state,
+                                    });
                             }
                         }
                         PlaybackDirection::Reverse => {
@@ -299,38 +217,22 @@ pub fn run_transitions(
                                 && loops_needed
                                     .is_some_and(|needed| playhead.loops_completed >= needed)
                             {
-                                player.next_state = Some(state);
-                                break;
+                                commands
+                                    .entity(entity)
+                                    .trigger(|entity| LottieOnCompletedEvent {
+                                        entity,
+                                        next_state: state,
+                                    });
                             }
                         }
                     }
                 }
-                PlayerTransition::OnMouseEnter { state } => {
-                    if is_inside {
-                        player.next_state = Some(state);
-                        *hovered = true;
-                        break;
-                    }
-                }
-                PlayerTransition::OnMouseClick { state } => {
-                    if is_inside && buttons.just_pressed(MouseButton::Left) {
-                        player.next_state = Some(state);
-                        break;
-                    }
-                }
-                PlayerTransition::OnMouseLeave { state } => {
-                    if *hovered && !is_inside {
-                        player.next_state = Some(state);
-                        *hovered = false;
-                        break;
-                    } else if is_inside {
-                        *hovered = true;
-                    }
-                }
                 PlayerTransition::OnShow { state } => {
                     if playhead.first_render.is_some() {
-                        player.next_state = Some(state);
-                        break;
+                        commands.entity(entity).trigger(|entity| LottieOnShowEvent {
+                            entity,
+                            next_state: state,
+                        });
                     }
                 }
             }
@@ -338,9 +240,9 @@ pub fn run_transitions(
     }
 }
 
-pub fn transition_state(
+pub fn transition_state<A: LottieAssetVariant>(
     mut commands: Commands,
-    mut query_sm: Query<(Entity, &mut LottiePlayer, &mut Playhead)>,
+    mut query_sm: Query<(Entity, &mut LottiePlayer<A>, &mut Playhead)>,
     assets: Res<Assets<VelloLottie>>,
 ) {
     for (entity, mut player, mut playhead) in query_sm.iter_mut() {
@@ -368,7 +270,7 @@ pub fn transition_state(
 
         // Swap asset
         if let Some(target_handle) = target_state.asset.as_ref() {
-            // FIXME: commands.entity(entity).insert(target_handle.clone());
+            commands.entity(entity).insert(target_handle.clone());
         }
         // Reset playheads if requested
         let reset_playhead =
@@ -376,7 +278,7 @@ pub fn transition_state(
         if reset_playhead {
             let target_asset = target_state.asset.as_ref();
             if let Some(target_asset) = target_asset {
-                let Some(asset) = assets.get(target_asset.id()) else {
+                let Some(asset) = assets.get(target_asset.asset_id()) else {
                     tracing::warn!("not ready for state transition, re-queueing {next_state}...");
                     player.next_state = Some(next_state);
                     continue;
@@ -430,7 +332,10 @@ pub fn update_lottie_2d_aabb_on_change(
             continue;
         };
 
-        let (width, height) = (lottie.width, lottie.height);
+        let (width, height) = (
+            lottie.composition.width as f32,
+            lottie.composition.height as f32,
+        );
         let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
         let (dx, dy) = {
             match anchor {
@@ -464,8 +369,11 @@ pub fn update_ui_lottie_content_size_on_change(
             warn!("UiVelloLottie: lottie {:?} not found", lottie.0);
             continue;
         };
-
-        let size = Vec2::new(lottie.width, lottie.height) / node.inverse_scale_factor();
+        let (width, height) = (
+            lottie.composition.width as f32,
+            lottie.composition.height as f32,
+        );
+        let size = Vec2::new(width, height) / node.inverse_scale_factor();
         let measure = NodeMeasure::Fixed(bevy::ui::FixedMeasure { size });
         content_size.set(measure);
     }

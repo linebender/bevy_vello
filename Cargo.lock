@@ -924,6 +924,7 @@ dependencies = [
  "bevy_math",
  "bevy_mesh",
  "bevy_pbr",
+ "bevy_picking",
  "bevy_platform",
  "bevy_ptr",
  "bevy_reflect",
@@ -1440,6 +1441,7 @@ dependencies = [
  "bevy_image",
  "bevy_input",
  "bevy_math",
+ "bevy_picking",
  "bevy_platform",
  "bevy_reflect",
  "bevy_sprite",
@@ -1452,6 +1454,7 @@ dependencies = [
  "taffy",
  "thiserror 2.0.17",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

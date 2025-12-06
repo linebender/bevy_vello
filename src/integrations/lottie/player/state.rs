@@ -1,12 +1,9 @@
-use bevy::asset::Handle;
-
-use super::PlayerTransition;
-use crate::{PlaybackOptions, Theme, prelude::VelloLottie};
+use crate::{integrations::lottie::LottieAssetVariant, prelude::*};
 
 #[derive(Debug, Clone)]
-pub struct PlayerState {
+pub struct PlayerState<A: LottieAssetVariant> {
     pub id: &'static str,
-    pub asset: Option<Handle<VelloLottie>>,
+    pub asset: Option<A>,
     pub theme: Option<Theme>,
     pub options: Option<PlaybackOptions>,
     pub transitions: Vec<PlayerTransition>,
@@ -16,7 +13,7 @@ pub struct PlayerState {
     pub reset_playhead_on_start: bool,
 }
 
-impl PlayerState {
+impl<A: LottieAssetVariant> PlayerState<A> {
     pub fn new(id: &'static str) -> Self {
         Self {
             id,
@@ -29,7 +26,7 @@ impl PlayerState {
         }
     }
 
-    pub fn asset(mut self, asset: Handle<VelloLottie>) -> Self {
+    pub fn asset(mut self, asset: A) -> Self {
         self.asset.replace(asset);
         self
     }
@@ -59,7 +56,7 @@ impl PlayerState {
         self
     }
 
-    pub fn set_asset(mut self, asset: Option<Handle<VelloLottie>>) -> Self {
+    pub fn set_asset(mut self, asset: Option<A>) -> Self {
         self.asset = asset;
         self
     }
@@ -89,7 +86,7 @@ impl PlayerState {
         self
     }
 
-    pub fn get_asset(&self) -> Option<&Handle<VelloLottie>> {
+    pub fn get_asset(&self) -> Option<&A> {
         self.asset.as_ref()
     }
 

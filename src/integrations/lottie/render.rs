@@ -221,17 +221,20 @@ pub fn prepare_asset_affines(
                     [0.0, 0.0, 1.0, 0.0],
                     [translation.x, translation.y, 0.0, 1.0],
                 ]);
+                let (width, height) = (
+                    render_entity.asset.composition.width as f32,
+                    render_entity.asset.composition.height as f32,
+                );
                 let local_center_matrix = Transform::from_translation(Vec3 {
-                    x: render_entity.asset.width / 2.0,
-                    y: render_entity.asset.height / 2.0,
+                    x: width / 2.0,
+                    y: height / 2.0,
                     z: 0.0,
                 })
                 .to_matrix()
                 .inverse();
                 // Fill the bevy_ui Node with the asset size
                 let aspect_fill_matrix = {
-                    let asset_size =
-                        Vec2::new(render_entity.asset.width, render_entity.asset.height);
+                    let asset_size = Vec2::new(width, height);
                     let fill_scale = render_entity.ui_node.size() / asset_size;
                     let scale_factor = fill_scale.x.min(fill_scale.y); // Maintain aspect ratio
                     Mat4::from_scale(Vec3::new(scale_factor, scale_factor, 1.0))
@@ -288,34 +291,20 @@ pub fn prepare_asset_affines(
                 } = world_transform;
 
                 // Calculate anchor offset in local space (Vello's top-left origin)
+                let (width, height) = (
+                    render_entity.asset.composition.width as f32,
+                    render_entity.asset.composition.height as f32,
+                );
                 let anchor_local = match render_entity.asset_anchor {
                     VelloLottieAnchor::TopLeft => Vec3::ZERO,
-                    VelloLottieAnchor::Left => {
-                        Vec3::new(0.0, render_entity.asset.height / 2.0, 0.0)
-                    }
-                    VelloLottieAnchor::BottomLeft => {
-                        Vec3::new(0.0, render_entity.asset.height, 0.0)
-                    }
-                    VelloLottieAnchor::Top => Vec3::new(render_entity.asset.width / 2.0, 0.0, 0.0),
-                    VelloLottieAnchor::Center => Vec3::new(
-                        render_entity.asset.width / 2.0,
-                        render_entity.asset.height / 2.0,
-                        0.0,
-                    ),
-                    VelloLottieAnchor::Bottom => Vec3::new(
-                        render_entity.asset.width / 2.0,
-                        render_entity.asset.height,
-                        0.0,
-                    ),
-                    VelloLottieAnchor::TopRight => Vec3::new(render_entity.asset.width, 0.0, 0.0),
-                    VelloLottieAnchor::Right => Vec3::new(
-                        render_entity.asset.width,
-                        render_entity.asset.height / 2.0,
-                        0.0,
-                    ),
-                    VelloLottieAnchor::BottomRight => {
-                        Vec3::new(render_entity.asset.width, render_entity.asset.height, 0.0)
-                    }
+                    VelloLottieAnchor::Left => Vec3::new(0.0, height / 2.0, 0.0),
+                    VelloLottieAnchor::BottomLeft => Vec3::new(0.0, height, 0.0),
+                    VelloLottieAnchor::Top => Vec3::new(width / 2.0, 0.0, 0.0),
+                    VelloLottieAnchor::Center => Vec3::new(width / 2.0, height / 2.0, 0.0),
+                    VelloLottieAnchor::Bottom => Vec3::new(width / 2.0, height, 0.0),
+                    VelloLottieAnchor::TopRight => Vec3::new(width, 0.0, 0.0),
+                    VelloLottieAnchor::Right => Vec3::new(width, height / 2.0, 0.0),
+                    VelloLottieAnchor::BottomRight => Vec3::new(width, height, 0.0),
                 };
 
                 let mut anchor_matrix = Mat4::from_translation(-anchor_local);

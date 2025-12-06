@@ -274,7 +274,12 @@ pub fn render_frame(
                         vello::peniko::Mix::Normal,
                         *alpha,
                         *affine,
-                        &vello::kurbo::Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                        &vello::kurbo::Rect::new(
+                            0.0,
+                            0.0,
+                            asset.composition.width as f64,
+                            asset.composition.height as f64,
+                        ),
                     );
                 }
                 let recolored = theme.as_ref().map(|cs| cs.recolor(&asset.composition));
@@ -363,7 +368,12 @@ pub fn render_frame(
                         vello::peniko::Mix::Normal,
                         *alpha,
                         *affine,
-                        &vello::kurbo::Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
+                        &vello::kurbo::Rect::new(
+                            0.0,
+                            0.0,
+                            asset.composition.width as f64,
+                            asset.composition.height as f64,
+                        ),
                     );
                 }
                 let recolored = theme.as_ref().map(|cs| cs.recolor(&asset.composition));

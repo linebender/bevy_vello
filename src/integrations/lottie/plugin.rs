@@ -22,7 +22,6 @@ impl Plugin for LottieIntegrationPlugin {
             .register_type::<UiVelloLottie>()
             .register_type::<VelloLottieAnchor>()
             .register_type::<PlaybackOptions>()
-            .add_systems(PostUpdate, systems::advance_playheads)
             .add_systems(
                 PostUpdate,
                 (
@@ -32,9 +31,26 @@ impl Plugin for LottieIntegrationPlugin {
                         .in_set(bevy::ui::UiSystems::Content),
                 ),
             )
+            // UI Player
+            .add_systems(PostUpdate, systems::advance_playheads::<UiVelloLottie>)
             .add_systems(
                 Last,
-                (systems::run_transitions, systems::transition_state).chain(),
+                (
+                    systems::run_time_transitions::<UiVelloLottie>,
+                    ApplyDeferred, // Sync point: Events generated via run_time_transitions will be executed.
+                    systems::transition_state::<UiVelloLottie>,
+                )
+                    .chain(),
+            )
+            // World Player
+            .add_systems(PostUpdate, systems::advance_playheads::<VelloLottie2d>)
+            .add_systems(
+                Last,
+                (
+                    systems::run_time_transitions::<VelloLottie2d>,
+                    systems::transition_state::<VelloLottie2d>,
+                )
+                    .chain(),
             );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {

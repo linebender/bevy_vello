@@ -16,45 +16,47 @@ pub use lottie_ext::LottieExt;
 mod plugin;
 pub(crate) use plugin::LottieIntegrationPlugin;
 
-mod playback_options;
-pub use playback_options::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
-};
-
-mod playhead;
-pub use playhead::Playhead;
-
-mod lottie_player;
-pub use lottie_player::LottiePlayer;
-
-mod player_state;
-pub use player_state::PlayerState;
-
-mod player_transition;
-pub use player_transition::PlayerTransition;
-
 mod theme;
 pub use theme::Theme;
 
-/// A renderable Lottie in the world.
+mod player;
+pub use player::{
+    LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, PlaybackPlayMode,
+    PlayerState, PlayerTransition, Playhead,
+};
+
 use bevy::{
     camera::{primitives::Aabb, visibility::VisibilityClass},
+    ecs::component::Mutable,
     prelude::*,
 };
+
+pub trait LottieAssetVariant: Component<Mutability = Mutable> + Clone {
+    fn asset_id(&self) -> AssetId<VelloLottie>;
+}
+
+/// A renderable Lottie in the world.
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     Aabb,
+    Pickable,
     VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
-    LottiePlayer,
+    LottiePlayer::<VelloLottie2d>,
     Transform,
     Visibility,
     VisibilityClass
 )]
 #[reflect(Component)]
-#[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloLottie2d>)]
+#[component(on_add = super::lottie::player::hooks::on_add_lottie::<VelloLottie2d>)]
 pub struct VelloLottie2d(pub Handle<VelloLottie>);
+
+impl LottieAssetVariant for VelloLottie2d {
+    fn asset_id(&self) -> AssetId<VelloLottie> {
+        self.id()
+    }
+}
 
 /// A renderable Lottie that may be used in Bevy UI.
 ///
@@ -63,17 +65,24 @@ pub struct VelloLottie2d(pub Handle<VelloLottie>);
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     Node,
+    Pickable,
     VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
-    LottiePlayer,
+    LottiePlayer::<UiVelloLottie>,
     UiTransform,
     Visibility,
     VisibilityClass
 )]
 #[reflect(Component)]
-#[component(on_add = bevy::camera::visibility::add_visibility_class::<UiVelloLottie>)]
+#[component(on_add = super::lottie::player::hooks::on_add_lottie::<UiVelloLottie>)]
 pub struct UiVelloLottie(pub Handle<VelloLottie>);
+
+impl LottieAssetVariant for UiVelloLottie {
+    fn asset_id(&self) -> AssetId<VelloLottie> {
+        self.id()
+    }
+}
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
 /// [`VelloLottieAnchor::Center`].

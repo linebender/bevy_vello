@@ -10,13 +10,8 @@ pub fn load_lottie_from_bytes(bytes: &[u8]) -> Result<VelloLottie, VectorLoaderE
     // Load Lottie JSON bytes with the Velato (bodymovin) parser
     let composition = velato::Composition::from_slice(bytes).map_err(VectorLoaderError::Velato)?;
 
-    let width = composition.width as f32;
-    let height = composition.height as f32;
-
     let asset = VelloLottie {
         composition: Arc::new(composition),
-        width,
-        height,
         alpha: 1.0,
     };
 

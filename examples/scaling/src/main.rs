@@ -1,5 +1,6 @@
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
+    camera::primitives::Aabb,
     color::palettes::css,
     input::{ButtonState, keyboard::KeyboardInput},
     prelude::*,
@@ -29,7 +30,7 @@ fn main() {
         Startup,
         (
             spawn_camera,
-            enable_ui_debug,
+            enable_debug,
             spawn_bevy_ui,
             spawn_scenes,
             spawn_instructions,
@@ -58,7 +59,7 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
 
-fn enable_ui_debug(mut options: ResMut<UiDebugOptions>, mut config: ResMut<GizmoConfigStore>) {
+fn enable_debug(mut options: ResMut<UiDebugOptions>, mut config: ResMut<GizmoConfigStore>) {
     options.enabled = true;
     config.config_mut::<AabbGizmoConfigGroup>().1.draw_all = true;
     config.config_mut::<AabbGizmoConfigGroup>().1.default_color = Some(Color::WHITE);
@@ -214,6 +215,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn((
             VelloScene2d::new(),
+            Aabb::from_min_max(Vec3::new(-50.0, -50.0, 0.0), Vec3::new(50.0, 50.0, 0.0)),
             Transform::from_xyz(-CELL_WIDTH, -CELL_HEIGHT, 0.0),
             RotateThing {
                 initial_scale: Vec3::splat(1.0),
