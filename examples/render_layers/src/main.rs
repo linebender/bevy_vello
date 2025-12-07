@@ -2,7 +2,11 @@
 
 use std::ops::DerefMut;
 
-use bevy::{camera::visibility::RenderLayers, color::palettes::css, prelude::*};
+use bevy::{
+    camera::{primitives::Aabb, visibility::RenderLayers},
+    color::palettes::css,
+    prelude::*,
+};
 use bevy_vello::{VelloPlugin, prelude::*};
 
 fn main() {
@@ -13,7 +17,7 @@ fn main() {
             ..default()
         })
         .add_systems(Startup, (setup_gizmos, setup_scene))
-        .add_systems(Update, (animation, background, run_gizmos))
+        .add_systems(Update, (animation, run_gizmos))
         .run();
 }
 
@@ -32,6 +36,8 @@ fn setup_gizmos(mut commands: Commands, mut config_store: ResMut<GizmoConfigStor
         Camera {
             // This camera will render LAST.
             order: 1,
+            // Ensure the gizmos render over Vello without a clear color
+            clear_color: ClearColorConfig::None,
             ..default()
         },
         RenderLayers::layer(3),
@@ -52,8 +58,30 @@ fn setup_scene(mut commands: Commands) {
         VelloView,
     ));
 
-    commands.spawn((VelloScene2d::new(), BackgroundScene, RenderLayers::layer(1)));
-    commands.spawn((VelloScene2d::new(), AnimationScene, RenderLayers::layer(2)));
+    commands.spawn((
+        {
+            let mut scene = VelloScene2d::new();
+            scene.fill(
+                peniko::Fill::NonZero,
+                kurbo::Affine::default(),
+                peniko::Color::new([0.0, 0.0, 1.0, 1.0]),
+                None,
+                &kurbo::RoundedRect::new(-200.0, -200.0, 200.0, 200.0, 0.0),
+            );
+            scene
+        },
+        Transform::from_xyz(0.0, 0.0, -1.0),
+        Aabb::from_min_max(Vec3::new(-200.0, -200.0, 0.0), Vec3::new(200.0, 20.0, 0.0)),
+        BackgroundScene,
+        RenderLayers::layer(1),
+    ));
+    commands.spawn((
+        VelloScene2d::new(),
+        Transform::from_xyz(0.0, 0.0, 5.0),
+        Aabb::from_min_max(Vec3::new(-50.0, -50.0, 0.0), Vec3::new(50.0, 50.0, 0.0)),
+        AnimationScene,
+        RenderLayers::layer(2),
+    ));
 }
 
 fn animation(
@@ -82,20 +110,8 @@ fn animation(
     );
 
     transform.scale = Vec3::lerp(Vec3::ONE * 0.5, Vec3::ONE * 1.0, sin_time);
-    transform.translation = Vec3::lerp(Vec3::X * -100.0, Vec3::X * 100.0, sin_time);
+    transform.translation = Vec3::lerp(Vec3::X * -100.0, Vec3::X * 100.0, sin_time).with_z(0.0);
     transform.rotation = Quat::from_rotation_z(-std::f32::consts::TAU * sin_time);
-}
-
-fn background(mut query_scene: Single<&mut VelloScene2d, With<BackgroundScene>>) {
-    let scene = query_scene.deref_mut();
-    scene.reset();
-    scene.fill(
-        peniko::Fill::NonZero,
-        kurbo::Affine::default(),
-        peniko::Color::new([0.0, 0.0, 1.0, 1.0]),
-        None,
-        &kurbo::RoundedRect::new(-200.0, -200.0, 200.0, 200.0, 0.0),
-    );
 }
 
 fn run_gizmos(mut gizmos: Gizmos) {
