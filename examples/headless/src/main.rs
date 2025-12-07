@@ -1,4 +1,5 @@
 use bevy::{
+    asset::embedded_asset,
     camera::{RenderTarget, Viewport},
     core_pipeline::core_2d::graph::Core2d,
     diagnostic::FrameCount,
@@ -8,7 +9,11 @@ use bevy::{
         view::screenshot::{Screenshot, ScreenshotCaptured, save_to_disk},
     },
 };
-use bevy_vello::{VelloPlugin, prelude::*, vello::wgpu::TextureFormat};
+use bevy_vello::{
+    VelloPlugin,
+    prelude::*,
+    vello::{peniko::color::AlphaColor, wgpu::TextureFormat},
+};
 
 #[derive(Resource)]
 struct ScreenshotTarget(Handle<Image>);
@@ -29,25 +34,25 @@ fn main() {
         bevy::text::TextPlugin,
     ))
     .add_plugins(VelloPlugin::default())
-    .add_systems(Startup, (setup_camera, setup_vector_graphics))
-    .add_systems(Update, screenshot.run_if(|f: Res<FrameCount>| f.0 >= 1))
-    .run();
+    .add_systems(Startup, (setup_camera, load_svg, load_text))
+    .add_systems(Update, screenshot.run_if(|f: Res<FrameCount>| f.0 >= 1));
+    embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
+    app.run();
 }
 
 fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     // Create image render target
-    let image = Image::new_target_texture(100, 100, TextureFormat::Rgba8UnormSrgb);
+    let image = Image::new_target_texture(900, 900, TextureFormat::Rgba8UnormSrgb);
     let image_handle = images.add(image);
 
     commands.spawn((
         Camera2d,
         Camera {
             viewport: Some(Viewport {
-                physical_size: UVec2 { x: 100, y: 100 },
+                physical_size: UVec2 { x: 900, y: 900 },
                 ..Default::default()
             }),
             target: RenderTarget::Image(image_handle.clone().into()),
-            clear_color: ClearColorConfig::None,
             ..default()
         },
         CameraRenderGraph::new(Core2d),
@@ -58,17 +63,25 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     commands.insert_resource(ScreenshotTarget(image_handle));
 }
 
-fn setup_vector_graphics(mut commands: Commands) {
-    // Draw a circle
-    let mut scene = VelloScene2d::new();
-    scene.fill(
-        peniko::Fill::NonZero,
-        kurbo::Affine::default(),
-        peniko::Color::new([0.0, 1.0, 0.0, 1.0]),
-        None,
-        &kurbo::Circle::new((0.0, 0.0), 50.0),
-    );
-    commands.spawn(scene);
+fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+    commands.spawn(VelloSvg2d(
+        asset_server.load("embedded://headless/assets/Ghostscript_Tiger.svg"),
+    ));
+}
+
+fn load_text(mut commands: Commands) {
+    commands.spawn((
+        VelloText2d {
+            value: "bevy_vello".to_string(),
+            style: VelloTextStyle {
+                brush: peniko::Brush::Solid(AlphaColor::from_rgb8(255, 0, 255)),
+                font_size: 96.0,
+                ..default()
+            },
+            ..default()
+        },
+        VelloTextAnchor::Center,
+    ));
 }
 
 fn screenshot(mut commands: Commands, target: Res<ScreenshotTarget>) {
