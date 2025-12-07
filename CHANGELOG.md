@@ -57,6 +57,7 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 - Renderables (text, images, scenes) now respect the camera projection scale.
 - Objects are now scaled according to the scale factor (pixel density) of the viewport/window. This fixes scaling on retina displays.
 - Render targets are now resized when camera viewport size changes
+- The headless example is now actually headless (does not spawn a window)
 
 ## [0.10.3] - 2025-07-09
 
