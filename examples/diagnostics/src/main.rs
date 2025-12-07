@@ -1,8 +1,6 @@
 use bevy::{diagnostic::DiagnosticsStore, prelude::*};
 use bevy_vello::{VelloPlugin, prelude::*};
 
-const SCENE_COUNT: usize = 5;
-
 fn main() {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins)
@@ -16,7 +14,7 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
-    for i in 0..SCENE_COUNT {
+    for i in 0..5 {
         commands.spawn((
             VelloScene2d::new(),
             Transform::from_translation(Vec3::new(i as f32 * 100.0 - 200.0, 0.0, 0.0)),
@@ -25,9 +23,9 @@ fn setup(mut commands: Commands) {
 
     // UI Text displaying the scene count
     commands.spawn((
-        Text::new("Total Scenes: 0"),
+        Text::default(),
         TextFont {
-            font_size: 30.0,
+            font_size: 14.0,
             ..default()
         },
         TextColor(Color::WHITE),
@@ -79,11 +77,36 @@ fn update_scene_count_ui(
         .map(|m| m.value)
         .unwrap_or(0.0);
 
+    let path_count = diagnostics
+        .get(&bevy_vello::render::diagnostics::PATH_COUNT)
+        .and_then(|d| d.measurement())
+        .map(|m| m.value)
+        .unwrap_or(0.0);
+
     let path_segs_count = diagnostics
         .get(&bevy_vello::render::diagnostics::PATH_SEGMENTS_COUNT)
         .and_then(|d| d.measurement())
         .map(|m| m.value)
         .unwrap_or(0.0);
 
-    text.0 = format!("Total scenes: {scene_count}\nTotal path segments: {path_segs_count}");
+    let clips_count = diagnostics
+        .get(&bevy_vello::render::diagnostics::CLIPS_COUNT)
+        .and_then(|d| d.measurement())
+        .map(|m| m.value)
+        .unwrap_or(0.0);
+
+    let open_clips_count = diagnostics
+        .get(&bevy_vello::render::diagnostics::OPEN_CLIPS_COUNT)
+        .and_then(|d| d.measurement())
+        .map(|m| m.value)
+        .unwrap_or(0.0);
+
+    text.0 = format!(
+        r#"Diagnostics
+    Total scenes: {scene_count}
+    Total paths: {path_count}
+    Total path segments: {path_segs_count}
+    Total clips: {clips_count}
+    Total open clips: {open_clips_count}"#
+    );
 }
