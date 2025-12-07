@@ -20,6 +20,7 @@ use bevy::{
 /// A renderable SVG in the world.
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(Aabb, VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
+#[cfg_attr(feature = "picking", require(Pickable))]
 #[reflect(Component)]
 #[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloSvg2d>)]
 pub struct VelloSvg2d(pub Handle<VelloSvg>);

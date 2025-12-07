@@ -13,6 +13,9 @@ pub struct SvgIntegrationPlugin;
 
 impl Plugin for SvgIntegrationPlugin {
     fn build(&self, app: &mut App) {
+        #[cfg(feature = "picking")]
+        app.add_plugins(crate::picking::WorldPickingPlugin::<VelloSvg2d>::default());
+
         app.init_asset_loader::<VelloSvgLoader>()
             .init_asset::<VelloSvg>()
             .register_type::<UiVelloSvg>()

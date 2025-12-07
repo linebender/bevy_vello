@@ -10,18 +10,21 @@ pub struct VelloTextIntegrationPlugin;
 
 impl Plugin for VelloTextIntegrationPlugin {
     fn build(&self, app: &mut App) {
+        #[cfg(feature = "picking")]
+        app.add_plugins(crate::picking::WorldPickingPlugin::<super::VelloText2d>::default());
+
         app.init_asset::<VelloFont>()
             .init_asset_loader::<VelloFontLoader>()
-            .add_plugins(RenderAssetPlugin::<VelloFont>::default());
-
-        app.add_systems(
-            PostUpdate,
-            (
-                systems::update_text_2d_aabb_on_change
-                    .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
-                systems::update_ui_text_content_size_on_change.in_set(bevy::ui::UiSystems::Content),
-            ),
-        );
+            .add_plugins(RenderAssetPlugin::<VelloFont>::default())
+            .add_systems(
+                PostUpdate,
+                (
+                    systems::update_text_2d_aabb_on_change
+                        .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
+                    systems::update_ui_text_content_size_on_change
+                        .in_set(bevy::ui::UiSystems::Content),
+                ),
+            );
 
         #[cfg(feature = "default_font")]
         {

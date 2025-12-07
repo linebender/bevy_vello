@@ -11,7 +11,7 @@ use vello::{
     peniko::{Brush, Fill},
 };
 
-use super::{VelloTextAnchor, context::LOCAL_FONT_CONTEXT, vello_text::VelloFontAxes};
+use super::{VelloFontAxes, VelloTextAnchor, context::LOCAL_FONT_CONTEXT};
 use crate::{
     integrations::text::context::{LOCAL_LAYOUT_CONTEXT, get_global_font_context},
     prelude::{VelloTextAlign, VelloTextStyle},

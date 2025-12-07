@@ -4,7 +4,6 @@ use bevy::{
     prelude::*,
     ui::{ContentSize, NodeMeasure},
 };
-use tracing::warn;
 
 pub fn update_svg_2d_aabb_on_change(
     mut text_q: Query<(&mut Aabb, &mut VelloSvg2d, &VelloSvgAnchor), Changed<VelloSvg2d>>,

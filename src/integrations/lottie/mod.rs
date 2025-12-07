@@ -1,6 +1,4 @@
 mod asset_loader;
-#[cfg(feature = "picking")]
-mod picking;
 mod systems;
 
 pub(crate) mod render;
@@ -40,7 +38,6 @@ pub trait LottieAssetVariant: Component<Mutability = Mutable> + Clone {
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     Aabb,
-    Pickable,
     VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
@@ -49,6 +46,7 @@ pub trait LottieAssetVariant: Component<Mutability = Mutable> + Clone {
     Visibility,
     VisibilityClass
 )]
+#[cfg_attr(feature = "picking", require(Pickable))]
 #[reflect(Component)]
 #[component(on_add = super::lottie::player::hooks::on_add_lottie::<VelloLottie2d>)]
 pub struct VelloLottie2d(pub Handle<VelloLottie>);

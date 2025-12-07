@@ -1,3 +1,4 @@
+use crate::render::VelloView;
 use bevy::{
     camera::primitives::Aabb,
     picking::{
@@ -8,22 +9,28 @@ use bevy::{
     prelude::*,
     window::PrimaryWindow,
 };
+use std::marker::PhantomData;
 
-use crate::{prelude::VelloLottie2d, render::VelloView};
+#[derive(Default)]
+pub struct WorldPickingPlugin<C: Component> {
+    _type: PhantomData<C>,
+}
 
-pub struct LottieWorldPickingPlugin;
-
-impl Plugin for LottieWorldPickingPlugin {
+impl<C: Component> Plugin for WorldPickingPlugin<C> {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreUpdate, update_aabb_hits.in_set(PickingSystems::Backend));
+        debug!("Adding picking support for {}", std::any::type_name::<C>());
+        app.add_systems(
+            PreUpdate,
+            update_aabb_hits::<C>.in_set(PickingSystems::Backend),
+        );
     }
 }
 
-fn update_aabb_hits(
+fn update_aabb_hits<C: Component>(
     primary_window: Single<Entity, With<PrimaryWindow>>,
     pointers: Query<(&PointerId, &PointerLocation)>,
     cameras: Query<(Entity, &Camera, &GlobalTransform), With<VelloView>>,
-    aabb_query: Query<(Entity, &Aabb, &GlobalTransform, &Pickable), With<VelloLottie2d>>,
+    aabb_query: Query<(Entity, &Aabb, &GlobalTransform, &Pickable), With<C>>,
     mut pointer_hits_writer: MessageWriter<PointerHits>,
 ) {
     for (pointer_id, pointer_location) in &pointers {

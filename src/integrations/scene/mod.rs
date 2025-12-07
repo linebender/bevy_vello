@@ -12,6 +12,7 @@ use bevy::prelude::*;
 /// A simple newtype component wrapper for [`vello::Scene`].
 #[derive(Component, Default, Clone, Deref, DerefMut)]
 #[require(Aabb, Transform, Visibility, VisibilityClass)]
+#[cfg_attr(feature = "picking", require(Pickable))]
 #[component(on_add = visibility::add_visibility_class::<VelloScene2d>)]
 pub struct VelloScene2d(Box<vello::Scene>);
 

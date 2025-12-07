@@ -7,6 +7,9 @@ use crate::prelude::*;
 mod plugin;
 pub use plugin::VelloPlugin;
 
+#[cfg(feature = "picking")]
+mod picking;
+
 pub mod integrations;
 pub mod render;
 

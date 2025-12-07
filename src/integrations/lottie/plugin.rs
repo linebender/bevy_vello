@@ -17,7 +17,7 @@ pub struct LottieIntegrationPlugin;
 impl Plugin for LottieIntegrationPlugin {
     fn build(&self, app: &mut App) {
         #[cfg(feature = "picking")]
-        app.add_plugins(super::picking::LottieWorldPickingPlugin);
+        app.add_plugins(crate::picking::WorldPickingPlugin::<VelloLottie2d>::default());
 
         app.init_asset_loader::<VelloLottieLoader>()
             .init_asset::<VelloLottie>()
