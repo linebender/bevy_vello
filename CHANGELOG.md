@@ -43,6 +43,7 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 ### Removed
 
+- `SkipEncoding` no longer exists. Use `Visibility::Hidden` if you wish to skip encoding.
 - `VelloSceneBundle` no longer exists. Use `VelloScene2d` and `UiVelloScene` instead.
 - `VelloTextBundle` no longer exists. Use `VelloText2d` and `UiVelloText` instead.
 - `VelloSvgBundle` no longer exists. Use `VelloSvg2d` and `UiVelloSvg` instead.

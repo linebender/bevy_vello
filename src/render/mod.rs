@@ -167,10 +167,6 @@ pub(crate) struct VelloCanvasSettings {
     pub render_layers: RenderLayers,
 }
 
-/// Add this to any renderable vello asset to skip encoding that renderable.
-#[derive(Component, Debug, Clone, Copy)]
-pub struct SkipEncoding;
-
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
 #[allow(clippy::large_enum_variant, reason = "Many feature gates")]

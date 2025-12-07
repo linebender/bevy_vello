@@ -8,7 +8,7 @@ use vello::kurbo::Affine;
 
 use crate::integrations::scene::{UiVelloScene, VelloScene2d};
 use crate::render::prepare::PreparedAffine;
-use crate::render::{SkipEncoding, VelloEntityCountData, VelloView};
+use crate::render::{VelloEntityCountData, VelloView};
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloScene2d {
@@ -39,7 +39,7 @@ pub fn extract_world_scenes(
                 &InheritedVisibility,
                 Option<&RenderLayers>,
             ),
-            (Without<SkipEncoding>, Without<Node>),
+            Without<Node>,
         >,
     >,
     mut frame_data: ResMut<VelloEntityCountData>,
@@ -83,17 +83,14 @@ pub fn extract_ui_scenes(
         (With<Camera2d>, With<VelloView>),
     >,
     query_scenes: Extract<
-        Query<
-            (
-                &UiVelloScene,
-                &ComputedNode,
-                &ComputedUiRenderTargetInfo,
-                &UiGlobalTransform,
-                &InheritedVisibility,
-                Option<&RenderLayers>,
-            ),
-            Without<SkipEncoding>,
-        >,
+        Query<(
+            &UiVelloScene,
+            &ComputedNode,
+            &ComputedUiRenderTargetInfo,
+            &UiGlobalTransform,
+            &InheritedVisibility,
+            Option<&RenderLayers>,
+        )>,
     >,
     mut frame_data: ResMut<VelloEntityCountData>,
 ) {

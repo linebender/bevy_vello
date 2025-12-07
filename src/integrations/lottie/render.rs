@@ -9,10 +9,7 @@ use vello::kurbo::Affine;
 
 use super::{Playhead, Theme, VelloLottieAnchor, asset::VelloLottie};
 use crate::integrations::lottie::{UiVelloLottie, VelloLottie2d};
-use crate::{
-    SkipEncoding,
-    render::{VelloEntityCountData, VelloView, prepare::PreparedAffine},
-};
+use crate::render::{VelloEntityCountData, VelloView, prepare::PreparedAffine};
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloLottie2d {
@@ -52,7 +49,7 @@ pub fn extract_world_lottie_assets(
                 &ViewVisibility,
                 &InheritedVisibility,
             ),
-            (Without<SkipEncoding>, Without<Node>),
+            Without<Node>,
         >,
     >,
     assets: Extract<Res<Assets<VelloLottie>>>,
@@ -113,18 +110,15 @@ pub fn extract_ui_lottie_assets(
         (With<Camera2d>, With<VelloView>),
     >,
     query_vectors: Extract<
-        Query<
-            (
-                &UiVelloLottie,
-                &UiGlobalTransform,
-                &Playhead,
-                Option<&Theme>,
-                &ComputedNode,
-                Option<&RenderLayers>,
-                &InheritedVisibility,
-            ),
-            Without<SkipEncoding>,
-        >,
+        Query<(
+            &UiVelloLottie,
+            &UiGlobalTransform,
+            &Playhead,
+            Option<&Theme>,
+            &ComputedNode,
+            Option<&RenderLayers>,
+            &InheritedVisibility,
+        )>,
     >,
     assets: Extract<Res<Assets<VelloLottie>>>,
     mut frame_data: ResMut<VelloEntityCountData>,

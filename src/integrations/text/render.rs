@@ -8,7 +8,7 @@ use bevy::{
 use vello::kurbo::Affine;
 
 use super::{UiVelloText, VelloFont, VelloText2d, VelloTextAnchor};
-use crate::render::{SkipEncoding, VelloEntityCountData, VelloView, prepare::PreparedAffine};
+use crate::render::{VelloEntityCountData, VelloView, prepare::PreparedAffine};
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloText2d {
@@ -42,7 +42,7 @@ pub fn extract_world_text(
                 &InheritedVisibility,
                 Option<&RenderLayers>,
             ),
-            (Without<SkipEncoding>, Without<Node>),
+            Without<Node>,
         >,
     >,
     fonts: Extract<Res<Assets<VelloFont>>>,
@@ -92,18 +92,15 @@ pub fn extract_ui_text(
         (With<Camera2d>, With<VelloView>),
     >,
     query_scenes: Extract<
-        Query<
-            (
-                &UiVelloText,
-                &VelloTextAnchor,
-                &UiGlobalTransform,
-                &InheritedVisibility,
-                Option<&RenderLayers>,
-                &ComputedNode,
-                &ComputedUiRenderTargetInfo,
-            ),
-            Without<SkipEncoding>,
-        >,
+        Query<(
+            &UiVelloText,
+            &VelloTextAnchor,
+            &UiGlobalTransform,
+            &InheritedVisibility,
+            Option<&RenderLayers>,
+            &ComputedNode,
+            &ComputedUiRenderTargetInfo,
+        )>,
     >,
     fonts: Extract<Res<Assets<VelloFont>>>,
     mut frame_data: ResMut<VelloEntityCountData>,

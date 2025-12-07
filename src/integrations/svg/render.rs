@@ -45,7 +45,7 @@ pub fn extract_world_svg_assets(
                 &ViewVisibility,
                 &InheritedVisibility,
             ),
-            (Without<SkipEncoding>, Without<Node>),
+            Without<Node>,
         >,
     >,
     assets: Extract<Res<Assets<VelloSvg>>>,
@@ -102,16 +102,13 @@ pub fn extract_ui_svg_assets(
         (With<Camera2d>, With<VelloView>),
     >,
     query_vectors: Extract<
-        Query<
-            (
-                &UiVelloSvg,
-                &UiGlobalTransform,
-                &ComputedNode,
-                Option<&RenderLayers>,
-                &InheritedVisibility,
-            ),
-            Without<SkipEncoding>,
-        >,
+        Query<(
+            &UiVelloSvg,
+            &UiGlobalTransform,
+            &ComputedNode,
+            Option<&RenderLayers>,
+            &InheritedVisibility,
+        )>,
     >,
     assets: Extract<Res<Assets<VelloSvg>>>,
     mut frame_data: ResMut<VelloEntityCountData>,
