@@ -1,5 +1,5 @@
 [package]
-name = "lottie_player"
+name = "picking"
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -8,11 +8,5 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-bevy = { workspace = true, features = [
-  "bevy_gizmos",
-  "bevy_ui_debug",
-  "bevy_ui_picking_backend",
-] }
 bevy_vello = { path = "../../", features = ["lottie", "picking"] }
-bevy_egui = "0.38.0"
-tracing = "0.1.41"
+bevy = { workspace = true, features = ["bevy_gizmos"] }

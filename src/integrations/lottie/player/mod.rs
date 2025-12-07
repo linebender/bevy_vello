@@ -15,9 +15,6 @@ pub use state::PlayerState;
 /// Controls lottie playback and transitions with state machine support.
 #[derive(Component, Clone, Debug)]
 pub struct LottiePlayer<A: LottieAssetVariant> {
-    pub(crate) current_state: Option<&'static str>,
-    pub(crate) next_state: Option<&'static str>,
-    pub(crate) states: HashMap<&'static str, PlayerState<A>>,
     /// Whether the player has started.
     pub(crate) started: bool,
     /// Whether the player is playing. State machines will continue unless
@@ -25,6 +22,9 @@ pub struct LottiePlayer<A: LottieAssetVariant> {
     pub(crate) playing: bool,
     /// Stopped. Doesn't run state machines.
     pub(crate) stopped: bool,
+    pub(crate) current_state: Option<&'static str>,
+    pub(crate) next_state: Option<&'static str>,
+    pub(crate) states: HashMap<&'static str, PlayerState<A>>,
 }
 
 impl<A: LottieAssetVariant> Default for LottiePlayer<A> {

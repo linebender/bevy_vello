@@ -62,7 +62,6 @@ fn spawn_camera(mut commands: Commands) {
 fn enable_debug(mut options: ResMut<UiDebugOptions>, mut config: ResMut<GizmoConfigStore>) {
     options.enabled = true;
     config.config_mut::<AabbGizmoConfigGroup>().1.draw_all = true;
-    config.config_mut::<AabbGizmoConfigGroup>().1.default_color = Some(Color::WHITE);
 }
 
 fn spawn_instructions(mut commands: Commands) {

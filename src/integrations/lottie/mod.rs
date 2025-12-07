@@ -1,11 +1,12 @@
 mod asset_loader;
+#[cfg(feature = "picking")]
+mod picking;
+mod systems;
 
 pub(crate) mod render;
 
 pub mod asset;
 pub use asset::VelloLottie;
-
-mod systems;
 
 mod parse;
 pub use parse::{load_lottie_from_bytes, load_lottie_from_str};

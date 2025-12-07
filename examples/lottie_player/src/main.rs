@@ -17,11 +17,9 @@ fn main() {
     .add_plugins(EguiPlugin::default())
     .add_plugins(VelloPlugin::default())
     .init_resource::<EmbeddedAssetRegistry>()
-    .add_plugins(bevy_pancam::PanCamPlugin)
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, enable_debug)
     .add_systems(Startup, setup_vector_graphics)
-    .add_systems(Update, print_metadata)
     .add_systems(EguiPrimaryContextPass, ui::controls_ui);
 
     embedded_asset!(app, "assets/calendar.json");
@@ -29,13 +27,12 @@ fn main() {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
+    commands.spawn((Camera2d, VelloView));
 }
 
 fn enable_debug(mut options: ResMut<UiDebugOptions>, mut config: ResMut<GizmoConfigStore>) {
     options.enabled = true;
     config.config_mut::<AabbGizmoConfigGroup>().1.draw_all = true;
-    config.config_mut::<AabbGizmoConfigGroup>().1.default_color = Some(Color::WHITE);
 }
 
 fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServer>) {
@@ -91,19 +88,4 @@ fn setup_vector_graphics(mut commands: Commands, asset_server: ResMut<AssetServe
                         .transition(PlayerTransition::OnComplete { state: "stopped" }),
                 ),
         );
-}
-
-fn print_metadata(
-    mut asset_ev: MessageReader<AssetEvent<VelloLottie>>,
-    assets: Res<Assets<VelloLottie>>,
-) {
-    for ev in asset_ev.read() {
-        if let AssetEvent::LoadedWithDependencies { id } = ev {
-            let asset = assets.get(*id).unwrap();
-            tracing::info!(
-                "Animated asset loaded. Layers:\n{:#?}",
-                asset.composition.as_ref().get_layers().collect::<Vec<_>>()
-            );
-        }
-    }
 }

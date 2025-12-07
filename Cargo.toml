@@ -11,6 +11,7 @@ members = [
   "examples/lottie",
   "examples/lottie_screenspace",
   "examples/lottie_ui",
+  "examples/picking",
   "examples/svg",
   "examples/svg_screenspace",
   "examples/svg_ui",
@@ -85,6 +86,7 @@ wasm-bindgen-test = "0.3.50"
 
 [features]
 default = []
+picking = ["bevy/bevy_picking"]
 svg = ["vello_svg"]
 lottie = ["velato"]
 text = ["parley"]

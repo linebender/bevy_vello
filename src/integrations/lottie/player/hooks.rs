@@ -9,6 +9,7 @@ use bevy::{
     ecs::{lifecycle::HookContext, world::DeferredWorld},
     prelude::*,
 };
+use tracing::debug;
 
 pub fn on_add_lottie<A: LottieAssetVariant>(
     mut world: DeferredWorld<'_>,
@@ -29,8 +30,6 @@ pub fn on_add_lottie<A: LottieAssetVariant>(
         .observe(observe_on_after::<A>)
         .observe(observe_on_complete::<A>)
         .observe(observe_on_show::<A>);
-
-    eprintln!("Observing");
 }
 
 fn observe_pointer_enter<A: LottieAssetVariant>(
@@ -38,6 +37,7 @@ fn observe_pointer_enter<A: LottieAssetVariant>(
     mut lottie: Query<(&mut LottiePlayer<A>, &A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
+    debug!(entity = ?trigger.entity, "Lottie picking event: {}", trigger.event());
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -61,8 +61,6 @@ fn observe_pointer_enter<A: LottieAssetVariant>(
         player.next_state.replace(next_state);
     }
 
-    eprintln!("Entered {}", lottie.asset_id());
-
     Ok(())
 }
 
@@ -71,6 +69,7 @@ fn observe_pointer_exit<A: LottieAssetVariant>(
     mut lottie: Query<(&mut LottiePlayer<A>, &A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
+    debug!(entity = ?trigger.entity, "Lottie picking event: {}", trigger.event());
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -94,8 +93,6 @@ fn observe_pointer_exit<A: LottieAssetVariant>(
         player.next_state.replace(next_state);
     }
 
-    eprintln!("Exited {}", lottie.asset_id());
-
     Ok(())
 }
 
@@ -104,6 +101,7 @@ fn observe_pointer_click<A: LottieAssetVariant>(
     mut lottie: Query<(&mut LottiePlayer<A>, &A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
+    debug!(entity = ?trigger.entity, "Lottie picking event: {}", trigger.event());
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -127,8 +125,6 @@ fn observe_pointer_click<A: LottieAssetVariant>(
         player.next_state.replace(next_state);
     }
 
-    eprintln!("Clicked {}", lottie.asset_id());
-
     Ok(())
 }
 
@@ -148,8 +144,6 @@ fn observe_on_show<A: LottieAssetVariant>(
     };
 
     player.next_state.replace(trigger.next_state);
-
-    eprintln!("On show: {}", lottie.asset_id());
 
     Ok(())
 }
@@ -171,8 +165,6 @@ fn observe_on_after<A: LottieAssetVariant>(
 
     player.next_state.replace(trigger.next_state);
 
-    eprintln!("On after: {}", lottie.asset_id());
-
     Ok(())
 }
 
@@ -192,8 +184,6 @@ fn observe_on_complete<A: LottieAssetVariant>(
     };
 
     player.next_state.replace(trigger.next_state);
-
-    eprintln!("On complete: {}", lottie.asset_id());
 
     Ok(())
 }
