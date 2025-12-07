@@ -39,11 +39,7 @@ bevy = { version = "0.17.2", default-features = false, features = [
   "bevy_render",
   "bevy_ui",
   "bevy_ui_render",
-  "bevy_picking",
   "multi_threaded",
-  "x11",
-  "tonemapping_luts",
-  "zstd_rust",
   "bevy_sprite",
   "bevy_sprite_render",
 ] }
