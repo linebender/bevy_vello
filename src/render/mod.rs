@@ -173,7 +173,7 @@ pub struct SkipEncoding;
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
 #[allow(clippy::large_enum_variant, reason = "Many feature gates")]
-pub(crate) enum VelloRenderItem {
+pub(crate) enum VelloWorldRenderItem {
     Scene {
         affine: Affine,
         item: crate::integrations::scene::render::ExtractedVelloScene2d,
@@ -223,7 +223,7 @@ pub(crate) enum VelloUiRenderItem {
 /// Internally used to buffer sorted assets prepared for the next frame.
 #[derive(Resource, Default)]
 pub(crate) struct VelloRenderQueue {
-    world: Vec<VelloRenderItem>,
+    world: Vec<VelloWorldRenderItem>,
     ui: Vec<VelloUiRenderItem>,
 }
 

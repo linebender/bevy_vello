@@ -3,7 +3,6 @@ use bevy::{
     prelude::*,
     ui::{ContentSize, NodeMeasure},
 };
-use tracing::warn;
 
 use crate::{VelloFont, prelude::*};
 
@@ -16,7 +15,7 @@ pub fn update_text_2d_aabb_on_change(
 ) {
     for (mut aabb, text, text_anchor) in text_q.iter_mut() {
         let Some(font) = fonts.get(&text.style.font) else {
-            warn!("VelloText2d: font {:?} not found", text.style.font);
+            // Not yet loaded
             continue;
         };
 
@@ -52,7 +51,7 @@ pub fn update_ui_text_content_size_on_change(
 ) {
     for (mut content_size, node, text) in text_q.iter_mut() {
         let Some(font) = fonts.get(&text.style.font) else {
-            warn!("UiVelloText: font {:?} not found", text.style.font);
+            // Not yet loaded
             continue;
         };
 

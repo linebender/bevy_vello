@@ -12,7 +12,7 @@ pub fn update_svg_2d_aabb_on_change(
 ) {
     for (mut aabb, svg, anchor) in text_q.iter_mut() {
         let Some(svg) = svgs.get(&svg.0) else {
-            warn!("VelloSvg2d: svg {:?} not found", svg.0);
+            // Not yet loaded
             continue;
         };
 
@@ -47,7 +47,7 @@ pub fn update_ui_svg_content_size_on_change(
 ) {
     for (mut content_size, node, svg) in text_q.iter_mut() {
         let Some(svg) = svgs.get(&svg.0) else {
-            warn!("UiVelloSvg: svg {:?} not found", svg.0);
+            // Not yet loaded
             continue;
         };
 

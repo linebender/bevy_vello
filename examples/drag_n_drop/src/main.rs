@@ -19,20 +19,28 @@ fn main() {
     }))
     .add_plugins(VelloPlugin::default())
     .add_plugins(bevy_pancam::PanCamPlugin)
-    .add_systems(Startup, setup)
-    .add_systems(Update, drag_and_drop)
-    .add_systems(Update, button_system)
+    .add_systems(Startup, setup_camera)
+    .add_systems(Startup, setup_initial_image)
+    .add_systems(Startup, setup_button)
+    .add_systems(Update, (drag_and_drop, button_system))
     .add_observer(cleanup_scene);
+
     embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
     app.run();
 }
 
-fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
-    commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
+fn setup_camera(mut commands: Commands) {
+    commands.spawn((Camera2d, VelloView));
+}
+
+fn setup_initial_image(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         VelloSvg2d(asset_server.load("embedded://drag_n_drop/assets/Ghostscript_Tiger.svg")),
         Transform::from_scale(Vec3::splat(0.5)),
     ));
+}
+
+fn setup_button(mut commands: Commands) {
     commands
         .spawn(Node {
             position_type: PositionType::Absolute,
@@ -48,9 +56,7 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                         width: Val::Px(100.0),
                         height: Val::Px(50.0),
                         border: UiRect::all(Val::Px(5.0)),
-                        // horizontally center child text
                         justify_content: JustifyContent::Center,
-                        // vertically center child text
                         align_items: AlignItems::Center,
                         ..default()
                     },
@@ -69,7 +75,7 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
         });
 }
 
-#[expect(clippy::type_complexity)]
+#[allow(clippy::type_complexity)]
 fn button_system(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, &mut BorderColor),
@@ -77,7 +83,7 @@ fn button_system(
     >,
     mut task_runner: TaskRunner<Option<(String, Vec<u8>)>>,
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
+    asset_server: Res<AssetServer>,
 ) {
     for (interaction, mut color, mut border_color) in &mut interaction_query {
         match *interaction {
@@ -88,8 +94,7 @@ fn button_system(
                 let fut = async move {
                     let handle = rfd::AsyncFileDialog::new().pick_file().await?;
                     let file_name = handle.file_name();
-                    let file_contents = String::from_utf8(handle.read().await).ok()?;
-                    let file_contents = file_contents.into_bytes();
+                    let file_contents = handle.read().await;
                     Some((file_name, file_contents))
                 };
                 task_runner.start(fut);
@@ -106,54 +111,61 @@ fn button_system(
     }
 
     if let Poll::Ready(Some((file_name, file))) = task_runner.poll() {
-        if file_name.ends_with(".svg") {
-            let svg = match bevy_vello::integrations::svg::load_svg_from_bytes(&file) {
-                Ok(svg) => svg,
-                Err(e) => {
-                    tracing::error!("{e:?}");
-                    return;
-                }
-            };
-            let handle = asset_server.add(svg);
-            commands.trigger(CleanupEvent);
-            commands.spawn(VelloSvg2d(handle));
-        } else if file_name.ends_with(".json") {
-            let lottie = match bevy_vello::integrations::lottie::load_lottie_from_bytes(&file) {
-                Ok(lottie) => lottie,
-                Err(e) => {
-                    tracing::error!("{e:?}");
-                    return;
-                }
-            };
-            let handle = asset_server.add(lottie);
-            commands.trigger(CleanupEvent);
-            commands.spawn(VelloLottie2d(handle));
+        load_file(&file_name, &file, &mut commands, &asset_server);
+    }
+}
+
+fn load_file(file_name: &str, file: &[u8], commands: &mut Commands, asset_server: &AssetServer) {
+    if file_name.ends_with(".svg") {
+        match bevy_vello::integrations::svg::load_svg_from_bytes(file) {
+            Ok(svg) => {
+                let handle = asset_server.add(svg);
+                commands.trigger(CleanupEvent);
+                commands.spawn(VelloSvg2d(handle));
+            }
+            Err(e) => {
+                error!("Failed to load SVG: {e:?}");
+            }
+        }
+    } else if file_name.ends_with(".json") {
+        match bevy_vello::integrations::lottie::load_lottie_from_bytes(file) {
+            Ok(lottie) => {
+                let handle = asset_server.add(lottie);
+                commands.trigger(CleanupEvent);
+                commands.spawn(VelloLottie2d(handle));
+            }
+            Err(e) => {
+                error!("Failed to load Lottie: {e:?}");
+            }
         }
     }
 }
 
-/// Drag and drop any SVG or Lottie JSON asset into the window and change the
-/// displayed asset
+/// Drag and drop any SVG or Lottie JSON asset into the window to change the displayed asset
 fn drag_and_drop(
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
+    asset_server: Res<AssetServer>,
     mut dnd_evr: MessageReader<FileDragAndDrop>,
 ) {
     for ev in dnd_evr.read() {
         let FileDragAndDrop::DroppedFile { path_buf, .. } = ev else {
             continue;
         };
+
         let Some(ext) = path_buf.extension() else {
             continue;
         };
-        let svg_ext = OsStr::new("svg");
-        let lottie_ext = OsStr::new("json");
-        if ext == svg_ext {
-            commands.trigger(CleanupEvent);
-            commands.spawn(VelloSvg2d(asset_server.load(path_buf.clone())));
-        } else if ext == lottie_ext {
-            commands.trigger(CleanupEvent);
-            commands.spawn(VelloLottie2d(asset_server.load(path_buf.clone())));
+
+        match ext {
+            ext if ext == OsStr::new("svg") => {
+                commands.trigger(CleanupEvent);
+                commands.spawn(VelloSvg2d(asset_server.load(path_buf.clone())));
+            }
+            ext if ext == OsStr::new("json") => {
+                commands.trigger(CleanupEvent);
+                commands.spawn(VelloLottie2d(asset_server.load(path_buf.clone())));
+            }
+            _ => continue,
         }
     }
 }

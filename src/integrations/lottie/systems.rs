@@ -15,7 +15,6 @@ use bevy::{
     prelude::*,
     ui::{ContentSize, NodeMeasure},
 };
-use tracing::warn;
 
 /// Helper function to get the next smallest representable f64.
 /// For example, prev_f64(3.0) == 2.9999999999999996
@@ -328,7 +327,7 @@ pub fn update_lottie_2d_aabb_on_change(
 ) {
     for (mut aabb, lottie, anchor) in query.iter_mut() {
         let Some(lottie) = lotties.get(&lottie.0) else {
-            warn!("VelloLottie2d: lottie {:?} not found", lottie.0);
+            // Not yet loaded
             continue;
         };
 
@@ -366,7 +365,7 @@ pub fn update_ui_lottie_content_size_on_change(
 ) {
     for (mut content_size, node, lottie) in query.iter_mut() {
         let Some(lottie) = lotties.get(&lottie.0) else {
-            warn!("UiVelloLottie: lottie {:?} not found", lottie.0);
+            // Not yet loaded
             continue;
         };
         let (width, height) = (

@@ -20,8 +20,8 @@ use vello::{RenderParams, Scene};
 
 use super::{
     VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
-    VelloRenderItem, VelloRenderQueue, VelloRenderSettings, VelloRenderer, extract::SSRenderTarget,
-    prepare::PreparedAffine,
+    VelloRenderQueue, VelloRenderSettings, VelloRenderer, VelloWorldRenderItem,
+    extract::SSRenderTarget, prepare::PreparedAffine,
 };
 #[cfg(feature = "lottie")]
 use crate::integrations::lottie::render::{ExtractedUiVelloLottie, ExtractedVelloLottie2d};
@@ -82,40 +82,41 @@ pub fn sort_render_items(
     mut final_render_queue: ResMut<VelloRenderQueue>,
     frame_data: ResMut<VelloEntityCountData>,
 ) {
-    let mut n_render_items: usize = 0;
+    let mut n_world_items: usize = 0;
     let mut n_ui_items: usize = 0;
 
     // Scenes
-    n_render_items += frame_data.n_world_scenes as usize;
+    n_world_items += frame_data.n_world_scenes as usize;
     n_ui_items += frame_data.n_ui_scenes as usize;
     // Text
     #[cfg(feature = "text")]
     {
-        n_render_items += frame_data.n_world_texts as usize;
+        n_world_items += frame_data.n_world_texts as usize;
         n_ui_items += frame_data.n_ui_texts as usize;
     }
     // Svg
     #[cfg(feature = "svg")]
     {
-        n_render_items += frame_data.n_world_svgs as usize;
+        n_world_items += frame_data.n_world_svgs as usize;
         n_ui_items += frame_data.n_ui_svgs as usize;
     }
     // Lottie
     #[cfg(feature = "lottie")]
     {
-        n_render_items += frame_data.n_world_lotties as usize;
+        n_world_items += frame_data.n_world_lotties as usize;
         n_ui_items += frame_data.n_ui_lotties as usize;
     }
 
     // Reserve space for the render queues to avoid reallocations
-    let mut world_render_queue: Vec<(f32, VelloRenderItem)> = Vec::with_capacity(n_render_items);
-    let mut ui_render_queue: Vec<(u32, VelloUiRenderItem)> = Vec::with_capacity(n_render_items);
+    let mut world_render_queue: Vec<(f32, VelloWorldRenderItem)> =
+        Vec::with_capacity(n_world_items);
+    let mut ui_render_queue: Vec<(u32, VelloUiRenderItem)> = Vec::with_capacity(n_world_items);
 
     // Scenes
     for (&affine, scene) in view_world_scenes.iter() {
         world_render_queue.push((
             scene.transform.translation().z,
-            VelloRenderItem::Scene {
+            VelloWorldRenderItem::Scene {
                 affine: *affine,
                 item: scene.clone(),
             },
@@ -136,7 +137,7 @@ pub fn sort_render_items(
         for (&affine, svg) in view_world_svgs.iter() {
             world_render_queue.push((
                 svg.transform.translation().z,
-                VelloRenderItem::Svg {
+                VelloWorldRenderItem::Svg {
                     affine: *affine,
                     item: svg.clone(),
                 },
@@ -158,7 +159,7 @@ pub fn sort_render_items(
         for (&affine, lottie) in view_world_lotties.iter() {
             world_render_queue.push((
                 lottie.transform.translation().z,
-                VelloRenderItem::Lottie {
+                VelloWorldRenderItem::Lottie {
                     affine: *affine,
                     item: lottie.clone(),
                 },
@@ -180,7 +181,7 @@ pub fn sort_render_items(
         for (&affine, text) in view_world_text.iter() {
             world_render_queue.push((
                 text.transform.translation().z,
-                VelloRenderItem::Text {
+                VelloWorldRenderItem::Text {
                     affine: *affine,
                     item: text.clone(),
                 },
@@ -212,7 +213,7 @@ pub fn sort_render_items(
     // Render queue is drained on render
     final_render_queue.world.clear();
     // Reserve space for the final render queue to avoid reallocations
-    final_render_queue.world.reserve(n_render_items);
+    final_render_queue.world.reserve(n_world_items);
     final_render_queue
         .world
         .extend(world_render_queue.into_iter().map(|(_, r)| r));
@@ -248,14 +249,14 @@ pub fn render_frame(
     // World Renderables
     for render_item in render_queue.world.iter() {
         match render_item {
-            VelloRenderItem::Scene {
+            VelloWorldRenderItem::Scene {
                 affine,
                 item: ExtractedVelloScene2d { scene, .. },
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
             #[cfg(feature = "lottie")]
-            VelloRenderItem::Lottie {
+            VelloWorldRenderItem::Lottie {
                 affine,
                 item:
                     ExtractedVelloLottie2d {
@@ -296,7 +297,7 @@ pub fn render_frame(
                 }
             }
             #[cfg(feature = "svg")]
-            VelloRenderItem::Svg {
+            VelloWorldRenderItem::Svg {
                 affine,
                 item: ExtractedVelloSvg2d { asset, alpha, .. },
             } => {
@@ -317,7 +318,7 @@ pub fn render_frame(
                 }
             }
             #[cfg(feature = "text")]
-            VelloRenderItem::Text {
+            VelloWorldRenderItem::Text {
                 affine,
                 item:
                     ExtractedVelloText2d {

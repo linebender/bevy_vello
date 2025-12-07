@@ -8,7 +8,6 @@ fn main() {
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, setup_vector_graphics)
         .add_systems(Update, animate_screenspace)
-        .add_systems(PostUpdate, gizmos)
         .run();
 }
 
@@ -66,26 +65,4 @@ fn animate_screenspace(
 
     // Animate rotation
     transform.rotation = Quat::from_rotation_z(std::f32::consts::TAU * sin_time);
-}
-
-fn gizmos(
-    mut gizmos: Gizmos,
-    scene_tf: Single<&Transform, (With<VelloScene2d>, Without<Camera2d>)>,
-) {
-    let pos = scene_tf.translation.truncate();
-
-    // Small circle at the position
-    gizmos.circle_2d(pos, 5.0, Color::WHITE);
-
-    // Crosshair
-    gizmos.line_2d(
-        pos + Vec2::new(-10.0, 0.0),
-        pos + Vec2::new(10.0, 0.0),
-        Color::WHITE,
-    );
-    gizmos.line_2d(
-        pos + Vec2::new(0.0, -10.0),
-        pos + Vec2::new(0.0, 10.0),
-        Color::WHITE,
-    );
 }

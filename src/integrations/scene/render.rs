@@ -58,10 +58,9 @@ pub fn extract_world_scenes(
             continue;
         }
 
-        // Find cameras that can see this asset
+        // Check if any camera renders this asset
         let asset_render_layers = render_layers.unwrap_or_default();
-        for (_, _) in views.iter().filter(|(_, camera_layers)| {
-            // Does this camera can see this?
+        if views.iter().any(|(_, camera_layers)| {
             asset_render_layers.intersects(camera_layers.unwrap_or_default())
         }) {
             commands

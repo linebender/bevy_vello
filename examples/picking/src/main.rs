@@ -2,7 +2,6 @@ use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
     color::palettes::css,
     prelude::*,
-    window::WindowResolution,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
 
