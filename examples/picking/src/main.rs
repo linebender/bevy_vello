@@ -73,7 +73,7 @@ fn print_metadata(
         if let AssetEvent::LoadedWithDependencies { id } = ev {
             let asset = assets.get(*id).unwrap();
             println!(
-                "Lottie players used in Theme:\n{:#?}",
+                "Lottie layers in composition:\n{:#?}",
                 asset.composition.as_ref().get_layers().collect::<Vec<_>>()
             );
         }
