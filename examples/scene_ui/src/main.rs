@@ -11,6 +11,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(VelloPlugin::default())
         .add_systems(Startup, setup_camera)
+        .add_systems(Startup, enable_debug)
         .add_systems(Startup, setup_ui)
         .add_systems(Update, update_ui)
         .run();
@@ -18,6 +19,10 @@ fn main() {
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
+}
+
+fn enable_debug(mut options: ResMut<UiDebugOptions>) {
+    options.enabled = true;
 }
 
 fn setup_ui(mut commands: Commands) {

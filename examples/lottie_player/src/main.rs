@@ -2,7 +2,6 @@ mod ui;
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset, io::embedded::EmbeddedAssetRegistry},
     color::palettes::css,
-    diagnostic::DiagnosticsStore,
     prelude::*,
 };
 use bevy_egui::{EguiPlugin, EguiPrimaryContextPass};

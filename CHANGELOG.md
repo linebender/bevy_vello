@@ -17,6 +17,7 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 ### Added
 
+- Picking is now supported with the `picking` cargo feature. See the picking example for more.
 - View culling is now automatically performed for all assets. All assets not within the view of a camera tagged with `VelloView` will be culled prior to rendering. This works by culling AABBs not seen by the cameras. see the view culling example.
   - **WARNING** There is no way to retrieve the content size of a `vello::Scene`. Hence, `VelloScene2d` should be given an `Aabb` manually by the developer. By default, `Aabb::default()` is used, which is never updated (or gets view-culled).
   - AABBs will automatically update for `VelloSvg2d` using the asset size.
@@ -31,6 +32,7 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 ### Changed
 
+- If you were relying on `LottiePlayer` interactions, you must enable the `picking` feature.
 - The default `VelloTextAnchor` is now `VelloTextAnchor::Center`.
 - `VelloTextSection` (now `VelloText2d`/`UiVelloText`) no longer has `height`, and `width` has been renamed to `max_advance`.
 - `VelloScene` has been split into `VelloScene2d` and `UiVelloScene`. The former is for world entities and the latter is for UI nodes.

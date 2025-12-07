@@ -25,6 +25,7 @@ fn enable_debug(mut options: ResMut<UiDebugOptions>) {
 fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
+
 fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     let one_third = Val::Percent(100.0 / 3.0);
     commands.spawn((
