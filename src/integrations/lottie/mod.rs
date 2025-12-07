@@ -64,7 +64,6 @@ impl LottieAssetVariant for VelloLottie2d {
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     Node,
-    Pickable,
     VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
