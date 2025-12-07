@@ -42,7 +42,6 @@ bevy = { version = "0.17.2", default-features = false, features = [
   "multi_threaded",
   "bevy_sprite",
   "bevy_sprite_render",
-  "wayland",
 ] }
 
 [package]

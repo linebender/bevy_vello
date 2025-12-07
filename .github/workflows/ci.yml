@@ -22,10 +22,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build | Clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --features bevy/wayland -D warnings
 
       - name: Build | Rustfmt
-        run: cargo fmt -- --check
+        run: cargo fmt --features bevy/wayland -- --check
 
   check:
     runs-on: ubuntu-latest
