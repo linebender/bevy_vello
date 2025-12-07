@@ -10,6 +10,7 @@ use bevy::{
     window::PrimaryWindow,
 };
 use std::marker::PhantomData;
+use tracing::debug;
 
 #[derive(Default)]
 pub struct WorldPickingPlugin<C: Component> {
