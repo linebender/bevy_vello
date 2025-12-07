@@ -15,6 +15,7 @@ use bevy::{
     prelude::*,
     ui::{ContentSize, NodeMeasure},
 };
+use tracing::debug;
 
 /// Helper function to get the next smallest representable f64.
 /// For example, prev_f64(3.0) == 2.9999999999999996
