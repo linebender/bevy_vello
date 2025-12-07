@@ -255,7 +255,7 @@ pub fn transition_state<A: LottieAssetVariant>(
             continue;
         }
 
-        tracing::info!("animation controller transitioning to={next_state}");
+        debug!("animation controller transitioning to={next_state}");
         let target_state = player
             .states
             .get(&next_state)
