@@ -22,22 +22,27 @@ pub fn on_add_lottie<A: LottieAssetVariant>(
 
     let mut commands = world.commands();
     let mut entity_commands = commands.entity(hook_context.entity);
-
     entity_commands
-        .observe(observe_pointer_enter::<A>)
-        .observe(observe_pointer_exit::<A>)
-        .observe(observe_pointer_click::<A>)
         .observe(observe_on_after::<A>)
         .observe(observe_on_complete::<A>)
         .observe(observe_on_show::<A>);
+
+    #[cfg(feature = "picking")]
+    {
+        entity_commands
+            .observe(observe_pointer_enter::<A>)
+            .observe(observe_pointer_exit::<A>)
+            .observe(observe_pointer_click::<A>);
+    }
 }
 
+#[cfg(feature = "picking")]
 fn observe_pointer_enter<A: LottieAssetVariant>(
     trigger: On<Pointer<Over>>,
     mut lottie: Query<(&mut LottiePlayer<A>, &A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
-    debug!(entity = ?trigger.entity, "Lottie picking event: {}", trigger.event());
+    debug!(entity = ?trigger.entity, event= ?trigger.event(), "Lottie event: Pointer Enter");
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -64,12 +69,13 @@ fn observe_pointer_enter<A: LottieAssetVariant>(
     Ok(())
 }
 
+#[cfg(feature = "picking")]
 fn observe_pointer_exit<A: LottieAssetVariant>(
     trigger: On<Pointer<Out>>,
     mut lottie: Query<(&mut LottiePlayer<A>, &A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
-    debug!(entity = ?trigger.entity, "Lottie picking event: {}", trigger.event());
+    debug!(entity = ?trigger.entity, event= ?trigger.event(), "Lottie event: Pointer Exit");
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -96,12 +102,13 @@ fn observe_pointer_exit<A: LottieAssetVariant>(
     Ok(())
 }
 
+#[cfg(feature = "picking")]
 fn observe_pointer_click<A: LottieAssetVariant>(
     trigger: On<Pointer<Click>>,
     mut lottie: Query<(&mut LottiePlayer<A>, &A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
-    debug!(entity = ?trigger.entity, "Lottie picking event: {}", trigger.event());
+    debug!(entity = ?trigger.entity, event= ?trigger.event(), "Lottie event: Pointer Click");
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -133,6 +140,7 @@ fn observe_on_show<A: LottieAssetVariant>(
     mut lottie: Query<(&mut LottiePlayer<A>, &mut A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
+    debug!(entity = ?trigger.entity, "Lottie event: OnShow");
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -153,6 +161,7 @@ fn observe_on_after<A: LottieAssetVariant>(
     mut lottie: Query<(&mut LottiePlayer<A>, &mut A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
+    debug!(entity = ?trigger.entity, "Lottie event: OnAfter");
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
@@ -173,6 +182,7 @@ fn observe_on_complete<A: LottieAssetVariant>(
     mut lottie: Query<(&mut LottiePlayer<A>, &mut A)>,
     lotties: Res<Assets<VelloLottie>>,
 ) -> Result {
+    debug!(entity = ?trigger.entity, "Lottie event: OnComplete");
     let (mut player, lottie) = lottie.get_mut(trigger.entity)?;
 
     if player.stopped || player.states.len() <= 1 {
