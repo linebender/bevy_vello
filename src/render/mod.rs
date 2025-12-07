@@ -35,6 +35,7 @@ pub const SSRT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-
 
 /// A component that should be added to the camera that will render Vello assets.
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]
+#[require(Camera2d)]
 pub struct VelloView;
 
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
