@@ -1,6 +1,5 @@
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
-    color::palettes::css,
     prelude::*,
 };
 use bevy_vello::{VelloPlugin, prelude::*};
@@ -12,15 +11,21 @@ fn main() {
         ..default()
     }))
     .add_plugins(VelloPlugin::default())
+    .add_systems(Startup, enable_debug)
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, load_lottie);
     embedded_asset!(app, "assets/Tiger.json");
     app.run();
 }
 
+fn enable_debug(mut options: ResMut<UiDebugOptions>) {
+    options.enabled = true;
+}
+
 fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
+
 fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     let one_third = Val::Percent(100.0 / 3.0);
     commands.spawn((
@@ -30,10 +35,8 @@ fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             top: one_third,
             width: one_third,
             height: one_third,
-            border: UiRect::all(Val::Px(2.0)),
             ..default()
         },
-        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
-        VelloLottieHandle(asset_server.load("embedded://lottie_ui/assets/Tiger.json")),
+        UiVelloLottie(asset_server.load("embedded://lottie_ui/assets/Tiger.json")),
     ));
 }

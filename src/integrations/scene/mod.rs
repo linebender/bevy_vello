@@ -1,40 +1,48 @@
 pub(crate) mod render;
 
 mod plugin;
+use bevy::camera::primitives::Aabb;
 pub(crate) use plugin::SceneIntegrationPlugin;
 
 use bevy::camera::visibility::{self, VisibilityClass};
 use bevy::prelude::*;
 
-use crate::VelloRenderSpace;
-#[derive(Bundle, Default)]
-pub struct VelloSceneBundle {
-    /// Scene to render
-    pub scene: VelloScene,
-    /// A transform to apply to this scene
-    pub transform: Transform,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub visibility: Visibility,
-    /// A bucket into which we group entities for the purposes of visibility.
-    pub visibility_class: VisibilityClass,
-}
-
-/// A simple newtype component wrapper for [`vello::Scene`] for rendering.
+/// A renderable scene in the world.
 ///
-/// If you render a [`VelloScene`] based on a [`bevy::ui::Node`] size, you may want to also add
-/// [`SkipScaling`] to the entity to prevent scaling the scene beyond the node size.
+/// A simple newtype component wrapper for [`vello::Scene`].
 #[derive(Component, Default, Clone, Deref, DerefMut)]
-#[require(VelloRenderSpace, Transform, Visibility, VisibilityClass)]
-#[component(on_add = visibility::add_visibility_class::<VelloScene>)]
-pub struct VelloScene(Box<vello::Scene>);
+#[require(Aabb, Transform, Visibility, VisibilityClass)]
+#[cfg_attr(feature = "picking", require(Pickable))]
+#[component(on_add = visibility::add_visibility_class::<VelloScene2d>)]
+pub struct VelloScene2d(Box<vello::Scene>);
 
-impl VelloScene {
+impl VelloScene2d {
     pub fn new() -> Self {
         Self::default()
     }
 }
 
-impl From<vello::Scene> for VelloScene {
+impl From<vello::Scene> for VelloScene2d {
+    fn from(scene: vello::Scene) -> Self {
+        Self(Box::new(scene))
+    }
+}
+
+/// A renderable scene that may be used in Bevy UI.
+///
+/// A simple newtype component wrapper for [`vello::Scene`].
+#[derive(Component, Default, Clone, Deref, DerefMut)]
+#[require(Aabb, UiTransform, Visibility, VisibilityClass)]
+#[component(on_add = visibility::add_visibility_class::<UiVelloScene>)]
+pub struct UiVelloScene(Box<vello::Scene>);
+
+impl UiVelloScene {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl From<vello::Scene> for UiVelloScene {
     fn from(scene: vello::Scene) -> Self {
         Self(Box::new(scene))
     }

@@ -1,29 +1,12 @@
 use std::sync::Arc;
 
-use bevy::{
-    camera::visibility::{self, VisibilityClass},
-    prelude::*,
-    reflect::TypePath,
-};
+use bevy::{prelude::*, reflect::TypePath};
 
 use crate::prelude::*;
-
-#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
-#[require(
-    VelloRenderSpace,
-    VelloSvgAnchor,
-    Transform,
-    Visibility,
-    VisibilityClass
-)]
-#[reflect(Component)]
-#[component(on_add = visibility::add_visibility_class::<VelloSvgHandle>)]
-pub struct VelloSvgHandle(pub Handle<VelloSvg>);
 
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloSvg {
     pub scene: Arc<vello::Scene>,
-    pub local_transform_center: Transform,
     pub width: f32,
     pub height: f32,
     pub alpha: f32,

@@ -1,23 +1,20 @@
 use bevy::{
     asset::load_internal_asset,
+    camera::{CameraUpdateSystems, visibility::VisibilitySystems},
     prelude::*,
     render::{
         Render, RenderApp, RenderSystems, extract_component::ExtractComponentPlugin,
-        extract_resource::ExtractResourcePlugin, renderer::RenderDevice,
+        renderer::RenderDevice,
     },
     sprite_render::Material2dPlugin,
 };
 
-use super::{
-    VelloCanvasSettings, VelloRenderSettings,
-    extract::{self, SSRenderTarget},
-    systems,
-};
+use super::{VelloCanvasSettings, VelloRenderSettings, extract::SSRenderTarget, systems};
 use crate::{
     VelloView,
     render::{
         SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
-        VelloRenderQueue, VelloRenderer, VelloScreenScale, VelloWorldScale,
+        VelloRenderQueue, VelloRenderer, diagnostics::VelloRenderDiagnosticsPlugin,
         extract::VelloExtractStep,
     },
 };
@@ -40,16 +37,8 @@ impl Plugin for VelloRenderPlugin {
             Shader::from_wgsl
         );
 
-        app.register_type::<VelloEntityCountData>()
-            .init_resource::<VelloEntityCountData>();
-        app.register_type::<VelloFrameProfileData>()
-            .init_resource::<VelloFrameProfileData>();
-
-        app.insert_resource(VelloWorldScale::default())
-            .add_plugins(ExtractResourcePlugin::<VelloWorldScale>::default());
-
-        app.insert_resource(VelloScreenScale::default())
-            .add_plugins(ExtractResourcePlugin::<VelloScreenScale>::default());
+        // Diagnostics
+        app.add_plugins(VelloRenderDiagnosticsPlugin);
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
@@ -62,12 +51,12 @@ impl Plugin for VelloRenderPlugin {
             .init_resource::<VelloRenderQueue>()
             .configure_sets(
                 ExtractSchedule,
-                (VelloExtractStep::ExtractAssets, VelloExtractStep::SyncData).chain(),
-            )
-            .add_systems(
-                ExtractSchedule,
-                (extract::sync_frame_profile, extract::sync_entity_count)
-                    .in_set(VelloExtractStep::SyncData),
+                (
+                    VelloExtractStep::ExtractAssets,
+                    VelloExtractStep::RunDiagnostics,
+                )
+                    .chain()
+                    .after(VisibilitySystems::CheckVisibility),
             )
             .add_systems(
                 Render,
@@ -90,8 +79,8 @@ impl Plugin for VelloRenderPlugin {
             ))
             .add_systems(Startup, systems::setup_ss_rendertarget)
             .add_systems(
-                Update,
-                (systems::resize_rendertargets, systems::hide_when_empty),
+                PostUpdate,
+                (systems::resize_rendertargets.after(CameraUpdateSystems),),
             );
     }
 

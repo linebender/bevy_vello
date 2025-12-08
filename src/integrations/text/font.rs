@@ -2,7 +2,8 @@ use std::borrow::Cow;
 
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
 use parley::{
-    FontSettings, FontStyle, FontVariation, PositionedLayoutItem, RangedBuilder, StyleProperty,
+    FontSettings, FontStyle, FontVariation, Layout, PositionedLayoutItem, RangedBuilder,
+    StyleProperty,
 };
 use vello::{
     Scene,
@@ -10,12 +11,11 @@ use vello::{
     peniko::{Brush, Fill},
 };
 
-use super::{
-    VelloTextAnchor,
-    context::LOCAL_FONT_CONTEXT,
-    vello_text::{VelloFontAxes, VelloTextSection},
+use super::{VelloFontAxes, VelloTextAnchor, context::LOCAL_FONT_CONTEXT};
+use crate::{
+    integrations::text::context::{LOCAL_LAYOUT_CONTEXT, get_global_font_context},
+    prelude::{VelloTextAlign, VelloTextStyle},
 };
-use crate::integrations::text::context::{LOCAL_LAYOUT_CONTEXT, get_global_font_context};
 
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {
@@ -49,7 +49,13 @@ impl VelloFont {
         }
     }
 
-    pub fn sizeof(&self, text_section: &VelloTextSection) -> Vec2 {
+    pub fn layout(
+        &self,
+        value: &str,
+        style: &VelloTextStyle,
+        text_align: VelloTextAlign,
+        max_advance: Option<f32>,
+    ) -> Layout<Brush> {
         LOCAL_FONT_CONTEXT.with_borrow_mut(|font_context| {
             if font_context.is_none() {
                 *font_context = Some(get_global_font_context().clone());
@@ -58,153 +64,96 @@ impl VelloFont {
             let font_context = font_context.as_mut().unwrap();
 
             LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                let mut builder =
-                    layout_context.ranged_builder(font_context, &text_section.value, 1.0, true);
+                let mut builder = layout_context.ranged_builder(font_context, value, 1.0, true);
 
-                apply_font_styles(&mut builder, text_section);
-                apply_variable_axes(&mut builder, &text_section.style.font_axes);
+                apply_font_styles(&mut builder, style);
+                apply_variable_axes(&mut builder, &style.font_axes);
 
                 builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
                     parley::FontFamily::Named(Cow::Owned(self.family_name.clone())),
                 )));
 
-                let mut layout = builder.build(&text_section.value);
-                let max_advance = text_section.width;
+                let mut layout = builder.build(value);
                 layout.break_all_lines(max_advance);
                 layout.align(
                     max_advance,
-                    text_section.text_align.into(),
+                    text_align.into(),
                     parley::AlignmentOptions::default(),
                 );
 
-                let width = if text_section.width.is_some() {
-                    text_section.width.unwrap()
-                } else {
-                    layout.width()
-                };
-
-                Vec2::new(width, layout.height())
+                layout
             })
         })
     }
 
+    #[expect(clippy::too_many_arguments, reason = "Common lint in bevy")]
     pub(crate) fn render(
         &self,
         scene: &mut Scene,
         mut transform: Affine,
-        text_section: &VelloTextSection,
+        value: &str,
+        style: &VelloTextStyle,
+        text_align: VelloTextAlign,
+        max_advance: Option<f32>,
         text_anchor: VelloTextAnchor,
     ) {
-        LOCAL_FONT_CONTEXT.with_borrow_mut(|font_context| {
-            if font_context.is_none() {
-                *font_context = Some(get_global_font_context().clone());
+        let layout = self.layout(value, style, text_align, max_advance);
+
+        let width = layout.width() as f64;
+        let height = layout.height() as f64;
+
+        let (dx, dy) = match text_anchor {
+            VelloTextAnchor::TopLeft => (0.0, 0.0),
+            VelloTextAnchor::Left => (0.0, -height / 2.0),
+            VelloTextAnchor::BottomLeft => (0.0, -height),
+            VelloTextAnchor::Top => (-width / 2.0, 0.0),
+            VelloTextAnchor::Center => (-width / 2.0, -height / 2.0),
+            VelloTextAnchor::Bottom => (-width / 2.0, -height),
+            VelloTextAnchor::TopRight => (-width, 0.0),
+            VelloTextAnchor::Right => (-width, -height / 2.0),
+            VelloTextAnchor::BottomRight => (-width, -height),
+        };
+        transform *= vello::kurbo::Affine::translate((dx, dy));
+
+        for line in layout.lines() {
+            for item in line.items() {
+                let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
+                    continue;
+                };
+
+                let mut x = glyph_run.offset();
+                let y = glyph_run.baseline();
+                let run = glyph_run.run();
+                let font = run.font();
+                let font_size = run.font_size();
+                let synthesis = run.synthesis();
+                let glyph_xform = synthesis
+                    .skew()
+                    .map(|angle| Affine::skew(angle.to_radians().tan() as f64, 0.0));
+
+                scene
+                    .draw_glyphs(font)
+                    .brush(&style.brush)
+                    .hint(true)
+                    .transform(transform)
+                    .glyph_transform(glyph_xform)
+                    .font_size(font_size)
+                    .normalized_coords(run.normalized_coords())
+                    .draw(
+                        Fill::NonZero,
+                        glyph_run.glyphs().map(|glyph| {
+                            let gx = x + glyph.x;
+                            let gy = y - glyph.y;
+                            x += glyph.advance;
+                            vello::Glyph {
+                                id: glyph.id as _,
+                                x: gx,
+                                y: gy,
+                            }
+                        }),
+                    );
             }
-
-            let font_context = font_context.as_mut().unwrap();
-
-            LOCAL_LAYOUT_CONTEXT.with_borrow_mut(|layout_context| {
-                let mut builder =
-                    layout_context.ranged_builder(font_context, &text_section.value, 1.0, true);
-
-                apply_font_styles(&mut builder, text_section);
-                apply_variable_axes(&mut builder, &text_section.style.font_axes);
-
-                builder.push_default(StyleProperty::FontStack(parley::FontStack::Single(
-                    parley::FontFamily::Named(Cow::Owned(self.family_name.clone())),
-                )));
-
-                let mut layout = builder.build(&text_section.value);
-                let max_advance = text_section.width;
-                layout.break_all_lines(max_advance);
-                layout.align(
-                    max_advance,
-                    text_section.text_align.into(),
-                    parley::AlignmentOptions::default(),
-                );
-
-                let width = if text_section.width.is_some() {
-                    text_section.width.unwrap()
-                } else {
-                    layout.width()
-                } as f64;
-
-                let height = layout.height() as f64;
-
-                // NOTE: Parley aligns differently than our previous skrifa implementation
-                //      so we need to adjust the transform to match the previous behavior
-                transform *= vello::kurbo::Affine::translate((0.0, -height));
-
-                match text_anchor {
-                    VelloTextAnchor::TopLeft => {
-                        transform *= vello::kurbo::Affine::translate((0.0, height));
-                    }
-                    VelloTextAnchor::Left => {
-                        transform *= vello::kurbo::Affine::translate((0.0, height / 2.0));
-                    }
-                    VelloTextAnchor::BottomLeft => {
-                        transform *= vello::kurbo::Affine::translate((0.0, 0.0));
-                    }
-                    VelloTextAnchor::Top => {
-                        transform *= vello::kurbo::Affine::translate((-width / 2.0, height));
-                    }
-                    VelloTextAnchor::Center => {
-                        transform *= vello::kurbo::Affine::translate((-width / 2.0, height / 2.0));
-                    }
-                    VelloTextAnchor::Bottom => {
-                        transform *= vello::kurbo::Affine::translate((-width / 2.0, 0.0));
-                    }
-                    VelloTextAnchor::TopRight => {
-                        transform *= vello::kurbo::Affine::translate((-width, height));
-                    }
-                    VelloTextAnchor::Right => {
-                        transform *= vello::kurbo::Affine::translate((-width, height / 2.0));
-                    }
-                    VelloTextAnchor::BottomRight => {
-                        transform *= vello::kurbo::Affine::translate((-width, 0.0));
-                    }
-                }
-
-                for line in layout.lines() {
-                    for item in line.items() {
-                        let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
-                            continue;
-                        };
-
-                        let mut x = glyph_run.offset();
-                        let y = glyph_run.baseline();
-                        let run = glyph_run.run();
-                        let font = run.font();
-                        let font_size = run.font_size();
-                        let synthesis = run.synthesis();
-                        let glyph_xform = synthesis
-                            .skew()
-                            .map(|angle| Affine::skew(angle.to_radians().tan() as f64, 0.0));
-
-                        scene
-                            .draw_glyphs(font)
-                            .brush(&text_section.style.brush)
-                            .hint(true)
-                            .transform(transform)
-                            .glyph_transform(glyph_xform)
-                            .font_size(font_size)
-                            .normalized_coords(run.normalized_coords())
-                            .draw(
-                                Fill::NonZero,
-                                glyph_run.glyphs().map(|glyph| {
-                                    let gx = x + glyph.x;
-                                    let gy = y - glyph.y;
-                                    x += glyph.advance;
-                                    vello::Glyph {
-                                        id: glyph.id as _,
-                                        x: gx,
-                                        y: gy,
-                                    }
-                                }),
-                            );
-                    }
-                }
-            });
-        })
+        }
     }
 }
 
@@ -214,15 +163,13 @@ impl VelloFont {
 /// line_height - line height
 /// word_spacing - extra spacing between words
 /// letter_spacing - extra spacing between letters
-fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, text_section: &VelloTextSection) {
-    builder.push_default(StyleProperty::FontSize(text_section.style.font_size));
+fn apply_font_styles(builder: &mut RangedBuilder<'_, Brush>, style: &VelloTextStyle) {
+    builder.push_default(StyleProperty::FontSize(style.font_size));
     builder.push_default(StyleProperty::LineHeight(
-        parley::LineHeight::MetricsRelative(text_section.style.line_height),
+        parley::LineHeight::MetricsRelative(style.line_height),
     ));
-    builder.push_default(StyleProperty::WordSpacing(text_section.style.word_spacing));
-    builder.push_default(StyleProperty::LetterSpacing(
-        text_section.style.letter_spacing,
-    ));
+    builder.push_default(StyleProperty::WordSpacing(style.word_spacing));
+    builder.push_default(StyleProperty::LetterSpacing(style.letter_spacing));
 }
 
 /// Applies the variable axes to the text

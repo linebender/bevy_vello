@@ -15,16 +15,50 @@ You can find its changes [documented below](#0102---2025-06-29).
 
 This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
+### Added
+
+- Picking is now supported with the `picking` cargo feature. See the picking example for more.
+- View culling is now automatically performed for all assets. All assets not within the view of a camera tagged with `VelloView` will be culled prior to rendering. This works by culling AABBs not seen by the cameras. see the view culling example.
+  - **WARNING** There is no way to retrieve the content size of a `vello::Scene`. Hence, `VelloScene2d` should be given an `Aabb` manually by the developer. By default, `Aabb::default()` is used, which is never updated (or gets view-culled).
+  - AABBs will automatically update for `VelloSvg2d` using the asset size.
+  - AABBs will automatically update for `VelloLottie2d` using the asset size.
+  - AABBs will automatically update for `VelloText2d` using the text size.
+- `ContentSize` for Ui nodes will automatically update for all assets.
+  - **WARNING** There is no way to retrieve the content size of a `vello::Scene`. Hence, `UiVelloScene` should have `ContentSize` manually managed by the developer. Otherwise, we assume a 0x0 content measurement, which takes no layout space.
+  - UI will automatically measure `UiVelloSvg` using the asset size.
+  - UI will automatically measure `UiVelloLottie` using the asset size.
+  - UI will automatically measure `UiVelloText` using the text size.
+  - Several diagnostics were added. See `bevy_vello::render::diagnostics` for all of them.
+
 ### Changed
 
-- Some diagnostics were changed.
-  - `VelloEntityCountDiagnosticsPlugin::SCENE_COUNT` was split into `VelloEntityCountDiagnosticsPlugin::WORLD_SCENE_COUNT` and `VelloEntityCountDiagnosticsPlugin::UI_SCENE_COUNT` to more granularly track Ui and World entities.
-- The `VelloScreenSpace` marker component has changed to `VelloRenderSpace::Screen`.
+- If you were relying on `LottiePlayer` interactions, you must enable the `picking` feature.
+- The default `VelloTextAnchor` is now `VelloTextAnchor::Center`.
+- `VelloTextSection` (now `VelloText2d`/`UiVelloText`) no longer has `height`, and `width` has been renamed to `max_advance`.
+- `VelloScene` has been split into `VelloScene2d` and `UiVelloScene`. The former is for world entities and the latter is for UI nodes.
+- `VelloTextSection` has been split into `VelloText2d` and `UiVelloText`. The former is for world entities and the latter is for UI nodes.
+- `VelloSvgHandle` has been split into `VelloSvg2d` and `UiVelloSvg`. The former is for world entities and the latter is for UI nodes.
+- `VelloLottieHandle` has been split into `VelloLottie2d` and `UiVelloLottie`. The former is for world entities and the latter is for UI nodes.
+- Several diagnostics changed names. See `bevy_vello::render::diagnostics` for all of them.
+
+### Removed
+
+- `SkipEncoding` no longer exists. Use `Visibility::Hidden` if you wish to skip encoding.
+- `VelloSceneBundle` no longer exists. Use `VelloScene2d` and `UiVelloScene` instead.
+- `VelloTextBundle` no longer exists. Use `VelloText2d` and `UiVelloText` instead.
+- `VelloSvgBundle` no longer exists. Use `VelloSvg2d` and `UiVelloSvg` instead.
+- `VelloLottieBundle` no longer exists. Use `VelloLottie2d` and `UiVelloLottie` instead.
+- `SkipScaling` no longer exists. If you need to scale something, use the entity's transform.
+- `VelloWorldScale` no longer exists. If you need to scale something, use the entity's transform.
+- `VelloScreenScale` no longer exists. If you need to scale something, use the entity's transform.
+- `VelloScreenSpace` no longer exists. You should use a separate camera for UI and manually place items into screen space. There are now examples for screenspace to help.
 
 ### Fixed
 
-- Components that were marked with `ScreenSpace` no longer *always* render over components without them. Now it is correct - Screen space renderables will be sorted by their respective transform's Z value.
+- Renderables (text, images, scenes) now respect the camera projection scale.
+- Objects are now scaled according to the scale factor (pixel density) of the viewport/window. This fixes scaling on retina displays.
 - Render targets are now resized when camera viewport size changes
+- The headless example is now actually headless (does not spawn a window)
 
 ## [0.10.3] - 2025-07-09
 

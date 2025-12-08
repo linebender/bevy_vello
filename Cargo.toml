@@ -11,6 +11,7 @@ members = [
   "examples/lottie",
   "examples/lottie_screenspace",
   "examples/lottie_ui",
+  "examples/picking",
   "examples/svg",
   "examples/svg_screenspace",
   "examples/svg_ui",
@@ -39,9 +40,6 @@ bevy = { version = "0.17.2", default-features = false, features = [
   "bevy_ui",
   "bevy_ui_render",
   "multi_threaded",
-  "x11",
-  "tonemapping_luts",
-  "zstd_rust",
   "bevy_sprite",
   "bevy_sprite_render",
 ] }
@@ -84,6 +82,7 @@ wasm-bindgen-test = "0.3.50"
 
 [features]
 default = []
+picking = ["bevy/bevy_picking"]
 svg = ["vello_svg"]
 lottie = ["velato"]
 text = ["parley"]

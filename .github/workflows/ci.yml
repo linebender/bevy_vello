@@ -11,7 +11,7 @@ jobs:
       - name: Setup | Ubuntu dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Setup | Toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -22,7 +22,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build | Clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --features bevy/wayland -- -D warnings
 
       - name: Build | Rustfmt
         run: cargo fmt -- --check
@@ -36,7 +36,7 @@ jobs:
       - name: Setup | Ubuntu dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libgtk-3-dev
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Setup | Rust
         uses: dtolnay/rust-toolchain@stable
@@ -62,7 +62,7 @@ jobs:
       - name: Setup | Ubuntu dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Setup | Rust
         uses: dtolnay/rust-toolchain@stable
@@ -76,7 +76,7 @@ jobs:
         uses: Swatinem/rust-cache@v2.7.3
 
       - name: Build | Test (native)
-        run: cargo test
+        run: cargo test --features bevy/wayland
 
       - name: Build | Test (wasm)
         run: wasm-pack test --node

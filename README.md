@@ -13,9 +13,11 @@
 [![Docs](https://img.shields.io/docsrs/bevy_vello)](https://docs.rs/bevy_vello)
 [![Build status](https://github.com/linebender/bevy_vello/workflows/CI/badge.svg)](https://github.com/linebender/bevy_vello/actions)
 
+![Rendered with bevy_vello](screenshot.png)
+
 </div>
 
-`bevy_vello` is a cross-platform, 2D compute-centric vector graphics rendering library for Bevy. There is default support for rendering text and scenes, with additional opt-in features for SVG and Lottie.
+`bevy_vello` provides rendering with vello in bevy. Vello is a cross-platform, 2D compute-centric vector graphics rendering library. There is support for rendering scenes, text, svgs, and lotties. Each can be rendered in UI or World space. Picking is also supported.
 
 Quickstart to run an example:
 
@@ -23,13 +25,12 @@ Quickstart to run an example:
 cargo run -p <example name>
 ```
 
-![Alt text](image.png)
-
 ## Bevy version support
 
 |bevy|bevy_vello|vello|
 |---|---|---|
-|0.16|0.9-0.10, main|0.5|
+|0.17|main|0.6|
+|0.16|0.9-0.10|0.5|
 |0.15|0.7-0.8|0.4|
 |0.14|0.5-0.6|0.3|
 |0.13|0.1-0.4|0.2|
@@ -43,9 +44,10 @@ cargo run -p <example name>
 |Cargo feature|Description|Default?|
 |---|---|----|
 |`text`|Render text from `.ttf` fonts with [`parley`](https://github.com/linebender/parley)|No|
-|`default_font`|Include Bevy's default font, containing only ASCII characters, at the cost of a 20kB binary size increase|No|
+|`default_font`|Add Bevy's default font for text rendering|No|
 |`svg`|Render `.svg` files with [`vello_svg`](https://github.com/linebender/vello_svg)|No|
 |`lottie`|Render `.json` Lottie files with [`velato`](https://github.com/linebender/velato)|No|
+|`picking`|Enable picking events for render entities with AABBs|No|
 
 ## Examples
 

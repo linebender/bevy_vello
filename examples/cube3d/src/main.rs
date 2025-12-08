@@ -13,19 +13,8 @@ use bevy::{
 };
 use bevy_vello::{VelloPlugin, prelude::*, render::VelloRenderer};
 
-#[derive(Component)]
+#[derive(Component, Clone, ExtractComponent)]
 pub struct VelloTarget(Handle<Image>);
-
-impl ExtractComponent for VelloTarget {
-    type QueryData = &'static VelloTarget;
-    type QueryFilter = ();
-    type Out = Self;
-    fn extract_component(
-        target: bevy::ecs::query::QueryItem<'_, '_, Self::QueryData>,
-    ) -> Option<Self> {
-        Some(Self(target.0.clone()))
-    }
-}
 
 // Marks the main pass cube, to which the texture is applied.
 #[derive(Component)]
@@ -126,7 +115,7 @@ fn render_texture(
     queue: Res<RenderQueue>,
     time: Res<Time>,
 ) {
-    let mut scene = VelloScene::default();
+    let mut scene = vello::Scene::default();
     // Animate the scene
     let sin_time = time.elapsed_secs().sin().mul_add(0.5, 0.5);
     let c = Vec3::lerp(

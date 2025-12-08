@@ -1,31 +1,39 @@
 mod asset_loader;
+mod systems;
 
 pub(crate) mod render;
 
 mod asset;
-pub use asset::{VelloSvg, VelloSvgHandle};
+pub use asset::VelloSvg;
 
 mod parse;
 pub use parse::{load_svg_from_bytes, load_svg_from_str};
 
 mod plugin;
-use bevy::{camera::visibility::VisibilityClass, prelude::*};
 pub(crate) use plugin::SvgIntegrationPlugin;
 
-use crate::VelloRenderSpace;
-#[derive(Bundle, Default)]
-pub struct VelloSvgBundle {
-    /// Asset data to render
-    pub asset: VelloSvgHandle,
-    /// How the asset is positioned relative to its [`Transform`].
-    pub asset_anchor: VelloSvgAnchor,
-    /// A transform to apply to this vector
-    pub transform: Transform,
-    /// User indication of whether an entity is visible. Propagates down the entity hierarchy.
-    pub view_visibility: Visibility,
-    /// A bucket into which we group entities for the purposes of visibility.
-    pub visibility_class: VisibilityClass,
-}
+use bevy::{
+    camera::{primitives::Aabb, visibility::VisibilityClass},
+    prelude::*,
+};
+
+/// A renderable SVG in the world.
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
+#[require(Aabb, VelloSvgAnchor, Transform, Visibility, VisibilityClass)]
+#[cfg_attr(feature = "picking", require(Pickable))]
+#[reflect(Component)]
+#[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloSvg2d>)]
+pub struct VelloSvg2d(pub Handle<VelloSvg>);
+
+/// A renderable SVG that may be used in Bevy UI.
+///
+/// ### Object fit
+/// The image will preserve the aspect ratio, and fits the image inside the container, without cutting - will leave empty space if needed.
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
+#[require(Node, VelloSvgAnchor, Visibility, VisibilityClass)]
+#[reflect(Component)]
+#[component(on_add = bevy::camera::visibility::add_visibility_class::<UiVelloSvg>)]
+pub struct UiVelloSvg(pub Handle<VelloSvg>);
 
 /// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
 /// [`VelloSvgAnchor::Center`].
@@ -55,47 +63,4 @@ pub enum VelloSvgAnchor {
     Top,
     /// Bounds start from the render position and advance down and to the left.
     TopRight,
-}
-
-impl VelloSvgAnchor {
-    pub(crate) fn compute(
-        &self,
-        width: f32,
-        height: f32,
-        render_space: VelloRenderSpace,
-        transform: &GlobalTransform,
-    ) -> GlobalTransform {
-        // Apply positioning
-        let adjustment = match render_space {
-            VelloRenderSpace::World => match self {
-                Self::TopLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-                Self::BottomLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-                Self::Top => Vec3::new(0.0, -height / 2.0, 0.0),
-                Self::Center => Vec3::new(0.0, 0.0, 0.0),
-                Self::Bottom => Vec3::new(0.0, height / 2.0, 0.0),
-                Self::TopRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-                Self::BottomRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
-            },
-            // Note: Screen space has Y increasing downward, opposite of world space
-            VelloRenderSpace::Screen => match self {
-                Self::TopLeft => Vec3::new(width / 2.0, height / 2.0, 0.0),
-                Self::Left => Vec3::new(width / 2.0, 0.0, 0.0),
-                Self::BottomLeft => Vec3::new(width / 2.0, -height / 2.0, 0.0),
-                Self::Top => Vec3::new(0.0, height / 2.0, 0.0),
-                Self::Center => Vec3::new(0.0, 0.0, 0.0),
-                Self::Bottom => Vec3::new(0.0, -height / 2.0, 0.0),
-                Self::TopRight => Vec3::new(-width / 2.0, height / 2.0, 0.0),
-                Self::Right => Vec3::new(-width / 2.0, 0.0, 0.0),
-                Self::BottomRight => Vec3::new(-width / 2.0, -height / 2.0, 0.0),
-            },
-        };
-        let new_translation: Vec3 = (transform.to_matrix() * adjustment.extend(1.0)).xyz();
-        GlobalTransform::from(
-            transform
-                .compute_transform()
-                .with_translation(new_translation),
-        )
-    }
 }

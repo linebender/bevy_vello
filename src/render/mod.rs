@@ -9,7 +9,6 @@ use bevy::{
     prelude::*,
     render::{
         extract_component::ExtractComponent,
-        extract_resource::ExtractResource,
         render_resource::{
             AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError, VertexFormat,
             VertexStepMode,
@@ -29,51 +28,15 @@ pub(crate) mod prepare;
 
 pub(crate) use plugin::VelloRenderPlugin;
 
+pub mod diagnostics;
+
 /// A handle to the screen space render target shader.
 pub const SSRT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
 
 /// A component that should be added to the camera that will render Vello assets.
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]
+#[require(Camera2d)]
 pub struct VelloView;
-
-/// A resource that holds the scale factor for Vello world coordinates.
-#[derive(Resource, Clone)]
-pub struct VelloWorldScale(pub f32);
-
-impl Default for VelloWorldScale {
-    fn default() -> Self {
-        Self(1.0)
-    }
-}
-
-impl ExtractResource for VelloWorldScale {
-    type Source = VelloWorldScale;
-
-    fn extract_resource(source: &Self::Source) -> Self {
-        source.clone()
-    }
-}
-
-/// A resource that holds the scale factor for Vello screen coordinates.
-#[derive(Resource, Clone)]
-pub struct VelloScreenScale(pub f32);
-
-impl Default for VelloScreenScale {
-    fn default() -> Self {
-        Self(1.0)
-    }
-}
-
-impl ExtractResource for VelloScreenScale {
-    type Source = VelloScreenScale;
-
-    fn extract_resource(source: &Self::Source) -> Self {
-        source.clone()
-    }
-}
-
-#[derive(Component, Debug, Clone)]
-pub struct SkipScaling;
 
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
 #[derive(AsBindGroup, TypePath, Asset, Clone)]
@@ -204,32 +167,28 @@ pub(crate) struct VelloCanvasSettings {
     pub render_layers: RenderLayers,
 }
 
-/// Add this to any renderable vello asset to skip encoding that renderable.
-#[derive(Component, Debug, Clone, Copy)]
-pub struct SkipEncoding;
-
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
 #[allow(clippy::large_enum_variant, reason = "Many feature gates")]
-pub(crate) enum VelloRenderItem {
+pub(crate) enum VelloWorldRenderItem {
     Scene {
         affine: Affine,
-        item: crate::integrations::scene::render::ExtractedWorldVelloScene,
+        item: crate::integrations::scene::render::ExtractedVelloScene2d,
     },
     #[cfg(feature = "svg")]
     Svg {
         affine: Affine,
-        item: crate::integrations::svg::render::ExtractedWorldVelloSvg,
+        item: crate::integrations::svg::render::ExtractedVelloSvg2d,
     },
     #[cfg(feature = "lottie")]
     Lottie {
         affine: Affine,
-        item: crate::integrations::lottie::render::ExtractedWorldVelloLottie,
+        item: crate::integrations::lottie::render::ExtractedVelloLottie2d,
     },
     #[cfg(feature = "text")]
     Text {
         affine: Affine,
-        item: crate::integrations::text::render::ExtractedWorldVelloText,
+        item: crate::integrations::text::render::ExtractedVelloText2d,
     },
 }
 
@@ -261,12 +220,12 @@ pub(crate) enum VelloUiRenderItem {
 /// Internally used to buffer sorted assets prepared for the next frame.
 #[derive(Resource, Default)]
 pub(crate) struct VelloRenderQueue {
-    world: Vec<VelloRenderItem>,
+    world: Vec<VelloWorldRenderItem>,
     ui: Vec<VelloUiRenderItem>,
 }
 
 /// Internally used for diagnostics.
-#[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
+#[derive(Resource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloEntityCountData {
     /// Number of scenes used in the World.
     pub n_world_scenes: u32,
@@ -293,7 +252,7 @@ pub(crate) struct VelloEntityCountData {
 }
 
 /// Internally used for diagnostics.
-#[derive(Resource, ExtractResource, Default, Debug, Clone, Reflect)]
+#[derive(Resource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloFrameProfileData {
     /// Total number of paths rendered last frame.
     pub n_paths: u32,
