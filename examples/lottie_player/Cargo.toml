@@ -15,4 +15,4 @@ bevy = { workspace = true, features = [
 ] }
 bevy_vello = { path = "../../", features = ["lottie", "picking"] }
 bevy_egui = "0.38.0"
-tracing = "0.1.41"
+tracing = "0.1.43"

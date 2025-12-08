@@ -11,7 +11,7 @@ jobs:
       - name: Setup | Ubuntu dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libfontconfig1-dev
 
       - name: Setup | Toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -36,7 +36,7 @@ jobs:
       - name: Setup | Ubuntu dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libfontconfig1-dev
 
       - name: Setup | Rust
         uses: dtolnay/rust-toolchain@stable
@@ -62,7 +62,7 @@ jobs:
       - name: Setup | Ubuntu dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+          sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libfontconfig1-dev
 
       - name: Setup | Rust
         uses: dtolnay/rust-toolchain@stable
