@@ -2,11 +2,11 @@
 
 # Bevy Vello
 
-**A vector graphics rendering integration for [Bevy game engine](https://bevyengine.org) using [Vello](https://vello.dev).**
+**A vector graphics rendering integration for [Bevy game engine](https://bevy.org) using [Vello](https://vello.dev).**
 
 [![Linebender Zulip](https://img.shields.io/badge/Linebender-%23vello-blue?logo=Zulip)](https://xi.zulipchat.com/#narrow/channel/197075-vello)
 [![MIT/Apache 2.0](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
-[![Vello](https://img.shields.io/badge/vello-v0.4.0-purple.svg)](https://crates.io/crates/vello)
+[![Vello](https://img.shields.io/badge/vello-v0.6.0-purple.svg)](https://crates.io/crates/vello)
 [![Following released Bevy versions](https://img.shields.io/badge/bevy%20tracking-released%20version-lightblue)](https://bevyengine.org/learn/quick-start/plugin-development/#main-branch-tracking)\
 [![Dependency status](https://deps.rs/repo/github/linebender/bevy_vello/status.svg)](https://deps.rs/repo/github/linebender/bevy_vello)
 [![Crates.io](https://img.shields.io/crates/v/bevy_vello.svg)](https://crates.io/crates/bevy_vello)
@@ -29,7 +29,7 @@ cargo run -p <example name>
 
 |bevy|bevy_vello|vello|
 |---|---|---|
-|0.17|main|0.6|
+|0.17|0.11,main|0.6|
 |0.16|0.9-0.10|0.5|
 |0.15|0.7-0.8|0.4|
 |0.14|0.5-0.6|0.3|
