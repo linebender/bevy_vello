@@ -31,7 +31,7 @@ pub(crate) use plugin::VelloRenderPlugin;
 pub mod diagnostics;
 
 /// A handle to the screen space render target shader.
-pub const SSRT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
+pub const RT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-a9f2-93b32026a820");
 
 /// A component that should be added to the camera that will render Vello assets.
 #[derive(Component, Debug, Clone, Copy, ExtractComponent)]
@@ -48,11 +48,11 @@ pub struct VelloCanvasMaterial {
 
 impl Material2d for VelloCanvasMaterial {
     fn vertex_shader() -> ShaderRef {
-        SSRT_SHADER_HANDLE.into()
+        RT_SHADER_HANDLE.into()
     }
 
     fn fragment_shader() -> ShaderRef {
-        SSRT_SHADER_HANDLE.into()
+        RT_SHADER_HANDLE.into()
     }
 
     fn specialize(

@@ -230,7 +230,7 @@ pub fn sort_render_items(
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
 pub fn render_frame(
-    ss_render_target: Single<&VelloRenderTarget>,
+    render_target: Single<&VelloRenderTarget>,
     #[cfg(feature = "text")] font_render_assets: Res<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
@@ -241,7 +241,7 @@ pub fn render_frame(
     render_queue: Res<VelloRenderQueue>,
     mut frame_profile: ResMut<VelloFrameProfileData>,
 ) {
-    let VelloRenderTarget(render_target_image) = *ss_render_target;
+    let VelloRenderTarget(render_target_image) = *render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
 
     let mut scene_buffer = Scene::new();

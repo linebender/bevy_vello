@@ -13,7 +13,7 @@ use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget
 use crate::{
     VelloView,
     render::{
-        SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
+        RT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
         VelloRenderQueue, VelloRenderer, diagnostics::VelloRenderDiagnosticsPlugin,
         extract::VelloExtractStep,
     },
@@ -32,8 +32,8 @@ impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
         load_internal_asset!(
             app,
-            SSRT_SHADER_HANDLE,
-            "../../shaders/vello_ss_rendertarget.wgsl",
+            RT_SHADER_HANDLE,
+            "../../shaders/vello_rendertarget.wgsl",
             Shader::from_wgsl
         );
 
