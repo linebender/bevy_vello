@@ -15,7 +15,9 @@ You can find its changes [documented below](#0110---2025-12-08).
 
 This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
-- Nothing yet!
+### Changed
+
+- Renamed `SSRenderTarget` to `VelloRenderTarget`.
 
 ## [0.11.0] - 2025-12-08
 

@@ -21,7 +21,7 @@ use vello::{RenderParams, Scene};
 use super::{
     VelloCanvasMaterial, VelloCanvasSettings, VelloEntityCountData, VelloFrameProfileData,
     VelloRenderQueue, VelloRenderSettings, VelloRenderer, VelloWorldRenderItem,
-    extract::SSRenderTarget, prepare::PreparedAffine,
+    extract::VelloRenderTarget, prepare::PreparedAffine,
 };
 #[cfg(feature = "lottie")]
 use crate::integrations::lottie::render::{ExtractedUiVelloLottie, ExtractedVelloLottie2d};
@@ -230,7 +230,7 @@ pub fn sort_render_items(
 /// a scene, and renders the scene to a texture with WGPU
 #[allow(clippy::complexity)]
 pub fn render_frame(
-    ss_render_target: Single<&SSRenderTarget>,
+    ss_render_target: Single<&VelloRenderTarget>,
     #[cfg(feature = "text")] font_render_assets: Res<RenderAssets<VelloFont>>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
@@ -241,7 +241,7 @@ pub fn render_frame(
     render_queue: Res<VelloRenderQueue>,
     mut frame_profile: ResMut<VelloFrameProfileData>,
 ) {
-    let SSRenderTarget(render_target_image) = *ss_render_target;
+    let VelloRenderTarget(render_target_image) = *ss_render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
 
     let mut scene_buffer = Scene::new();
@@ -483,7 +483,7 @@ pub fn get_viewport_size(
 }
 
 pub fn resize_rendertargets(
-    mut query: Query<(&mut SSRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
+    mut query: Query<(&mut VelloRenderTarget, &MeshMaterial2d<VelloCanvasMaterial>)>,
     mut images: ResMut<Assets<Image>>,
     mut target_materials: ResMut<Assets<VelloCanvasMaterial>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
@@ -521,7 +521,7 @@ pub fn resize_rendertargets(
 }
 
 #[allow(clippy::complexity)]
-pub fn setup_ss_rendertarget(
+pub fn setup_rendertarget(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut images: ResMut<Assets<Image>>,
@@ -560,7 +560,8 @@ pub fn setup_ss_rendertarget(
 
     commands
         .spawn((
-            SSRenderTarget(texture_image.clone()),
+            Name::new("Vello Canvas"),
+            VelloRenderTarget(texture_image.clone()),
             Mesh2d(mesh_handle.clone()),
             MeshMaterial2d(custom_materials.add(VelloCanvasMaterial {
                 texture: texture_image,

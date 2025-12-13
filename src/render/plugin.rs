@@ -9,7 +9,7 @@ use bevy::{
     sprite_render::Material2dPlugin,
 };
 
-use super::{VelloCanvasSettings, VelloRenderSettings, extract::SSRenderTarget, systems};
+use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget, systems};
 use crate::{
     VelloView,
     render::{
@@ -75,9 +75,9 @@ impl Plugin for VelloRenderPlugin {
         app.insert_resource(self.canvas_settings.clone())
             .add_plugins((
                 Material2dPlugin::<VelloCanvasMaterial>::default(),
-                ExtractComponentPlugin::<SSRenderTarget>::default(),
+                ExtractComponentPlugin::<VelloRenderTarget>::default(),
             ))
-            .add_systems(Startup, systems::setup_ss_rendertarget)
+            .add_systems(Startup, systems::setup_rendertarget)
             .add_systems(
                 PostUpdate,
                 (systems::resize_rendertargets.after(CameraUpdateSystems),),
