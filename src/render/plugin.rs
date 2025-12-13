@@ -9,11 +9,11 @@ use bevy::{
     sprite_render::Material2dPlugin,
 };
 
-use super::{VelloCanvasSettings, VelloRenderSettings, extract::SSRenderTarget, systems};
+use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget, systems};
 use crate::{
     VelloView,
     render::{
-        SSRT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
+        RT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
         VelloRenderQueue, VelloRenderer, diagnostics::VelloRenderDiagnosticsPlugin,
         extract::VelloExtractStep,
     },
@@ -32,8 +32,8 @@ impl Plugin for VelloRenderPlugin {
     fn build(&self, app: &mut App) {
         load_internal_asset!(
             app,
-            SSRT_SHADER_HANDLE,
-            "../../shaders/vello_ss_rendertarget.wgsl",
+            RT_SHADER_HANDLE,
+            "../../shaders/vello_rendertarget.wgsl",
             Shader::from_wgsl
         );
 
@@ -75,9 +75,9 @@ impl Plugin for VelloRenderPlugin {
         app.insert_resource(self.canvas_settings.clone())
             .add_plugins((
                 Material2dPlugin::<VelloCanvasMaterial>::default(),
-                ExtractComponentPlugin::<SSRenderTarget>::default(),
+                ExtractComponentPlugin::<VelloRenderTarget>::default(),
             ))
-            .add_systems(Startup, systems::setup_ss_rendertarget)
+            .add_systems(Startup, systems::setup_rendertarget)
             .add_systems(
                 PostUpdate,
                 (systems::resize_rendertargets.after(CameraUpdateSystems),),
