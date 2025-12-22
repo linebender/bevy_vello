@@ -92,7 +92,9 @@ fn recolor_shape(shape: &mut Shape, target_color: vello::peniko::Color) {
         velato::model::Shape::Draw(draw) => {
             recolor_brush(&mut draw.brush, target_color);
         }
-        velato::model::Shape::Repeater(_) | velato::model::Shape::Geometry(_) => {}
+        velato::model::Shape::Repeater(_)
+        | velato::model::Shape::Geometry(_)
+        | velato::model::Shape::Trim(_) => {}
     }
 }
 

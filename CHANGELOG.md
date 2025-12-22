@@ -19,6 +19,10 @@ This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
 - Renamed `SSRenderTarget` to `VelloRenderTarget`.
 
+### Fixed
+
+- Updated velato to 0.8.0
+
 ## [0.11.0] - 2025-12-08
 
 This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
