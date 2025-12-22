@@ -24,7 +24,10 @@ impl Plugin for SvgIntegrationPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    systems::update_svg_2d_aabb_on_change
+                    (
+                        systems::update_svg_2d_aabb_on_asset_load,
+                        systems::update_svg_2d_aabb_on_change,
+                    )
                         .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
                     systems::update_ui_svg_content_size_on_change
                         .in_set(bevy::ui::UiSystems::Content),

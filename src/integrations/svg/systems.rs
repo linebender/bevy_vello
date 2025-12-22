@@ -5,35 +5,64 @@ use bevy::{
     ui::{ContentSize, NodeMeasure},
 };
 
-pub fn update_svg_2d_aabb_on_change(
-    mut text_q: Query<(&mut Aabb, &mut VelloSvg2d, &VelloSvgAnchor), Changed<VelloSvg2d>>,
+fn helper_calculate_aabb(svg: &VelloSvg, anchor: &VelloSvgAnchor) -> Aabb {
+    let (width, height) = (svg.width, svg.height);
+    let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
+    let (dx, dy) = {
+        match anchor {
+            VelloSvgAnchor::TopLeft => (half_size.x, -half_size.y),
+            VelloSvgAnchor::Left => (half_size.x, 0.0),
+            VelloSvgAnchor::BottomLeft => (half_size.x, half_size.y),
+            VelloSvgAnchor::Top => (0.0, -half_size.y),
+            VelloSvgAnchor::Center => (0.0, 0.0),
+            VelloSvgAnchor::Bottom => (0.0, half_size.y),
+            VelloSvgAnchor::TopRight => (-half_size.x, -half_size.y),
+            VelloSvgAnchor::Right => (-half_size.x, 0.0),
+            VelloSvgAnchor::BottomRight => (-half_size.x, half_size.y),
+        }
+    };
+    let adjustment = Vec3::new(dx, dy, 0.0);
+    let min = -half_size + adjustment;
+    let max = half_size + adjustment;
+    Aabb::from_min_max(min, max)
+}
+
+pub fn update_svg_2d_aabb_on_asset_load(
+    mut asset_events: MessageReader<AssetEvent<VelloSvg>>,
+    mut world_svgs: Query<(&mut Aabb, &mut VelloSvg2d, &VelloSvgAnchor)>,
     svgs: Res<Assets<VelloSvg>>,
 ) {
-    for (mut aabb, svg, anchor) in text_q.iter_mut() {
+    for event in asset_events.read() {
+        let id = if let AssetEvent::LoadedWithDependencies { id } = event {
+            *id
+        } else {
+            continue;
+        };
+        let Some((mut aabb, svg, anchor)) =
+            world_svgs.iter_mut().find(|(_, svg, _)| svg.id() == id)
+        else {
+            continue;
+        };
         let Some(svg) = svgs.get(&svg.0) else {
             // Not yet loaded
             continue;
         };
+        let new_aabb = helper_calculate_aabb(svg, anchor);
+        *aabb = new_aabb;
+    }
+}
 
-        let (width, height) = (svg.width, svg.height);
-        let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
-        let (dx, dy) = {
-            match anchor {
-                VelloSvgAnchor::TopLeft => (half_size.x, -half_size.y),
-                VelloSvgAnchor::Left => (half_size.x, 0.0),
-                VelloSvgAnchor::BottomLeft => (half_size.x, half_size.y),
-                VelloSvgAnchor::Top => (0.0, -half_size.y),
-                VelloSvgAnchor::Center => (0.0, 0.0),
-                VelloSvgAnchor::Bottom => (0.0, half_size.y),
-                VelloSvgAnchor::TopRight => (-half_size.x, -half_size.y),
-                VelloSvgAnchor::Right => (-half_size.x, 0.0),
-                VelloSvgAnchor::BottomRight => (-half_size.x, half_size.y),
-            }
+pub fn update_svg_2d_aabb_on_change(
+    mut world_svgs: Query<(&mut Aabb, &mut VelloSvg2d, &VelloSvgAnchor), Changed<VelloSvg2d>>,
+    svgs: Res<Assets<VelloSvg>>,
+) {
+    for (mut aabb, svg, anchor) in world_svgs.iter_mut() {
+        let Some(svg) = svgs.get(&svg.0) else {
+            // Not yet loaded
+            continue;
         };
-        let adjustment = Vec3::new(dx, dy, 0.0);
-        let min = -half_size + adjustment;
-        let max = half_size + adjustment;
-        *aabb = Aabb::from_min_max(min, max);
+        let new_aabb = helper_calculate_aabb(svg, anchor);
+        *aabb = new_aabb;
     }
 }
 

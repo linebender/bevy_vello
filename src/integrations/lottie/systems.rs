@@ -322,38 +322,71 @@ pub fn transition_state<A: LottieAssetVariant>(
     }
 }
 
-pub fn update_lottie_2d_aabb_on_change(
-    mut query: Query<(&mut Aabb, &mut VelloLottie2d, &VelloLottieAnchor), Changed<VelloLottie2d>>,
+fn helper_calculate_aabb(lottie: &VelloLottie, anchor: &VelloLottieAnchor) -> Aabb {
+    let (width, height) = (
+        lottie.composition.width as f32,
+        lottie.composition.height as f32,
+    );
+    let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
+    let (dx, dy) = {
+        match anchor {
+            VelloLottieAnchor::TopLeft => (half_size.x, -half_size.y),
+            VelloLottieAnchor::Left => (half_size.x, 0.0),
+            VelloLottieAnchor::BottomLeft => (half_size.x, half_size.y),
+            VelloLottieAnchor::Top => (0.0, -half_size.y),
+            VelloLottieAnchor::Center => (0.0, 0.0),
+            VelloLottieAnchor::Bottom => (0.0, half_size.y),
+            VelloLottieAnchor::TopRight => (-half_size.x, -half_size.y),
+            VelloLottieAnchor::Right => (-half_size.x, 0.0),
+            VelloLottieAnchor::BottomRight => (-half_size.x, half_size.y),
+        }
+    };
+    let adjustment = Vec3::new(dx, dy, 0.0);
+    let min = -half_size + adjustment;
+    let max = half_size + adjustment;
+    Aabb::from_min_max(min, max)
+}
+
+pub fn update_lottie_2d_aabb_on_asset_load(
+    mut asset_events: MessageReader<AssetEvent<VelloLottie>>,
+    mut world_lotties: Query<(&mut Aabb, &mut VelloLottie2d, &VelloLottieAnchor)>,
     lotties: Res<Assets<VelloLottie>>,
 ) {
-    for (mut aabb, lottie, anchor) in query.iter_mut() {
+    for event in asset_events.read() {
+        let id = if let AssetEvent::LoadedWithDependencies { id } = event {
+            *id
+        } else {
+            continue;
+        };
+        let Some((mut aabb, lottie, anchor)) = world_lotties
+            .iter_mut()
+            .find(|(_, lottie, _)| lottie.id() == id)
+        else {
+            continue;
+        };
         let Some(lottie) = lotties.get(&lottie.0) else {
             // Not yet loaded
             continue;
         };
+        let new_aabb = helper_calculate_aabb(lottie, anchor);
+        *aabb = new_aabb;
+    }
+}
 
-        let (width, height) = (
-            lottie.composition.width as f32,
-            lottie.composition.height as f32,
-        );
-        let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
-        let (dx, dy) = {
-            match anchor {
-                VelloLottieAnchor::TopLeft => (half_size.x, -half_size.y),
-                VelloLottieAnchor::Left => (half_size.x, 0.0),
-                VelloLottieAnchor::BottomLeft => (half_size.x, half_size.y),
-                VelloLottieAnchor::Top => (0.0, -half_size.y),
-                VelloLottieAnchor::Center => (0.0, 0.0),
-                VelloLottieAnchor::Bottom => (0.0, half_size.y),
-                VelloLottieAnchor::TopRight => (-half_size.x, -half_size.y),
-                VelloLottieAnchor::Right => (-half_size.x, 0.0),
-                VelloLottieAnchor::BottomRight => (-half_size.x, half_size.y),
-            }
+pub fn update_lottie_2d_aabb_on_change(
+    mut world_lotties: Query<
+        (&mut Aabb, &mut VelloLottie2d, &VelloLottieAnchor),
+        Changed<VelloLottie2d>,
+    >,
+    lotties: Res<Assets<VelloLottie>>,
+) {
+    for (mut aabb, lottie, anchor) in world_lotties.iter_mut() {
+        let Some(lottie) = lotties.get(&lottie.0) else {
+            // Not yet loaded
+            continue;
         };
-        let adjustment = Vec3::new(dx, dy, 0.0);
-        let min = -half_size + adjustment;
-        let max = half_size + adjustment;
-        *aabb = Aabb::from_min_max(min, max);
+        let new_aabb = helper_calculate_aabb(lottie, anchor);
+        *aabb = new_aabb;
     }
 }
 

@@ -19,7 +19,10 @@ impl Plugin for VelloTextIntegrationPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    systems::update_text_2d_aabb_on_change
+                    (
+                        systems::update_text_2d_aabb_on_asset_load,
+                        systems::update_text_2d_aabb_on_change,
+                    )
                         .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
                     systems::update_ui_text_content_size_on_change
                         .in_set(bevy::ui::UiSystems::Content),

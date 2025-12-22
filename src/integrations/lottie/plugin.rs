@@ -28,7 +28,10 @@ impl Plugin for LottieIntegrationPlugin {
             .add_systems(
                 PostUpdate,
                 (
-                    systems::update_lottie_2d_aabb_on_change
+                    (
+                        systems::update_lottie_2d_aabb_on_asset_load,
+                        systems::update_lottie_2d_aabb_on_change,
+                    )
                         .in_set(bevy::camera::visibility::VisibilitySystems::CalculateBounds),
                     systems::update_ui_lottie_content_size_on_change
                         .in_set(bevy::ui::UiSystems::Content),
