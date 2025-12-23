@@ -30,7 +30,7 @@ fn main() {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, VelloView));
+    commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
 }
 
 fn setup_initial_image(mut commands: Commands, asset_server: Res<AssetServer>) {
