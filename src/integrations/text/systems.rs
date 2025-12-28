@@ -44,18 +44,17 @@ pub fn update_text_2d_aabb_on_asset_load(
         } else {
             continue;
         };
-        let Some((mut aabb, text, text_anchor)) = world_texts
-            .iter_mut()
-            .find(|(_, text, _)| text.style.font.id() == id)
-        else {
-            continue;
-        };
-        let Some(font) = fonts.get(&text.style.font) else {
+        let Some(font) = fonts.get(id) else {
             // Not yet loaded
             continue;
         };
-        let new_aabb = helper_calculate_aabb(font, text, text_anchor);
-        *aabb = new_aabb;
+        for (mut aabb, text, text_anchor) in world_texts
+            .iter_mut()
+            .filter(|(_, text, _)| text.style.font.id() == id)
+        {
+            let new_aabb = helper_calculate_aabb(font, text, text_anchor);
+            *aabb = new_aabb;
+        }
     }
 }
 

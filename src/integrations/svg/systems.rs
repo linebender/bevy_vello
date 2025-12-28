@@ -29,7 +29,7 @@ fn helper_calculate_aabb(svg: &VelloSvg, anchor: &VelloSvgAnchor) -> Aabb {
 
 pub fn update_svg_2d_aabb_on_asset_load(
     mut asset_events: MessageReader<AssetEvent<VelloSvg>>,
-    mut world_svgs: Query<(&mut Aabb, &mut VelloSvg2d, &VelloSvgAnchor)>,
+    mut world_svgs: Query<(&mut Aabb, &VelloSvg2d, &VelloSvgAnchor)>,
     svgs: Res<Assets<VelloSvg>>,
 ) {
     for event in asset_events.read() {
@@ -38,17 +38,14 @@ pub fn update_svg_2d_aabb_on_asset_load(
         } else {
             continue;
         };
-        let Some((mut aabb, svg, anchor)) =
-            world_svgs.iter_mut().find(|(_, svg, _)| svg.id() == id)
-        else {
-            continue;
-        };
-        let Some(svg) = svgs.get(&svg.0) else {
+        let Some(svg) = svgs.get(id) else {
             // Not yet loaded
             continue;
         };
-        let new_aabb = helper_calculate_aabb(svg, anchor);
-        *aabb = new_aabb;
+        for (mut aabb, _, anchor) in world_svgs.iter_mut().filter(|(_, svg, _)| svg.id() == id) {
+            let new_aabb = helper_calculate_aabb(svg, anchor);
+            *aabb = new_aabb;
+        }
     }
 }
 

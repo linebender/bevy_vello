@@ -15,6 +15,10 @@ You can find its changes [documented below](#0120---2025-12-22).
 
 This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
 
+### Fixed
+
+- When loading multiple of the same assets, AABBs are generated for each.
+
 ## [0.12.0] - 2025-12-22
 
 This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.

@@ -358,18 +358,17 @@ pub fn update_lottie_2d_aabb_on_asset_load(
         } else {
             continue;
         };
-        let Some((mut aabb, lottie, anchor)) = world_lotties
-            .iter_mut()
-            .find(|(_, lottie, _)| lottie.id() == id)
-        else {
-            continue;
-        };
-        let Some(lottie) = lotties.get(&lottie.0) else {
+        let Some(lottie) = lotties.get(id) else {
             // Not yet loaded
             continue;
         };
-        let new_aabb = helper_calculate_aabb(lottie, anchor);
-        *aabb = new_aabb;
+        for (mut aabb, _, anchor) in world_lotties
+            .iter_mut()
+            .filter(|(_, lottie, _)| lottie.id() == id)
+        {
+            let new_aabb = helper_calculate_aabb(lottie, anchor);
+            *aabb = new_aabb;
+        }
     }
 }
 
