@@ -8,12 +8,20 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-The latest published Bevy Vello release is [0.13.0](#0130---2026-01-29) which was released on 2026-01-29.
-You can find its changes [documented below](#0130---2026-01-29).
+The latest published Bevy Vello release is [0.13.1](#0131---2026-01-29) which was released on 2026-01-29.
+You can find its changes [documented below](#0131---2026-01-29).
 
 ## [Unreleased]
 
 This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
+
+## [0.13.1] - 2026-01-29
+
+This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
+
+### Fixed
+
+- `default_platform` is now no longer included with bevy_vello by default. If you brought this feature in your app as well, be sure to set the render creation `Backends` to omit WebGL2, as that is not compatible with Vello on web platforms. You may see an error in console such as `Too many bindings of type StorageBuffers in Stage ShaderStages(COMPUTE), limit is 0, count was 2.`.
 
 ## [0.13.0] - 2026-01-29
 
@@ -459,7 +467,8 @@ This release supports Bevy version 0.13 and has an [MSRV][] of 1.77.
 
 [@simbleau]: https://github.com/simbleau
 
-[Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/linebender/bevy_vello/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/linebender/bevy_vello/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/linebender/bevy_vello/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/linebender/bevy_vello/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/linebender/bevy_vello/compare/v0.11.0...v0.12.0
