@@ -40,8 +40,7 @@ fn update_aabb_hits<C: Component>(
         };
 
         // Find camera matching the pointer's render target
-
-        let Some((cam_entity, camera, target, cam_transform)) =
+        let Some((cam_entity, camera, _target, cam_transform)) =
             cameras.iter().find(|(_, _, target, _)| {
                 target
                     .normalize(Some(*primary_window))
