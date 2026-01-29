@@ -35,7 +35,7 @@ impl AssetLoader for VelloSvgLoader {
                     )))?;
             tracing::debug!("parsing {path}...");
 
-            if ext.ends_with(".svg") {
+            if ext.ends_with("svg") {
                 let asset = load_svg_from_bytes(&bytes)?;
                 tracing::info!(
                     path = %path,

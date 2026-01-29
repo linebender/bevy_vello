@@ -35,7 +35,7 @@ impl AssetLoader for VelloLottieLoader {
                     )))?;
             tracing::debug!("parsing {path}...");
 
-            if ext.ends_with(".json") {
+            if ext.ends_with("json") {
                 let asset = load_lottie_from_bytes(&bytes)?;
                 tracing::info!(
                     path = %path,
