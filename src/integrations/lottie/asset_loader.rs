@@ -7,7 +7,7 @@ use bevy::{
 use super::asset::VelloLottie;
 use crate::integrations::{VectorLoaderError, lottie::load_lottie_from_bytes};
 
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub struct VelloLottieLoader;
 
 impl AssetLoader for VelloLottieLoader {
@@ -28,28 +28,26 @@ impl AssetLoader for VelloLottieLoader {
             reader.read_to_end(&mut bytes).await?;
             let path = load_context.path().to_owned();
             let ext =
-                path.extension()
-                    .and_then(std::ffi::OsStr::to_str)
+                path.get_full_extension()
                     .ok_or(VectorLoaderError::Io(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
                         "Invalid file extension",
                     )))?;
+            tracing::debug!("parsing {path}...");
 
-            tracing::debug!("parsing {}...", load_context.path().display());
-            match ext {
-                "json" => {
-                    let asset = load_lottie_from_bytes(&bytes)?;
-                    tracing::info!(
-                        path = format!("{}", load_context.path().display()),
-                        size = format!("{:?}", (asset.composition.width, asset.composition.height)),
-                        "finished parsing lottie json asset"
-                    );
-                    Ok(asset)
-                }
-                ext => Err(VectorLoaderError::Io(std::io::Error::new(
+            if ext.ends_with(".json") {
+                let asset = load_lottie_from_bytes(&bytes)?;
+                tracing::info!(
+                    path = %path,
+                    size = format!("{:?}", (asset.composition.width, asset.composition.height)),
+                   "finished parsing lottie json asset"
+                );
+                Ok(asset)
+            } else {
+                Err(VectorLoaderError::Io(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     format!("Invalid file extension: '{ext}'"),
-                ))),
+                )))
             }
         })
     }

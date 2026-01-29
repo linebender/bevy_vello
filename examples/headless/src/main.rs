@@ -42,7 +42,7 @@ fn main() {
 
 fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
     // Create image render target
-    let image = Image::new_target_texture(900, 900, TextureFormat::Rgba8UnormSrgb);
+    let image = Image::new_target_texture(900, 900, TextureFormat::Rgba8UnormSrgb, None);
     let image_handle = images.add(image);
 
     commands.spawn((
@@ -52,9 +52,9 @@ fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
                 physical_size: UVec2 { x: 900, y: 900 },
                 ..Default::default()
             }),
-            target: RenderTarget::Image(image_handle.clone().into()),
             ..default()
         },
+        RenderTarget::Image(image_handle.clone().into()),
         CameraRenderGraph::new(Core2d),
         VelloView,
     ));

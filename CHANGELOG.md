@@ -13,7 +13,12 @@ You can find its changes [documented below](#0121---2025-12-28).
 
 ## [Unreleased]
 
-This release supports Bevy version 0.17 and has an [MSRV][] of 1.87.
+This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
+
+### Changed
+
+- Updated to bevy 0.18
+- Updated to vello 0.7
 
 ## [0.12.1] - 2025-12-28
 

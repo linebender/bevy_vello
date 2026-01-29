@@ -1,4 +1,5 @@
 use bevy::{
+    camera_controller::free_camera::{FreeCamera, FreeCameraPlugin},
     prelude::*,
     render::{
         Render, RenderApp, RenderSystems,
@@ -24,6 +25,7 @@ fn main() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
+        .add_plugins(FreeCameraPlugin)
         .add_plugins(VelloPlugin {
             use_cpu: false,
             antialiasing: vello::AaConfig::Msaa8,
@@ -100,7 +102,7 @@ fn setup(
         .insert(Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)));
 
     commands
-        .spawn(Camera3d::default())
+        .spawn((Camera3d::default(), FreeCamera::default()))
         .insert(Transform::from_xyz(0.0, 0.0, 15.0).looking_at(Vec3::ZERO, Vec3::Y));
 
     commands.spawn(VelloTarget(image_handle));

@@ -7,7 +7,7 @@ use bevy::{
 use super::asset::VelloSvg;
 use crate::integrations::{VectorLoaderError, svg::load_svg_from_bytes};
 
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub struct VelloSvgLoader;
 
 impl AssetLoader for VelloSvgLoader {
@@ -28,28 +28,26 @@ impl AssetLoader for VelloSvgLoader {
             reader.read_to_end(&mut bytes).await?;
             let path = load_context.path().to_owned();
             let ext =
-                path.extension()
-                    .and_then(std::ffi::OsStr::to_str)
+                path.get_full_extension()
                     .ok_or(VectorLoaderError::Io(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
                         "Invalid file extension",
                     )))?;
+            tracing::debug!("parsing {path}...");
 
-            tracing::debug!("parsing {}...", load_context.path().display());
-            match ext {
-                "svg" => {
-                    let asset = load_svg_from_bytes(&bytes)?;
-                    tracing::info!(
-                        path = format!("{}", load_context.path().display()),
-                        size = format!("{:?}", (asset.width, asset.height)),
-                        "finished parsing svg asset"
-                    );
-                    Ok(asset)
-                }
-                ext => Err(VectorLoaderError::Io(std::io::Error::new(
+            if ext.ends_with(".svg") {
+                let asset = load_svg_from_bytes(&bytes)?;
+                tracing::info!(
+                    path = %path,
+                    size = format!("{:?}", (asset.width, asset.height)),
+                    "finished parsing svg asset"
+                );
+                Ok(asset)
+            } else {
+                Err(VectorLoaderError::Io(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     format!("Invalid file extension: '{ext}'"),
-                ))),
+                )))
             }
         })
     }

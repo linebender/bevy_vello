@@ -1,9 +1,12 @@
-use bevy::asset::{AssetLoader, LoadContext, io::Reader};
+use bevy::{
+    asset::{AssetLoader, LoadContext, io::Reader},
+    reflect::TypePath,
+};
 
 use super::{context::get_global_font_context, font::VelloFont};
 use crate::integrations::{VectorLoaderError, text::context::LOCAL_FONT_CONTEXT};
 
-#[derive(Default)]
+#[derive(Default, TypePath)]
 pub struct VelloFontLoader;
 
 pub(crate) fn load_into_font_context(bytes: Vec<u8>) -> VelloFont {

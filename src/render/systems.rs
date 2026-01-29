@@ -272,6 +272,7 @@ pub fn render_frame(
                 }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
+                        vello::peniko::Fill::NonZero,
                         vello::peniko::Mix::Normal,
                         *alpha,
                         *affine,
@@ -306,6 +307,7 @@ pub fn render_frame(
                 }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
+                        vello::peniko::Fill::NonZero,
                         vello::peniko::Mix::Normal,
                         *alpha,
                         *affine,
@@ -366,6 +368,7 @@ pub fn render_frame(
                 }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
+                        vello::peniko::Fill::NonZero,
                         vello::peniko::Mix::Normal,
                         *alpha,
                         *affine,
@@ -400,6 +403,7 @@ pub fn render_frame(
                 }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
+                        vello::peniko::Fill::NonZero,
                         vello::peniko::Mix::Normal,
                         *alpha,
                         *affine,

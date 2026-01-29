@@ -2,6 +2,7 @@ use std::{ffi::OsStr, task::Poll};
 
 use bevy::{
     asset::{AssetMetaCheck, embedded_asset},
+    camera_controller::pan_camera::{PanCamera, PanCameraPlugin},
     color::palettes::css::RED,
     prelude::*,
 };
@@ -17,8 +18,8 @@ fn main() {
         meta_check: AssetMetaCheck::Never,
         ..default()
     }))
+    .add_plugins(PanCameraPlugin)
     .add_plugins(VelloPlugin::default())
-    .add_plugins(bevy_pancam::PanCamPlugin)
     .add_systems(Startup, setup_camera)
     .add_systems(Startup, setup_initial_image)
     .add_systems(Startup, setup_button)
@@ -30,7 +31,7 @@ fn main() {
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, bevy_pancam::PanCam::default(), VelloView));
+    commands.spawn((Camera2d, PanCamera::default(), VelloView));
 }
 
 fn setup_initial_image(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -58,10 +59,10 @@ fn setup_button(mut commands: Commands) {
                         border: UiRect::all(Val::Px(5.0)),
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
+                        border_radius: BorderRadius::MAX,
                         ..default()
                     },
                     BorderColor::all(Color::BLACK),
-                    BorderRadius::MAX,
                     BackgroundColor(NORMAL_BUTTON),
                 ))
                 .with_child((

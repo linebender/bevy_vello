@@ -1,6 +1,6 @@
 use crate::render::VelloView;
 use bevy::{
-    camera::primitives::Aabb,
+    camera::{RenderTarget, primitives::Aabb},
     picking::{
         PickingSystems,
         backend::{HitData, PointerHits},
@@ -30,7 +30,7 @@ impl<C: Component> Plugin for WorldPickingPlugin<C> {
 fn update_aabb_hits<C: Component>(
     primary_window: Single<Entity, With<PrimaryWindow>>,
     pointers: Query<(&PointerId, &PointerLocation)>,
-    cameras: Query<(Entity, &Camera, &GlobalTransform), With<VelloView>>,
+    cameras: Query<(Entity, &Camera, &RenderTarget, &GlobalTransform), With<VelloView>>,
     aabb_query: Query<(Entity, &Aabb, &GlobalTransform, &Pickable), With<C>>,
     mut pointer_hits_writer: MessageWriter<PointerHits>,
 ) {
@@ -40,11 +40,14 @@ fn update_aabb_hits<C: Component>(
         };
 
         // Find camera matching the pointer's render target
-        let Some((cam_entity, camera, cam_transform)) = cameras.iter().find(|(_, cam, _)| {
-            cam.target
-                .normalize(Some(*primary_window))
-                .is_some_and(|x| x == location.target)
-        }) else {
+
+        let Some((cam_entity, camera, target, cam_transform)) =
+            cameras.iter().find(|(_, _, target, _)| {
+                target
+                    .normalize(Some(*primary_window))
+                    .is_some_and(|x| x == location.target)
+            })
+        else {
             continue;
         };
 
