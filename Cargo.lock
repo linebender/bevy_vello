@@ -5971,7 +5971,9 @@ dependencies = [
 
 [[package]]
 name = "vello_svg"
-version = "0.8.0"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79dfa03829a8fb45ad458a05bd533d399d2259d042cdd78f391b290dbbdf1bd3"
 dependencies = [
  "image",
  "thiserror 2.0.18",
