@@ -17,55 +17,56 @@ use crate::{
     prelude::{VelloTextAlign, VelloTextStyle},
 };
 
-/// Computes the (dx, dy) translation offset for text anchoring.
+/// Computes the (dx, dy) translation offset for world-space text anchoring.
 ///
-/// For world-space text (`ui_content_size` is `None`), the anchor positions the text
-/// bounding box relative to the transform origin (sprite-style).
-///
-/// For UI text (`ui_content_size` is `Some((node_w, node_h))`), the anchor controls
-/// text alignment within the node's content box. The transform origin is at the node's
-/// center (Bevy UI convention), so offsets are relative to that center point.
-pub(crate) fn compute_anchor_offset(
+/// Positions the text bounding box relative to the transform origin.
+/// `TopLeft=(0,0)` means text grows down-right from origin.
+pub(crate) fn compute_world_anchor_offset(
     text_anchor: VelloTextAnchor,
     text_w: f64,
     text_h: f64,
-    ui_content_size: Option<(f32, f32)>,
 ) -> (f64, f64) {
-    if let Some((node_w, node_h)) = ui_content_size {
-        // UI text: anchor controls alignment within the node's content box.
-        // Bevy UI uses center-origin transforms, so the rendering origin is at
-        // the node's center. We compute offsets in two steps:
-        //   Step 1: shift from node center to content box top-left
-        //   Step 2: apply CSS-like alignment within the content box
-        let node_w = node_w as f64;
-        let node_h = node_h as f64;
-        let (align_x, align_y) = match text_anchor {
-            VelloTextAnchor::TopLeft => (0.0, 0.0),
-            VelloTextAnchor::Top => ((node_w - text_w) / 2.0, 0.0),
-            VelloTextAnchor::TopRight => (node_w - text_w, 0.0),
-            VelloTextAnchor::Left => (0.0, (node_h - text_h) / 2.0),
-            VelloTextAnchor::Center => ((node_w - text_w) / 2.0, (node_h - text_h) / 2.0),
-            VelloTextAnchor::Right => (node_w - text_w, (node_h - text_h) / 2.0),
-            VelloTextAnchor::BottomLeft => (0.0, node_h - text_h),
-            VelloTextAnchor::Bottom => ((node_w - text_w) / 2.0, node_h - text_h),
-            VelloTextAnchor::BottomRight => (node_w - text_w, node_h - text_h),
-        };
-        (-node_w / 2.0 + align_x, -node_h / 2.0 + align_y)
-    } else {
-        // World-space text: anchor positions the text bounding box relative to the
-        // transform origin. TopLeft=(0,0) means text grows down-right from origin.
-        match text_anchor {
-            VelloTextAnchor::TopLeft => (0.0, 0.0),
-            VelloTextAnchor::Left => (0.0, -text_h / 2.0),
-            VelloTextAnchor::BottomLeft => (0.0, -text_h),
-            VelloTextAnchor::Top => (-text_w / 2.0, 0.0),
-            VelloTextAnchor::Center => (-text_w / 2.0, -text_h / 2.0),
-            VelloTextAnchor::Bottom => (-text_w / 2.0, -text_h),
-            VelloTextAnchor::TopRight => (-text_w, 0.0),
-            VelloTextAnchor::Right => (-text_w, -text_h / 2.0),
-            VelloTextAnchor::BottomRight => (-text_w, -text_h),
-        }
+    match text_anchor {
+        VelloTextAnchor::TopLeft => (0.0, 0.0),
+        VelloTextAnchor::Left => (0.0, -text_h / 2.0),
+        VelloTextAnchor::BottomLeft => (0.0, -text_h),
+        VelloTextAnchor::Top => (-text_w / 2.0, 0.0),
+        VelloTextAnchor::Center => (-text_w / 2.0, -text_h / 2.0),
+        VelloTextAnchor::Bottom => (-text_w / 2.0, -text_h),
+        VelloTextAnchor::TopRight => (-text_w, 0.0),
+        VelloTextAnchor::Right => (-text_w, -text_h / 2.0),
+        VelloTextAnchor::BottomRight => (-text_w, -text_h),
     }
+}
+
+/// Computes the (dx, dy) translation offset for UI text anchoring.
+///
+/// Aligns text within the node's content box. Bevy UI uses center-origin
+/// transforms, so the rendering origin is at the node's center. Offsets are
+/// computed in two steps:
+///   1. Shift from node center to content box top-left
+///   2. Apply CSS-like alignment within the content box
+pub(crate) fn compute_ui_anchor_offset(
+    text_anchor: VelloTextAnchor,
+    text_w: f64,
+    text_h: f64,
+    node_w: f32,
+    node_h: f32,
+) -> (f64, f64) {
+    let node_w = node_w as f64;
+    let node_h = node_h as f64;
+    let (align_x, align_y) = match text_anchor {
+        VelloTextAnchor::TopLeft => (0.0, 0.0),
+        VelloTextAnchor::Top => ((node_w - text_w) / 2.0, 0.0),
+        VelloTextAnchor::TopRight => (node_w - text_w, 0.0),
+        VelloTextAnchor::Left => (0.0, (node_h - text_h) / 2.0),
+        VelloTextAnchor::Center => ((node_w - text_w) / 2.0, (node_h - text_h) / 2.0),
+        VelloTextAnchor::Right => (node_w - text_w, (node_h - text_h) / 2.0),
+        VelloTextAnchor::BottomLeft => (0.0, node_h - text_h),
+        VelloTextAnchor::Bottom => ((node_w - text_w) / 2.0, node_h - text_h),
+        VelloTextAnchor::BottomRight => (node_w - text_w, node_h - text_h),
+    };
+    (-node_w / 2.0 + align_x, -node_h / 2.0 + align_y)
 }
 
 #[derive(Asset, TypePath, Debug, Clone)]
@@ -154,7 +155,11 @@ impl VelloFont {
         let text_w = layout.width() as f64;
         let text_h = layout.height() as f64;
 
-        let (dx, dy) = compute_anchor_offset(text_anchor, text_w, text_h, ui_content_size);
+        let (dx, dy) = if let Some((node_w, node_h)) = ui_content_size {
+            compute_ui_anchor_offset(text_anchor, text_w, text_h, node_w, node_h)
+        } else {
+            compute_world_anchor_offset(text_anchor, text_w, text_h)
+        };
         transform *= vello::kurbo::Affine::translate((dx, dy));
 
         for line in layout.lines() {
@@ -331,33 +336,29 @@ fn apply_variable_axes(builder: &mut RangedBuilder<'_, Brush>, axes: &VelloFontA
 mod tests {
     use super::*;
 
-    // --- World-space text (ui_content_size = None) ---
-    // These should pass: existing behavior is correct for world-space.
+    // --- World-space text ---
 
     #[test]
     fn world_center_offsets_by_half_text_dims() {
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::Center, 200.0, 40.0, None);
-        assert_eq!(dx, -100.0);
-        assert_eq!(dy, -20.0);
+        let (dx, dy) = compute_world_anchor_offset(VelloTextAnchor::Center, 200.0, 40.0);
+        assert_eq!((dx, dy), (-100.0, -20.0));
     }
 
     #[test]
     fn world_top_left_is_zero() {
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::TopLeft, 200.0, 40.0, None);
-        assert_eq!(dx, 0.0);
-        assert_eq!(dy, 0.0);
+        let (dx, dy) = compute_world_anchor_offset(VelloTextAnchor::TopLeft, 200.0, 40.0);
+        assert_eq!((dx, dy), (0.0, 0.0));
     }
 
     #[test]
     fn world_bottom_right_offsets_by_full_text_dims() {
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::BottomRight, 200.0, 40.0, None);
-        assert_eq!(dx, -200.0);
-        assert_eq!(dy, -40.0);
+        let (dx, dy) = compute_world_anchor_offset(VelloTextAnchor::BottomRight, 200.0, 40.0);
+        assert_eq!((dx, dy), (-200.0, -40.0));
     }
 
-    // --- UI text (ui_content_size = Some) ---
-    // These test correct behavior: anchor positions text within the node's content box.
-    // The transform origin is at the node's CENTER (Bevy UI convention).
+    // --- UI text ---
+    // Anchor positions text within the node's content box.
+    // Transform origin is at the node's CENTER (Bevy UI convention).
     //
     // Given: node 400x200, text 200x40
     //
@@ -365,7 +366,7 @@ mod tests {
     // Step 2: apply CSS-like alignment within content box
     //
     // TopLeft:     step2=(0, 0)         → (-200, -100)
-    // Center:      step2=(100, 80)      → (-100, -20)  [same as text-only Center]
+    // Center:      step2=(100, 80)      → (-100, -20)
     // BottomRight: step2=(200, 160)     → (0, 60)
     // Left:        step2=(0, 80)        → (-200, -20)
     // TopRight:    step2=(200, 0)       → (0, -100)
@@ -378,69 +379,67 @@ mod tests {
     const NODE_H: f32 = 200.0;
     const TEXT_W: f64 = 200.0;
     const TEXT_H: f64 = 40.0;
-    const UI_SIZE: Option<(f32, f32)> = Some((NODE_W, NODE_H));
 
     #[test]
     fn ui_top_left_positions_at_node_top_left() {
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::TopLeft, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::TopLeft, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (-200.0, -100.0));
     }
 
     #[test]
     fn ui_center_centers_text_in_node() {
-        // Center should produce same result as world-space when text != node,
-        // but using node dims: (-text_w/2, -text_h/2) is the simple case.
-        // Actually for UI: step1=(-200,-100) + step2=(100,80) = (-100, -20)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::Center, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::Center, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (-100.0, -20.0));
     }
 
     #[test]
     fn ui_bottom_right_positions_at_node_bottom_right() {
-        // step1=(-200,-100) + step2=(200, 160) = (0, 60)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::BottomRight, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::BottomRight, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (0.0, 60.0));
     }
 
     #[test]
     fn ui_left_vertically_centers_at_left_edge() {
-        // step1=(-200,-100) + step2=(0, 80) = (-200, -20)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::Left, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::Left, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (-200.0, -20.0));
     }
 
     #[test]
     fn ui_top_right_positions_at_node_top_right() {
-        // step1=(-200,-100) + step2=(200, 0) = (0, -100)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::TopRight, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::TopRight, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (0.0, -100.0));
     }
 
     #[test]
     fn ui_bottom_centers_at_bottom_edge() {
-        // step1=(-200,-100) + step2=(100, 160) = (-100, 60)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::Bottom, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::Bottom, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (-100.0, 60.0));
     }
 
     #[test]
     fn ui_top_centers_at_top_edge() {
-        // step1=(-200,-100) + step2=(100, 0) = (-100, -100)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::Top, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::Top, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (-100.0, -100.0));
     }
 
     #[test]
     fn ui_right_vertically_centers_at_right_edge() {
-        // step1=(-200,-100) + step2=(200, 80) = (0, -20)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::Right, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::Right, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (0.0, -20.0));
     }
 
     #[test]
     fn ui_bottom_left_positions_at_node_bottom_left() {
-        // step1=(-200,-100) + step2=(0, 160) = (-200, 60)
-        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::BottomLeft, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) =
+            compute_ui_anchor_offset(VelloTextAnchor::BottomLeft, TEXT_W, TEXT_H, NODE_W, NODE_H);
         assert_eq!((dx, dy), (-200.0, 60.0));
     }
 
@@ -448,8 +447,8 @@ mod tests {
     #[test]
     fn ui_center_matches_world_when_text_fills_node() {
         let (ui_dx, ui_dy) =
-            compute_anchor_offset(VelloTextAnchor::Center, 400.0, 200.0, Some((400.0, 200.0)));
-        let (w_dx, w_dy) = compute_anchor_offset(VelloTextAnchor::Center, 400.0, 200.0, None);
+            compute_ui_anchor_offset(VelloTextAnchor::Center, 400.0, 200.0, 400.0, 200.0);
+        let (w_dx, w_dy) = compute_world_anchor_offset(VelloTextAnchor::Center, 400.0, 200.0);
         assert_eq!((ui_dx, ui_dy), (w_dx, w_dy));
     }
 }
