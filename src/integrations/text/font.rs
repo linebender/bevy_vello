@@ -53,7 +53,7 @@ pub(crate) fn compute_anchor_offset(
         (-node_w / 2.0 + align_x, -node_h / 2.0 + align_y)
     } else {
         // World-space text: anchor positions the text bounding box relative to the
-        // transform origin (sprite-style). Existing behavior, unchanged.
+        // transform origin. TopLeft=(0,0) means text grows down-right from origin.
         match text_anchor {
             VelloTextAnchor::TopLeft => (0.0, 0.0),
             VelloTextAnchor::Left => (0.0, -text_h / 2.0),
