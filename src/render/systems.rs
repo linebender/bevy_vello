@@ -336,6 +336,7 @@ pub fn render_frame(
                         text.text_align,
                         text.max_advance,
                         *text_anchor,
+                        None, // world-space: no content box
                     );
                 }
             }
@@ -420,10 +421,14 @@ pub fn render_frame(
                 affine,
                 item:
                     ExtractedUiVelloText {
-                        text, text_anchor, ..
+                        text,
+                        text_anchor,
+                        ui_node,
+                        ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
+                    let content_box = ui_node.content_box();
                     font.render(
                         &mut scene_buffer,
                         *affine,
@@ -432,6 +437,7 @@ pub fn render_frame(
                         text.text_align,
                         text.max_advance,
                         *text_anchor,
+                        Some((content_box.width(), content_box.height())),
                     );
                 }
             }
