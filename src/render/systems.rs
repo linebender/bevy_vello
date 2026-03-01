@@ -159,11 +159,12 @@ pub fn sort_render_items(
             ));
         }
         for (&affine, svg) in view_ui_svgs.iter() {
+            let pixel_scale = svg.ui_render_target.scale_factor();
             ui_render_queue.push((
                 svg.ui_node.stack_index,
                 VelloUiRenderItem::Svg {
                     affine: *affine,
-                    clip: None, // SVG extraction doesn't query CalculatedClip yet
+                    clip: scale_clip(svg.clip, pixel_scale),
                     item: svg.clone(),
                 },
             ));
