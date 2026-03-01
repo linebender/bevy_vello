@@ -398,8 +398,7 @@ mod tests {
     #[test]
     fn ui_bottom_right_positions_at_node_bottom_right() {
         // step1=(-200,-100) + step2=(200, 160) = (0, 60)
-        let (dx, dy) =
-            compute_anchor_offset(VelloTextAnchor::BottomRight, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::BottomRight, TEXT_W, TEXT_H, UI_SIZE);
         assert_eq!((dx, dy), (0.0, 60.0));
     }
 
@@ -441,20 +440,15 @@ mod tests {
     #[test]
     fn ui_bottom_left_positions_at_node_bottom_left() {
         // step1=(-200,-100) + step2=(0, 160) = (-200, 60)
-        let (dx, dy) =
-            compute_anchor_offset(VelloTextAnchor::BottomLeft, TEXT_W, TEXT_H, UI_SIZE);
+        let (dx, dy) = compute_anchor_offset(VelloTextAnchor::BottomLeft, TEXT_W, TEXT_H, UI_SIZE);
         assert_eq!((dx, dy), (-200.0, 60.0));
     }
 
     // Edge case: text fills node exactly — UI and world Center should match
     #[test]
     fn ui_center_matches_world_when_text_fills_node() {
-        let (ui_dx, ui_dy) = compute_anchor_offset(
-            VelloTextAnchor::Center,
-            400.0,
-            200.0,
-            Some((400.0, 200.0)),
-        );
+        let (ui_dx, ui_dy) =
+            compute_anchor_offset(VelloTextAnchor::Center, 400.0, 200.0, Some((400.0, 200.0)));
         let (w_dx, w_dy) = compute_anchor_offset(VelloTextAnchor::Center, 400.0, 200.0, None);
         assert_eq!((ui_dx, ui_dy), (w_dx, w_dy));
     }
