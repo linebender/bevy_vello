@@ -102,8 +102,15 @@ pub fn extract_ui_scenes(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (scene, ui_node, ui_render_target, ui_transform, inherited_visibility, render_layers, calc_clip) in
-        query_scenes.iter()
+    for (
+        scene,
+        ui_node,
+        ui_render_target,
+        ui_transform,
+        inherited_visibility,
+        render_layers,
+        calc_clip,
+    ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met.
         // UI does not check view visibility, only inherited visibility.

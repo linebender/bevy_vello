@@ -123,8 +123,15 @@ pub fn extract_ui_svg_assets(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (asset_handle, ui_transform, ui_node, render_layers, inherited_visibility, ui_render_target, calc_clip) in
-        query_vectors.iter()
+    for (
+        asset_handle,
+        ui_transform,
+        ui_node,
+        render_layers,
+        inherited_visibility,
+        ui_render_target,
+        calc_clip,
+    ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met.
         // UI does not check view visibility, only inherited visibility.
