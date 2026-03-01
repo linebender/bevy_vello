@@ -307,14 +307,15 @@ mod tests {
             ui_render_target: Default::default(),
             clip: Some(Rect::new(10.0, 20.0, 100.0, 200.0)),
         };
-        let scene_item = VelloUiRenderItem::Scene {
+        #[allow(irrefutable_let_patterns)]
+        let VelloUiRenderItem::Scene { clip, .. } = &(VelloUiRenderItem::Scene {
             affine: vello::kurbo::Affine::IDENTITY,
             clip: Some(kurbo_clip),
             item: scene_extracted,
+        }) else {
+            unreachable!();
         };
-        if let VelloUiRenderItem::Scene { clip, .. } = &scene_item {
-            assert_eq!(*clip, Some(kurbo_clip));
-        }
+        assert_eq!(*clip, Some(kurbo_clip));
 
         // None clip passes through
         let scene_no_clip = crate::integrations::scene::render::ExtractedUiVelloScene {
@@ -324,13 +325,14 @@ mod tests {
             ui_render_target: Default::default(),
             clip: None,
         };
-        let item_no_clip = VelloUiRenderItem::Scene {
+        #[allow(irrefutable_let_patterns)]
+        let VelloUiRenderItem::Scene { clip, .. } = &(VelloUiRenderItem::Scene {
             affine: vello::kurbo::Affine::IDENTITY,
             clip: None,
             item: scene_no_clip,
+        }) else {
+            unreachable!();
         };
-        if let VelloUiRenderItem::Scene { clip, .. } = &item_no_clip {
-            assert!(clip.is_none());
-        }
+        assert!(clip.is_none());
     }
 }
