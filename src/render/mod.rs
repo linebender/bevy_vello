@@ -198,21 +198,26 @@ pub(crate) enum VelloWorldRenderItem {
 pub(crate) enum VelloUiRenderItem {
     Scene {
         affine: Affine,
+        /// Pre-scaled clip rect in physical pixels (from CalculatedClip).
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::scene::render::ExtractedUiVelloScene,
     },
     #[cfg(feature = "svg")]
     Svg {
         affine: Affine,
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::svg::render::ExtractedUiVelloSvg,
     },
     #[cfg(feature = "lottie")]
     Lottie {
         affine: Affine,
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::lottie::render::ExtractedUiVelloLottie,
     },
     #[cfg(feature = "text")]
     Text {
         affine: Affine,
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::text::render::ExtractedUiVelloText,
     },
 }
@@ -262,4 +267,70 @@ pub(crate) struct VelloFrameProfileData {
     pub n_clips: u32,
     /// Total number of open clips rendered last frame.
     pub n_open_clips: u32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::math::Rect;
+    use systems::scale_clip;
+
+    /// Extracted structs carry Bevy Rect from CalculatedClip.
+    /// scale_clip converts to kurbo::Rect in physical pixel space.
+    /// VelloUiRenderItem stores the pre-scaled kurbo::Rect.
+    #[test]
+    fn extracted_clip_scales_to_kurbo_rect() {
+        let bevy_clip = Rect::new(10.0, 20.0, 100.0, 200.0);
+        let pixel_scale = 2.0;
+
+        let kurbo_clip = scale_clip(Some(bevy_clip), pixel_scale).unwrap();
+        assert_eq!(kurbo_clip.x0, 20.0);
+        assert_eq!(kurbo_clip.y0, 40.0);
+        assert_eq!(kurbo_clip.x1, 200.0);
+        assert_eq!(kurbo_clip.y1, 400.0);
+    }
+
+    #[test]
+    fn scale_clip_none_returns_none() {
+        assert!(scale_clip(None, 2.0).is_none());
+    }
+
+    /// VelloUiRenderItem carries pre-scaled clip through to render_frame.
+    #[test]
+    fn ui_render_item_preserves_clip_rect() {
+        let kurbo_clip = vello::kurbo::Rect::new(20.0, 40.0, 200.0, 400.0);
+
+        let scene_extracted = crate::integrations::scene::render::ExtractedUiVelloScene {
+            scene: Default::default(),
+            ui_transform: Default::default(),
+            ui_node: Default::default(),
+            ui_render_target: Default::default(),
+            clip: Some(Rect::new(10.0, 20.0, 100.0, 200.0)),
+        };
+        let scene_item = VelloUiRenderItem::Scene {
+            affine: vello::kurbo::Affine::IDENTITY,
+            clip: Some(kurbo_clip),
+            item: scene_extracted,
+        };
+        if let VelloUiRenderItem::Scene { clip, .. } = &scene_item {
+            assert_eq!(*clip, Some(kurbo_clip));
+        }
+
+        // None clip passes through
+        let scene_no_clip = crate::integrations::scene::render::ExtractedUiVelloScene {
+            scene: Default::default(),
+            ui_transform: Default::default(),
+            ui_node: Default::default(),
+            ui_render_target: Default::default(),
+            clip: None,
+        };
+        let item_no_clip = VelloUiRenderItem::Scene {
+            affine: vello::kurbo::Affine::IDENTITY,
+            clip: None,
+            item: scene_no_clip,
+        };
+        if let VelloUiRenderItem::Scene { clip, .. } = &item_no_clip {
+            assert!(clip.is_none());
+        }
+    }
 }

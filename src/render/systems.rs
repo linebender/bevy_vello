@@ -37,6 +37,19 @@ use crate::{
     render::{VelloUiRenderItem, VelloView},
 };
 
+/// Scale a Bevy UI clip rect (logical pixels) to a Vello kurbo rect (physical pixels).
+pub(crate) fn scale_clip(clip: Option<Rect>, pixel_scale: f32) -> Option<vello::kurbo::Rect> {
+    clip.map(|r| {
+        let s = pixel_scale as f64;
+        vello::kurbo::Rect::new(
+            r.min.x as f64 * s,
+            r.min.y as f64 * s,
+            r.max.x as f64 * s,
+            r.max.y as f64 * s,
+        )
+    })
+}
+
 pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handle<Image> {
     let size = Extent3d {
         width,
@@ -123,10 +136,12 @@ pub fn sort_render_items(
         ));
     }
     for (&affine, scene) in view_ui_scenes.iter() {
+        let pixel_scale = scene.ui_render_target.scale_factor();
         ui_render_queue.push((
             scene.ui_node.stack_index,
             VelloUiRenderItem::Scene {
                 affine: *affine,
+                clip: scale_clip(scene.clip, pixel_scale),
                 item: scene.clone(),
             },
         ));
@@ -148,6 +163,7 @@ pub fn sort_render_items(
                 svg.ui_node.stack_index,
                 VelloUiRenderItem::Svg {
                     affine: *affine,
+                    clip: None, // SVG extraction doesn't query CalculatedClip yet
                     item: svg.clone(),
                 },
             ));
@@ -170,6 +186,7 @@ pub fn sort_render_items(
                 lottie.ui_node.stack_index,
                 VelloUiRenderItem::Lottie {
                     affine: *affine,
+                    clip: None, // Lottie extraction doesn't query CalculatedClip yet
                     item: lottie.clone(),
                 },
             ));
@@ -188,10 +205,12 @@ pub fn sort_render_items(
             ));
         }
         for (&affine, text) in view_ui_text.iter() {
+            let pixel_scale = text.ui_render_target.scale_factor();
             ui_render_queue.push((
                 text.ui_node.stack_index,
                 VelloUiRenderItem::Text {
                     affine: *affine,
+                    clip: scale_clip(text.clip, pixel_scale),
                     item: text.clone(),
                 },
             ));
@@ -344,10 +363,30 @@ pub fn render_frame(
 
     // Ui Renderables
     for render_item in render_queue.ui.iter() {
+        // Extract the clip rect (pre-scaled to physical pixels in sort_render_items)
+        let clip = match render_item {
+            VelloUiRenderItem::Scene { clip, .. } => clip,
+            #[cfg(feature = "lottie")]
+            VelloUiRenderItem::Lottie { clip, .. } => clip,
+            #[cfg(feature = "svg")]
+            VelloUiRenderItem::Svg { clip, .. } => clip,
+            #[cfg(feature = "text")]
+            VelloUiRenderItem::Text { clip, .. } => clip,
+        };
+
+        if let Some(clip_rect) = clip {
+            scene_buffer.push_clip_layer(
+                vello::peniko::Fill::NonZero,
+                vello::kurbo::Affine::IDENTITY,
+                clip_rect,
+            );
+        }
+
         match render_item {
             VelloUiRenderItem::Scene {
                 affine,
                 item: ExtractedUiVelloScene { scene, .. },
+                ..
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
@@ -362,8 +401,12 @@ pub fn render_frame(
                         playhead,
                         ..
                     },
+                ..
             } => {
                 if *alpha <= 0.0 {
+                    if clip.is_some() {
+                        scene_buffer.pop_layer();
+                    }
                     continue;
                 }
                 if *alpha < 1.0 {
@@ -397,8 +440,12 @@ pub fn render_frame(
             VelloUiRenderItem::Svg {
                 affine,
                 item: ExtractedUiVelloSvg { asset, alpha, .. },
+                ..
             } => {
                 if *alpha <= 0.0 {
+                    if clip.is_some() {
+                        scene_buffer.pop_layer();
+                    }
                     continue;
                 }
                 if *alpha < 1.0 {
@@ -422,6 +469,7 @@ pub fn render_frame(
                     ExtractedUiVelloText {
                         text, text_anchor, ..
                     },
+                ..
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
                     font.render(
@@ -435,6 +483,10 @@ pub fn render_frame(
                     );
                 }
             }
+        }
+
+        if clip.is_some() {
+            scene_buffer.pop_layer();
         }
     }
 
