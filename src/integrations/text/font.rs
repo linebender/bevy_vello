@@ -31,20 +31,40 @@ pub(crate) fn compute_anchor_offset(
     text_h: f64,
     ui_content_size: Option<(f32, f32)>,
 ) -> (f64, f64) {
-    // BUG: ui_content_size is currently ignored — all anchors use text dimensions.
-    // UI text anchors should use node dimensions to position within the content box.
-    let _ = ui_content_size;
-
-    match text_anchor {
-        VelloTextAnchor::TopLeft => (0.0, 0.0),
-        VelloTextAnchor::Left => (0.0, -text_h / 2.0),
-        VelloTextAnchor::BottomLeft => (0.0, -text_h),
-        VelloTextAnchor::Top => (-text_w / 2.0, 0.0),
-        VelloTextAnchor::Center => (-text_w / 2.0, -text_h / 2.0),
-        VelloTextAnchor::Bottom => (-text_w / 2.0, -text_h),
-        VelloTextAnchor::TopRight => (-text_w, 0.0),
-        VelloTextAnchor::Right => (-text_w, -text_h / 2.0),
-        VelloTextAnchor::BottomRight => (-text_w, -text_h),
+    if let Some((node_w, node_h)) = ui_content_size {
+        // UI text: anchor controls alignment within the node's content box.
+        // Bevy UI uses center-origin transforms, so the rendering origin is at
+        // the node's center. We compute offsets in two steps:
+        //   Step 1: shift from node center to content box top-left
+        //   Step 2: apply CSS-like alignment within the content box
+        let node_w = node_w as f64;
+        let node_h = node_h as f64;
+        let (align_x, align_y) = match text_anchor {
+            VelloTextAnchor::TopLeft => (0.0, 0.0),
+            VelloTextAnchor::Top => ((node_w - text_w) / 2.0, 0.0),
+            VelloTextAnchor::TopRight => (node_w - text_w, 0.0),
+            VelloTextAnchor::Left => (0.0, (node_h - text_h) / 2.0),
+            VelloTextAnchor::Center => ((node_w - text_w) / 2.0, (node_h - text_h) / 2.0),
+            VelloTextAnchor::Right => (node_w - text_w, (node_h - text_h) / 2.0),
+            VelloTextAnchor::BottomLeft => (0.0, node_h - text_h),
+            VelloTextAnchor::Bottom => ((node_w - text_w) / 2.0, node_h - text_h),
+            VelloTextAnchor::BottomRight => (node_w - text_w, node_h - text_h),
+        };
+        (-node_w / 2.0 + align_x, -node_h / 2.0 + align_y)
+    } else {
+        // World-space text: anchor positions the text bounding box relative to the
+        // transform origin (sprite-style). Existing behavior, unchanged.
+        match text_anchor {
+            VelloTextAnchor::TopLeft => (0.0, 0.0),
+            VelloTextAnchor::Left => (0.0, -text_h / 2.0),
+            VelloTextAnchor::BottomLeft => (0.0, -text_h),
+            VelloTextAnchor::Top => (-text_w / 2.0, 0.0),
+            VelloTextAnchor::Center => (-text_w / 2.0, -text_h / 2.0),
+            VelloTextAnchor::Bottom => (-text_w / 2.0, -text_h),
+            VelloTextAnchor::TopRight => (-text_w, 0.0),
+            VelloTextAnchor::Right => (-text_w, -text_h / 2.0),
+            VelloTextAnchor::BottomRight => (-text_w, -text_h),
+        }
     }
 }
 
