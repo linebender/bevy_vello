@@ -29,6 +29,8 @@ pub struct ExtractedUiVelloLottie {
     pub theme: Option<Theme>,
     pub playhead: f64,
     pub ui_node: ComputedNode,
+    pub ui_render_target: ComputedUiRenderTargetInfo,
+    pub clip: Option<Rect>,
 }
 
 pub fn extract_world_lottie_assets(
@@ -118,6 +120,8 @@ pub fn extract_ui_lottie_assets(
             &ComputedNode,
             Option<&RenderLayers>,
             &InheritedVisibility,
+            &ComputedUiRenderTargetInfo,
+            Option<&CalculatedClip>,
         )>,
     >,
     assets: Extract<Res<Assets<VelloLottie>>>,
@@ -137,6 +141,8 @@ pub fn extract_ui_lottie_assets(
         ui_node,
         render_layers,
         inherited_visibility,
+        ui_render_target,
+        calc_clip,
     ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met.
@@ -163,6 +169,8 @@ pub fn extract_ui_lottie_assets(
                     playhead: playhead.frame(),
                     alpha: asset.alpha,
                     ui_node: *ui_node,
+                    ui_render_target: *ui_render_target,
+                    clip: calc_clip.map(|c| c.clip),
                 })
                 .insert(TemporaryRenderEntity);
             n_lotties += 1;

@@ -183,11 +183,12 @@ pub fn sort_render_items(
             ));
         }
         for (&affine, lottie) in view_ui_lotties.iter() {
+            let pixel_scale = lottie.ui_render_target.scale_factor();
             ui_render_queue.push((
                 lottie.ui_node.stack_index,
                 VelloUiRenderItem::Lottie {
                     affine: *affine,
-                    clip: None, // Lottie extraction doesn't query CalculatedClip yet
+                    clip: scale_clip(lottie.clip, pixel_scale),
                     item: lottie.clone(),
                 },
             ));
