@@ -33,29 +33,13 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     return out;
 }
 
-fn sRGB_OETF(a: f32) -> f32 {
-    if .04045f < a {
-        return pow((a + .055f) / 1.055f, 2.4f);
-    } else {
-        return  a / 12.92f;
-    }
-}
-
-fn linear_from_srgba(srgba: vec4<f32>) -> vec4<f32> {
-    return vec4<f32>(
-        sRGB_OETF(srgba.r),
-        sRGB_OETF(srgba.g),
-        sRGB_OETF(srgba.b),
-        srgba.a);
-}
-
 @fragment
 fn fragment(
     @builtin(position) position: vec4<f32>,
     #import bevy_sprite::mesh2d_vertex_output
 ) -> @location(0) vec4<f32> {
     let uvs = coords_to_viewport_uv(position.xy, view.viewport);
-    let color = textureSample(texture, texture_sampler, uvs);
-    let color_converted = linear_from_srgba(color);
-    return color_converted;
+    // The texture view is Rgba8UnormSrgb, so the GPU automatically applies
+    // sRGB-to-linear conversion on read. No manual conversion needed.
+    return textureSample(texture, texture_sampler, uvs);
 }

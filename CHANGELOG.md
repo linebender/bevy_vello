@@ -15,6 +15,50 @@ You can find its changes [documented below](#0131---2026-01-29).
 
 This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 
+### Added
+
+- Each `VelloView` camera now produces its own independent `Handle<Image>` render target, enabling multiple independent render textures. See the `multi_textures` example.
+- Added `VelloImage::new()` helper for creating images configured for Vello rendering (correct format, usage flags, and sRGB texture view).
+- Added `VelloTargetSize` component for fixed-size render target overrides (e.g., rendering to a 256x256 texture on a 3D cube).
+- Added `VelloClearColor` component for setting a camera's render target background color.
+- Added `VelloCanvasMaterial` to the prelude as an opt-in display utility for sRGB conversion.
+- Added `multi_textures` example demonstrating multiple independent render targets.
+- Entity-to-camera association is now handled via Bevy's `RenderLayers` mechanism.
+
+### Changed
+
+- **Breaking**: The fullscreen canvas is now auto-spawned. A `VelloView` camera without a `RenderTarget::Image` automatically gets a render target and fullscreen display sprite. The simplest setup is now:
+
+  ```rust
+  fn setup(mut commands: Commands) {
+      commands.spawn((Camera2d, VelloView));
+  }
+  ```
+
+  For custom render targets (e.g., rendering to a texture on a 3D cube, or multiple independent textures), use `VelloImage::new()` with Bevy's `RenderTarget::Image`:
+
+  ```rust
+  fn setup(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+      let image = images.add(VelloImage::new(512, 512));
+      commands.spawn((
+          Camera2d,
+          VelloView,
+          RenderTarget::Image(image.clone().into()),
+      ));
+      // Use `image` for your sprite, material, screenshot, etc.
+  }
+  ```
+
+- **Breaking**: `VelloRenderTarget` has been replaced. Use Bevy's `RenderTarget::Image` with `VelloImage::new()` instead.
+- **Breaking**: `VelloPlugin` no longer has a `canvas_render_layers` field. Use `RenderLayers` directly on your camera and entities instead.
+- Render targets automatically resize to match the camera viewport (or `VelloTargetSize` if present).
+- Internal render pipeline consolidated: per-integration prepare systems and the sort system have been merged into a single `build_render_queues` system with per-camera queue building.
+
+### Removed
+
+- Removed `VelloCanvasSettings` resource.
+- Removed the auto-spawned fullscreen canvas entity and associated startup/resize systems.
+
 ## [0.13.1] - 2026-01-29
 
 This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.

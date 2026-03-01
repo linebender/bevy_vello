@@ -21,6 +21,7 @@ members = [
   "examples/diagnostics",
   "examples/view_culling",
   "examples/scaling",
+  "examples/multi_textures",
 ]
 
 [workspace.package]

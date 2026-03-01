@@ -3244,6 +3244,7 @@ version = "0.13.1"
 dependencies = [
  "bevy",
  "bevy_vello",
+ "image",
 ]
 
 [[package]]
@@ -3835,6 +3836,14 @@ checksum = "ac9557c559cd6fc9867e122e20d2cbefc9ca29d80d027a8e39310920ed2f0a97"
 dependencies = [
  "num-traits",
  "pxfm",
+]
+
+[[package]]
+name = "multi_textures"
+version = "0.13.1"
+dependencies = [
+ "bevy",
+ "bevy_vello",
 ]
 
 [[package]]

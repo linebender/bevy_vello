@@ -1,9 +1,6 @@
 use super::render;
 use crate::render::extract::VelloExtractStep;
-use bevy::{
-    prelude::*,
-    render::{Render, RenderApp, RenderSystems},
-};
+use bevy::{prelude::*, render::RenderApp};
 
 pub struct SceneIntegrationPlugin;
 
@@ -16,15 +13,10 @@ impl Plugin for SceneIntegrationPlugin {
             return;
         };
 
-        render_app
-            .add_systems(
-                ExtractSchedule,
-                (render::extract_world_scenes, render::extract_ui_scenes)
-                    .in_set(VelloExtractStep::ExtractAssets),
-            )
-            .add_systems(
-                Render,
-                render::prepare_scene_affines.in_set(RenderSystems::Prepare),
-            );
+        render_app.add_systems(
+            ExtractSchedule,
+            (render::extract_world_scenes, render::extract_ui_scenes)
+                .in_set(VelloExtractStep::ExtractAssets),
+        );
     }
 }

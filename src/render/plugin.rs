@@ -9,21 +9,19 @@ use bevy::{
     sprite_render::Material2dPlugin,
 };
 
-use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget, systems};
+use super::{VelloRenderSettings, extract::VelloRenderTarget, systems};
 use crate::{
     VelloView,
     render::{
         RT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
-        VelloRenderQueue, VelloRenderer, diagnostics::VelloRenderDiagnosticsPlugin,
-        extract::VelloExtractStep,
+        VelloRenderQueues, VelloRenderer,
+        diagnostics::VelloRenderDiagnosticsPlugin,
+        extract::{VelloClearColor, VelloExtractStep, VelloTargetSize},
     },
 };
 
 #[derive(Default)]
 pub struct VelloRenderPlugin {
-    /// Settings used for the canvas
-    pub canvas_settings: VelloCanvasSettings,
-
     /// Settings used for rendering with Vello
     pub render_settings: VelloRenderSettings,
 }
@@ -48,7 +46,7 @@ impl Plugin for VelloRenderPlugin {
             .insert_resource(self.render_settings.clone())
             .init_resource::<VelloEntityCountData>()
             .init_resource::<VelloFrameProfileData>()
-            .init_resource::<VelloRenderQueue>()
+            .init_resource::<VelloRenderQueues>()
             .configure_sets(
                 ExtractSchedule,
                 (
@@ -60,9 +58,10 @@ impl Plugin for VelloRenderPlugin {
             )
             .add_systems(
                 Render,
-                (systems::sort_render_items, systems::render_frame)
+                (systems::build_render_queues, systems::render_frames)
                     .chain()
                     .in_set(RenderSystems::Render)
+                    .before(bevy::render::renderer::render_system)
                     .run_if(resource_exists::<RenderDevice>),
             )
             .add_systems(
@@ -72,16 +71,19 @@ impl Plugin for VelloRenderPlugin {
 
         app.add_plugins(ExtractComponentPlugin::<VelloView>::default());
 
-        app.insert_resource(self.canvas_settings.clone())
-            .add_plugins((
-                Material2dPlugin::<VelloCanvasMaterial>::default(),
-                ExtractComponentPlugin::<VelloRenderTarget>::default(),
-            ))
-            .add_systems(Startup, systems::setup_rendertarget)
-            .add_systems(
-                PostUpdate,
-                (systems::resize_rendertargets.after(CameraUpdateSystems),),
-            );
+        app.add_plugins((
+            Material2dPlugin::<VelloCanvasMaterial>::default(),
+            ExtractComponentPlugin::<VelloRenderTarget>::default(),
+            ExtractComponentPlugin::<VelloTargetSize>::default(),
+            ExtractComponentPlugin::<VelloClearColor>::default(),
+        ))
+        .add_systems(
+            PostUpdate,
+            (
+                systems::manage_render_targets.after(CameraUpdateSystems),
+                systems::resize_vello_canvases,
+            ),
+        );
     }
 
     fn finish(&self, app: &mut App) {

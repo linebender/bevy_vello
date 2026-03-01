@@ -4,7 +4,6 @@ use std::sync::{Arc, Mutex};
 
 use bevy::{
     asset::uuid_handle,
-    camera::visibility::RenderLayers,
     mesh::{MeshVertexBufferLayoutRef, VertexBufferLayout},
     prelude::*,
     render::{
@@ -21,10 +20,9 @@ use bevy::{
 use vello::{AaConfig, AaSupport, kurbo::Affine};
 
 mod plugin;
-mod systems;
+pub(crate) mod systems;
 
 pub(crate) mod extract;
-pub(crate) mod prepare;
 
 pub(crate) use plugin::VelloRenderPlugin;
 
@@ -38,7 +36,24 @@ pub const RT_SHADER_HANDLE: Handle<Shader> = uuid_handle!("e7235b72-1181-4e18-a9
 #[require(Camera2d)]
 pub struct VelloView;
 
+/// Internal marker indicating the render target was auto-created by
+/// [`manage_render_targets`](systems::manage_render_targets). When absent (i.e. the
+/// user provided their own [`RenderTarget::Image`](bevy::camera::RenderTarget::Image)),
+/// the system redirects the Camera2d pipeline to a dummy image so it doesn't
+/// interfere with other cameras rendering to the primary window.
+#[derive(Component)]
+pub(crate) struct VelloAutoSpawned;
+
+/// Marker component for a [`Sprite`] that displays a Vello render target.
+///
+/// When added alongside a `Sprite`, this component automatically keeps the
+/// sprite's `custom_size` in sync with the primary window's logical dimensions,
+/// ensuring the render target fills the camera view at full physical resolution.
+#[derive(Component, Debug, Default, Clone, Copy)]
+pub struct VelloCanvas;
+
 /// A canvas material, with a shader that samples a texture with view-independent UV coordinates.
+/// This can be used as an opt-in display method for Vello render targets.
 #[derive(AsBindGroup, TypePath, Asset, Clone)]
 pub struct VelloCanvasMaterial {
     #[texture(0)]
@@ -160,13 +175,6 @@ impl Default for VelloRenderSettings {
     }
 }
 
-/// Canvas settings for Vello.
-#[derive(Resource, Clone, Debug, Default, PartialEq)]
-pub(crate) struct VelloCanvasSettings {
-    /// The render layers that will be used for the Vello canvas mesh.
-    pub render_layers: RenderLayers,
-}
-
 /// Internally used as a prepared render asset.
 #[derive(Clone)]
 #[allow(clippy::large_enum_variant, reason = "Many feature gates")]
@@ -217,11 +225,17 @@ pub(crate) enum VelloUiRenderItem {
     },
 }
 
-/// Internally used to buffer sorted assets prepared for the next frame.
+/// Per-camera render queue containing sorted render items.
+#[derive(Default)]
+pub(crate) struct PerCameraRenderQueue {
+    pub world: Vec<VelloWorldRenderItem>,
+    pub ui: Vec<VelloUiRenderItem>,
+}
+
+/// Per-camera render queues, keyed by camera entity in the render world.
 #[derive(Resource, Default)]
-pub(crate) struct VelloRenderQueue {
-    world: Vec<VelloWorldRenderItem>,
-    ui: Vec<VelloUiRenderItem>,
+pub(crate) struct VelloRenderQueues {
+    pub cameras: std::collections::HashMap<Entity, PerCameraRenderQueue>,
 }
 
 /// Internally used for diagnostics.

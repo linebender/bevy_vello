@@ -12,10 +12,7 @@ use bevy_vello::{VelloPlugin, prelude::*};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(VelloPlugin {
-            canvas_render_layers: RenderLayers::layer(1).with(2),
-            ..default()
-        })
+        .add_plugins(VelloPlugin::default())
         .add_systems(Startup, (setup_gizmos, setup_scene))
         .add_systems(Update, (animation, run_gizmos))
         .run();
@@ -47,15 +44,25 @@ fn setup_gizmos(mut commands: Commands, mut config_store: ResMut<GizmoConfigStor
 }
 
 fn setup_scene(mut commands: Commands) {
+    // VelloView camera: auto-spawns a fullscreen canvas.
     commands.spawn((
         Camera2d,
         Camera {
-            // This camera will render first.
             order: -1,
+            clear_color: ClearColorConfig::None,
             ..default()
         },
         RenderLayers::layer(1).with(2),
         VelloView,
+    ));
+
+    // Display camera: renders the auto-spawned VelloCanvas on default layer 0.
+    commands.spawn((
+        Camera2d,
+        Camera {
+            order: 0,
+            ..default()
+        },
     ));
 
     commands.spawn((

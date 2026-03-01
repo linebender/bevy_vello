@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{Render, RenderApp, RenderSystems},
+    render::RenderApp,
 };
 
 use super::{VelloSvg, VelloSvgAnchor, asset_loader::VelloSvgLoader, render};
@@ -38,18 +38,13 @@ impl Plugin for SvgIntegrationPlugin {
             return;
         };
 
-        render_app
-            .add_systems(
-                ExtractSchedule,
-                (
-                    render::extract_world_svg_assets,
-                    render::extract_ui_svg_assets,
-                )
-                    .in_set(VelloExtractStep::ExtractAssets),
+        render_app.add_systems(
+            ExtractSchedule,
+            (
+                render::extract_world_svg_assets,
+                render::extract_ui_svg_assets,
             )
-            .add_systems(
-                Render,
-                (render::prepare_asset_affines).in_set(RenderSystems::Prepare),
-            );
+                .in_set(VelloExtractStep::ExtractAssets),
+        );
     }
 }

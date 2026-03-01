@@ -1,22 +1,18 @@
 use bevy::{
     asset::embedded_asset,
-    camera::{RenderTarget, Viewport},
-    core_pipeline::core_2d::graph::Core2d,
+    camera::RenderTarget,
     diagnostic::FrameCount,
     prelude::*,
-    render::{
-        camera::CameraRenderGraph,
-        view::screenshot::{Screenshot, ScreenshotCaptured, save_to_disk},
-    },
+    render::gpu_readback::{Readback, ReadbackComplete},
 };
-use bevy_vello::{
-    VelloPlugin,
-    prelude::*,
-    vello::{peniko::color::AlphaColor, wgpu::TextureFormat},
-};
+use bevy_vello::{VelloPlugin, prelude::*, vello::peniko::color::AlphaColor};
 
+const SIZE: u32 = 900;
+
+/// Stores the image handle used as the Vello render target so the readback
+/// system can reference it later.
 #[derive(Resource)]
-struct ScreenshotTarget(Handle<Image>);
+struct CaptureImage(Handle<Image>);
 
 fn main() {
     let mut app = App::new();
@@ -28,39 +24,26 @@ fn main() {
         bevy::camera::CameraPlugin,
         bevy::core_pipeline::CorePipelinePlugin,
         bevy::mesh::MeshPlugin,
-        bevy::window::WindowPlugin::default(),
+        bevy::window::WindowPlugin {
+            primary_window: None,
+            exit_condition: bevy::window::ExitCondition::DontExit,
+            ..default()
+        },
         bevy::sprite::SpritePlugin,
         bevy::sprite_render::SpriteRenderPlugin,
         bevy::text::TextPlugin,
     ))
     .add_plugins(VelloPlugin::default())
     .add_systems(Startup, (setup_camera, load_svg, load_text))
-    .add_systems(Update, screenshot.run_if(|f: Res<FrameCount>| f.0 >= 1));
+    .add_systems(Update, readback.run_if(|f: Res<FrameCount>| f.0 >= 3));
     embedded_asset!(app, "assets/Ghostscript_Tiger.svg");
     app.run();
 }
 
 fn setup_camera(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
-    // Create image render target
-    let image = Image::new_target_texture(900, 900, TextureFormat::Rgba8UnormSrgb, None);
-    let image_handle = images.add(image);
-
-    commands.spawn((
-        Camera2d,
-        Camera {
-            viewport: Some(Viewport {
-                physical_size: UVec2 { x: 900, y: 900 },
-                ..Default::default()
-            }),
-            ..default()
-        },
-        RenderTarget::Image(image_handle.clone().into()),
-        CameraRenderGraph::new(Core2d),
-        VelloView,
-    ));
-
-    // Store the image handle for screenshot
-    commands.insert_resource(ScreenshotTarget(image_handle));
+    let image = images.add(VelloImage::new(SIZE, SIZE));
+    commands.insert_resource(CaptureImage(image.clone()));
+    commands.spawn((Camera2d, VelloView, RenderTarget::Image(image.into())));
 }
 
 fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
@@ -84,14 +67,34 @@ fn load_text(mut commands: Commands) {
     ));
 }
 
-fn screenshot(mut commands: Commands, target: Res<ScreenshotTarget>) {
-    let path = "./screenshot.png";
+fn readback(mut commands: Commands, image: Res<CaptureImage>, mut taken: Local<bool>) {
+    if *taken {
+        return;
+    }
+    *taken = true;
     commands
-        .spawn(Screenshot::image(target.0.clone()))
-        .observe(save_to_disk(path))
-        .observe(exit_system);
+        .spawn(Readback::texture(image.0.clone()))
+        .observe(save_and_exit);
 }
 
-fn exit_system(_trigger: On<ScreenshotCaptured>, mut exit: MessageWriter<AppExit>) {
+fn save_and_exit(trigger: On<ReadbackComplete>, mut exit: MessageWriter<AppExit>) {
+    // GPU textures may have row padding (aligned to 256 bytes). Strip it
+    // so the raw RGBA bytes form a contiguous image buffer.
+    let bytes_per_pixel = 4usize;
+    let unpadded_bytes_per_row = SIZE as usize * bytes_per_pixel;
+    let align = 256usize;
+    let padded_bytes_per_row = unpadded_bytes_per_row.div_ceil(align) * align;
+
+    let mut pixels = Vec::with_capacity(unpadded_bytes_per_row * SIZE as usize);
+    for row in 0..SIZE as usize {
+        let start = row * padded_bytes_per_row;
+        pixels.extend_from_slice(&trigger.data[start..start + unpadded_bytes_per_row]);
+    }
+
+    let img = image::RgbaImage::from_raw(SIZE, SIZE, pixels)
+        .expect("Failed to create image from readback data");
+    img.save("./screenshot.png")
+        .expect("Failed to save screenshot");
+    info!("Screenshot saved to ./screenshot.png");
     exit.write(AppExit::Success);
 }

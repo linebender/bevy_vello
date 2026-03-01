@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{Render, RenderApp, RenderSystems, render_asset::RenderAssetPlugin},
+    render::{RenderApp, render_asset::RenderAssetPlugin},
 };
 
 use super::{VelloFont, font_loader::VelloFontLoader, render};
@@ -45,15 +45,10 @@ impl Plugin for VelloTextIntegrationPlugin {
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
-        render_app
-            .add_systems(
-                ExtractSchedule,
-                (render::extract_ui_text, render::extract_world_text)
-                    .in_set(VelloExtractStep::ExtractAssets),
-            )
-            .add_systems(
-                Render,
-                render::prepare_text_affines.in_set(RenderSystems::Prepare),
-            );
+        render_app.add_systems(
+            ExtractSchedule,
+            (render::extract_ui_text, render::extract_world_text)
+                .in_set(VelloExtractStep::ExtractAssets),
+        );
     }
 }

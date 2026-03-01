@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    render::{Render, RenderApp, RenderSystems},
+    render::RenderApp,
 };
 
 use super::{
@@ -72,10 +72,6 @@ impl Plugin for LottieIntegrationPlugin {
                     render::extract_ui_lottie_assets,
                 )
                     .in_set(VelloExtractStep::ExtractAssets),
-            )
-            .add_systems(
-                Render,
-                (render::prepare_asset_affines).in_set(RenderSystems::Prepare),
             );
     }
 }
