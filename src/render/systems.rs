@@ -424,11 +424,55 @@ pub fn render_frame(
                         text,
                         text_anchor,
                         ui_node,
+                        ui_render_target,
+                        clip,
                         ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    let content_box = ui_node.content_box();
+                    tracing::info!(
+                        "=== Rendering UI text '{}' (stack_index={}) ===",
+                        text.value, ui_node.stack_index
+                    );
+
+                    // Apply clipping if present
+                    if let Some(clip_rect) = clip {
+                        // Convert logical pixels to physical pixels
+                        let scale_factor = ui_render_target.scale_factor();
+                        let vello_clip = vello::kurbo::Rect::new(
+                            (clip_rect.min.x * scale_factor) as f64,
+                            (clip_rect.min.y * scale_factor) as f64,
+                            (clip_rect.max.x * scale_factor) as f64,
+                            (clip_rect.max.y * scale_factor) as f64,
+                        );
+
+                        tracing::info!(
+                            "Clip for '{}': logical=({:.1}, {:.1}) -> ({:.1}, {:.1}), physical=({:.1}, {:.1}) -> ({:.1}, {:.1})",
+                            text.value,
+                            clip_rect.min.x, clip_rect.min.y, clip_rect.max.x, clip_rect.max.y,
+                            vello_clip.x0, vello_clip.y0, vello_clip.x1, vello_clip.y1
+                        );
+
+                        // Push a clip layer
+                        scene_buffer.push_clip_layer(
+                            vello::peniko::Fill::NonZero,
+                            vello::kurbo::Affine::IDENTITY,
+                            &vello_clip,
+                        );
+                    } else {
+                        tracing::info!("No clip for '{}'", text.value);
+                    }
+
+                    // Convert physical pixels to logical pixels for anchor calculation
+                    // ui_node.size() is in physical pixels, but the affine will scale it again
+                    let scale_factor = ui_render_target.scale_factor();
+                    let logical_size = ui_node.size() / scale_factor;
+
+                    tracing::info!(
+                        "Calling font.render for '{}': affine={:?}, physical_size=({:.1}, {:.1}), logical_size=({:.1}, {:.1}), scale={:.2}",
+                        text.value, affine, ui_node.size().x, ui_node.size().y, logical_size.x, logical_size.y, scale_factor
+                    );
+
                     font.render(
                         &mut scene_buffer,
                         *affine,
@@ -437,8 +481,15 @@ pub fn render_frame(
                         text.text_align,
                         text.max_advance,
                         *text_anchor,
-                        Some((content_box.width(), content_box.height())),
+                        Some(logical_size),
                     );
+
+                    // Pop the clip layer if we pushed one
+                    if clip.is_some() {
+                        scene_buffer.pop_layer();
+                    }
+
+                    tracing::info!("=== Done rendering '{}' ===", text.value);
                 }
             }
         }
