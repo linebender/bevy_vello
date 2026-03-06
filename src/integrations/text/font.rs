@@ -17,60 +17,6 @@ use crate::{
     prelude::{VelloTextAlign, VelloTextStyle},
 };
 
-/// Computes the (dx, dy) translation offset for world-space text anchoring.
-///
-/// Positions the text bounding box relative to the transform origin.
-/// `TopLeft=(0,0)` means text grows down-right from origin.
-pub(crate) fn compute_world_anchor_offset(
-    text_anchor: VelloTextAnchor,
-    text_w: f64,
-    text_h: f64,
-) -> (f64, f64) {
-    match text_anchor {
-        VelloTextAnchor::TopLeft => (0.0, 0.0),
-        VelloTextAnchor::Left => (0.0, -text_h / 2.0),
-        VelloTextAnchor::BottomLeft => (0.0, -text_h),
-        VelloTextAnchor::Top => (-text_w / 2.0, 0.0),
-        VelloTextAnchor::Center => (-text_w / 2.0, -text_h / 2.0),
-        VelloTextAnchor::Bottom => (-text_w / 2.0, -text_h),
-        VelloTextAnchor::TopRight => (-text_w, 0.0),
-        VelloTextAnchor::Right => (-text_w, -text_h / 2.0),
-        VelloTextAnchor::BottomRight => (-text_w, -text_h),
-    }
-}
-
-/// Computes the (dx, dy) translation offset for UI text anchoring.
-///
-/// Aligns text within the node's content box. The UiGlobalTransform places the
-/// origin at the node's center, so we compute offsets relative to that center
-/// to position text according to the anchor.
-pub(crate) fn compute_ui_anchor_offset(
-    text_anchor: VelloTextAnchor,
-    text_w: f64,
-    text_h: f64,
-    node_w: f32,
-    node_h: f32,
-) -> (f64, f64) {
-    let node_w = node_w as f64;
-    let node_h = node_h as f64;
-    let top_left_x = -node_w / 2.0;
-    let top_left_y = -node_h / 2.0;
-
-    let (anchor_x, anchor_y) = match text_anchor {
-        VelloTextAnchor::TopLeft => (0.0, 0.0),
-        VelloTextAnchor::Top => ((node_w - text_w) / 2.0, 0.0),
-        VelloTextAnchor::TopRight => (node_w - text_w, 0.0),
-        VelloTextAnchor::Left => (0.0, (node_h - text_h) / 2.0),
-        VelloTextAnchor::Center => ((node_w - text_w) / 2.0, (node_h - text_h) / 2.0),
-        VelloTextAnchor::Right => (node_w - text_w, (node_h - text_h) / 2.0),
-        VelloTextAnchor::BottomLeft => (0.0, node_h - text_h),
-        VelloTextAnchor::Bottom => ((node_w - text_w) / 2.0, node_h - text_h),
-        VelloTextAnchor::BottomRight => (node_w - text_w, node_h - text_h),
-    };
-
-    (top_left_x + anchor_x, top_left_y + anchor_y)
-}
-
 #[derive(Asset, TypePath, Debug, Clone)]
 pub struct VelloFont {
     /// Defaults to Bevy's bevy_text default font family name.
@@ -165,6 +111,11 @@ impl VelloFont {
                 content_size.x,
                 content_size.y,
             );
+            // Extract scale to convert the logical-space offset to physical pixels.
+            // NOTE: coeffs[0] and [3] are only pure scale when the transform has
+            // no rotation or skew. Rotated UI text nodes will produce incorrect
+            // anchor offsets. This is acceptable because Bevy's UI layout does not
+            // rotate nodes in practice.
             let scale_x = transform.as_coeffs()[0];
             let scale_y = transform.as_coeffs()[3];
             (offset.0 * scale_x, offset.1 * scale_y)
@@ -172,6 +123,10 @@ impl VelloFont {
             compute_world_anchor_offset(text_anchor, text_w, text_h)
         };
 
+        // Floor to integer pixels to prevent fractional-pixel jitter in UI.
+        // Anchor offsets from centering (e.g. node_w/2 - text_w/2) often produce
+        // non-integer values that would cause sub-pixel shimmer during scrolling
+        // or layout changes.
         transform = transform.then_translate(vello::kurbo::Vec2::new(dx.floor(), dy.floor()));
 
         for line in layout.lines() {
@@ -342,6 +297,60 @@ fn apply_variable_axes(builder: &mut RangedBuilder<'_, Brush>, axes: &VelloFontA
     builder.push_default(StyleProperty::FontVariations(FontSettings::List(
         variable_axes.into(),
     )));
+}
+
+/// Computes the (dx, dy) translation offset for world-space text anchoring.
+///
+/// Positions the text bounding box relative to the transform origin.
+/// `TopLeft=(0,0)` means text grows down-right from origin.
+pub(crate) fn compute_world_anchor_offset(
+    text_anchor: VelloTextAnchor,
+    text_w: f64,
+    text_h: f64,
+) -> (f64, f64) {
+    match text_anchor {
+        VelloTextAnchor::TopLeft => (0.0, 0.0),
+        VelloTextAnchor::Left => (0.0, -text_h / 2.0),
+        VelloTextAnchor::BottomLeft => (0.0, -text_h),
+        VelloTextAnchor::Top => (-text_w / 2.0, 0.0),
+        VelloTextAnchor::Center => (-text_w / 2.0, -text_h / 2.0),
+        VelloTextAnchor::Bottom => (-text_w / 2.0, -text_h),
+        VelloTextAnchor::TopRight => (-text_w, 0.0),
+        VelloTextAnchor::Right => (-text_w, -text_h / 2.0),
+        VelloTextAnchor::BottomRight => (-text_w, -text_h),
+    }
+}
+
+/// Computes the (dx, dy) translation offset for UI text anchoring.
+///
+/// Aligns text within the node's content box. The UiGlobalTransform places the
+/// origin at the node's center, so we compute offsets relative to that center
+/// to position text according to the anchor.
+pub(crate) fn compute_ui_anchor_offset(
+    text_anchor: VelloTextAnchor,
+    text_w: f64,
+    text_h: f64,
+    node_w: f32,
+    node_h: f32,
+) -> (f64, f64) {
+    let node_w = node_w as f64;
+    let node_h = node_h as f64;
+    let top_left_x = -node_w / 2.0;
+    let top_left_y = -node_h / 2.0;
+
+    let (anchor_x, anchor_y) = match text_anchor {
+        VelloTextAnchor::TopLeft => (0.0, 0.0),
+        VelloTextAnchor::Top => ((node_w - text_w) / 2.0, 0.0),
+        VelloTextAnchor::TopRight => (node_w - text_w, 0.0),
+        VelloTextAnchor::Left => (0.0, (node_h - text_h) / 2.0),
+        VelloTextAnchor::Center => ((node_w - text_w) / 2.0, (node_h - text_h) / 2.0),
+        VelloTextAnchor::Right => (node_w - text_w, (node_h - text_h) / 2.0),
+        VelloTextAnchor::BottomLeft => (0.0, node_h - text_h),
+        VelloTextAnchor::Bottom => ((node_w - text_w) / 2.0, node_h - text_h),
+        VelloTextAnchor::BottomRight => (node_w - text_w, node_h - text_h),
+    };
+
+    (top_left_x + anchor_x, top_left_y + anchor_y)
 }
 
 #[cfg(test)]
