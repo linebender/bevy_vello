@@ -336,6 +336,7 @@ pub fn render_frame(
                         text.text_align,
                         text.max_advance,
                         *text_anchor,
+                        None, // world-space: no content box
                     );
                 }
             }
@@ -420,10 +421,17 @@ pub fn render_frame(
                 affine,
                 item:
                     ExtractedUiVelloText {
-                        text, text_anchor, ..
+                        text,
+                        text_anchor,
+                        ui_node,
+                        ui_render_target,
+                        ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
+                    // Convert physical pixels to logical pixels for anchor calculation
+                    let scale_factor = ui_render_target.scale_factor();
+                    let logical_size = ui_node.size() / scale_factor;
                     font.render(
                         &mut scene_buffer,
                         *affine,
@@ -432,6 +440,7 @@ pub fn render_frame(
                         text.text_align,
                         text.max_advance,
                         *text_anchor,
+                        Some(logical_size),
                     );
                 }
             }
