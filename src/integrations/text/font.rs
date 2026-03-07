@@ -467,10 +467,7 @@ mod tests {
 
         // Node is 200x100 logical, text is 100x20.
         // Center anchor: offset = (-50, -10) logical.
-        let offset = compute_ui_anchor_offset(
-            VelloTextAnchor::Center,
-            100.0, 20.0, 200.0, 100.0,
-        );
+        let offset = compute_ui_anchor_offset(VelloTextAnchor::Center, 100.0, 20.0, 200.0, 100.0);
 
         // Scale to physical and apply — same path as render().
         let dx = (offset.0 * affine.as_coeffs()[0]).floor();
