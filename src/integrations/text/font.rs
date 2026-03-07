@@ -97,6 +97,7 @@ impl VelloFont {
         max_advance: Option<f32>,
         text_anchor: VelloTextAnchor,
         ui_content: Option<Vec2>,
+        clip: Option<vello::kurbo::Rect>,
     ) {
         let layout = self.layout(value, style, text_align, max_advance);
 
@@ -124,11 +125,49 @@ impl VelloFont {
 
         transform = transform.then_translate(vello::kurbo::Vec2::new(dx, dy));
 
-        for line in layout.lines() {
+        // Precompute clip range in layout (logical) space for glyph-run culling.
+        // The affine maps layout coords → physical screen space. Inverting lets us
+        // express the clip rect in the same space as glyph_run.baseline(), avoiding
+        // Vello encoding glyphs that the clip rect would hide anyway.
+        // A margin of 2× font_size covers ascenders, descenders, and rounding.
+        let cull_y: Option<(f64, f64)> = clip.and_then(|r| {
+            let c = transform.as_coeffs();
+            // Skip culling when the transform has rotation — screen-space y bounds
+            // don't map cleanly to layout-space y bounds under rotation.
+            if c[1].abs() > f64::EPSILON || c[2].abs() > f64::EPSILON {
+                return None;
+            }
+            let scale_y = c[3];
+            if scale_y.abs() < f64::EPSILON {
+                return None;
+            }
+            let translate_y = c[5];
+            let margin = style.font_size as f64 * 2.0;
+            Some((
+                (r.y0 - translate_y) / scale_y - margin,
+                (r.y1 - translate_y) / scale_y + margin,
+            ))
+        });
+
+        'lines: for line in layout.lines() {
             for item in line.items() {
                 let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
                     continue;
                 };
+
+                let baseline = glyph_run.baseline() as f64;
+
+                // Cull glyph runs outside the clip rect. Parley emits lines in
+                // top-to-bottom order, so exceeding y_max means all remaining
+                // lines are also outside — break out entirely.
+                if let Some((y_min, y_max)) = cull_y {
+                    if baseline < y_min {
+                        continue;
+                    }
+                    if baseline > y_max {
+                        break 'lines;
+                    }
+                }
 
                 let mut x = glyph_run.offset();
                 let y = glyph_run.baseline();

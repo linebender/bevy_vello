@@ -37,6 +37,40 @@ use crate::{
     render::{VelloUiRenderItem, VelloView},
 };
 
+/// Convert a Bevy UI clip rect to a Vello kurbo rect.
+///
+/// `CalculatedClip` is already in physical pixels — Bevy resolves layout
+/// against `physical_size` — matching the coordinate space of `PreparedAffine`.
+///
+/// Per-axis overflow clipping (e.g. `Overflow::clip_y()`) produces rects with
+/// `f32::INFINITY` / `f32::NEG_INFINITY` on the unconstrained axis. Vello
+/// can't rasterize a clip path with non-finite coordinates, so we clamp them.
+/// NaN coordinates indicate a meaningless rect and return `None`.
+pub(crate) fn to_kurbo_clip(clip: Option<Rect>) -> Option<vello::kurbo::Rect> {
+    /// Generous bound that exceeds any real viewport while staying far from
+    /// floating-point precision limits. 1e7 ≈ 10 million pixels.
+    const CLIP_BOUND: f64 = 1e7;
+
+    clip.and_then(|r| {
+        let x0 = r.min.x as f64;
+        let y0 = r.min.y as f64;
+        let x1 = r.max.x as f64;
+        let y1 = r.max.y as f64;
+
+        // NaN makes the rect meaningless — skip clipping entirely.
+        if x0.is_nan() || y0.is_nan() || x1.is_nan() || y1.is_nan() {
+            return None;
+        }
+
+        Some(vello::kurbo::Rect::new(
+            x0.clamp(-CLIP_BOUND, CLIP_BOUND),
+            y0.clamp(-CLIP_BOUND, CLIP_BOUND),
+            x1.clamp(-CLIP_BOUND, CLIP_BOUND),
+            y1.clamp(-CLIP_BOUND, CLIP_BOUND),
+        ))
+    })
+}
+
 pub fn setup_image(images: &mut Assets<Image>, width: u32, height: u32) -> Handle<Image> {
     let size = Extent3d {
         width,
@@ -127,6 +161,7 @@ pub fn sort_render_items(
             scene.ui_node.stack_index,
             VelloUiRenderItem::Scene {
                 affine: *affine,
+                clip: to_kurbo_clip(scene.clip),
                 item: scene.clone(),
             },
         ));
@@ -148,6 +183,7 @@ pub fn sort_render_items(
                 svg.ui_node.stack_index,
                 VelloUiRenderItem::Svg {
                     affine: *affine,
+                    clip: to_kurbo_clip(svg.clip),
                     item: svg.clone(),
                 },
             ));
@@ -170,6 +206,7 @@ pub fn sort_render_items(
                 lottie.ui_node.stack_index,
                 VelloUiRenderItem::Lottie {
                     affine: *affine,
+                    clip: to_kurbo_clip(lottie.clip),
                     item: lottie.clone(),
                 },
             ));
@@ -192,6 +229,7 @@ pub fn sort_render_items(
                 text.ui_node.stack_index,
                 VelloUiRenderItem::Text {
                     affine: *affine,
+                    clip: to_kurbo_clip(text.clip),
                     item: text.clone(),
                 },
             ));
@@ -204,7 +242,9 @@ pub fn sort_render_items(
             .partial_cmp(b_z_index)
             .unwrap_or(std::cmp::Ordering::Equal)
     });
-    ui_render_queue.sort_unstable_by(|(a_stack_index, _), (b_stack_index, _)| {
+    // Stable sort preserves insertion order for same-stack-index items,
+    // preventing scene/text render order from flipping between frames.
+    ui_render_queue.sort_by(|(a_stack_index, _), (b_stack_index, _)| {
         a_stack_index
             .partial_cmp(b_stack_index)
             .unwrap_or(std::cmp::Ordering::Equal)
@@ -337,6 +377,7 @@ pub fn render_frame(
                         text.max_advance,
                         *text_anchor,
                         None,
+                        None,
                     );
                 }
             }
@@ -345,10 +386,43 @@ pub fn render_frame(
 
     // Ui Renderables
     for render_item in render_queue.ui.iter() {
+        // Skip fully transparent items before pushing any layers, so that
+        // clip push/pop balance is never a concern for early returns.
+        let skip = match render_item {
+            #[cfg(feature = "lottie")]
+            VelloUiRenderItem::Lottie { item, .. } => item.alpha <= 0.0,
+            #[cfg(feature = "svg")]
+            VelloUiRenderItem::Svg { item, .. } => item.alpha <= 0.0,
+            _ => false,
+        };
+        if skip {
+            continue;
+        }
+
+        // Extract the clip rect (pre-scaled to physical pixels in sort_render_items)
+        let clip = match render_item {
+            VelloUiRenderItem::Scene { clip, .. } => clip,
+            #[cfg(feature = "lottie")]
+            VelloUiRenderItem::Lottie { clip, .. } => clip,
+            #[cfg(feature = "svg")]
+            VelloUiRenderItem::Svg { clip, .. } => clip,
+            #[cfg(feature = "text")]
+            VelloUiRenderItem::Text { clip, .. } => clip,
+        };
+
+        if let Some(clip_rect) = clip {
+            scene_buffer.push_clip_layer(
+                vello::peniko::Fill::NonZero,
+                vello::kurbo::Affine::IDENTITY,
+                clip_rect,
+            );
+        }
+
         match render_item {
             VelloUiRenderItem::Scene {
                 affine,
                 item: ExtractedUiVelloScene { scene, .. },
+                ..
             } => {
                 scene_buffer.append(scene, Some(*affine));
             }
@@ -363,10 +437,8 @@ pub fn render_frame(
                         playhead,
                         ..
                     },
+                ..
             } => {
-                if *alpha <= 0.0 {
-                    continue;
-                }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
                         vello::peniko::Fill::NonZero,
@@ -398,10 +470,8 @@ pub fn render_frame(
             VelloUiRenderItem::Svg {
                 affine,
                 item: ExtractedUiVelloSvg { asset, alpha, .. },
+                ..
             } => {
-                if *alpha <= 0.0 {
-                    continue;
-                }
                 if *alpha < 1.0 {
                     scene_buffer.push_layer(
                         vello::peniko::Fill::NonZero,
@@ -419,6 +489,7 @@ pub fn render_frame(
             #[cfg(feature = "text")]
             VelloUiRenderItem::Text {
                 affine,
+                clip,
                 item:
                     ExtractedUiVelloText {
                         text,
@@ -439,9 +510,14 @@ pub fn render_frame(
                         text.max_advance,
                         *text_anchor,
                         Some(logical_size),
+                        *clip,
                     );
                 }
             }
+        }
+
+        if clip.is_some() {
+            scene_buffer.pop_layer();
         }
     }
 
