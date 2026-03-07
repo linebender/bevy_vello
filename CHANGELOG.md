@@ -21,6 +21,7 @@ This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 - Dirty tracking: `VelloSceneDirty` resource skips GPU sort+render when nothing changed, significantly reducing idle-frame cost.
 - Text layout cache: content-addressed double-buffer cache avoids redundant parley text shaping every frame.
 - `FRAMES_SKIPPED` diagnostic reports whether the current frame was skipped.
+- New `text_ui` example demonstrating UI text with anchoring and clipping.
 
 ### Fixed
 
