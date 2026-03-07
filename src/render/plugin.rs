@@ -3,13 +3,17 @@ use bevy::{
     camera::{CameraUpdateSystems, visibility::VisibilitySystems},
     prelude::*,
     render::{
-        Render, RenderApp, RenderSystems, extract_component::ExtractComponentPlugin,
+        MainWorld, Render, RenderApp, RenderSystems, extract_component::ExtractComponentPlugin,
         renderer::RenderDevice,
     },
     sprite_render::Material2dPlugin,
+    transform::TransformSystems,
 };
 
-use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget, systems};
+use super::{
+    VelloCanvasSettings, VelloFontChanged, VelloRenderSettings, VelloSceneDirty,
+    extract::VelloRenderTarget, systems,
+};
 use crate::{
     VelloView,
     render::{
@@ -40,6 +44,19 @@ impl Plugin for VelloRenderPlugin {
         // Diagnostics
         app.add_plugins(VelloRenderDiagnosticsPlugin);
 
+        // Dirty tracking resources in main world
+        // VelloRenderSettings must be in the main world because
+        // detect_vello_scene_changes reads it (runs in PostUpdate).
+        app.insert_resource(self.render_settings.clone())
+            .init_resource::<VelloSceneDirty>()
+            .init_resource::<VelloFontChanged>()
+            .add_systems(
+                PostUpdate,
+                systems::detect_vello_scene_changes
+                    .after(TransformSystems::Propagate)
+                    .after(VisibilitySystems::CheckVisibility),
+            );
+
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
@@ -49,6 +66,11 @@ impl Plugin for VelloRenderPlugin {
             .init_resource::<VelloEntityCountData>()
             .init_resource::<VelloFrameProfileData>()
             .init_resource::<VelloRenderQueue>()
+            .init_resource::<VelloSceneDirty>()
+            .init_resource::<VelloFontChanged>();
+        #[cfg(feature = "text")]
+        render_app.init_resource::<crate::integrations::text::layout_cache::TextLayoutCache>();
+        render_app
             .configure_sets(
                 ExtractSchedule,
                 (
@@ -59,11 +81,16 @@ impl Plugin for VelloRenderPlugin {
                     .after(VisibilitySystems::CheckVisibility),
             )
             .add_systems(
+                ExtractSchedule,
+                extract_dirty_tracking.after(VelloExtractStep::ExtractAssets),
+            )
+            .add_systems(
                 Render,
                 (systems::sort_render_items, systems::render_frame)
                     .chain()
                     .in_set(RenderSystems::Render)
-                    .run_if(resource_exists::<RenderDevice>),
+                    .run_if(resource_exists::<RenderDevice>)
+                    .run_if(|dirty: Res<VelloSceneDirty>| dirty.0),
             )
             .add_systems(
                 Render,
@@ -89,5 +116,20 @@ impl Plugin for VelloRenderPlugin {
             return;
         };
         render_app.init_resource::<VelloRenderer>();
+    }
+}
+
+/// Copies [`VelloSceneDirty`] and [`VelloFontChanged`] from the main world
+/// into the render world each frame.
+fn extract_dirty_tracking(
+    main_world: Res<MainWorld>,
+    mut dirty: ResMut<VelloSceneDirty>,
+    mut font_changed: ResMut<VelloFontChanged>,
+) {
+    if let Some(main_dirty) = main_world.get_resource::<VelloSceneDirty>() {
+        dirty.0 = main_dirty.0;
+    }
+    if let Some(main_font_changed) = main_world.get_resource::<VelloFontChanged>() {
+        font_changed.0 = main_font_changed.0;
     }
 }
