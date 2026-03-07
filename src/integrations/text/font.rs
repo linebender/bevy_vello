@@ -456,6 +456,33 @@ mod tests {
         assert_eq!((dx, dy), (-200.0, 60.0));
     }
 
+    /// UI anchor offset on a scaled affine (HiDPI) must not double-apply
+    /// the scale. kurbo::Affine::then_translate adds directly to the
+    /// translation coefficients without multiplying by the basis, so
+    /// pre-scaling the offset and calling then_translate is correct.
+    #[test]
+    fn ui_anchor_correct_at_2x_dpi() {
+        // Simulate 2x HiDPI: PreparedAffine has scale=2 in its basis.
+        let scale = 2.0_f64;
+        let base_affine = Affine::new([scale, 0.0, 0.0, scale, 500.0, 300.0]);
+
+        // Logical content box 200x100, text 100x20 — center anchor.
+        let offset = compute_ui_anchor_offset(
+            VelloTextAnchor::Center,
+            100.0, 20.0, 200.0, 100.0,
+        );
+        assert_eq!(offset, (-50.0, -10.0));
+
+        // Replicate what render() does: pre-scale then then_translate.
+        let dx = (offset.0 * base_affine.as_coeffs()[0]).floor(); // -100
+        let dy = (offset.1 * base_affine.as_coeffs()[3]).floor(); // -20
+        let result = base_affine.then_translate(vello::kurbo::Vec2::new(dx, dy));
+        let c = result.as_coeffs();
+
+        // then_translate adds directly: (500-100, 300-20) = (400, 280).
+        assert_eq!((c[4], c[5]), (400.0, 280.0));
+    }
+
     #[test]
     fn ui_center_is_origin_when_text_fills_node() {
         let (ui_dx, ui_dy) =
