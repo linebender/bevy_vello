@@ -8,7 +8,7 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{UiVelloText, VelloFont, VelloText2d, VelloTextAnchor};
+use super::{UiVelloText, VelloFont, VelloText2d, VelloTextAnchor, layout_cache::TextLayoutKey};
 use crate::render::{VelloEntityCountData, VelloView, prepare::PreparedAffine};
 
 #[derive(Component, Clone)]
@@ -16,6 +16,7 @@ pub struct ExtractedVelloText2d {
     pub text: VelloText2d,
     pub text_anchor: VelloTextAnchor,
     pub transform: GlobalTransform,
+    pub content_hash: u64,
 }
 
 #[derive(Component, Clone)]
@@ -26,6 +27,7 @@ pub struct ExtractedUiVelloText {
     pub ui_node: ComputedNode,
     pub ui_render_target: ComputedUiRenderTargetInfo,
     pub clip: Option<Rect>,
+    pub content_hash: u64,
 }
 
 pub fn extract_world_text(
@@ -73,11 +75,20 @@ pub fn extract_world_text(
         if views.iter().any(|(_, camera_layers)| {
             asset_render_layers.intersects(camera_layers.unwrap_or_default())
         }) {
+            let content_hash = TextLayoutKey::new(
+                text.style.font.id(),
+                &text.value,
+                &text.style,
+                text.text_align,
+                text.max_advance,
+            )
+            .0;
             commands
                 .spawn(ExtractedVelloText2d {
                     text: text.clone(),
                     text_anchor: *text_anchor,
                     transform: *transform,
+                    content_hash,
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;
@@ -141,6 +152,14 @@ pub fn extract_ui_text(
         if views.iter().any(|(_, camera_layers)| {
             asset_render_layers.intersects(camera_layers.unwrap_or_default())
         }) {
+            let content_hash = TextLayoutKey::new(
+                text.style.font.id(),
+                &text.value,
+                &text.style,
+                text.text_align,
+                text.max_advance,
+            )
+            .0;
             commands
                 .spawn(ExtractedUiVelloText {
                     text: text.clone(),
@@ -149,6 +168,7 @@ pub fn extract_ui_text(
                     ui_node: *ui_node,
                     ui_render_target: *ui_render_target,
                     clip: calc_clip.map(|c| c.clip),
+                    content_hash,
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;

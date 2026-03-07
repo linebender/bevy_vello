@@ -1,5 +1,5 @@
 use crate::render::extract::VelloExtractStep;
-use crate::render::{VelloEntityCountData, VelloFrameProfileData};
+use crate::render::{VelloEntityCountData, VelloFrameProfileData, VelloSceneDirty};
 use bevy::ecs::system::RunSystemOnce;
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
@@ -31,6 +31,9 @@ pub const GLYPH_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_glyphs"
 #[cfg(feature = "text")]
 pub const GLYPH_RUN_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_glyph_runs");
 
+/// Reports 1.0 when the frame was skipped (scene not dirty), 0.0 when rendered.
+pub const FRAMES_SKIPPED: DiagnosticPath = DiagnosticPath::const_new("vello_frames_skipped");
+
 /// Adds Vello render diagnostics reporting.
 #[derive(Default)]
 pub(crate) struct VelloRenderDiagnosticsPlugin;
@@ -40,7 +43,8 @@ impl Plugin for VelloRenderDiagnosticsPlugin {
         app.register_diagnostic(Diagnostic::new(PATH_COUNT).with_suffix(" paths"))
             .register_diagnostic(Diagnostic::new(PATH_SEGMENTS_COUNT).with_suffix(" path segments"))
             .register_diagnostic(Diagnostic::new(CLIPS_COUNT).with_suffix(" clips"))
-            .register_diagnostic(Diagnostic::new(OPEN_CLIPS_COUNT).with_suffix(" open clips"));
+            .register_diagnostic(Diagnostic::new(OPEN_CLIPS_COUNT).with_suffix(" open clips"))
+            .register_diagnostic(Diagnostic::new(FRAMES_SKIPPED).with_suffix(" skipped"));
         #[cfg(feature = "text")]
         app.register_diagnostic(Diagnostic::new(GLYPH_COUNT).with_suffix(" glyphs"))
             .register_diagnostic(Diagnostic::new(GLYPH_RUN_COUNT).with_suffix(" glyph runs"));
@@ -120,6 +124,7 @@ fn sync_entity_count(render_data: Res<VelloEntityCountData>, mut main_world: Res
 /// Measure the frame profile.
 fn sync_frame_profile(
     render_data: Res<VelloFrameProfileData>,
+    dirty: Res<VelloSceneDirty>,
     mut main_world: ResMut<MainWorld>,
 ) -> Result {
     let n_paths = render_data.n_paths as f64;
@@ -130,6 +135,7 @@ fn sync_frame_profile(
     let n_glyphs = render_data.n_glyphs as f64;
     #[cfg(feature = "text")]
     let n_glyph_runs = render_data.n_glyph_runs as f64;
+    let frame_skipped = if dirty.0 { 0.0 } else { 1.0 };
     main_world
         .run_system_once(move |mut diagnostics: Diagnostics| {
             diagnostics.add_measurement(&PATH_COUNT, || n_paths);
@@ -141,6 +147,7 @@ fn sync_frame_profile(
                 diagnostics.add_measurement(&GLYPH_COUNT, || n_glyphs);
                 diagnostics.add_measurement(&GLYPH_RUN_COUNT, || n_glyph_runs);
             }
+            diagnostics.add_measurement(&FRAMES_SKIPPED, || frame_skipped);
         })
         .unwrap_or_else(|e| {
             tracing::error!("Error recording vello frame measurements: {e}");

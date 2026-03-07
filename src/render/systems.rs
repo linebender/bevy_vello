@@ -272,6 +272,10 @@ pub fn sort_render_items(
 pub fn render_frame(
     render_target: Single<&VelloRenderTarget>,
     #[cfg(feature = "text")] font_render_assets: Res<RenderAssets<VelloFont>>,
+    #[cfg(feature = "text")] mut text_layout_cache: ResMut<
+        crate::integrations::text::layout_cache::TextLayoutCache,
+    >,
+    #[cfg(feature = "text")] font_changed: Res<super::VelloFontChanged>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
@@ -281,6 +285,14 @@ pub fn render_frame(
     render_queue: Res<VelloRenderQueue>,
     mut frame_profile: ResMut<VelloFrameProfileData>,
 ) {
+    #[cfg(feature = "text")]
+    {
+        if font_changed.0 {
+            text_layout_cache.clear();
+        }
+        text_layout_cache.advance_frame();
+    }
+
     let VelloRenderTarget(render_target_image) = *render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
 
@@ -364,17 +376,22 @@ pub fn render_frame(
                 affine,
                 item:
                     ExtractedVelloText2d {
-                        text, text_anchor, ..
+                        text,
+                        text_anchor,
+                        content_hash,
+                        ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    font.render(
+                    let key = crate::integrations::text::layout_cache::TextLayoutKey(*content_hash);
+                    let layout = text_layout_cache.get_or_insert_with(key, || {
+                        font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                    });
+                    font.render_with_layout(
                         &mut scene_buffer,
                         *affine,
-                        &text.value,
+                        &layout,
                         &text.style,
-                        text.text_align,
-                        text.max_advance,
                         *text_anchor,
                         None,
                         None,
@@ -496,18 +513,21 @@ pub fn render_frame(
                         text_anchor,
                         ui_node,
                         ui_render_target,
+                        content_hash,
                         ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
                     let logical_size = ui_node.size() / ui_render_target.scale_factor();
-                    font.render(
+                    let key = crate::integrations::text::layout_cache::TextLayoutKey(*content_hash);
+                    let layout = text_layout_cache.get_or_insert_with(key, || {
+                        font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                    });
+                    font.render_with_layout(
                         &mut scene_buffer,
                         *affine,
-                        &text.value,
+                        &layout,
                         &text.style,
-                        text.text_align,
-                        text.max_advance,
                         *text_anchor,
                         Some(logical_size),
                         *clip,
@@ -674,4 +694,224 @@ pub fn render_settings_change_detection(
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
     }
+}
+
+/// Detects whether any Vello-relevant state has changed this frame.
+///
+/// Runs in `PostUpdate` in the main world. Sets [`VelloSceneDirty`] so that
+/// the render world can skip `sort_render_items` + `render_frame` when nothing
+/// has changed. Also sets [`VelloFontChanged`] when font assets change so the
+/// render world can invalidate the text layout cache.
+///
+/// Uses tuple destructuring to stay within Bevy's 16 system-parameter limit.
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+pub fn detect_vello_scene_changes(
+    mut dirty: ResMut<super::VelloSceneDirty>,
+    mut font_changed: ResMut<super::VelloFontChanged>,
+    render_settings: Res<VelloRenderSettings>,
+    // World-space scene entities: content, transform, or visibility changed
+    changed_world_scenes: Query<
+        (),
+        (
+            With<crate::integrations::scene::VelloScene2d>,
+            Or<(
+                Changed<crate::integrations::scene::VelloScene2d>,
+                Changed<GlobalTransform>,
+                Changed<Visibility>,
+                Changed<InheritedVisibility>,
+            )>,
+        ),
+    >,
+    // UI scene entities: content, transform, or visibility changed
+    changed_ui_scenes: Query<
+        (),
+        (
+            With<crate::integrations::scene::UiVelloScene>,
+            Or<(
+                Changed<crate::integrations::scene::UiVelloScene>,
+                Changed<UiGlobalTransform>,
+                Changed<Visibility>,
+                Changed<InheritedVisibility>,
+            )>,
+        ),
+    >,
+    // Camera or window changes
+    changed_camera: Query<(), (Or<(Changed<Transform>, Changed<Camera>)>, With<VelloView>)>,
+    changed_window: Query<(), Changed<Window>>,
+    // Removed scene components (must always drain)
+    (mut removed_scenes, mut removed_ui_scenes): (
+        RemovedComponents<crate::integrations::scene::VelloScene2d>,
+        RemovedComponents<crate::integrations::scene::UiVelloScene>,
+    ),
+    // Text dirty sources
+    #[cfg(feature = "text")]
+    (changed_world_text, changed_ui_text, mut font_events, mut removed_text, mut removed_ui_text): (
+        Query<
+            (),
+            (
+                With<crate::integrations::text::VelloText2d>,
+                Or<(
+                    Changed<crate::integrations::text::VelloText2d>,
+                    Changed<GlobalTransform>,
+                    Changed<Visibility>,
+                    Changed<InheritedVisibility>,
+                )>,
+            ),
+        >,
+        Query<
+            (),
+            (
+                With<crate::integrations::text::UiVelloText>,
+                Or<(
+                    Changed<crate::integrations::text::UiVelloText>,
+                    Changed<UiGlobalTransform>,
+                    Changed<Visibility>,
+                    Changed<InheritedVisibility>,
+                )>,
+            ),
+        >,
+        bevy::ecs::message::MessageReader<AssetEvent<crate::integrations::text::VelloFont>>,
+        RemovedComponents<crate::integrations::text::VelloText2d>,
+        RemovedComponents<crate::integrations::text::UiVelloText>,
+    ),
+    // SVG dirty sources
+    #[cfg(feature = "svg")]
+    (changed_world_svg, changed_ui_svg, mut svg_events, mut removed_svg, mut removed_ui_svg): (
+        Query<
+            (),
+            (
+                With<crate::integrations::svg::VelloSvg2d>,
+                Or<(
+                    Changed<crate::integrations::svg::VelloSvg2d>,
+                    Changed<GlobalTransform>,
+                    Changed<Visibility>,
+                    Changed<InheritedVisibility>,
+                )>,
+            ),
+        >,
+        Query<
+            (),
+            (
+                With<crate::integrations::svg::UiVelloSvg>,
+                Or<(
+                    Changed<crate::integrations::svg::UiVelloSvg>,
+                    Changed<UiGlobalTransform>,
+                    Changed<Visibility>,
+                    Changed<InheritedVisibility>,
+                )>,
+            ),
+        >,
+        bevy::ecs::message::MessageReader<AssetEvent<crate::integrations::svg::VelloSvg>>,
+        RemovedComponents<crate::integrations::svg::VelloSvg2d>,
+        RemovedComponents<crate::integrations::svg::UiVelloSvg>,
+    ),
+    // Lottie dirty sources
+    #[cfg(feature = "lottie")] (
+        changed_world_lottie,
+        changed_ui_lottie,
+        changed_playhead,
+        mut lottie_events,
+        mut removed_lottie,
+        mut removed_ui_lottie,
+    ): (
+        Query<
+            (),
+            (
+                With<crate::integrations::lottie::VelloLottie2d>,
+                Or<(
+                    Changed<crate::integrations::lottie::VelloLottie2d>,
+                    Changed<GlobalTransform>,
+                    Changed<Visibility>,
+                    Changed<InheritedVisibility>,
+                )>,
+            ),
+        >,
+        Query<
+            (),
+            (
+                With<crate::integrations::lottie::UiVelloLottie>,
+                Or<(
+                    Changed<crate::integrations::lottie::UiVelloLottie>,
+                    Changed<UiGlobalTransform>,
+                    Changed<Visibility>,
+                    Changed<InheritedVisibility>,
+                )>,
+            ),
+        >,
+        Query<(), Changed<crate::integrations::lottie::Playhead>>,
+        bevy::ecs::message::MessageReader<AssetEvent<crate::integrations::lottie::VelloLottie>>,
+        RemovedComponents<crate::integrations::lottie::VelloLottie2d>,
+        RemovedComponents<crate::integrations::lottie::UiVelloLottie>,
+    ),
+) {
+    // Drain all event readers and removed-component iterators unconditionally
+    // to prevent accumulation across frames.
+    #[cfg(feature = "text")]
+    let has_font_events = font_events.read().count() > 0;
+    #[cfg(not(feature = "text"))]
+    let has_font_events = false;
+    #[cfg(feature = "svg")]
+    let has_svg_events = svg_events.read().count() > 0;
+    #[cfg(feature = "lottie")]
+    let has_lottie_events = lottie_events.read().count() > 0;
+
+    let has_removed_scenes = removed_scenes.read().count() > 0;
+    let has_removed_ui_scenes = removed_ui_scenes.read().count() > 0;
+    #[cfg(feature = "text")]
+    let has_removed_text = removed_text.read().count() > 0;
+    #[cfg(feature = "text")]
+    let has_removed_ui_text = removed_ui_text.read().count() > 0;
+    #[cfg(feature = "svg")]
+    let has_removed_svg = removed_svg.read().count() > 0;
+    #[cfg(feature = "svg")]
+    let has_removed_ui_svg = removed_ui_svg.read().count() > 0;
+    #[cfg(feature = "lottie")]
+    let has_removed_lottie = removed_lottie.read().count() > 0;
+    #[cfg(feature = "lottie")]
+    let has_removed_ui_lottie = removed_ui_lottie.read().count() > 0;
+
+    // Set font changed flag
+    font_changed.0 = has_font_events;
+
+    // Check all dirty sources
+    let is_dirty =
+        // Scene entities
+        !changed_world_scenes.is_empty()
+        || !changed_ui_scenes.is_empty()
+        // Camera & window
+        || !changed_camera.is_empty()
+        || !changed_window.is_empty()
+        // Render settings
+        || render_settings.is_changed()
+        // Asset events (fonts always count)
+        || has_font_events
+        // Removed components
+        || has_removed_scenes
+        || has_removed_ui_scenes;
+
+    #[cfg(feature = "text")]
+    let is_dirty = is_dirty
+        || !changed_world_text.is_empty()
+        || !changed_ui_text.is_empty()
+        || has_removed_text
+        || has_removed_ui_text;
+
+    #[cfg(feature = "svg")]
+    let is_dirty = is_dirty
+        || !changed_world_svg.is_empty()
+        || !changed_ui_svg.is_empty()
+        || has_svg_events
+        || has_removed_svg
+        || has_removed_ui_svg;
+
+    #[cfg(feature = "lottie")]
+    let is_dirty = is_dirty
+        || !changed_world_lottie.is_empty()
+        || !changed_ui_lottie.is_empty()
+        || !changed_playhead.is_empty()
+        || has_lottie_events
+        || has_removed_lottie
+        || has_removed_ui_lottie;
+
+    dirty.0 = is_dirty;
 }
