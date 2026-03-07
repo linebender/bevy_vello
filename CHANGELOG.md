@@ -18,6 +18,9 @@ This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 ### Added
 
 - UI clip rect support: `CalculatedClip` is now respected for all UI Vello render types (`UiVelloScene`, `UiVelloSvg`, `UiVelloLottie`, `UiVelloText`), enabling proper overflow clipping.
+- Dirty tracking: `VelloSceneDirty` resource skips GPU sort+render when nothing changed, significantly reducing idle-frame cost.
+- Text layout cache: content-addressed double-buffer cache avoids redundant parley text shaping every frame.
+- `FRAMES_SKIPPED` diagnostic reports whether the current frame was skipped.
 
 ### Fixed
 
