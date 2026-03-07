@@ -96,14 +96,14 @@ impl VelloFont {
         text_align: VelloTextAlign,
         max_advance: Option<f32>,
         text_anchor: VelloTextAnchor,
-        content_box_size: Option<Vec2>,
+        ui_content: Option<Vec2>,
     ) {
         let layout = self.layout(value, style, text_align, max_advance);
 
         let text_w = layout.width() as f64;
         let text_h = layout.height() as f64;
 
-        let (dx, dy) = if let Some(content_size) = content_box_size {
+        let (dx, dy) = if let Some(content_size) = ui_content {
             let offset = compute_ui_anchor_offset(
                 text_anchor,
                 text_w,
@@ -111,23 +111,15 @@ impl VelloFont {
                 content_size.x,
                 content_size.y,
             );
-            // Extract scale to convert the logical-space offset to physical pixels.
-            // NOTE: coeffs[0] and [3] are only pure scale when the transform has
-            // no rotation or skew. Rotated UI text nodes will produce incorrect
-            // anchor offsets. This is acceptable because Bevy's UI layout does not
-            // rotate nodes in practice.
-            let scale_x = transform.as_coeffs()[0];
-            let scale_y = transform.as_coeffs()[3];
-            (offset.0 * scale_x, offset.1 * scale_y)
+            // Transform the logical offset through the linear part of the affine
+            // (rotation + scale), so anchor positioning is correct under any transform.
+            let c = transform.as_coeffs();
+            (c[0] * offset.0 + c[2] * offset.1, c[1] * offset.0 + c[3] * offset.1)
         } else {
             compute_world_anchor_offset(text_anchor, text_w, text_h)
         };
 
-        // Floor to integer pixels to prevent fractional-pixel jitter in UI.
-        // Anchor offsets from centering (e.g. node_w/2 - text_w/2) often produce
-        // non-integer values that would cause sub-pixel shimmer during scrolling
-        // or layout changes.
-        transform = transform.then_translate(vello::kurbo::Vec2::new(dx.floor(), dy.floor()));
+        transform = transform.then_translate(vello::kurbo::Vec2::new(dx, dy));
 
         for line in layout.lines() {
             for item in line.items() {
@@ -456,28 +448,66 @@ mod tests {
         assert_eq!((dx, dy), (-200.0, 60.0));
     }
 
-    /// The full UI anchor pipeline — compute logical offset, scale to
-    /// physical pixels, apply to affine — must produce correct translations
-    /// at non-1x scale factors.
+    /// The full UI anchor pipeline — compute logical offset, transform through
+    /// the affine's linear part, apply to affine — must produce correct
+    /// translations at non-1x scale factors.
     #[test]
     fn ui_anchor_pipeline_correct_at_2x_dpi() {
         let scale = 2.0_f64;
-        // PreparedAffine for a UI node at (250, 150) logical on a 2x display.
+        // Affine for a UI node at (250, 150) logical on a 2x display.
         let affine = Affine::new([scale, 0.0, 0.0, scale, 500.0, 300.0]);
 
         // Node is 200x100 logical, text is 100x20.
         // Center anchor: offset = (-50, -10) logical.
         let offset = compute_ui_anchor_offset(VelloTextAnchor::Center, 100.0, 20.0, 200.0, 100.0);
 
-        // Scale to physical and apply — same path as render().
-        let dx = (offset.0 * affine.as_coeffs()[0]).floor();
-        let dy = (offset.1 * affine.as_coeffs()[3]).floor();
+        // Apply linear part of affine to offset — same path as render().
+        let c = affine.as_coeffs();
+        let dx = c[0] * offset.0 + c[2] * offset.1;
+        let dy = c[1] * offset.0 + c[3] * offset.1;
         let result = affine.then_translate(vello::kurbo::Vec2::new(dx, dy));
         let c = result.as_coeffs();
 
         // Text origin should land at (250-50, 150-10) = (200, 140) logical,
         // which is (400, 280) physical.
         assert_eq!((c[4], c[5]), (400.0, 280.0));
+    }
+
+    /// Anchor offset must be rotated correctly when the node's affine includes
+    /// a rotation. A 90-degree CCW rotation swaps axes, so the logical x-offset
+    /// becomes a physical y-offset and vice versa.
+    #[test]
+    fn ui_anchor_pipeline_correct_under_rotation() {
+        let scale = 2.0_f64;
+        let cos90 = 0.0_f64;
+        let sin90 = 1.0_f64;
+        // 90-degree CCW rotation with 2x scale, node center at (500, 300) physical.
+        // Affine columns: [cos*s, sin*s, -sin*s, cos*s, tx, ty]
+        let affine = Affine::new([
+            cos90 * scale,
+            sin90 * scale,
+            -sin90 * scale,
+            cos90 * scale,
+            500.0,
+            300.0,
+        ]);
+
+        // Node is 200x100 logical, text is 100x20.
+        // Center anchor: offset = (-50, -10) logical.
+        let offset = compute_ui_anchor_offset(VelloTextAnchor::Center, 100.0, 20.0, 200.0, 100.0);
+
+        // Apply linear part of affine to offset — same path as render().
+        let c = affine.as_coeffs();
+        let dx = c[0] * offset.0 + c[2] * offset.1;
+        let dy = c[1] * offset.0 + c[3] * offset.1;
+        let result = affine.then_translate(vello::kurbo::Vec2::new(dx, dy));
+        let c = result.as_coeffs();
+
+        // Under 90-degree CCW rotation, logical (-50, -10) maps to physical:
+        //   screen_x += cos*s*(-50) + (-sin*s)*(-10) = 0*(-50) + (-2)*(-10) = +20
+        //   screen_y += sin*s*(-50) + cos*s*(-10)    = 2*(-50) + 0*(-10)    = -100
+        // So text origin lands at (500+20, 300-100) = (520, 200) physical.
+        assert_eq!((c[4], c[5]), (520.0, 200.0));
     }
 
     #[test]

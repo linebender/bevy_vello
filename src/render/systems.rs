@@ -336,7 +336,7 @@ pub fn render_frame(
                         text.text_align,
                         text.max_advance,
                         *text_anchor,
-                        None, // world-space: no content box
+                        None,
                     );
                 }
             }
@@ -429,9 +429,7 @@ pub fn render_frame(
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    // Convert physical pixels to logical pixels for anchor calculation
-                    let scale_factor = ui_render_target.scale_factor();
-                    let logical_size = ui_node.size() / scale_factor;
+                    let logical_size = ui_node.size() / ui_render_target.scale_factor();
                     font.render(
                         &mut scene_buffer,
                         *affine,
