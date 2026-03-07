@@ -36,6 +36,8 @@ bevy = { version = "0.18.0", default-features = false, features = [
   "default_app",
   "2d_bevy_render",
   "ui_bevy_render",
+  "x11",
+  "wayland",
 ] }
 
 [package]
