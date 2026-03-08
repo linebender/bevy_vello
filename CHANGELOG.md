@@ -15,6 +15,10 @@ You can find its changes [documented below](#0131---2026-01-29).
 
 This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 
+### Fixed
+
+- `VelloTextAnchor` for UI text (`UiVelloText`) now positions within the node's content box instead of using text layout dimensions. All anchors except `Center` were previously incorrect.
+
 ## [0.13.1] - 2026-01-29
 
 This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
