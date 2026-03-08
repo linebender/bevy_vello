@@ -114,7 +114,10 @@ impl VelloFont {
             // Transform the logical offset through the linear part of the affine
             // (rotation + scale), so anchor positioning is correct under any transform.
             let c = transform.as_coeffs();
-            (c[0] * offset.0 + c[2] * offset.1, c[1] * offset.0 + c[3] * offset.1)
+            (
+                c[0] * offset.0 + c[2] * offset.1,
+                c[1] * offset.0 + c[3] * offset.1,
+            )
         } else {
             compute_world_anchor_offset(text_anchor, text_w, text_h)
         };
