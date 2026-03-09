@@ -24,7 +24,6 @@ This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 - `VelloTextAnchor` for UI text (`UiVelloText`) now positions within the node's content box instead of using text layout dimensions. All anchors except `Center` were previously incorrect.
 - Non-finite `CalculatedClip` coordinates (infinity from per-axis overflow, NaN) are now sanitized to prevent Vello rendering errors.
 - UI text glyph runs outside the clip rect are now skipped, preventing Vello buffer overflow on large text content.
-- UI affine translations are now pixel-snapped to prevent sub-pixel misalignment with clip rects.
 
 ## [0.13.1] - 2026-01-29
 

@@ -204,7 +204,6 @@ pub fn prepare_text_affines(
                 ]);
 
                 // Transform chain: ui_transform (already in px) → pixel_scale
-                // Note: We don't apply centering here because compute_ui_anchor_offset handles it
                 let raw_transform = model_matrix * pixel_scale_matrix;
                 let transform = raw_transform.to_cols_array();
                 [
