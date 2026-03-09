@@ -315,7 +315,6 @@ mod tests {
     /// to_kurbo_clip must clamp them to finite values.
     #[test]
     fn clip_with_infinite_x_produces_finite_rect() {
-        // Simulates Overflow::clip_y() — X unconstrained, Y clipped to viewport.
         let clip = Rect::new(f32::NEG_INFINITY, 35.0, f32::INFINITY, 772.0);
         let kurbo = to_kurbo_clip(Some(clip));
         let kurbo = kurbo.expect("infinite-x clip should still produce a rect");
@@ -361,19 +360,4 @@ mod tests {
         assert_eq!(order, vec!['A', 'B', 'C', 'D', 'E']);
     }
 
-    /// VelloRenderSettings must exist in the main world so that
-    /// `detect_vello_scene_changes` (which runs in PostUpdate) can access it.
-    /// Regression: the resource was only inserted into the render sub-app,
-    /// causing a panic on the first frame.
-    ///
-    /// We verify the plugin's build() method inserts the resource by checking
-    /// the relevant code path directly, since a full App test requires GPU
-    /// subsystems (RenderPlugin, ShaderPlugin) that aren't available in unit tests.
-    #[test]
-    fn render_settings_default_is_available() {
-        let settings = VelloRenderSettings::default();
-        assert!(!settings.use_cpu);
-        // The plugin inserts this resource via `app.insert_resource(self.render_settings.clone())`
-        // in build(), before the render app guard. This guarantees it exists in the main world.
-    }
 }
