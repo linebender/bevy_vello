@@ -125,11 +125,11 @@ impl VelloFont {
 
         transform = transform.then_translate(vello::kurbo::Vec2::new(dx, dy));
 
-        // Precompute clip range in layout (logical) space for glyph-run culling.
+        // Precompute clip range in layout (logical) space for line culling.
         // The affine maps layout coords → physical screen space. Inverting lets us
-        // express the clip rect in the same space as glyph_run.baseline(), avoiding
-        // Vello encoding glyphs that the clip rect would hide anyway.
-        // A margin of 2× font_size covers ascenders, descenders, and rounding.
+        // express the clip rect in the same coordinate system as parley's
+        // LineMetrics::min_coord / max_coord, avoiding Vello encoding glyphs
+        // that the clip rect would hide anyway.
         let cull_y: Option<(f64, f64)> = clip.and_then(|r| {
             let c = transform.as_coeffs();
             // Skip culling when the transform has rotation — screen-space y bounds
@@ -142,32 +142,31 @@ impl VelloFont {
                 return None;
             }
             let translate_y = c[5];
-            let margin = style.font_size as f64 * 2.0;
             Some((
-                (r.y0 - translate_y) / scale_y - margin,
-                (r.y1 - translate_y) / scale_y + margin,
+                (r.y0 - translate_y) / scale_y,
+                (r.y1 - translate_y) / scale_y,
             ))
         });
 
         'lines: for line in layout.lines() {
+            // Cull entire lines using precise Parley line metrics. min_coord is
+            // the top of the line (including ascenders), max_coord is the bottom
+            // (including descenders). Lines are emitted top-to-bottom, so
+            // exceeding y_max means all remaining lines are also outside.
+            if let Some((y_min, y_max)) = cull_y {
+                let lm = line.metrics();
+                if (lm.max_coord as f64) < y_min {
+                    continue;
+                }
+                if (lm.min_coord as f64) > y_max {
+                    break 'lines;
+                }
+            }
+
             for item in line.items() {
                 let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
                     continue;
                 };
-
-                let baseline = glyph_run.baseline() as f64;
-
-                // Cull glyph runs outside the clip rect. Parley emits lines in
-                // top-to-bottom order, so exceeding y_max means all remaining
-                // lines are also outside — break out entirely.
-                if let Some((y_min, y_max)) = cull_y {
-                    if baseline < y_min {
-                        continue;
-                    }
-                    if baseline > y_max {
-                        break 'lines;
-                    }
-                }
 
                 let mut x = glyph_run.offset();
                 let y = glyph_run.baseline();
