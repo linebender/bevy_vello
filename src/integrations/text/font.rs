@@ -374,8 +374,6 @@ pub(crate) fn compute_ui_anchor_offset(
 ) -> (f64, f64) {
     let node_w = node_w as f64;
     let node_h = node_h as f64;
-    // Compute offset from CENTER of the node (UiGlobalTransform.translation is center-origin)
-    // First calculate position from top-left, then adjust to center-origin
     let top_left_x = -node_w / 2.0;
     let top_left_y = -node_h / 2.0;
 
@@ -391,7 +389,6 @@ pub(crate) fn compute_ui_anchor_offset(
         VelloTextAnchor::BottomRight => (node_w - text_w, node_h - text_h),
     };
 
-    // Convert from top-left origin to center origin
     (top_left_x + anchor_x, top_left_y + anchor_y)
 }
 
@@ -429,12 +426,6 @@ mod tests {
     // TopLeft:     (-200, -100)
     // Center:      (-100, -20)
     // BottomRight: (0, 60)
-    // Left:        (-200, -20)
-    // TopRight:    (200, 0)
-    // Bottom:      (100, 160)
-    // Top:         (100, 0)
-    // Right:       (200, 80)
-    // BottomLeft:  (0, 160)
 
     const NODE_W: f32 = 400.0;
     const NODE_H: f32 = 200.0;
@@ -566,20 +557,16 @@ mod tests {
         assert_eq!((c[4], c[5]), (520.0, 200.0));
     }
 
-
-    // Edge case: when text fills node exactly, Center puts text's top-left at (-w/2, -h/2)
     #[test]
     fn ui_center_is_origin_when_text_fills_node() {
         let (ui_dx, ui_dy) =
             compute_ui_anchor_offset(VelloTextAnchor::Center, 400.0, 200.0, 400.0, 200.0);
         assert_eq!((ui_dx, ui_dy), (-200.0, -100.0));
 
-        // For TopLeft: top-left corner is at (-node_w/2, -node_h/2)
         let (ui_tl_dx, ui_tl_dy) =
             compute_ui_anchor_offset(VelloTextAnchor::TopLeft, 400.0, 200.0, 400.0, 200.0);
         assert_eq!((ui_tl_dx, ui_tl_dy), (-200.0, -100.0));
 
-        // World text anchor is always relative to text origin (top-left)
         let (w_dx, w_dy) = compute_world_anchor_offset(VelloTextAnchor::TopLeft, 400.0, 200.0);
         assert_eq!((w_dx, w_dy), (0.0, 0.0));
     }

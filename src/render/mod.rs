@@ -365,5 +365,4 @@ mod tests {
         let order: Vec<char> = sorted.iter().map(|(_, c)| *c).collect();
         assert_eq!(order, vec!['A', 'B', 'C', 'D', 'E']);
     }
-
 }
