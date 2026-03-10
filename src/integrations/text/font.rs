@@ -143,37 +143,10 @@ impl VelloFont {
         })
     }
 
-    #[expect(clippy::too_many_arguments, reason = "Common lint in bevy")]
-    #[allow(dead_code)]
-    pub(crate) fn render(
-        &self,
-        scene: &mut Scene,
-        transform: Affine,
-        value: &str,
-        style: &VelloTextStyle,
-        text_align: VelloTextAlign,
-        max_advance: Option<f32>,
-        text_anchor: VelloTextAnchor,
-        ui_content: Option<Vec2>,
-        clip: Option<vello::kurbo::Rect>,
-    ) {
-        let layout = self.layout(value, style, text_align, max_advance);
-        self.render_with_layout(
-            scene,
-            transform,
-            &layout,
-            style,
-            text_anchor,
-            ui_content,
-            clip,
-        );
-    }
-
     /// Renders a pre-computed layout into the scene.
     ///
-    /// This is the second half of [`render()`] — anchor offset, glyph-run
-    /// culling, and glyph encoding — but takes an existing `Layout<Brush>`
-    /// so that callers can reuse cached layouts.
+    /// Applies anchor offset, glyph-run culling, and glyph encoding.
+    /// Takes an existing `Layout<Brush>` so callers can reuse cached layouts.
     #[expect(clippy::too_many_arguments, reason = "Common lint in bevy")]
     pub(crate) fn render_with_layout(
         &self,
