@@ -1,8 +1,9 @@
 /// UI Text Clipping Demo
 ///
 /// This example demonstrates how UI text clipping works in bevy_vello.
-/// It shows how text outside a clipping rectangle is efficiently culled
-/// using line metrics and precise bounds checking.
+/// Vertical line culling (CPU-side): entire lines above/below the clip rect
+/// are skipped using LineMetrics, reducing encoded glyphs sent to GPU.
+/// Horizontal clipping (GPU-side): handled by Vello's clip path system.
 ///
 /// Controls:
 /// - Arrow Keys: Move the text

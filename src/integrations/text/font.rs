@@ -125,11 +125,10 @@ impl VelloFont {
 
         transform = transform.then_translate(vello::kurbo::Vec2::new(dx, dy));
 
-        // Precompute clip range in layout (logical) space for line culling.
-        // Inverse-transform the clip rect corners into layout space and take
-        // their vertical AABB. This works for any invertible affine (including
-        // rotation), avoiding Vello encoding glyphs that the clip rect would
-        // hide anyway.
+        // Precompute Y-axis clip range for vertical line culling (CPU-side).
+        // Inverse-transform the clip rect corners to layout space and compute
+        // their vertical AABB. Horizontal clipping is handled by Vello's
+        // GPU-side clip path.
         let cull_y: Option<(f64, f64)> = clip.and_then(|r| {
             let inv = transform.inverse();
             // A zero-determinant affine has no inverse — skip culling.
@@ -140,8 +139,7 @@ impl VelloFont {
             if det.abs() < f64::EPSILON {
                 return None;
             }
-            // Map the four clip-rect corners into layout space and find the
-            // vertical extent (y-axis AABB).
+            // Map clip-rect corners to layout space, extract Y-axis AABB.
             let corners = [
                 inv * vello::kurbo::Point::new(r.x0, r.y0),
                 inv * vello::kurbo::Point::new(r.x1, r.y0),
@@ -157,10 +155,10 @@ impl VelloFont {
         });
 
         'lines: for line in layout.lines() {
-            // Cull entire lines using precise Parley line metrics. min_coord is
-            // the top of the line (including ascenders), max_coord is the bottom
-            // (including descenders). Lines are emitted top-to-bottom, so
-            // exceeding y_max means all remaining lines are also outside.
+            // Vertical line culling using Parley's LineMetrics. min_coord is the
+            // line top (including ascenders), max_coord is the bottom (including
+            // descenders). Lines emit top-to-bottom, so exceeding y_max means
+            // all remaining lines are outside (early exit).
             if let Some((y_min, y_max)) = cull_y {
                 let lm = line.metrics();
                 if (lm.max_coord as f64) < y_min {
