@@ -1,5 +1,5 @@
 use crate::render::extract::VelloExtractStep;
-use crate::render::{VelloEntityCountData, VelloFrameProfileData};
+use crate::render::{VelloEntityCountData, VelloFrameProfileData, VelloSceneDirty};
 use bevy::ecs::system::RunSystemOnce;
 use bevy::{
     diagnostic::{Diagnostic, DiagnosticPath, Diagnostics, RegisterDiagnostic},
@@ -27,6 +27,9 @@ pub const PATH_SEGMENTS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello
 pub const CLIPS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_clips");
 pub const OPEN_CLIPS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_open_clips");
 
+/// Reports 1.0 when the frame was skipped (scene not dirty), 0.0 when rendered.
+pub const FRAMES_SKIPPED: DiagnosticPath = DiagnosticPath::const_new("vello_frames_skipped");
+
 /// Adds Vello render diagnostics reporting.
 #[derive(Default)]
 pub(crate) struct VelloRenderDiagnosticsPlugin;
@@ -36,7 +39,8 @@ impl Plugin for VelloRenderDiagnosticsPlugin {
         app.register_diagnostic(Diagnostic::new(PATH_COUNT).with_suffix(" paths"))
             .register_diagnostic(Diagnostic::new(PATH_SEGMENTS_COUNT).with_suffix(" path segments"))
             .register_diagnostic(Diagnostic::new(CLIPS_COUNT).with_suffix(" clips"))
-            .register_diagnostic(Diagnostic::new(OPEN_CLIPS_COUNT).with_suffix(" open clips"));
+            .register_diagnostic(Diagnostic::new(OPEN_CLIPS_COUNT).with_suffix(" open clips"))
+            .register_diagnostic(Diagnostic::new(FRAMES_SKIPPED).with_suffix(" skipped"));
 
         // Scenes
         app.register_diagnostic(Diagnostic::new(WORLD_SCENE_COUNT).with_suffix(" world scenes"))
@@ -113,18 +117,21 @@ fn sync_entity_count(render_data: Res<VelloEntityCountData>, mut main_world: Res
 /// Measure the frame profile.
 fn sync_frame_profile(
     render_data: Res<VelloFrameProfileData>,
+    dirty: Res<VelloSceneDirty>,
     mut main_world: ResMut<MainWorld>,
 ) -> Result {
     let n_paths = render_data.n_paths as f64;
     let n_path_segs = render_data.n_path_segs as f64;
     let n_clips = render_data.n_clips as f64;
     let n_open_clips = render_data.n_open_clips as f64;
+    let frame_skipped = if dirty.0 { 0.0 } else { 1.0 };
     main_world
         .run_system_once(move |mut diagnostics: Diagnostics| {
             diagnostics.add_measurement(&PATH_COUNT, || n_paths);
             diagnostics.add_measurement(&PATH_SEGMENTS_COUNT, || n_path_segs);
             diagnostics.add_measurement(&CLIPS_COUNT, || n_clips);
             diagnostics.add_measurement(&OPEN_CLIPS_COUNT, || n_open_clips);
+            diagnostics.add_measurement(&FRAMES_SKIPPED, || frame_skipped);
         })
         .unwrap_or_else(|e| {
             tracing::error!("Error recording vello frame measurements: {e}");

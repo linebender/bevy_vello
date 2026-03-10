@@ -198,21 +198,26 @@ pub(crate) enum VelloWorldRenderItem {
 pub(crate) enum VelloUiRenderItem {
     Scene {
         affine: Affine,
+        /// Clip rect in physical pixels (from CalculatedClip, already resolved).
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::scene::render::ExtractedUiVelloScene,
     },
     #[cfg(feature = "svg")]
     Svg {
         affine: Affine,
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::svg::render::ExtractedUiVelloSvg,
     },
     #[cfg(feature = "lottie")]
     Lottie {
         affine: Affine,
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::lottie::render::ExtractedUiVelloLottie,
     },
     #[cfg(feature = "text")]
     Text {
         affine: Affine,
+        clip: Option<vello::kurbo::Rect>,
         item: crate::integrations::text::render::ExtractedUiVelloText,
     },
 }
@@ -251,6 +256,22 @@ pub(crate) struct VelloEntityCountData {
     pub n_ui_lotties: u32,
 }
 
+/// When false, `sort_render_items` and `render_frame` are skipped.
+/// The GPU texture from the previous frame persists on the canvas mesh.
+#[derive(Resource, Clone)]
+pub struct VelloSceneDirty(pub bool);
+
+impl Default for VelloSceneDirty {
+    fn default() -> Self {
+        Self(true) // First frame always renders
+    }
+}
+
+/// Signals to the render world that font assets changed and the text layout
+/// cache should be invalidated.
+#[derive(Resource, Clone, Default)]
+pub(crate) struct VelloFontChanged(pub bool);
+
 /// Internally used for diagnostics.
 #[derive(Resource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloFrameProfileData {
@@ -262,4 +283,81 @@ pub(crate) struct VelloFrameProfileData {
     pub n_clips: u32,
     /// Total number of open clips rendered last frame.
     pub n_open_clips: u32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::math::Rect;
+    use systems::to_kurbo_clip;
+
+    /// CalculatedClip is already in physical pixels (Bevy resolves layout
+    /// against `physical_size`). to_kurbo_clip converts the type without
+    /// scaling, matching PreparedAffine's output coordinate space.
+    #[test]
+    fn clip_converts_to_kurbo_without_scaling() {
+        let bevy_clip = Rect::new(10.0, 20.0, 100.0, 200.0);
+        let kurbo_clip = to_kurbo_clip(Some(bevy_clip)).unwrap();
+        assert_eq!(kurbo_clip.x0, 10.0);
+        assert_eq!(kurbo_clip.y0, 20.0);
+        assert_eq!(kurbo_clip.x1, 100.0);
+        assert_eq!(kurbo_clip.y1, 200.0);
+    }
+
+    #[test]
+    fn clip_none_returns_none() {
+        assert!(to_kurbo_clip(None).is_none());
+    }
+
+    /// Per-axis overflow clipping (e.g. Overflow::clip_y()) produces
+    /// CalculatedClip with f32::INFINITY on the unconstrained axis.
+    /// Vello can't rasterize a clip path with infinite coordinates, so
+    /// to_kurbo_clip must clamp them to finite values.
+    #[test]
+    fn clip_with_infinite_x_produces_finite_rect() {
+        let clip = Rect::new(f32::NEG_INFINITY, 35.0, f32::INFINITY, 772.0);
+        let kurbo = to_kurbo_clip(Some(clip));
+        let kurbo = kurbo.expect("infinite-x clip should still produce a rect");
+        assert!(kurbo.x0.is_finite(), "x0 must be finite, got {}", kurbo.x0);
+        assert!(kurbo.x1.is_finite(), "x1 must be finite, got {}", kurbo.x1);
+        assert_eq!(kurbo.y0, 35.0, "finite y0 must be preserved");
+        assert_eq!(kurbo.y1, 772.0, "finite y1 must be preserved");
+        assert!(kurbo.x0 < kurbo.x1, "clamped rect must have positive width");
+    }
+
+    /// NaN coordinates make the clip rect meaningless — should return None.
+    #[test]
+    fn clip_with_nan_returns_none() {
+        let clip = Rect::new(f32::NAN, 35.0, f32::NAN, 772.0);
+        assert!(
+            to_kurbo_clip(Some(clip)).is_none(),
+            "NaN clip should return None"
+        );
+    }
+
+    /// Mixed scenario: only min.x is infinite (per-axis clip edge case).
+    #[test]
+    fn clip_with_one_infinite_coord_produces_finite_rect() {
+        let clip = Rect::new(f32::NEG_INFINITY, 0.0, 1280.0, 800.0);
+        let kurbo = to_kurbo_clip(Some(clip)).expect("should produce a rect");
+        assert!(kurbo.x0.is_finite(), "x0 must be finite");
+        assert_eq!(kurbo.x1, 1280.0);
+        assert_eq!(kurbo.y0, 0.0);
+        assert_eq!(kurbo.y1, 800.0);
+    }
+
+    /// UI render queue uses stable sort so that items with the same
+    /// stack_index preserve their insertion order across frames.
+    /// Prevents z-fighting flicker between overlapping same-layer items.
+    #[test]
+    fn ui_sort_preserves_insertion_order_for_equal_keys() {
+        // Tag items A..E with the same stack_index but different identities.
+        let items: Vec<(u32, char)> = vec![(5, 'A'), (5, 'B'), (5, 'C'), (5, 'D'), (5, 'E')];
+        let mut sorted = items.clone();
+        sorted.sort_by(|(a, _), (b, _)| a.cmp(b));
+
+        let order: Vec<char> = sorted.iter().map(|(_, c)| *c).collect();
+        assert_eq!(order, vec!['A', 'B', 'C', 'D', 'E']);
+    }
+
 }

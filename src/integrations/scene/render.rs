@@ -22,6 +22,7 @@ pub struct ExtractedUiVelloScene {
     pub ui_transform: UiGlobalTransform,
     pub ui_node: ComputedNode,
     pub ui_render_target: ComputedUiRenderTargetInfo,
+    pub clip: Option<Rect>,
 }
 
 pub fn extract_world_scenes(
@@ -90,6 +91,7 @@ pub fn extract_ui_scenes(
             &UiGlobalTransform,
             &InheritedVisibility,
             Option<&RenderLayers>,
+            Option<&CalculatedClip>,
         )>,
     >,
     mut frame_data: ResMut<VelloEntityCountData>,
@@ -100,8 +102,15 @@ pub fn extract_ui_scenes(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (scene, ui_node, ui_render_target, ui_transform, inherited_visibility, render_layers) in
-        query_scenes.iter()
+    for (
+        scene,
+        ui_node,
+        ui_render_target,
+        ui_transform,
+        inherited_visibility,
+        render_layers,
+        calc_clip,
+    ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met.
         // UI does not check view visibility, only inherited visibility.
@@ -119,6 +128,7 @@ pub fn extract_ui_scenes(
                     ui_transform: *ui_transform,
                     ui_node: *ui_node,
                     ui_render_target: *ui_render_target,
+                    clip: calc_clip.map(|c| c.clip),
                 })
                 .insert(TemporaryRenderEntity);
             n_scenes += 1;
