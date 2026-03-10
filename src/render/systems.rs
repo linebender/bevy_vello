@@ -525,6 +525,11 @@ pub fn render_frame(
     frame_profile.n_path_segs = scene_buffer.encoding().n_path_segments;
     frame_profile.n_clips = scene_buffer.encoding().n_clips;
     frame_profile.n_open_clips = scene_buffer.encoding().n_open_clips;
+    #[cfg(feature = "text")]
+    {
+        frame_profile.n_glyphs = scene_buffer.encoding().resources.glyphs.len() as u32;
+        frame_profile.n_glyph_runs = scene_buffer.encoding().resources.glyph_runs.len() as u32;
+    }
 
     renderer
         .lock()

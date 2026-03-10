@@ -267,6 +267,12 @@ pub(crate) struct VelloFrameProfileData {
     pub n_clips: u32,
     /// Total number of open clips rendered last frame.
     pub n_open_clips: u32,
+    /// Total number of glyphs rendered last frame.
+    #[cfg(feature = "text")]
+    pub n_glyphs: u32,
+    /// Total number of glyph runs rendered last frame.
+    #[cfg(feature = "text")]
+    pub n_glyph_runs: u32,
 }
 
 #[cfg(test)]
