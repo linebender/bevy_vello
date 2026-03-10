@@ -126,26 +126,34 @@ impl VelloFont {
         transform = transform.then_translate(vello::kurbo::Vec2::new(dx, dy));
 
         // Precompute clip range in layout (logical) space for line culling.
-        // The affine maps layout coords → physical screen space. Inverting lets us
-        // express the clip rect in the same coordinate system as parley's
-        // LineMetrics::min_coord / max_coord, avoiding Vello encoding glyphs
-        // that the clip rect would hide anyway.
+        // Inverse-transform the clip rect corners into layout space and take
+        // their vertical AABB. This works for any invertible affine (including
+        // rotation), avoiding Vello encoding glyphs that the clip rect would
+        // hide anyway.
         let cull_y: Option<(f64, f64)> = clip.and_then(|r| {
+            let inv = transform.inverse();
+            // A zero-determinant affine has no inverse — skip culling.
+            // Affine::inverse() returns an identity-ish result for singular
+            // matrices, so check the determinant explicitly.
             let c = transform.as_coeffs();
-            // Skip culling when the transform has rotation — screen-space y bounds
-            // don't map cleanly to layout-space y bounds under rotation.
-            if c[1].abs() > f64::EPSILON || c[2].abs() > f64::EPSILON {
+            let det = c[0] * c[3] - c[1] * c[2];
+            if det.abs() < f64::EPSILON {
                 return None;
             }
-            let scale_y = c[3];
-            if scale_y.abs() < f64::EPSILON {
-                return None;
-            }
-            let translate_y = c[5];
-            Some((
-                (r.y0 - translate_y) / scale_y,
-                (r.y1 - translate_y) / scale_y,
-            ))
+            // Map the four clip-rect corners into layout space and find the
+            // vertical extent (y-axis AABB).
+            let corners = [
+                inv * vello::kurbo::Point::new(r.x0, r.y0),
+                inv * vello::kurbo::Point::new(r.x1, r.y0),
+                inv * vello::kurbo::Point::new(r.x0, r.y1),
+                inv * vello::kurbo::Point::new(r.x1, r.y1),
+            ];
+            let y_min = corners.iter().map(|p| p.y).fold(f64::INFINITY, f64::min);
+            let y_max = corners
+                .iter()
+                .map(|p| p.y)
+                .fold(f64::NEG_INFINITY, f64::max);
+            Some((y_min, y_max))
         });
 
         'lines: for line in layout.lines() {
