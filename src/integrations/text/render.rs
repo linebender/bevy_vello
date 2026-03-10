@@ -4,6 +4,7 @@ use bevy::{
     render::{
         Extract, camera::ExtractedCamera, sync_world::TemporaryRenderEntity, view::ExtractedView,
     },
+    ui::CalculatedClip,
 };
 use vello::kurbo::Affine;
 
@@ -24,6 +25,7 @@ pub struct ExtractedUiVelloText {
     pub ui_transform: UiGlobalTransform,
     pub ui_node: ComputedNode,
     pub ui_render_target: ComputedUiRenderTargetInfo,
+    pub clip: Option<Rect>,
 }
 
 pub fn extract_world_text(
@@ -100,6 +102,7 @@ pub fn extract_ui_text(
             Option<&RenderLayers>,
             &ComputedNode,
             &ComputedUiRenderTargetInfo,
+            Option<&CalculatedClip>,
         )>,
     >,
     fonts: Extract<Res<Assets<VelloFont>>>,
@@ -119,6 +122,7 @@ pub fn extract_ui_text(
         render_layers,
         ui_node,
         ui_render_target,
+        calc_clip,
     ) in query_scenes.iter()
     {
         // Skip if visibility conditions are not met.
@@ -144,6 +148,7 @@ pub fn extract_ui_text(
                     ui_transform: *ui_transform,
                     ui_node: *ui_node,
                     ui_render_target: *ui_render_target,
+                    clip: calc_clip.map(|c| c.clip),
                 })
                 .insert(TemporaryRenderEntity);
             n_texts += 1;

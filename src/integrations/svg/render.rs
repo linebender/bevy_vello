@@ -27,6 +27,7 @@ pub struct ExtractedUiVelloSvg {
     pub ui_transform: UiGlobalTransform,
     pub alpha: f32,
     pub ui_node: ComputedNode,
+    pub clip: Option<Rect>,
 }
 
 pub fn extract_world_svg_assets(
@@ -108,6 +109,7 @@ pub fn extract_ui_svg_assets(
             &ComputedNode,
             Option<&RenderLayers>,
             &InheritedVisibility,
+            Option<&CalculatedClip>,
         )>,
     >,
     assets: Extract<Res<Assets<VelloSvg>>>,
@@ -119,7 +121,7 @@ pub fn extract_ui_svg_assets(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (asset_handle, ui_transform, ui_node, render_layers, inherited_visibility) in
+    for (asset_handle, ui_transform, ui_node, render_layers, inherited_visibility, calc_clip) in
         query_vectors.iter()
     {
         // Skip if visibility conditions are not met.
@@ -143,6 +145,7 @@ pub fn extract_ui_svg_assets(
                     ui_transform: *ui_transform,
                     ui_node: *ui_node,
                     alpha: asset.alpha,
+                    clip: calc_clip.map(|c| c.clip),
                 })
                 .insert(TemporaryRenderEntity);
             n_svgs += 1;

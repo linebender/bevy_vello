@@ -15,9 +15,15 @@ You can find its changes [documented below](#0131---2026-01-29).
 
 This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 
+### Added
+
+- UI clip rect support: `CalculatedClip` is now respected for all UI Vello render types (`UiVelloScene`, `UiVelloSvg`, `UiVelloLottie`, `UiVelloText`), enabling proper overflow clipping.
+- Added `GLYPH_COUNT` and `GLYPH_RUN_COUNT` diagnostics per frame when the `text` feature is active.
+
 ### Fixed
 
 - `VelloTextAnchor` for UI text (`UiVelloText`) now positions within the node's content box instead of using text layout dimensions. All anchors except `Center` were previously incorrect.
+- UI text is now clipped according to UI node content size correctly.
 
 ## [0.13.1] - 2026-01-29
 

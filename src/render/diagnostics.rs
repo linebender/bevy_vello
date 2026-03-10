@@ -26,6 +26,10 @@ pub const PATH_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_paths");
 pub const PATH_SEGMENTS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_path_segments");
 pub const CLIPS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_clips");
 pub const OPEN_CLIPS_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_open_clips");
+#[cfg(feature = "text")]
+pub const GLYPH_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_glyphs");
+#[cfg(feature = "text")]
+pub const GLYPH_RUN_COUNT: DiagnosticPath = DiagnosticPath::const_new("vello_glyph_runs");
 
 /// Adds Vello render diagnostics reporting.
 #[derive(Default)]
@@ -37,6 +41,9 @@ impl Plugin for VelloRenderDiagnosticsPlugin {
             .register_diagnostic(Diagnostic::new(PATH_SEGMENTS_COUNT).with_suffix(" path segments"))
             .register_diagnostic(Diagnostic::new(CLIPS_COUNT).with_suffix(" clips"))
             .register_diagnostic(Diagnostic::new(OPEN_CLIPS_COUNT).with_suffix(" open clips"));
+        #[cfg(feature = "text")]
+        app.register_diagnostic(Diagnostic::new(GLYPH_COUNT).with_suffix(" glyphs"))
+            .register_diagnostic(Diagnostic::new(GLYPH_RUN_COUNT).with_suffix(" glyph runs"));
 
         // Scenes
         app.register_diagnostic(Diagnostic::new(WORLD_SCENE_COUNT).with_suffix(" world scenes"))
@@ -119,12 +126,21 @@ fn sync_frame_profile(
     let n_path_segs = render_data.n_path_segs as f64;
     let n_clips = render_data.n_clips as f64;
     let n_open_clips = render_data.n_open_clips as f64;
+    #[cfg(feature = "text")]
+    let n_glyphs = render_data.n_glyphs as f64;
+    #[cfg(feature = "text")]
+    let n_glyph_runs = render_data.n_glyph_runs as f64;
     main_world
         .run_system_once(move |mut diagnostics: Diagnostics| {
             diagnostics.add_measurement(&PATH_COUNT, || n_paths);
             diagnostics.add_measurement(&PATH_SEGMENTS_COUNT, || n_path_segs);
             diagnostics.add_measurement(&CLIPS_COUNT, || n_clips);
             diagnostics.add_measurement(&OPEN_CLIPS_COUNT, || n_open_clips);
+            #[cfg(feature = "text")]
+            {
+                diagnostics.add_measurement(&GLYPH_COUNT, || n_glyphs);
+                diagnostics.add_measurement(&GLYPH_RUN_COUNT, || n_glyph_runs);
+            }
         })
         .unwrap_or_else(|e| {
             tracing::error!("Error recording vello frame measurements: {e}");

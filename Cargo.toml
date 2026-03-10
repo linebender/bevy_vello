@@ -5,6 +5,7 @@ members = [
   "examples/lottie_player",
   "examples/drag_n_drop",
   "examples/text",
+  "examples/text_ui_clipping",
   "examples/scene",
   "examples/scene_screenspace",
   "examples/scene_ui",

@@ -97,6 +97,7 @@ impl VelloFont {
         max_advance: Option<f32>,
         text_anchor: VelloTextAnchor,
         ui_content: Option<Vec2>,
+        clip: Option<vello::kurbo::Rect>,
     ) {
         let layout = self.layout(value, style, text_align, max_advance);
 
@@ -124,7 +125,50 @@ impl VelloFont {
 
         transform = transform.then_translate(vello::kurbo::Vec2::new(dx, dy));
 
-        for line in layout.lines() {
+        // Precompute Y-axis clip range for vertical line culling (CPU-side).
+        // Inverse-transform the clip rect corners to layout space and compute
+        // their vertical AABB. Horizontal clipping is handled by Vello's
+        // GPU-side clip path.
+        let cull_y: Option<(f64, f64)> = clip.and_then(|r| {
+            let inv = transform.inverse();
+            // A zero-determinant affine has no inverse — skip culling.
+            // Affine::inverse() returns an identity-ish result for singular
+            // matrices, so check the determinant explicitly.
+            let c = transform.as_coeffs();
+            let det = c[0] * c[3] - c[1] * c[2];
+            if det.abs() < f64::EPSILON {
+                return None;
+            }
+            // Map clip-rect corners to layout space, extract Y-axis AABB.
+            let corners = [
+                inv * vello::kurbo::Point::new(r.x0, r.y0),
+                inv * vello::kurbo::Point::new(r.x1, r.y0),
+                inv * vello::kurbo::Point::new(r.x0, r.y1),
+                inv * vello::kurbo::Point::new(r.x1, r.y1),
+            ];
+            let y_min = corners.iter().map(|p| p.y).fold(f64::INFINITY, f64::min);
+            let y_max = corners
+                .iter()
+                .map(|p| p.y)
+                .fold(f64::NEG_INFINITY, f64::max);
+            Some((y_min, y_max))
+        });
+
+        'lines: for line in layout.lines() {
+            // Vertical line culling using Parley's LineMetrics. min_coord is the
+            // line top (including ascenders), max_coord is the bottom (including
+            // descenders). Lines emit top-to-bottom, so exceeding y_max means
+            // all remaining lines are outside (early exit).
+            if let Some((y_min, y_max)) = cull_y {
+                let lm = line.metrics();
+                if (lm.max_coord as f64) < y_min {
+                    continue;
+                }
+                if (lm.min_coord as f64) > y_max {
+                    break 'lines;
+                }
+            }
+
             for item in line.items() {
                 let PositionedLayoutItem::GlyphRun(glyph_run) = item else {
                     continue;
