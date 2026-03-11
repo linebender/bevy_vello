@@ -3,6 +3,7 @@
 mod context;
 mod font;
 mod font_loader;
+pub(crate) mod layout_cache;
 mod systems;
 
 pub(crate) mod render;
@@ -172,7 +173,7 @@ pub enum VelloTextAnchor {
 }
 
 /// Alignment of a parley layout.
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum VelloTextAlign {
     /// This is [`parley::Alignment::Left`] for LTR text and [`parley::Alignment::Right`] for RTL
     /// text.

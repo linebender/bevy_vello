@@ -256,6 +256,22 @@ pub(crate) struct VelloEntityCountData {
     pub n_ui_lotties: u32,
 }
 
+/// When false, `sort_render_items` and `render_frame` are skipped.
+/// The GPU texture from the previous frame persists on the canvas mesh.
+#[derive(Resource, Clone)]
+pub struct VelloSceneDirty(pub bool);
+
+impl Default for VelloSceneDirty {
+    fn default() -> Self {
+        Self(true) // First frame always renders
+    }
+}
+
+/// Signals to the render world that font assets changed and the text layout
+/// cache should be invalidated.
+#[derive(Resource, Clone, Default)]
+pub(crate) struct VelloFontChanged(pub bool);
+
 /// Internally used for diagnostics.
 #[derive(Resource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloFrameProfileData {

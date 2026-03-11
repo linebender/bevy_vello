@@ -28,7 +28,7 @@ pub mod prelude {
 
     pub use crate::{
         integrations::scene::{UiVelloScene, VelloScene2d},
-        render::{VelloRenderSettings, VelloView},
+        render::{VelloRenderSettings, VelloSceneDirty, VelloView},
     };
 
     #[cfg(feature = "lottie")]

@@ -86,21 +86,21 @@ impl VelloFont {
         })
     }
 
+    /// Renders a pre-computed layout into the scene.
+    ///
+    /// Applies anchor offset, glyph-run culling, and glyph encoding.
+    /// Takes an existing `Layout<Brush>` so callers can reuse cached layouts.
     #[expect(clippy::too_many_arguments, reason = "Common lint in bevy")]
-    pub(crate) fn render(
+    pub(crate) fn render_with_layout(
         &self,
         scene: &mut Scene,
         mut transform: Affine,
-        value: &str,
+        layout: &Layout<Brush>,
         style: &VelloTextStyle,
-        text_align: VelloTextAlign,
-        max_advance: Option<f32>,
         text_anchor: VelloTextAnchor,
         ui_content: Option<Vec2>,
         clip: Option<vello::kurbo::Rect>,
     ) {
-        let layout = self.layout(value, style, text_align, max_advance);
-
         let text_w = layout.width() as f64;
         let text_h = layout.height() as f64;
 
@@ -362,9 +362,9 @@ pub(crate) fn compute_world_anchor_offset(
 
 /// Computes the (dx, dy) translation offset for UI text anchoring.
 ///
-/// Aligns text within the node's content box. The UiGlobalTransform places the
-/// origin at the node's center, so we compute offsets relative to that center
-/// to position text according to the anchor.
+/// Aligns text within the node's content box. The UiGlobalTransform places
+/// the origin at the node's top-left corner, so we compute offsets relative
+/// to that corner to position text according to the anchor.
 pub(crate) fn compute_ui_anchor_offset(
     text_anchor: VelloTextAnchor,
     text_w: f64,
