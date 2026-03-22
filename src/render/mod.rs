@@ -256,6 +256,12 @@ pub(crate) struct VelloEntityCountData {
     pub n_ui_lotties: u32,
 }
 
+/// Signals to the render world that font assets changed and the text layout
+/// cache should be invalidated.
+#[cfg(feature = "text")]
+#[derive(Resource, Clone, Default)]
+pub(crate) struct VelloFontChanged(pub bool);
+
 /// Internally used for diagnostics.
 #[derive(Resource, Default, Debug, Clone, Reflect)]
 pub(crate) struct VelloFrameProfileData {

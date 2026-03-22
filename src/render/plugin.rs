@@ -9,6 +9,8 @@ use bevy::{
     sprite_render::Material2dPlugin,
 };
 
+#[cfg(feature = "text")]
+use super::VelloFontChanged;
 use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget, systems};
 use crate::{
     VelloView,
@@ -18,6 +20,8 @@ use crate::{
         extract::VelloExtractStep,
     },
 };
+#[cfg(feature = "text")]
+use bevy::render::MainWorld;
 
 #[derive(Default)]
 pub struct VelloRenderPlugin {
@@ -40,6 +44,10 @@ impl Plugin for VelloRenderPlugin {
         // Diagnostics
         app.add_plugins(VelloRenderDiagnosticsPlugin);
 
+        #[cfg(feature = "text")]
+        app.init_resource::<VelloFontChanged>()
+            .add_systems(PostUpdate, systems::detect_font_changes);
+
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
@@ -48,7 +56,16 @@ impl Plugin for VelloRenderPlugin {
             .insert_resource(self.render_settings.clone())
             .init_resource::<VelloEntityCountData>()
             .init_resource::<VelloFrameProfileData>()
-            .init_resource::<VelloRenderQueue>()
+            .init_resource::<VelloRenderQueue>();
+        #[cfg(feature = "text")]
+        render_app
+            .init_resource::<VelloFontChanged>()
+            .init_resource::<crate::integrations::text::layout_cache::TextLayoutCache>()
+            .add_systems(
+                ExtractSchedule,
+                extract_font_changed.after(VelloExtractStep::ExtractAssets),
+            );
+        render_app
             .configure_sets(
                 ExtractSchedule,
                 (
@@ -89,5 +106,13 @@ impl Plugin for VelloRenderPlugin {
             return;
         };
         render_app.init_resource::<VelloRenderer>();
+    }
+}
+
+/// Copies [`VelloFontChanged`] from the main world into the render world.
+#[cfg(feature = "text")]
+fn extract_font_changed(main_world: Res<MainWorld>, mut font_changed: ResMut<VelloFontChanged>) {
+    if let Some(main_font_changed) = main_world.get_resource::<VelloFontChanged>() {
+        font_changed.0 = main_font_changed.0;
     }
 }

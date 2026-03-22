@@ -19,6 +19,7 @@ This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 
 - UI clip rect support: `CalculatedClip` is now respected for all UI Vello render types (`UiVelloScene`, `UiVelloSvg`, `UiVelloLottie`, `UiVelloText`), enabling proper overflow clipping.
 - Added `GLYPH_COUNT` and `GLYPH_RUN_COUNT` diagnostics per frame when the `text` feature is active.
+- Text layout cache: content-addressed double-buffer cache avoids redundant parley text shaping every frame.
 
 ### Fixed
 

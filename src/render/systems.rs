@@ -272,6 +272,10 @@ pub fn sort_render_items(
 pub fn render_frame(
     render_target: Single<&VelloRenderTarget>,
     #[cfg(feature = "text")] font_render_assets: Res<RenderAssets<VelloFont>>,
+    #[cfg(feature = "text")] mut text_layout_cache: ResMut<
+        crate::integrations::text::layout_cache::TextLayoutCache,
+    >,
+    #[cfg(feature = "text")] font_changed: Res<super::VelloFontChanged>,
     gpu_images: Res<RenderAssets<GpuImage>>,
     device: Res<RenderDevice>,
     queue: Res<RenderQueue>,
@@ -281,6 +285,14 @@ pub fn render_frame(
     render_queue: Res<VelloRenderQueue>,
     mut frame_profile: ResMut<VelloFrameProfileData>,
 ) {
+    #[cfg(feature = "text")]
+    {
+        if font_changed.0 {
+            text_layout_cache.clear();
+        }
+        text_layout_cache.advance_frame();
+    }
+
     let VelloRenderTarget(render_target_image) = *render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
 
@@ -364,17 +376,22 @@ pub fn render_frame(
                 affine,
                 item:
                     ExtractedVelloText2d {
-                        text, text_anchor, ..
+                        text,
+                        text_anchor,
+                        content_hash,
+                        ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
-                    font.render(
+                    let key = crate::integrations::text::layout_cache::TextLayoutKey(*content_hash);
+                    let layout = text_layout_cache.get_or_insert_with(key, || {
+                        font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                    });
+                    font.render_with_layout(
                         &mut scene_buffer,
                         *affine,
-                        &text.value,
+                        &layout,
                         &text.style,
-                        text.text_align,
-                        text.max_advance,
                         *text_anchor,
                         None,
                         None,
@@ -496,18 +513,21 @@ pub fn render_frame(
                         text_anchor,
                         ui_node,
                         ui_render_target,
+                        content_hash,
                         ..
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
                     let logical_size = ui_node.size() / ui_render_target.scale_factor();
-                    font.render(
+                    let key = crate::integrations::text::layout_cache::TextLayoutKey(*content_hash);
+                    let layout = text_layout_cache.get_or_insert_with(key, || {
+                        font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                    });
+                    font.render_with_layout(
                         &mut scene_buffer,
                         *affine,
-                        &text.value,
+                        &layout,
                         &text.style,
-                        text.text_align,
-                        text.max_advance,
                         *text_anchor,
                         Some(logical_size),
                         *clip,
@@ -674,4 +694,17 @@ pub fn render_settings_change_detection(
         commands.remove_resource::<VelloRenderer>();
         commands.init_resource::<VelloRenderer>();
     }
+}
+
+/// Sets [`VelloFontChanged`] when font assets are added, modified, or removed.
+///
+/// The render world uses this to invalidate the text layout cache.
+#[cfg(feature = "text")]
+pub fn detect_font_changes(
+    mut font_changed: ResMut<super::VelloFontChanged>,
+    mut font_events: bevy::ecs::message::MessageReader<
+        AssetEvent<crate::integrations::text::VelloFont>,
+    >,
+) {
+    font_changed.0 = font_events.read().count() > 0;
 }
