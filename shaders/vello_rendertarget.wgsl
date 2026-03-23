@@ -1,4 +1,5 @@
-#import bevy_render::view::View
+#import bevy_render::view::{View, frag_coord_to_uv}
+#import bevy_sprite::mesh2d_vertex_output::VertexOutput
 
 @group(0) @binding(0)
 var<uniform> view: View;
@@ -7,29 +8,15 @@ var texture: texture_2d<f32>;
 @group(2) @binding(1)
 var texture_sampler: sampler;
 
-// returns the (0-1, 0-1) position within the given viewport for the current buffer coords .
-// buffer coords can be obtained from `@builtin(position).xy`.
-// the view uniform struct contains the current camera viewport in `view.viewport`.
-// topleft = 0,0
-fn coords_to_viewport_uv(position: vec2<f32>, viewport: vec4<f32>) -> vec2<f32> {
-    return (position - viewport.xy) / viewport.zw;
-}
-
 struct Vertex {
     @location(0) position: vec3<f32>,
 };
 
-struct VertexOutput {
-    @builtin(position) clip_position: vec4<f32>,
-    #import bevy_sprite::mesh2d_vertex_output
-};
-
 @vertex
-fn vertex(vertex: Vertex) -> VertexOutput {
-    let position = vertex.position;
+fn vertex(in: Vertex) -> VertexOutput {
     var out: VertexOutput;
-    out.clip_position = vec4<f32>(position, 1.0);
-
+    // This is the `clip position`.
+    out.position = vec4<f32>(in.position, 1.0);
     return out;
 }
 
@@ -50,12 +37,9 @@ fn linear_from_srgba(srgba: vec4<f32>) -> vec4<f32> {
 }
 
 @fragment
-fn fragment(
-    @builtin(position) position: vec4<f32>,
-    #import bevy_sprite::mesh2d_vertex_output
-) -> @location(0) vec4<f32> {
-    let uvs = coords_to_viewport_uv(position.xy, view.viewport);
-    let color = textureSample(texture, texture_sampler, uvs);
+fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+    let uv = frag_coord_to_uv(in.position.xy, view.viewport);
+    let color = textureSample(texture, texture_sampler, uv);
     let color_converted = linear_from_srgba(color);
     return color_converted;
 }
