@@ -20,20 +20,15 @@ fn vertex(in: Vertex) -> VertexOutput {
     return out;
 }
 
-fn sRGB_OETF(a: f32) -> f32 {
-    if .04045f < a {
-        return pow((a + .055f) / 1.055f, 2.4f);
-    } else {
-        return  a / 12.92f;
-    }
-}
-
 fn linear_from_srgba(srgba: vec4<f32>) -> vec4<f32> {
-    return vec4<f32>(
-        sRGB_OETF(srgba.r),
-        sRGB_OETF(srgba.g),
-        sRGB_OETF(srgba.b),
-        srgba.a);
+    return vec4(
+        select(
+            srgba.rgb / 12.92,
+            pow((srgba.rgb + .055) / 1.055, vec3(2.4)),
+            srgba.rgb > vec3(0.04045)
+        ),
+        srgba.a,
+    );
 }
 
 @fragment
