@@ -9,9 +9,15 @@ use super::{VelloFont, VelloTextAlign, VelloTextStyle};
 
 /// Content-addressed key for cached text layouts.
 ///
-/// Uses SipHash of (font_id, text_value, style fields, text_align, max_advance).
+/// Stores the `font_id` alongside a SipHash of (font_id, text, style, align,
+/// max_advance).  The hash drives equality/lookup; the `font_id` enables
+/// targeted eviction when a single font asset changes without clearing the
+/// entire cache.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct TextLayoutKey(pub u64);
+pub struct TextLayoutKey {
+    pub font_id: AssetId<VelloFont>,
+    pub hash: u64,
+}
 
 impl TextLayoutKey {
     pub fn new(
@@ -82,7 +88,10 @@ impl TextLayoutKey {
             .hash(&mut hasher);
         text_align.hash(&mut hasher);
         max_advance.map(f32::to_bits).hash(&mut hasher);
-        Self(hasher.finish())
+        Self {
+            font_id,
+            hash: hasher.finish(),
+        }
     }
 }
 
@@ -139,10 +148,13 @@ impl TextLayoutCache {
         std::mem::swap(&mut self.current, &mut self.previous);
     }
 
-    /// Drop all cached layouts (e.g. when font assets change).
-    pub fn clear(&mut self) {
-        self.current.clear();
-        self.previous.clear();
+    /// Evict all cached layouts that used `font_id`.
+    ///
+    /// Called when a font asset is modified or removed so that only the
+    /// affected layouts are recomputed, not the entire cache.
+    pub fn evict_font(&mut self, font_id: AssetId<VelloFont>) {
+        self.current.retain(|k, _| k.font_id != font_id);
+        self.previous.retain(|k, _| k.font_id != font_id);
     }
 
     /// Number of cached layouts across both buffers.
@@ -164,7 +176,10 @@ mod tests {
     use std::cell::Cell;
 
     fn make_key(n: u64) -> TextLayoutKey {
-        TextLayoutKey(n)
+        TextLayoutKey {
+            font_id: AssetId::<VelloFont>::default(),
+            hash: n,
+        }
     }
 
     /// Second call with the same key must not invoke the closure.
@@ -234,17 +249,53 @@ mod tests {
         );
     }
 
-    /// `clear()` removes all entries immediately.
+    fn make_font_key(font_id: AssetId<VelloFont>, n: u64) -> TextLayoutKey {
+        TextLayoutKey { font_id, hash: n }
+    }
+
+    /// `evict_font` removes only entries for the given font.
     #[test]
-    fn clear_removes_all_entries() {
+    fn evict_font_is_selective() {
         let mut cache = TextLayoutCache::default();
-        cache.get_or_insert_with(make_key(1), Layout::new);
-        cache.advance_frame();
-        cache.get_or_insert_with(make_key(2), Layout::new);
+        let font_a = AssetId::<VelloFont>::Uuid {
+            uuid: bevy::asset::uuid::Uuid::from_u128(1),
+        };
+        let font_b = AssetId::<VelloFont>::Uuid {
+            uuid: bevy::asset::uuid::Uuid::from_u128(2),
+        };
+
+        let key_a = make_font_key(font_a, 100);
+        let key_b = make_font_key(font_b, 200);
+
+        cache.get_or_insert_with(key_a, Layout::new);
+        cache.get_or_insert_with(key_b, Layout::new);
         assert_eq!(cache.len(), 2);
 
-        cache.clear();
-        assert_eq!(cache.len(), 0);
+        cache.evict_font(font_a);
+        assert_eq!(cache.len(), 1, "only font_a entries should be evicted");
+
+        // font_b entry still accessible.
+        cache.get_or_insert_with(key_b, || panic!("font_b should still be cached"));
+    }
+
+    /// `evict_font` removes entries from both buffers.
+    #[test]
+    fn evict_font_spans_both_buffers() {
+        let mut cache = TextLayoutCache::default();
+        let font_a = AssetId::<VelloFont>::Uuid {
+            uuid: bevy::asset::uuid::Uuid::from_u128(1),
+        };
+        let font_b = AssetId::<VelloFont>::Uuid {
+            uuid: bevy::asset::uuid::Uuid::from_u128(2),
+        };
+
+        cache.get_or_insert_with(make_font_key(font_a, 10), Layout::new);
+        cache.advance_frame(); // font_a entry moves to previous
+        cache.get_or_insert_with(make_font_key(font_b, 20), Layout::new); // in current
+
+        assert_eq!(cache.len(), 2);
+        cache.evict_font(font_a);
+        assert_eq!(cache.len(), 1, "font_a in previous should be evicted");
     }
 
     /// `TextLayoutKey::new` produces different keys for different text content.

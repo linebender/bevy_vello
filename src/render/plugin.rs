@@ -10,7 +10,7 @@ use bevy::{
 };
 
 #[cfg(feature = "text")]
-use super::VelloFontChanged;
+use super::VelloFontsChanged;
 use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget, systems};
 use crate::{
     VelloView,
@@ -45,7 +45,7 @@ impl Plugin for VelloRenderPlugin {
         app.add_plugins(VelloRenderDiagnosticsPlugin);
 
         #[cfg(feature = "text")]
-        app.init_resource::<VelloFontChanged>()
+        app.init_resource::<VelloFontsChanged>()
             .add_systems(PostUpdate, systems::detect_font_changes);
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
@@ -59,7 +59,7 @@ impl Plugin for VelloRenderPlugin {
             .init_resource::<VelloRenderQueue>();
         #[cfg(feature = "text")]
         render_app
-            .init_resource::<VelloFontChanged>()
+            .init_resource::<VelloFontsChanged>()
             .init_resource::<crate::integrations::text::layout_cache::TextLayoutCache>()
             .add_systems(
                 ExtractSchedule,
@@ -109,10 +109,12 @@ impl Plugin for VelloRenderPlugin {
     }
 }
 
-/// Copies [`VelloFontChanged`] from the main world into the render world.
+/// Copies [`VelloFontsChanged`] from the main world into the render world.
 #[cfg(feature = "text")]
-fn extract_font_changed(main_world: Res<MainWorld>, mut font_changed: ResMut<VelloFontChanged>) {
-    if let Some(main_font_changed) = main_world.get_resource::<VelloFontChanged>() {
-        font_changed.0 = main_font_changed.0;
+fn extract_font_changed(main_world: Res<MainWorld>, mut font_changed: ResMut<VelloFontsChanged>) {
+    if let Some(main_font_changed) = main_world.get_resource::<VelloFontsChanged>() {
+        font_changed.0.clone_from(&main_font_changed.0);
+    } else {
+        font_changed.0.clear();
     }
 }
