@@ -8,8 +8,8 @@ pub enum VectorLoaderError {
     #[error("Could not parse utf-8: {0}")]
     FromStrUtf8(#[from] std::str::Utf8Error),
     #[cfg(feature = "svg")]
-    #[error("Could not parse svg: {0}")]
-    VelloSvg(#[from] vello_svg::Error),
+    #[error("Could not lower svg through imaging: {0}")]
+    SvgImaging(#[from] svg_imaging::Error),
     #[cfg(feature = "lottie")]
     #[error("Could not parse lottie: {0}")]
     Velato(#[from] velato::Error),

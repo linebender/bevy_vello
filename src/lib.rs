@@ -12,13 +12,17 @@ pub mod integrations;
 pub mod render;
 
 // Re-exports
+pub use imaging;
+pub use imaging_vello;
 #[cfg(feature = "text")]
 pub use parley;
+#[cfg(feature = "svg")]
+pub use svg_imaging;
 #[cfg(feature = "lottie")]
 pub use velato;
+#[cfg(feature = "lottie")]
+pub use velato_imaging;
 pub use vello;
-#[cfg(feature = "svg")]
-pub use vello_svg;
 
 pub mod prelude {
     // Vendor re-exports

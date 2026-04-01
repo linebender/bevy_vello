@@ -1,14 +1,14 @@
 use std::borrow::Cow;
 
 use bevy::{prelude::*, reflect::TypePath, render::render_asset::RenderAsset};
+use imaging::{GlyphRunRef, PaintSink as _};
 use parley::{
     FontSettings, FontStyle, FontVariation, Layout, PositionedLayoutItem, RangedBuilder,
     StyleProperty,
 };
 use vello::{
-    Scene,
     kurbo::Affine,
-    peniko::{Brush, Fill},
+    peniko::{Brush, Fill, Style},
 };
 
 use super::{VelloFontAxes, VelloTextAnchor, context::LOCAL_FONT_CONTEXT};
@@ -89,7 +89,7 @@ impl VelloFont {
     #[expect(clippy::too_many_arguments, reason = "Common lint in bevy")]
     pub(crate) fn render(
         &self,
-        scene: &mut Scene,
+        scene: &mut imaging::record::Scene,
         mut transform: Affine,
         value: &str,
         style: &VelloTextStyle,
@@ -183,28 +183,31 @@ impl VelloFont {
                 let glyph_xform = synthesis
                     .skew()
                     .map(|angle| Affine::skew(angle.to_radians().tan() as f64, 0.0));
-
-                scene
-                    .draw_glyphs(font)
-                    .brush(&style.brush)
-                    .hint(true)
-                    .transform(transform)
-                    .glyph_transform(glyph_xform)
-                    .font_size(font_size)
-                    .normalized_coords(run.normalized_coords())
-                    .draw(
-                        Fill::NonZero,
-                        glyph_run.glyphs().map(|glyph| {
-                            let gx = x + glyph.x;
-                            let gy = y - glyph.y;
-                            x += glyph.advance;
-                            vello::Glyph {
-                                id: glyph.id as _,
-                                x: gx,
-                                y: gy,
-                            }
-                        }),
-                    );
+                let glyph_style = Style::Fill(Fill::NonZero);
+                let draw = GlyphRunRef {
+                    font,
+                    transform,
+                    glyph_transform: glyph_xform,
+                    brush_transform: None,
+                    font_size,
+                    font_embolden: imaging::kurbo::Vec2::ZERO,
+                    hint: true,
+                    normalized_coords: run.normalized_coords(),
+                    style: &glyph_style,
+                    brush: (&style.brush).into(),
+                    composite: imaging::Composite::default(),
+                };
+                let mut glyphs = glyph_run.glyphs().map(|glyph| {
+                    let gx = x + glyph.x;
+                    let gy = y - glyph.y;
+                    x += glyph.advance;
+                    imaging::record::Glyph {
+                        id: glyph.id as _,
+                        x: gx,
+                        y: gy,
+                    }
+                });
+                scene.glyph_run(draw, &mut glyphs);
             }
         }
     }

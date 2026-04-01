@@ -37,6 +37,26 @@ use crate::{
     render::{VelloUiRenderItem, VelloView},
 };
 
+fn render_target_bounds(gpu_image: &GpuImage) -> vello::kurbo::Rect {
+    vello::kurbo::Rect::new(
+        0.0,
+        0.0,
+        gpu_image.size.width as f64,
+        gpu_image.size.height as f64,
+    )
+}
+
+fn replay_imaging_scene(
+    scene_buffer: &mut Scene,
+    scene: &imaging::record::Scene,
+    affine: vello::kurbo::Affine,
+    surface_clip: vello::kurbo::Rect,
+) {
+    let mut sink = imaging_vello::VelloSceneSink::new(scene_buffer, surface_clip);
+    imaging::record::replay_transformed(scene, &mut sink, affine);
+    sink.finish().unwrap();
+}
+
 /// Convert a Bevy UI clip rect to a Vello kurbo rect.
 ///
 /// `CalculatedClip` is already in physical pixels — Bevy resolves layout
@@ -283,6 +303,7 @@ pub fn render_frame(
 ) {
     let VelloRenderTarget(render_target_image) = *render_target;
     let gpu_image = gpu_images.get(render_target_image).unwrap();
+    let surface_clip = render_target_bounds(gpu_image);
 
     let mut scene_buffer = Scene::new();
 
@@ -293,7 +314,7 @@ pub fn render_frame(
                 affine,
                 item: ExtractedVelloScene2d { scene, .. },
             } => {
-                scene_buffer.append(scene, Some(*affine));
+                replay_imaging_scene(&mut scene_buffer, scene, *affine, surface_clip);
             }
             #[cfg(feature = "lottie")]
             VelloWorldRenderItem::Lottie {
@@ -326,13 +347,20 @@ pub fn render_frame(
                 }
                 let recolored = theme.as_ref().map(|cs| cs.recolor(&asset.composition));
                 let animation = recolored.as_ref().unwrap_or(&asset.composition);
-                velato_renderer.append(
-                    animation,
-                    *playhead as f64,
-                    *affine,
-                    1.0,
-                    &mut scene_buffer,
-                );
+                {
+                    let mut sink =
+                        imaging_vello::VelloSceneSink::new(&mut scene_buffer, surface_clip);
+                    velato_imaging::RendererExt::append_to_imaging(
+                        &mut velato_renderer.0,
+                        animation,
+                        *playhead as f64,
+                        *affine,
+                        1.0,
+                        &mut sink,
+                    )
+                    .unwrap();
+                    sink.finish().unwrap();
+                }
                 if *alpha < 1.0 {
                     scene_buffer.pop_layer();
                 }
@@ -354,7 +382,7 @@ pub fn render_frame(
                         &vello::kurbo::Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
                     );
                 }
-                scene_buffer.append(&asset.scene, Some(*affine));
+                replay_imaging_scene(&mut scene_buffer, &asset.scene, *affine, surface_clip);
                 if *alpha < 1.0 {
                     scene_buffer.pop_layer();
                 }
@@ -368,8 +396,9 @@ pub fn render_frame(
                     },
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
+                    let mut text_scene = imaging::record::Scene::new();
                     font.render(
-                        &mut scene_buffer,
+                        &mut text_scene,
                         *affine,
                         &text.value,
                         &text.style,
@@ -378,6 +407,12 @@ pub fn render_frame(
                         *text_anchor,
                         None,
                         None,
+                    );
+                    replay_imaging_scene(
+                        &mut scene_buffer,
+                        &text_scene,
+                        vello::kurbo::Affine::IDENTITY,
+                        surface_clip,
                     );
                 }
             }
@@ -424,7 +459,7 @@ pub fn render_frame(
                 item: ExtractedUiVelloScene { scene, .. },
                 ..
             } => {
-                scene_buffer.append(scene, Some(*affine));
+                replay_imaging_scene(&mut scene_buffer, scene, *affine, surface_clip);
             }
             #[cfg(feature = "lottie")]
             VelloUiRenderItem::Lottie {
@@ -455,13 +490,20 @@ pub fn render_frame(
                 }
                 let recolored = theme.as_ref().map(|cs| cs.recolor(&asset.composition));
                 let animation = recolored.as_ref().unwrap_or(&asset.composition);
-                velato_renderer.append(
-                    animation,
-                    *playhead as f64,
-                    *affine,
-                    1.0,
-                    &mut scene_buffer,
-                );
+                {
+                    let mut sink =
+                        imaging_vello::VelloSceneSink::new(&mut scene_buffer, surface_clip);
+                    velato_imaging::RendererExt::append_to_imaging(
+                        &mut velato_renderer.0,
+                        animation,
+                        *playhead as f64,
+                        *affine,
+                        1.0,
+                        &mut sink,
+                    )
+                    .unwrap();
+                    sink.finish().unwrap();
+                }
                 if *alpha < 1.0 {
                     scene_buffer.pop_layer();
                 }
@@ -481,7 +523,7 @@ pub fn render_frame(
                         &vello::kurbo::Rect::new(0.0, 0.0, asset.width as f64, asset.height as f64),
                     );
                 }
-                scene_buffer.append(&asset.scene, Some(*affine));
+                replay_imaging_scene(&mut scene_buffer, &asset.scene, *affine, surface_clip);
                 if *alpha < 1.0 {
                     scene_buffer.pop_layer();
                 }
@@ -501,8 +543,9 @@ pub fn render_frame(
             } => {
                 if let Some(font) = font_render_assets.get(text.style.font.id()) {
                     let logical_size = ui_node.size() / ui_render_target.scale_factor();
+                    let mut text_scene = imaging::record::Scene::new();
                     font.render(
-                        &mut scene_buffer,
+                        &mut text_scene,
                         *affine,
                         &text.value,
                         &text.style,
@@ -511,6 +554,12 @@ pub fn render_frame(
                         *text_anchor,
                         Some(logical_size),
                         *clip,
+                    );
+                    replay_imaging_scene(
+                        &mut scene_buffer,
+                        &text_scene,
+                        vello::kurbo::Affine::IDENTITY,
+                        surface_clip,
                     );
                 }
             }

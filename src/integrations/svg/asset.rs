@@ -2,11 +2,9 @@ use std::sync::Arc;
 
 use bevy::{prelude::*, reflect::TypePath};
 
-use crate::prelude::*;
-
 #[derive(Asset, TypePath, Clone)]
 pub struct VelloSvg {
-    pub scene: Arc<vello::Scene>,
+    pub scene: Arc<imaging::record::Scene>,
     pub width: f32,
     pub height: f32,
     pub alpha: f32,
