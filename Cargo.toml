@@ -52,11 +52,14 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 bevy = { workspace = true }
+imaging = "0.0.1"
+imaging_vello = { version = "0.0.1", default-features = false, features = ["vello-0-7"] }
 # Ensure this version stays up to date with the README
 vello = "0.7.0"
 thiserror = "2.0.18"
-vello_svg = { version = "0.9.0", optional = true }
+svg_imaging = { version = "0.0.1", optional = true }
 velato = { version = "0.10.0", optional = true }
+velato_imaging = { version = "0.0.1", optional = true }
 tracing = "0.1.44"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -73,7 +76,7 @@ wasm-bindgen-test = "0.3.64"
 [features]
 default = []
 picking = ["bevy/bevy_picking"]
-svg = ["vello_svg"]
-lottie = ["velato"]
+svg = ["dep:svg_imaging"]
+lottie = ["dep:velato", "dep:velato_imaging"]
 text = ["parley"]
 default_font = ["bevy/default_font", "text"]
