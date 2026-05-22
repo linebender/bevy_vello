@@ -2,8 +2,6 @@
 // #![deny(missing_docs)] -- This would be great! But we are far away.
 //! An integration to render SVG and Lottie assets in Bevy with Vello.
 
-use crate::prelude::*;
-
 mod plugin;
 pub use plugin::VelloPlugin;
 

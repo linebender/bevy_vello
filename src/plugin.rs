@@ -1,10 +1,7 @@
 use bevy::{camera::visibility::RenderLayers, prelude::*};
 use vello::AaConfig;
 
-use crate::{
-    VelloRenderSettings,
-    render::{VelloCanvasSettings, VelloRenderPlugin},
-};
+use crate::render::{VelloCanvasSettings, VelloRenderPlugin, VelloRenderSettings};
 
 #[derive(Clone)]
 pub struct VelloPlugin {
