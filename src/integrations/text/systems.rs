@@ -1,4 +1,4 @@
-use crate::{VelloFont, prelude::*};
+use crate::prelude::*;
 use bevy::{
     asset::AssetEvent,
     camera::primitives::Aabb,

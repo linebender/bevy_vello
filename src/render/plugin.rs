@@ -10,13 +10,10 @@ use bevy::{
 };
 
 use super::{VelloCanvasSettings, VelloRenderSettings, extract::VelloRenderTarget, systems};
-use crate::{
-    VelloView,
-    render::{
-        RT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
-        VelloRenderQueue, VelloRenderer, diagnostics::VelloRenderDiagnosticsPlugin,
-        extract::VelloExtractStep,
-    },
+use crate::render::{
+    RT_SHADER_HANDLE, VelloCanvasMaterial, VelloEntityCountData, VelloFrameProfileData,
+    VelloRenderQueue, VelloRenderer, VelloView, diagnostics::VelloRenderDiagnosticsPlugin,
+    extract::VelloExtractStep,
 };
 
 #[derive(Default)]

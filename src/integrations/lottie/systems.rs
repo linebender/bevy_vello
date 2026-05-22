@@ -2,9 +2,9 @@ use std::time::Duration;
 
 use super::{LottiePlayer, PlayerTransition, asset::VelloLottie};
 use crate::{
-    PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions, Playhead,
     integrations::lottie::{
-        LottieAssetVariant, PlaybackPlayMode, UiVelloLottie, VelloLottie2d,
+        LottieAssetVariant, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
+        PlaybackPlayMode, Playhead, UiVelloLottie, VelloLottie2d,
         player::events::{LottieOnAfterEvent, LottieOnCompletedEvent, LottieOnShowEvent},
     },
     prelude::VelloLottieAnchor,
