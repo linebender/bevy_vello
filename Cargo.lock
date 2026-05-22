@@ -5904,9 +5904,9 @@ checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
 name = "velato"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "911df6b3bfda900a8c83d0d8cf64e3c6c6cc03699450d36d9ecd839084693d72"
+checksum = "93af7e70afc7895124207bb59b08ab12cd6a1a5a3ab2e4d16f4329a8bfa1b218"
 dependencies = [
  "kurbo",
  "peniko",
