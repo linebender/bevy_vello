@@ -1,7 +1,4 @@
-use std::{
-    f64::consts::{FRAC_PI_4, SQRT_2},
-    ops::DerefMut,
-};
+use std::f64::consts::{FRAC_PI_4, SQRT_2};
 
 use bevy::{color::palettes::css, prelude::*};
 use bevy_vello::{VelloPlugin, prelude::*};
@@ -26,24 +23,38 @@ fn enable_debug(mut options: ResMut<UiDebugOptions>) {
 }
 
 fn setup_ui(mut commands: Commands) {
-    let one_third = Val::Percent(100.0 / 3.0);
-    commands.spawn((
-        Node {
+    // Create a 3x3 grid to demonstrate scene rendering in different positions
+    commands
+        .spawn(Node {
             position_type: PositionType::Absolute,
-            left: one_third,
-            top: one_third,
-            width: one_third,
-            height: one_third,
-            border: UiRect::all(Val::Px(2.0)),
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            display: Display::Grid,
+            grid_template_columns: RepeatedGridTrack::percent(3, 33.33),
+            grid_template_rows: RepeatedGridTrack::percent(3, 33.33),
             ..default()
-        },
-        BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
-        Interaction::default(),
-        UiVelloScene::new(),
-    ));
+        })
+        .with_children(|parent| {
+            // Create 9 cells with interactive scenes
+            for _ in 0..9 {
+                parent.spawn((
+                    Node {
+                        border: UiRect::all(Val::Px(2.0)),
+                        padding: UiRect::all(Val::Px(10.0)),
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        ..default()
+                    },
+                    BorderColor::all(css::FUCHSIA.with_alpha(0.5)),
+                    BackgroundColor(css::DARK_SLATE_GRAY.with_alpha(0.3).into()),
+                    Interaction::default(),
+                    UiVelloScene::new(),
+                ));
+            }
+        });
 }
-fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut UiVelloScene)>) {
-    let (node, interaction, scene) = query.deref_mut();
+fn update_ui(mut query: Query<(&ComputedNode, &Interaction, &mut UiVelloScene)>) {
+    for (node, interaction, mut scene) in &mut query {
 
     // We draw with logical pixels. We need the logical size of this node.
     let logical_size = node.size() * node.inverse_scale_factor();
@@ -111,5 +122,6 @@ fn update_ui(mut query: Single<(&ComputedNode, &Interaction, &mut UiVelloScene)>
                 &kurbo::Rect::from_center_size(center, (radius * 0.2, radius * 1.25)),
             );
         }
+    }
     }
 }
