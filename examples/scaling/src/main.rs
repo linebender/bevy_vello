@@ -86,7 +86,7 @@ fn spawn_instructions(mut commands: Commands) {
             },
             ..default()
         },
-        VelloTextAnchor::Center,
+        VelloAnchor::Center,
     ));
 }
 
@@ -133,7 +133,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             },
                             ..default()
                         },
-                        VelloTextAnchor::Center,
+                        VelloAnchor::Center,
                     ));
                 });
 
@@ -170,7 +170,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             },
                             ..default()
                         },
-                        VelloTextAnchor::Center,
+                        VelloAnchor::Center,
                     ));
                 });
 
@@ -204,7 +204,7 @@ fn spawn_bevy_ui(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                             },
                             ..default()
                         },
-                        VelloTextAnchor::Center,
+                        VelloAnchor::Center,
                     ));
                 });
         });
@@ -231,7 +231,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     },
                     ..default()
                 },
-                VelloTextAnchor::Center,
+                VelloAnchor::Center,
             ));
         });
 
@@ -254,7 +254,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     },
                     ..default()
                 },
-                VelloTextAnchor::Center,
+                VelloAnchor::Center,
                 Transform::from_scale(Vec3::splat(10.)),
             ));
         });
@@ -278,7 +278,7 @@ fn spawn_scenes(mut commands: Commands, asset_server: ResMut<AssetServer>) {
                     },
                     ..default()
                 },
-                VelloTextAnchor::Center,
+                VelloAnchor::Center,
                 Transform::from_scale(Vec3::splat(10.)),
             ));
         });

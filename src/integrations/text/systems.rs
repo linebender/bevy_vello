@@ -6,36 +6,9 @@ use bevy::{
     ui::{ContentSize, NodeMeasure},
 };
 
-fn helper_calculate_aabb(
-    font: &VelloFont,
-    text: &VelloText2d,
-    text_anchor: &VelloTextAnchor,
-) -> Aabb {
-    let layout = font.layout(&text.value, &text.style, text.text_align, text.max_advance);
-    let (width, height) = (layout.width(), layout.height());
-    let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
-    let (dx, dy) = {
-        match text_anchor {
-            VelloTextAnchor::TopLeft => (half_size.x, -half_size.y),
-            VelloTextAnchor::Left => (half_size.x, 0.0),
-            VelloTextAnchor::BottomLeft => (half_size.x, half_size.y),
-            VelloTextAnchor::Top => (0.0, -half_size.y),
-            VelloTextAnchor::Center => (0.0, 0.0),
-            VelloTextAnchor::Bottom => (0.0, half_size.y),
-            VelloTextAnchor::TopRight => (-half_size.x, -half_size.y),
-            VelloTextAnchor::Right => (-half_size.x, 0.0),
-            VelloTextAnchor::BottomRight => (-half_size.x, half_size.y),
-        }
-    };
-    let adjustment = Vec3::new(dx, dy, 0.0);
-    let min = -half_size + adjustment;
-    let max = half_size + adjustment;
-    Aabb::from_min_max(min, max)
-}
-
 pub fn update_text_2d_aabb_on_asset_load(
     mut asset_events: MessageReader<AssetEvent<VelloFont>>,
-    mut world_texts: Query<(&mut Aabb, &VelloText2d, &VelloTextAnchor)>,
+    mut world_texts: Query<(&mut Aabb, &VelloText2d, &VelloAnchor)>,
     fonts: Res<Assets<VelloFont>>,
 ) {
     for event in asset_events.read() {
@@ -52,7 +25,12 @@ pub fn update_text_2d_aabb_on_asset_load(
             .iter_mut()
             .filter(|(_, text, _)| text.style.font.id() == id)
         {
-            let new_aabb = helper_calculate_aabb(font, text, text_anchor);
+            let new_aabb = text_anchor.to_aabb_from_dimensions(
+                font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                    .width(),
+                font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                    .height(),
+            );
             *aabb = new_aabb;
         }
     }
@@ -60,7 +38,7 @@ pub fn update_text_2d_aabb_on_asset_load(
 
 pub fn update_text_2d_aabb_on_change(
     mut world_texts: Query<
-        (&mut Aabb, &VelloText2d, &VelloTextAnchor),
+        (&mut Aabb, &VelloText2d, &VelloAnchor),
         Or<(Changed<VelloText2d>, Changed<Transform>)>,
     >,
     fonts: Res<Assets<VelloFont>>,
@@ -70,7 +48,12 @@ pub fn update_text_2d_aabb_on_change(
             // Not yet loaded
             continue;
         };
-        let new_aabb = helper_calculate_aabb(font, text, text_anchor);
+        let new_aabb = text_anchor.to_aabb_from_dimensions(
+            font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                .width(),
+            font.layout(&text.value, &text.style, text.text_align, text.max_advance)
+                .height(),
+        );
         *aabb = new_aabb;
     }
 }

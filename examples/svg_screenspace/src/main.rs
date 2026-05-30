@@ -26,7 +26,7 @@ fn setup_camera(mut commands: Commands) {
 fn load_svg(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands.spawn((
         VelloSvg2d(asset_server.load("embedded://svg_screenspace/assets/Ghostscript_Tiger.svg")),
-        VelloSvgAnchor::Center,
+        VelloAnchor::Center,
         Transform::from_scale(Vec3::splat(0.25)),
     ));
 }

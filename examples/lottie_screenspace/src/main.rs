@@ -27,7 +27,7 @@ fn load_lottie(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn((
             VelloLottie2d(asset_server.load("embedded://lottie_screenspace/assets/Tiger.json")),
-            VelloLottieAnchor::Center,
+            VelloAnchor::Center,
         ))
         .insert(Transform::from_scale(Vec3::splat(0.25)));
 }

@@ -25,7 +25,10 @@ pub mod prelude {
     pub use vello::{self, kurbo, peniko};
 
     pub use crate::{
-        integrations::scene::{UiVelloScene, VelloScene2d},
+        integrations::{
+            common::*,
+            scene::{UiVelloScene, VelloScene2d},
+        },
         render::{VelloRenderSettings, VelloView},
     };
 
@@ -33,12 +36,12 @@ pub mod prelude {
     pub use crate::integrations::lottie::{
         LottieExt, LottiePlayer, PlaybackDirection, PlaybackLoopBehavior, PlaybackOptions,
         PlaybackPlayMode, PlayerState, PlayerTransition, Playhead, Theme, UiVelloLottie,
-        VelloLottie, VelloLottie2d, VelloLottieAnchor,
+        VelloLottie, VelloLottie2d,
     };
     #[cfg(feature = "svg")]
-    pub use crate::integrations::svg::{UiVelloSvg, VelloSvg, VelloSvg2d, VelloSvgAnchor};
+    pub use crate::integrations::svg::{UiVelloSvg, VelloSvg, VelloSvg2d};
     #[cfg(feature = "text")]
     pub use crate::integrations::text::{
-        UiVelloText, VelloFont, VelloText2d, VelloTextAlign, VelloTextAnchor, VelloTextStyle,
+        UiVelloText, VelloFont, VelloText2d, VelloTextAlign, VelloTextStyle,
     };
 }

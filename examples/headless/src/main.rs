@@ -11,6 +11,7 @@ use bevy::{
 };
 use bevy_vello::{
     VelloPlugin,
+    integrations::VelloAnchor,
     prelude::*,
     vello::{peniko::color::AlphaColor, wgpu::TextureFormat},
 };
@@ -80,7 +81,7 @@ fn load_text(mut commands: Commands) {
             },
             ..default()
         },
-        VelloTextAnchor::Center,
+        VelloAnchor::Center,
     ));
 }
 

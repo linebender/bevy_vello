@@ -1,0 +1,11 @@
+[package]
+name = "custom_anchor"
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+bevy_vello = { path = "../../", features = ["svg", "text", "default_font"] }
+bevy = { workspace = true }

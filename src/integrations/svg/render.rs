@@ -7,8 +7,9 @@ use bevy::{
 };
 use kurbo::Affine;
 
-use super::{VelloSvgAnchor, asset::VelloSvg};
+use super::asset::VelloSvg;
 use crate::{
+    integrations::VelloAnchor,
     prelude::*,
     render::{VelloEntityCountData, prepare::PreparedAffine},
 };
@@ -16,7 +17,7 @@ use crate::{
 #[derive(Component, Clone)]
 pub struct ExtractedVelloSvg2d {
     pub asset: VelloSvg,
-    pub asset_anchor: VelloSvgAnchor,
+    pub asset_anchor: VelloAnchor,
     pub transform: GlobalTransform,
     pub alpha: f32,
 }
@@ -40,7 +41,7 @@ pub fn extract_world_svg_assets(
         Query<
             (
                 &VelloSvg2d,
-                &VelloSvgAnchor,
+                &VelloAnchor,
                 &GlobalTransform,
                 Option<&RenderLayers>,
                 &ViewVisibility,
@@ -264,31 +265,11 @@ pub fn prepare_asset_affines(
                 } = world_transform;
 
                 // Calculate anchor offset in local space (Vello's top-left origin)
-                let anchor_local = match render_entity.asset_anchor {
-                    VelloSvgAnchor::TopLeft => Vec3::ZERO,
-                    VelloSvgAnchor::Left => Vec3::new(0.0, render_entity.asset.height / 2.0, 0.0),
-                    VelloSvgAnchor::BottomLeft => Vec3::new(0.0, render_entity.asset.height, 0.0),
-                    VelloSvgAnchor::Top => Vec3::new(render_entity.asset.width / 2.0, 0.0, 0.0),
-                    VelloSvgAnchor::Center => Vec3::new(
-                        render_entity.asset.width / 2.0,
-                        render_entity.asset.height / 2.0,
-                        0.0,
-                    ),
-                    VelloSvgAnchor::Bottom => Vec3::new(
-                        render_entity.asset.width / 2.0,
-                        render_entity.asset.height,
-                        0.0,
-                    ),
-                    VelloSvgAnchor::TopRight => Vec3::new(render_entity.asset.width, 0.0, 0.0),
-                    VelloSvgAnchor::Right => Vec3::new(
-                        render_entity.asset.width,
-                        render_entity.asset.height / 2.0,
-                        0.0,
-                    ),
-                    VelloSvgAnchor::BottomRight => {
-                        Vec3::new(render_entity.asset.width, render_entity.asset.height, 0.0)
-                    }
-                };
+                let anchor_local = render_entity.asset_anchor.to_local_from_dimensions(
+                    render_entity.asset.width,
+                    render_entity.asset.height,
+                );
+
                 let mut anchor_matrix = Mat4::from_translation(-anchor_local);
                 // The anchor offset is in Vello's y-down coordinate space, but needs to be applied
                 // in the transform chain that operates in Bevy's y-up space. This y-flip compensates

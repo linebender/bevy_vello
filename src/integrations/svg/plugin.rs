@@ -3,7 +3,7 @@ use bevy::{
     render::{Render, RenderApp, RenderSystems},
 };
 
-use super::{VelloSvg, VelloSvgAnchor, asset_loader::VelloSvgLoader, render};
+use super::{VelloAnchor, VelloSvg, asset_loader::VelloSvgLoader, render};
 use crate::{
     integrations::svg::{UiVelloSvg, VelloSvg2d, systems},
     render::extract::VelloExtractStep,
@@ -20,7 +20,7 @@ impl Plugin for SvgIntegrationPlugin {
             .init_asset::<VelloSvg>()
             .register_type::<UiVelloSvg>()
             .register_type::<VelloSvg2d>()
-            .register_type::<VelloSvgAnchor>()
+            .register_type::<VelloAnchor>()
             .add_systems(
                 PostUpdate,
                 (
