@@ -7,6 +7,7 @@ pub mod asset;
 pub use asset::VelloLottie;
 
 mod parse;
+use crate::integrations::VelloAnchor;
 pub use parse::{load_lottie_from_bytes, load_lottie_from_str};
 
 mod lottie_ext;
@@ -38,11 +39,11 @@ pub trait LottieAssetVariant: Component<Mutability = Mutable> + Clone {
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     Aabb,
-    VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
     LottiePlayer::<VelloLottie2d>,
     Transform,
+    VelloAnchor,
     Visibility,
     VisibilityClass
 )]
@@ -64,11 +65,11 @@ impl LottieAssetVariant for VelloLottie2d {
 #[derive(Component, Default, Debug, Clone, Deref, DerefMut, PartialEq, Eq, Reflect)]
 #[require(
     Node,
-    VelloLottieAnchor,
     Playhead,
     PlaybackOptions,
     LottiePlayer::<UiVelloLottie>,
     UiTransform,
+    VelloAnchor,
     Visibility,
     VisibilityClass
 )]
@@ -80,34 +81,4 @@ impl LottieAssetVariant for UiVelloLottie {
     fn asset_id(&self) -> AssetId<VelloLottie> {
         self.id()
     }
-}
-
-/// Describes how the asset is positioned relative to its [`Transform`]. It defaults to
-/// [`VelloLottieAnchor::Center`].
-///
-/// Has no effect in UI nodes.
-#[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
-#[reflect(Component)]
-pub enum VelloLottieAnchor {
-    /// Bounds start from the render position and advance up and to the right.
-    BottomLeft,
-    /// Bounds start from the render position and advance up.
-    Bottom,
-    /// Bounds start from the render position and advance up and to the left.
-    BottomRight,
-
-    /// Bounds start from the render position and advance right.
-    Left,
-    /// Bounds start from the render position and advance equally on both axes.
-    #[default]
-    Center,
-    /// Bounds start from the render position and advance left.
-    Right,
-
-    /// Bounds start from the render position and advance down and to the right.
-    TopLeft,
-    /// Bounds start from the render position and advance down.
-    Top,
-    /// Bounds start from the render position and advance down and to the left.
-    TopRight,
 }

@@ -5,31 +5,9 @@ use bevy::{
     ui::{ContentSize, NodeMeasure},
 };
 
-fn helper_calculate_aabb(svg: &VelloSvg, anchor: &VelloSvgAnchor) -> Aabb {
-    let (width, height) = (svg.width, svg.height);
-    let half_size = Vec3::new(width / 2.0, height / 2.0, 0.0);
-    let (dx, dy) = {
-        match anchor {
-            VelloSvgAnchor::TopLeft => (half_size.x, -half_size.y),
-            VelloSvgAnchor::Left => (half_size.x, 0.0),
-            VelloSvgAnchor::BottomLeft => (half_size.x, half_size.y),
-            VelloSvgAnchor::Top => (0.0, -half_size.y),
-            VelloSvgAnchor::Center => (0.0, 0.0),
-            VelloSvgAnchor::Bottom => (0.0, half_size.y),
-            VelloSvgAnchor::TopRight => (-half_size.x, -half_size.y),
-            VelloSvgAnchor::Right => (-half_size.x, 0.0),
-            VelloSvgAnchor::BottomRight => (-half_size.x, half_size.y),
-        }
-    };
-    let adjustment = Vec3::new(dx, dy, 0.0);
-    let min = -half_size + adjustment;
-    let max = half_size + adjustment;
-    Aabb::from_min_max(min, max)
-}
-
 pub fn update_svg_2d_aabb_on_asset_load(
     mut asset_events: MessageReader<AssetEvent<VelloSvg>>,
-    mut world_svgs: Query<(&mut Aabb, &VelloSvg2d, &VelloSvgAnchor)>,
+    mut world_svgs: Query<(&mut Aabb, &VelloSvg2d, &VelloAnchor)>,
     svgs: Res<Assets<VelloSvg>>,
 ) {
     for event in asset_events.read() {
@@ -43,14 +21,14 @@ pub fn update_svg_2d_aabb_on_asset_load(
             continue;
         };
         for (mut aabb, _, anchor) in world_svgs.iter_mut().filter(|(_, svg, _)| svg.id() == id) {
-            let new_aabb = helper_calculate_aabb(svg, anchor);
+            let new_aabb = anchor.to_aabb_from_dimensions(svg.width, svg.height);
             *aabb = new_aabb;
         }
     }
 }
 
 pub fn update_svg_2d_aabb_on_change(
-    mut world_svgs: Query<(&mut Aabb, &mut VelloSvg2d, &VelloSvgAnchor), Changed<VelloSvg2d>>,
+    mut world_svgs: Query<(&mut Aabb, &mut VelloSvg2d, &VelloAnchor), Changed<VelloSvg2d>>,
     svgs: Res<Assets<VelloSvg>>,
 ) {
     for (mut aabb, svg, anchor) in world_svgs.iter_mut() {
@@ -58,7 +36,7 @@ pub fn update_svg_2d_aabb_on_change(
             // Not yet loaded
             continue;
         };
-        let new_aabb = helper_calculate_aabb(svg, anchor);
+        let new_aabb = anchor.to_aabb_from_dimensions(svg.width, svg.height);
         *aabb = new_aabb;
     }
 }

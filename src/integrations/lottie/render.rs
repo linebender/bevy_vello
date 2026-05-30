@@ -7,14 +7,14 @@ use bevy::{
 };
 use vello::kurbo::Affine;
 
-use super::{Playhead, Theme, VelloLottieAnchor, asset::VelloLottie};
+use super::{Playhead, Theme, VelloAnchor, asset::VelloLottie};
 use crate::integrations::lottie::{UiVelloLottie, VelloLottie2d};
 use crate::render::{VelloEntityCountData, VelloView, prepare::PreparedAffine};
 
 #[derive(Component, Clone)]
 pub struct ExtractedVelloLottie2d {
     pub asset: VelloLottie,
-    pub asset_anchor: VelloLottieAnchor,
+    pub asset_anchor: VelloAnchor,
     pub transform: GlobalTransform,
     pub alpha: f32,
     pub theme: Option<Theme>,
@@ -42,7 +42,7 @@ pub fn extract_world_lottie_assets(
         Query<
             (
                 &VelloLottie2d,
-                &VelloLottieAnchor,
+                &VelloAnchor,
                 &GlobalTransform,
                 &Playhead,
                 Option<&Theme>,
@@ -292,17 +292,9 @@ pub fn prepare_asset_affines(
                     render_entity.asset.composition.width as f32,
                     render_entity.asset.composition.height as f32,
                 );
-                let anchor_local = match render_entity.asset_anchor {
-                    VelloLottieAnchor::TopLeft => Vec3::ZERO,
-                    VelloLottieAnchor::Left => Vec3::new(0.0, height / 2.0, 0.0),
-                    VelloLottieAnchor::BottomLeft => Vec3::new(0.0, height, 0.0),
-                    VelloLottieAnchor::Top => Vec3::new(width / 2.0, 0.0, 0.0),
-                    VelloLottieAnchor::Center => Vec3::new(width / 2.0, height / 2.0, 0.0),
-                    VelloLottieAnchor::Bottom => Vec3::new(width / 2.0, height, 0.0),
-                    VelloLottieAnchor::TopRight => Vec3::new(width, 0.0, 0.0),
-                    VelloLottieAnchor::Right => Vec3::new(width, height / 2.0, 0.0),
-                    VelloLottieAnchor::BottomRight => Vec3::new(width, height, 0.0),
-                };
+                let anchor_local = render_entity
+                    .asset_anchor
+                    .to_local_from_dimensions(width, height);
 
                 let mut anchor_matrix = Mat4::from_translation(-anchor_local);
                 // The anchor offset is in Vello's y-down coordinate space, but needs to be applied
