@@ -4,6 +4,7 @@ use bevy::{
     render::{
         Extract, camera::ExtractedCamera, sync_world::TemporaryRenderEntity, view::ExtractedView,
     },
+    ui::ComputedStackIndex,
 };
 use kurbo::Affine;
 
@@ -27,6 +28,7 @@ pub struct ExtractedUiVelloSvg {
     pub ui_transform: UiGlobalTransform,
     pub alpha: f32,
     pub ui_node: ComputedNode,
+    pub ui_stack_index: u32,
     pub clip: Option<Rect>,
 }
 
@@ -107,6 +109,7 @@ pub fn extract_ui_svg_assets(
             &UiVelloSvg,
             &UiGlobalTransform,
             &ComputedNode,
+            &ComputedStackIndex,
             Option<&RenderLayers>,
             &InheritedVisibility,
             Option<&CalculatedClip>,
@@ -121,8 +124,15 @@ pub fn extract_ui_svg_assets(
     let mut views: Vec<_> = query_views.iter().collect();
     views.sort_unstable_by_key(|(camera, _)| camera.order);
 
-    for (asset_handle, ui_transform, ui_node, render_layers, inherited_visibility, calc_clip) in
-        query_vectors.iter()
+    for (
+        asset_handle,
+        ui_transform,
+        ui_node,
+        ui_stack_index,
+        render_layers,
+        inherited_visibility,
+        calc_clip,
+    ) in query_vectors.iter()
     {
         // Skip if visibility conditions are not met.
         // UI does not check view visibility, only inherited visibility.
@@ -144,6 +154,7 @@ pub fn extract_ui_svg_assets(
                     asset: asset.to_owned(),
                     ui_transform: *ui_transform,
                     ui_node: *ui_node,
+                    ui_stack_index: ui_stack_index.0,
                     alpha: asset.alpha,
                     clip: calc_clip.map(|c| c.clip),
                 })

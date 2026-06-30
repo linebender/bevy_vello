@@ -18,7 +18,7 @@ fn main() {
     app.run();
 }
 
-fn enable_debug(mut options: ResMut<UiDebugOptions>) {
+fn enable_debug(mut options: ResMut<GlobalUiDebugOptions>) {
     options.enabled = true;
 }
 

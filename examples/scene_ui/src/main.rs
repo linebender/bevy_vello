@@ -21,7 +21,7 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
 
-fn enable_debug(mut options: ResMut<UiDebugOptions>) {
+fn enable_debug(mut options: ResMut<GlobalUiDebugOptions>) {
     options.enabled = true;
 }
 

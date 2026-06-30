@@ -344,7 +344,7 @@ mod tests {
         // Tag items A..E with the same stack_index but different identities.
         let items: Vec<(u32, char)> = vec![(5, 'A'), (5, 'B'), (5, 'C'), (5, 'D'), (5, 'E')];
         let mut sorted = items.clone();
-        sorted.sort_by(|(a, _), (b, _)| a.cmp(b));
+        sorted.sort_by_key(|(i, _)| *i);
 
         let order: Vec<char> = sorted.iter().map(|(_, c)| *c).collect();
         assert_eq!(order, vec!['A', 'B', 'C', 'D', 'E']);

@@ -1,7 +1,7 @@
 use bevy::{
     asset::embedded_asset,
     camera::{RenderTarget, Viewport},
-    core_pipeline::core_2d::graph::Core2d,
+    core_pipeline::Core2d,
     diagnostic::FrameCount,
     prelude::*,
     render::{

@@ -4,6 +4,7 @@ use bevy::{
     render::{
         Extract, camera::ExtractedCamera, sync_world::TemporaryRenderEntity, view::ExtractedView,
     },
+    ui::ComputedStackIndex,
 };
 use vello::kurbo::Affine;
 
@@ -29,6 +30,7 @@ pub struct ExtractedUiVelloLottie {
     pub theme: Option<Theme>,
     pub playhead: f64,
     pub ui_node: ComputedNode,
+    pub ui_stack_index: u32,
     pub clip: Option<Rect>,
 }
 
@@ -117,6 +119,7 @@ pub fn extract_ui_lottie_assets(
             &Playhead,
             Option<&Theme>,
             &ComputedNode,
+            &ComputedStackIndex,
             Option<&RenderLayers>,
             &InheritedVisibility,
             Option<&CalculatedClip>,
@@ -137,6 +140,7 @@ pub fn extract_ui_lottie_assets(
         playhead,
         theme,
         ui_node,
+        ui_stack_index,
         render_layers,
         inherited_visibility,
         calc_clip,
@@ -166,6 +170,7 @@ pub fn extract_ui_lottie_assets(
                     playhead: playhead.frame(),
                     alpha: asset.alpha,
                     ui_node: *ui_node,
+                    ui_stack_index: ui_stack_index.0,
                     clip: calc_clip.map(|c| c.clip),
                 })
                 .insert(TemporaryRenderEntity);
