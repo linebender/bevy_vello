@@ -549,16 +549,16 @@ pub fn render_frame(
         .unwrap();
 }
 
-// Returns the width and height of the available viewport space;
-// camera viewport size if present, otherwise default to window size
+// Size of the `VelloView` camera's render target (window or image),
+// honoring a viewport override; falls back to the primary window.
 pub fn get_viewport_size(
     camera_query: Query<&Camera, With<VelloView>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
 ) -> (u32, u32) {
     if let Ok(camera) = camera_query.single()
-        && let Some(viewport) = &camera.viewport
+        && let Some(size) = camera.physical_viewport_size()
     {
-        return (viewport.physical_size.x, viewport.physical_size.y);
+        return (size.x, size.y);
     }
 
     if let Some(window) = window.as_deref() {
