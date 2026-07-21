@@ -6246,7 +6246,8 @@ checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 [[package]]
 name = "velato"
 version = "0.11.0"
-source = "git+https://github.com/linebender/velato?branch=main#bd07ef4ecd86403ad992b15d502bf62d4fec8ad8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3beeb6dc663f07b0bd6cf3bb6c97add7ead6806db26a1eb880002899654f18ad"
 dependencies = [
  "kurbo",
  "peniko",
@@ -6331,8 +6332,9 @@ dependencies = [
 
 [[package]]
 name = "vello_svg"
-version = "0.9.0"
-source = "git+https://github.com/linebender/vello_svg?branch=nixon%2Fvello-0.9#87bb969e9cb7ae9c13a78fc1c29f68522943e38c"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41e9fad114de34b1b0cc37fa63d2607899ab42771d831759ab37767de65f73b4"
 dependencies = [
  "image",
  "thiserror 2.0.18",
