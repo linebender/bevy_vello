@@ -29,7 +29,7 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((Camera2d, VelloView));
 }
 
-fn enable_debug(mut options: ResMut<UiDebugOptions>, mut config: ResMut<GizmoConfigStore>) {
+fn enable_debug(mut options: ResMut<GlobalUiDebugOptions>, mut config: ResMut<GizmoConfigStore>) {
     options.enabled = true;
     config.config_mut::<AabbGizmoConfigGroup>().1.draw_all = true;
 }

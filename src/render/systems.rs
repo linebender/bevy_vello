@@ -158,7 +158,7 @@ pub fn sort_render_items(
     }
     for (&affine, scene) in view_ui_scenes.iter() {
         ui_render_queue.push((
-            scene.ui_node.stack_index,
+            scene.ui_stack_index,
             VelloUiRenderItem::Scene {
                 affine: *affine,
                 clip: to_kurbo_clip(scene.clip),
@@ -180,7 +180,7 @@ pub fn sort_render_items(
         }
         for (&affine, svg) in view_ui_svgs.iter() {
             ui_render_queue.push((
-                svg.ui_node.stack_index,
+                svg.ui_stack_index,
                 VelloUiRenderItem::Svg {
                     affine: *affine,
                     clip: to_kurbo_clip(svg.clip),
@@ -203,7 +203,7 @@ pub fn sort_render_items(
         }
         for (&affine, lottie) in view_ui_lotties.iter() {
             ui_render_queue.push((
-                lottie.ui_node.stack_index,
+                lottie.ui_stack_index,
                 VelloUiRenderItem::Lottie {
                     affine: *affine,
                     clip: to_kurbo_clip(lottie.clip),
@@ -226,7 +226,7 @@ pub fn sort_render_items(
         }
         for (&affine, text) in view_ui_text.iter() {
             ui_render_queue.push((
-                text.ui_node.stack_index,
+                text.ui_stack_index,
                 VelloUiRenderItem::Text {
                     affine: *affine,
                     clip: to_kurbo_clip(text.clip),
@@ -541,24 +541,24 @@ pub fn render_frame(
             &gpu_image.texture_view,
             &RenderParams {
                 base_color: vello::peniko::Color::TRANSPARENT,
-                width: gpu_image.size.width,
-                height: gpu_image.size.height,
+                width: gpu_image.size_2d().x,
+                height: gpu_image.size_2d().y,
                 antialiasing_method: render_settings.antialiasing,
             },
         )
         .unwrap();
 }
 
-// Returns the width and height of the available viewport space;
-// camera viewport size if present, otherwise default to window size
+// Size of the `VelloView` camera's render target (window or image),
+// honoring a viewport override; falls back to the primary window.
 pub fn get_viewport_size(
     camera_query: Query<&Camera, With<VelloView>>,
     window: Option<Single<&Window, With<PrimaryWindow>>>,
 ) -> (u32, u32) {
     if let Ok(camera) = camera_query.single()
-        && let Some(viewport) = &camera.viewport
+        && let Some(size) = camera.physical_viewport_size()
     {
-        return (viewport.physical_size.x, viewport.physical_size.y);
+        return (size.x, size.y);
     }
 
     if let Some(window) = window.as_deref() {
@@ -599,7 +599,7 @@ pub fn resize_rendertargets(
         }
 
         let image = setup_image(&mut images, width, height);
-        if let Some(mat) = target_materials.get_mut(target_mat_handle.id()) {
+        if let Some(mut mat) = target_materials.get_mut(target_mat_handle.id()) {
             target.0 = image.clone();
             mat.texture = image;
         }

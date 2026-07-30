@@ -14,5 +14,5 @@ bevy = { workspace = true, features = [
   "ui_picking",
 ] }
 bevy_vello = { path = "../../", features = ["lottie", "picking"] }
-bevy_egui = "0.39.0"
+bevy_egui = "0.41.0"
 tracing = "0.1.43"

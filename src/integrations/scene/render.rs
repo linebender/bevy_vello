@@ -4,6 +4,7 @@ use bevy::render::Extract;
 use bevy::render::camera::ExtractedCamera;
 use bevy::render::sync_world::TemporaryRenderEntity;
 use bevy::render::view::ExtractedView;
+use bevy::ui::ComputedStackIndex;
 use vello::kurbo::Affine;
 
 use crate::integrations::scene::{UiVelloScene, VelloScene2d};
@@ -21,6 +22,7 @@ pub struct ExtractedUiVelloScene {
     pub scene: UiVelloScene,
     pub ui_transform: UiGlobalTransform,
     pub ui_node: ComputedNode,
+    pub ui_stack_index: u32,
     pub ui_render_target: ComputedUiRenderTargetInfo,
     pub clip: Option<Rect>,
 }
@@ -87,6 +89,7 @@ pub fn extract_ui_scenes(
         Query<(
             &UiVelloScene,
             &ComputedNode,
+            &ComputedStackIndex,
             &ComputedUiRenderTargetInfo,
             &UiGlobalTransform,
             &InheritedVisibility,
@@ -105,6 +108,7 @@ pub fn extract_ui_scenes(
     for (
         scene,
         ui_node,
+        ui_stack_index,
         ui_render_target,
         ui_transform,
         inherited_visibility,
@@ -127,6 +131,7 @@ pub fn extract_ui_scenes(
                     scene: scene.clone(),
                     ui_transform: *ui_transform,
                     ui_node: *ui_node,
+                    ui_stack_index: ui_stack_index.0,
                     ui_render_target: *ui_render_target,
                     clip: calc_clip.map(|c| c.clip),
                 })

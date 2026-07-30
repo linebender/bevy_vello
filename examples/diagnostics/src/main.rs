@@ -25,7 +25,7 @@ fn setup(mut commands: Commands) {
     commands.spawn((
         Text::default(),
         TextFont {
-            font_size: 14.0,
+            font_size: FontSize::Px(14.0),
             ..default()
         },
         TextColor(Color::WHITE),

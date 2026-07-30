@@ -68,7 +68,7 @@ fn setup_button(mut commands: Commands) {
                 .with_child((
                     Text::new("Open"),
                     TextFont {
-                        font_size: 24.0,
+                        font_size: FontSize::Px(24.0),
                         ..default()
                     },
                     TextColor(Color::srgb(0.9, 0.9, 0.9)),
