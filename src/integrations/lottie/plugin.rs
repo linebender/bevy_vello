@@ -4,8 +4,7 @@ use bevy::{
 };
 
 use super::{
-    PlaybackOptions, VelloLottie, VelloLottieAnchor, asset_loader::VelloLottieLoader, render,
-    systems,
+    PlaybackOptions, VelloAnchor, VelloLottie, asset_loader::VelloLottieLoader, render, systems,
 };
 use crate::{
     integrations::lottie::{UiVelloLottie, VelloLottie2d},
@@ -23,7 +22,7 @@ impl Plugin for LottieIntegrationPlugin {
             .init_asset::<VelloLottie>()
             .register_type::<VelloLottie2d>()
             .register_type::<UiVelloLottie>()
-            .register_type::<VelloLottieAnchor>()
+            .register_type::<VelloAnchor>()
             .register_type::<PlaybackOptions>()
             .add_systems(
                 PostUpdate,

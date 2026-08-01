@@ -19,14 +19,17 @@ This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 
 - UI clip rect support: `CalculatedClip` is now respected for all UI Vello render types (`UiVelloScene`, `UiVelloSvg`, `UiVelloLottie`, `UiVelloText`), enabling proper overflow clipping.
 - Added `GLYPH_COUNT` and `GLYPH_RUN_COUNT` diagnostics per frame when the `text` feature is active.
+- `VelloAnchor::CenterOffset(Vec2)` is now supported for all Vello render types.
+- Added `x11` feature support for Vello rendering.
 
 ### Changed
 
 - Updated to velato 0.10
+- Consolidated `Vello{Svg,Lottie,Text}Anchor` variants into a single enum with `CenterOffset` support for all Vello render types.
 
 ### Fixed
 
-- `VelloTextAnchor` for UI text (`UiVelloText`) now positions within the node's content box instead of using text layout dimensions. All anchors except `Center` were previously incorrect.
+- `VelloAnchor` for UI text (`UiVelloText`) now positions within the node's content box instead of using text layout dimensions. All anchors except `Center` were previously incorrect.
 - UI text is now clipped according to UI node content size correctly.
 
 ## [0.13.1] - 2026-01-29

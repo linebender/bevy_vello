@@ -12,6 +12,7 @@ members = [
   "examples/lottie",
   "examples/lottie_screenspace",
   "examples/lottie_ui",
+  "examples/custom_anchor",
   "examples/picking",
   "examples/svg",
   "examples/svg_screenspace",

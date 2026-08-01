@@ -119,7 +119,7 @@ fn load_view_culling(mut commands: Commands, asset_server: ResMut<AssetServer>) 
                 },
                 ..default()
             },
-            VelloTextAnchor::Center,
+            VelloAnchor::Center,
         ))
         .insert(UpDown);
 }

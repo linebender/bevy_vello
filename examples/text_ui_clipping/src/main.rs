@@ -133,7 +133,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     text_align: VelloTextAlign::Left,
                     max_advance: Some(800.0), // Wider than container to show wrapping
                 },
-                VelloTextAnchor::TopLeft,
+                VelloAnchor::TopLeft,
                 Node {
                     position_type: PositionType::Absolute,
                     left: Val::Px(0.0),

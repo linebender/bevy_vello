@@ -18,8 +18,10 @@ use bevy::{
     ui::ContentSize,
 };
 
+use crate::integrations::VelloAnchor;
+
 #[derive(Component, Default, Clone)]
-#[require(Aabb, VelloTextAnchor, Transform, Visibility, VisibilityClass)]
+#[require(Aabb, Transform, VelloAnchor, Visibility, VisibilityClass)]
 #[cfg_attr(feature = "picking", require(Pickable))]
 #[component(on_add = bevy::camera::visibility::add_visibility_class::<VelloText2d>)]
 pub struct VelloText2d {
@@ -30,7 +32,7 @@ pub struct VelloText2d {
 }
 
 #[derive(Component, Default, Clone)]
-#[require(ContentSize, VelloTextAnchor, UiTransform, Visibility, VisibilityClass)]
+#[require(ContentSize, UiTransform, VelloAnchor, Visibility, VisibilityClass)]
 #[component(on_add = bevy::camera::visibility::add_visibility_class::<UiVelloText>)]
 pub struct UiVelloText {
     pub value: String,
@@ -142,33 +144,6 @@ pub struct VelloFontAxes {
     ///
     /// https://fonts.google.com/knowledge/glossary/ytfi_axis
     pub figure_height: Option<f32>,
-}
-
-/// Describes how the text is positioned relative to its [`Transform`]. It defaults to
-/// [`VelloTextAnchor::BottomLeft`].
-#[derive(Component, Default, Clone, Copy, PartialEq, Eq)]
-pub enum VelloTextAnchor {
-    /// Bounds start from the render position and advance up and to the right.
-    BottomLeft,
-    /// Bounds start from the render position and advance up.
-    Bottom,
-    /// Bounds start from the render position and advance up and to the left.
-    BottomRight,
-
-    /// Bounds start from the render position and advance right.
-    Left,
-    /// Bounds start from the render position and advance equally on both axes.
-    #[default]
-    Center,
-    /// Bounds start from the render position and advance left.
-    Right,
-
-    /// Bounds start from the render position and advance down and to the right.
-    TopLeft,
-    /// Bounds start from the render position and advance down.
-    Top,
-    /// Bounds start from the render position and advance down and to the left.
-    TopRight,
 }
 
 /// Alignment of a parley layout.

@@ -48,7 +48,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
             },
             ..default()
         },
-        VelloTextAnchor::Center,
+        VelloAnchor::Center,
         Transform::from_xyz(0.0, 150.0, 0.0),
         WithAnimatedFont,
     ));
@@ -62,7 +62,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
             },
             ..default()
         },
-        VelloTextAnchor::Center,
+        VelloAnchor::Center,
         Transform::from_xyz(0.0, 40.0, 0.0),
     ));
 
@@ -81,7 +81,7 @@ fn setup_worldspace_text(mut commands: Commands, asset_server: ResMut<AssetServe
                 ..default()
             },
         },
-        VelloTextAnchor::Center,
+        VelloAnchor::Center,
         Transform::from_xyz(0.0, -100.0, 0.0),
     ));
 }

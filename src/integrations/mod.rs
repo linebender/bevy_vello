@@ -16,5 +16,7 @@ pub mod lottie;
 #[cfg(feature = "text")]
 pub mod text;
 
-mod error;
+pub mod common;
+pub use common::VelloAnchor;
+pub mod error;
 pub use error::VectorLoaderError;
