@@ -34,6 +34,7 @@ repository = "https://github.com/linebender/bevy_vello"
 [workspace.dependencies]
 bevy = { version = "0.19.0", default-features = false, features = [
   "default_app",
+  "default_platform",
   "2d_bevy_render",
   "ui_bevy_render",
 ] }
