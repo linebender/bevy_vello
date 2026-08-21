@@ -556,8 +556,14 @@ pub fn get_viewport_size(
     window: Option<Single<&Window, With<PrimaryWindow>>>,
 ) -> (u32, u32) {
     if let Ok(camera) = camera_query.single()
-        && let Some(size) = camera.physical_viewport_size()
+        && let Some(mut size) = camera.physical_viewport_size()
     {
+        if let Some(window) = window {
+            let scale = window.scale_factor();
+            size.x = (size.x as f32 * scale) as u32;
+            size.y = (size.y as f32 * scale) as u32;
+        }
+
         return (size.x, size.y);
     }
 
