@@ -8,8 +8,8 @@ Subheadings to categorize changes are `added, changed, deprecated, removed, fixe
 
 -->
 
-The latest published Bevy Vello release is [0.14.0](#0131---2026-08-21) which was released on 2026-01-29.
-You can find its changes [documented below](#0131---2026-08-21).
+The latest published Bevy Vello release is [0.14.0](#0140---2026-08-21) which was released on 2026-01-29.
+You can find its changes [documented below](#0140---2026-08-21).
 
 ## [Unreleased]
 
