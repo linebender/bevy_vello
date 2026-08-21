@@ -28,6 +28,7 @@ This release supports Bevy version 0.18 and has an [MSRV][] of 1.87.
 
 - `VelloTextAnchor` for UI text (`UiVelloText`) now positions within the node's content box instead of using text layout dimensions. All anchors except `Center` were previously incorrect.
 - UI text is now clipped according to UI node content size correctly.
+- Render targets now take into account of window's scale factor.
 
 ## [0.13.1] - 2026-01-29
 
